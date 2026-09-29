@@ -9,20 +9,23 @@ import DayByDayKit
 /// shell rides this Story*: the kit already answered every rule a page shows.
 ///
 /// **Layout is Option B of the G7 proposal** (PR #280), amended by the `look-back-layout` shell
-/// chore, again by `look-back-name-twice`, and again by `look-back-at-a-quota`'s Option A (the
-/// same table, with week rows added — `design.md` § *What the shell draws*). The name-twice
-/// chore had the bar carry the name alone; the owner preferred it said twice, so the name is back
-/// both in the navigation bar and as a `.largeTitle` in the body, with the rhythm beneath it. What
-/// the first chore did to the dates stands: the two half-width "Kept from"/"Kept until" cards
-/// wrapped a date like "15 September 2026" onto a second line (walk W.3 on PR #280), so they read
-/// as two rows of one card, label left and value right, wide enough that no date wraps; a
-/// commitment still kept draws only the "Kept from" row rather than a "—" that would say nothing.
+/// chore, by `look-back-name-twice`, again by `look-back-at-a-quota`'s Option A (the same table,
+/// with week rows added — `design.md` § *What the shell draws*), and now by `look-back-one-title`.
+/// The name is drawn once, as the navigation bar's large title, and collapses into the bar on
+/// scroll, replacing #290's name-twice — a `.largeTitle` in the body beneath the bar's own. The
+/// rhythm is the body's first line, small and secondary under it: #289's arrangement, taken again
+/// because a `navigationSubtitle` holds the bar's title inline and centred at rest on iOS 26, on
+/// a page that fits and one that scrolls alike, and goes large only after a scroll and back. The
+/// dates and the whole are one card of label-and-value rows — "Kept from", "Kept until" where
+/// stopped, "The whole" where the look-back says one — wide enough that no date wraps (walk W.3 on
+/// PR #280); a commitment still kept draws only the "Kept from" row rather than a "—" that would
+/// say nothing. A tick's page has that card and nothing else above its lines. The card's outer
+/// vertical padding is 6pt, so the edge to a row's text is about the 12pt between two rows.
 /// The heading over the lines — "Weeks", "Months" or "Months and weeks" — and the `Grid` carry the
-/// same horizontal inset as the cards' own inner padding, so the line labels and the card labels
-/// share a left edge and the fractions share the cards' right edge. Still a hand-drawn
-/// `ScrollView` and `Grid` rather than the platform `List` the rest of the shell is built from, so
-/// the whole — the one summary figure this screen has — can read as a scoreboard rather than
-/// another row. Every card and row draws exactly what `LookBack` hands it — nothing here composes
+/// same horizontal inset as the card's own inner padding, so the line labels and the card labels
+/// share a left edge and the fractions share the card's right edge. Still a hand-drawn
+/// `ScrollView` and `Grid` rather than the platform `List` the rest of the shell is built from.
+/// The whole draws at the dates' size, in monospaced digits. Every card and row draws exactly what `LookBack` hands it — nothing here composes
 /// a string of its own, `say-nothing-where-the-rhythm-changed` (#300) having taken the one line
 /// that did.
 ///
@@ -115,8 +118,15 @@ struct LookBackView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 if let lookBack {
-                    head(lookBack)
-                    cards(lookBack)
+                    // The rhythm sits directly under the bar's large title, close over the head
+                    // card so it reads as the title's subtitle rather than a block of its own — the page
+                    // takes no top padding of its own, the bar's large title leaves room enough.
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(lookBack.rhythmInWords)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        headCard(lookBack)
+                    }
                     if let graph = lookBack.graph {
                         graphSection(graph)
                     } else if case .number = commitment.kind {
@@ -134,53 +144,37 @@ struct LookBackView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
+            .padding([.horizontal, .bottom])
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle(lookBack?.name ?? "")
+        .navigationBarTitleDisplayMode(.large)
     }
 
+    /// The one card at the head of the page: "Kept from", "Kept until" where the commitment is
+    /// no longer kept, and "The whole" where the look-back says one — label left, value right,
+    /// wide enough that a date like "15 September 2026" does not wrap. A tick's page has this
+    /// card and nothing else above its lines.
     @ViewBuilder
-    private func head(_ lookBack: LookBack) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(lookBack.name)
-                .font(.largeTitle.bold())
-            Text(lookBack.rhythmInWords)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    @ViewBuilder
-    private func cards(_ lookBack: LookBack) -> some View {
-        datesCard(lookBack)
-
-        if let whole = lookBack.whole {
-            card(label: "The whole") {
-                Text(whole)
-                    .font(.title.monospacedDigit())
-            }
-        }
-    }
-
-    /// "Kept from", and "Kept until" beneath it only where the commitment is no longer kept —
-    /// `design.md` § *The shell rides this Story*. One card, not two: a date like
-    /// "15 September 2026" does not fit a half-width card on one line.
-    @ViewBuilder
-    private func datesCard(_ lookBack: LookBack) -> some View {
+    private func headCard(_ lookBack: LookBack) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             dateRow(label: "Kept from", value: lookBack.keptFromInWords)
             if let keptUntilInWords = lookBack.keptUntilInWords {
                 Divider()
                 dateRow(label: "Kept until", value: keptUntilInWords)
             }
+            if let whole = lookBack.whole {
+                Divider()
+                dateRow(label: "The whole", value: whole, valueFont: .body.monospacedDigit())
+            }
         }
-        .padding()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
     @ViewBuilder
-    private func dateRow(label: String, value: String) -> some View {
+    private func dateRow(label: String, value: String, valueFont: Font = .body) -> some View {
         HStack {
             Text(label)
                 .font(.caption)
@@ -189,23 +183,10 @@ struct LookBackView: View {
                 .textCase(.uppercase)
             Spacer()
             Text(value)
+                .font(valueFont)
+                .multilineTextAlignment(.trailing)
         }
         .padding(.vertical, 6)
-    }
-
-    @ViewBuilder
-    private func card<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(label)
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(.secondary)
-                .textCase(.uppercase)
-            content()
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
     @ViewBuilder
@@ -213,7 +194,7 @@ struct LookBackView: View {
         if lookBack.lines.isEmpty {
             Text("Nothing is counted here yet.")
         } else {
-            // The extra `.padding(.horizontal)` below matches the cards' own inner padding, so
+            // The extra `.padding(.horizontal)` below matches the head card's own inner padding, so
             // the line labels align with the cards' text rather than the page's own edge. The
             // heading names the unit the lines below it are said in —
             // "Weeks" where every line is a week, "Months" where every line is a month, "Months
@@ -630,6 +611,15 @@ struct LookBackView: View {
             // draw in the lane beside the chart instead, since none of them have an x-position to
             // read off this proxy that would mean anything — only their own fixed y-position,
             // cached in state below and read by the lane.
+            //
+            // Charts' own axes were tried again on 2026-09-28 (`look-back-one-title`) and not
+            // taken. `AxisValueLabel(collisionResolution: .greedy)` on the days that hold a point
+            // dropped the newest day's label and still clipped one mid-swipe at the plot's right
+            // edge; `anchor: .topTrailing`, and a 16pt trailing `chartPlotStyle` padding, only
+            // moved the clip to the left edge; a native leading values axis squeezed the plot as
+            // the lane does, and cut the leading date under a wide bound. Under Year and All it
+            // read better — four months where this says one — but taking that for one axis
+            // would leave two placement schemes on one card, so it stays hand-placed.
             .chartOverlay { proxy in
                 GeometryReader { geometry in
                     Color.clear
