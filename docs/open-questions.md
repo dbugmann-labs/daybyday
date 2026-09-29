@@ -941,7 +941,7 @@ Things that are built, or deliberately not built, in a state someone will trip o
   the phone with predictive text off.
 
 - **The copy's moments are said in the phone's region format.** The last-copy line, the stop line
-  and "Restored the copy from …" all go through `momentText` in `CommitmentsView.swift`, which
+  and "Restored the copy from …" all go through `momentText` in `SettingsView.swift`, which
   calls `date.formatted(date: .abbreviated, time: .shortened)`. That follows the phone's language
   and region, so a US-English phone says "Sep 29, 2026 at 2:32 PM" where a Swiss one says
   "29 Sept 2026 at 14:32". ADR-1022 keeps the app's own words out of the device's locale, and no
