@@ -663,7 +663,7 @@ public final class DayScreen {
     /// throughout but for `.on`. `design.md` § *One state, the calendar first*.
     public private(set) var birthdayState: BirthdayState
 
-    /// Whether this screen says a copy can be restored, and where: exactly while it could not
+    /// Whether this screen says a copy can be restored, and where (Settings): exactly while it could not
     /// read its record, could not read its one-offs, is not keeping its roster for a reason
     /// that is not a later version of DayByDay, or its birthday ticks could not be read —
     /// `.notKept` already bundles a roster that could not be read with one that could not be

@@ -940,6 +940,15 @@ Things that are built, or deliberately not built, in a state someone will trip o
   2026-09-28. The owner asked for it to be noted, not fixed. The first step is to reproduce it on
   the phone with predictive text off.
 
+- **The copy's moments are said in the phone's region format.** The last-copy line, the stop line
+  and "Restored the copy from …" all go through `momentText` in `SettingsView.swift`, which
+  calls `date.formatted(date: .abbreviated, time: .shortened)`. That follows the phone's language
+  and region, so a US-English phone says "Sep 29, 2026 at 2:32 PM" where a Swiss one says
+  "29 Sept 2026 at 14:32". ADR-1022 keeps the app's own words out of the device's locale, and no
+  requirement says how a **moment** is written, so this predates `add-settings-screen` (#353) and is
+  not its to change: that Story moves the lines to **Settings** unchanged. Found by `designer` in
+  that Story's layout round, 2026-09-29. It will show in the walk's pictures.
+
 ## Settled
 
 - 2026-09-22 — **ADR-1055 says "the same name and the same kind" where the shipped chain rule said

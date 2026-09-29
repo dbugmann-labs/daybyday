@@ -1317,7 +1317,7 @@ change it holds for every other change it would not make.
 
 ### Requirement: A day screen that is not keeping a store says a copy can be restored and where
 
-A day screen SHALL say that a copy can be restored and SHALL name the commitments screen as where,
+A day screen SHALL say that a copy can be restored and SHALL name Settings as where,
 exactly while it could not read its record, could not read its one-offs, is not keeping its roster
 for either of that roster's two causes, or says its birthday ticks could not be read. However many of
 the four are so, it SHALL say it once and no more. It MUST NOT say it where the only store it is not
@@ -1330,7 +1330,7 @@ offering nothing to act on, and saying it SHALL read no place and change nothing
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a record place holding a run of
   bytes that is not a record, with a roster place and a one-off place where nothing has been kept, of
   a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January 2026
-- **THEN** it says a copy can be restored, and names the commitments screen as where
+- **THEN** it says a copy can be restored, and names Settings as where
 - **AND** a day screen that is not keeping its roster, and one that cannot read its one-offs, each say
   the same
 - **AND** a day screen that cannot read its record beside a roster written by a later version of
@@ -1369,8 +1369,8 @@ offering nothing to act on, and saying it SHALL read no place and change nothing
   place, a roster place and a one-off place where nothing has been kept and a birthday place holding
   a run of bytes that is not what birthday ticks are written as, with birthdays on and a calendar
   holding the contact "kate"'s birthday worded "Kate Bell's 48th Birthday" on 20 January 2026
-- **THEN** it says its birthday ticks could not be read, and says a copy can be restored, naming the
-  commitments screen as where
+- **THEN** it says its birthday ticks could not be read, and says a copy can be restored, naming Settings
+  as where
 - **AND** with its record place also holding a run of bytes that is not a record, it says so once and
   no more
 - **AND** a day screen opened the same way with birthdays off, one whose calendar cannot be read, and

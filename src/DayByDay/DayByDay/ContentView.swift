@@ -92,9 +92,15 @@ private func date(from calendarDate: CalendarDate) -> Date {
     return Calendar.current.date(from: components)!
 }
 
+/// The Kit screen the Settings sheet is open to, wrapped so `.sheet(item:)` can drive the sheet.
+private struct OpenSettings: Identifiable {
+    let id = UUID()
+    let screen: CommitmentsScreen
+}
+
 struct ContentView: View {
-    // One copy place, built with `momentNow` and handed to both screens — a day screen opened
-    // here and a commitments screen opened by the toolbar button below —
+    // One copy place, built with `momentNow` and handed to every screen built here — the day
+    // screen, the commitments screen the toolbar button below pushes and the Settings sheet —
     // `openspec/changes/copy-on-every-change/design.md` § *One copy place, handed to both
     // screens*. `@State` rather than a `let`: `CopyPlace` is a reference type this view never
     // reassigns, but `@State` is what SwiftUI's own convention already uses for `screen` below,
@@ -102,7 +108,7 @@ struct ContentView: View {
     @State private var copyPlace: CopyPlace
     // The app's second setting, beside `copyPlace` — `openspec/changes/turn-birthdays-on/
     // design.md` § *A type of its own beside `CopyPlace`, not a member of `CommitmentsScreen`*:
-    // one instance, built here and handed to `CommitmentsView`, reading and asking through the
+    // one instance, built here and handed to `SettingsView`, reading and asking through the
     // shell's own adapter in `BirthdayCalendarAccess.swift`.
     @State private var birthdaySwitch: BirthdaySwitch
     @State private var screen: DayScreen
@@ -120,6 +126,14 @@ struct ContentView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showingCommitments = false
     @State private var commitmentsScreen: CommitmentsScreen?
+    // Settings builds a Kit screen of its own each time it opens, `add-settings-screen/design.md`
+    // § *Settings builds a Kit screen of its own each time it opens*, and drops it on dismissal.
+    // `settingsScreen` is what the sheet is open to and is `nil` once it is dismissed;
+    // `lastSettingsScreen` holds the same Kit screen, set beside it in the Settings button's action,
+    // so `onDismiss`'s `returnedTo(from:)` can name the screen the sheet was open to and never
+    // depends on the sheet's content having appeared. It is dropped after that call.
+    @State private var settingsScreen: OpenSettings?
+    @State private var lastSettingsScreen: CommitmentsScreen?
     @State private var enteringRow: DayView.Row?
     @State private var enteringText = ""
     // The chosen row whose values are open in a popover, or `nil` while none is — a chosen
@@ -279,7 +293,7 @@ struct ContentView: View {
             }
             .navigationDestination(isPresented: $showingCommitments) {
                 if let commitmentsScreen {
-                    CommitmentsView(screen: commitmentsScreen, birthdaySwitch: birthdaySwitch)
+                    CommitmentsView(screen: commitmentsScreen)
                 }
             }
             // The day is the title: the weekday in full, large, over the date row `dayControls`
@@ -306,12 +320,24 @@ struct ContentView: View {
                         }
                     }
                 }
-                ToolbarItem {
-                    Button("Commitments") {
+                // Commitments and Settings, one trailing group — one capsule.
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button {
                         commitmentsScreen = CommitmentsScreen(asOf: today(), copyingTo: copyPlace)
-                        birthdaySwitch.shown()
                         showingCommitments = true
+                    } label: {
+                        Image(systemName: "list.bullet")
                     }
+                    .accessibilityLabel("Commitments")
+                    Button {
+                        let opened = CommitmentsScreen(asOf: today(), copyingTo: copyPlace)
+                        lastSettingsScreen = opened
+                        settingsScreen = OpenSettings(screen: opened)
+                        birthdaySwitch.shown()
+                    } label: {
+                        Image(systemName: "gearshape")
+                    }
+                    .accessibilityLabel("Settings")
                 }
                 // The green checkmark: shown while any one-off field is focused, and commits and
                 // drops focus exactly as Return does, minus the fresh entry Return leaves focused.
@@ -447,6 +473,7 @@ struct ContentView: View {
                 // — so this no longer asks it directly.
                 screen.shown(asOf: today())
                 commitmentsScreen?.shown(asOf: today())
+                settingsScreen?.screen.shown(asOf: today())
             }
         }
         .onChange(of: showingCommitments) { _, isShowing in
@@ -454,6 +481,17 @@ struct ContentView: View {
                 screen.returnedTo(from: commitmentsScreen)
                 commitmentsScreen = nil
             }
+        }
+        .sheet(
+            item: $settingsScreen,
+            onDismiss: {
+                // `settingsScreen` is already nil here; `lastSettingsScreen` is the screen the sheet
+                // was open to.
+                screen.returnedTo(from: lastSettingsScreen)
+                lastSettingsScreen = nil
+            }
+        ) { open in
+            SettingsView(screen: open.screen, birthdaySwitch: birthdaySwitch)
         }
         // Losing focus commits (`design.md` § *The shell*): whichever one-off field just gave up
         // focus — by a tap elsewhere, which is what this exists to catch, or by the checkmark or
@@ -750,7 +788,7 @@ struct ContentView: View {
             // secondary grey, not the red the causes above take, so the way out does not read as a
             // third thing wrong.
             if screen.saysACopyCanBeRestored {
-                Text("A copy can be restored from Commitments")
+                Text("A copy can be restored from Settings")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
