@@ -11,11 +11,15 @@ import DayByDayKit
 /// **Layout is Option B of the G7 proposal** (PR #280), amended by the `look-back-layout` shell
 /// chore, by `look-back-name-twice`, again by `look-back-at-a-quota`'s Option A (the same table,
 /// with week rows added — `design.md` § *What the shell draws*), and now by `look-back-one-title`.
-/// The name is drawn once, as the navigation bar's large title with the rhythm as its subtitle,
-/// and collapses into the bar on scroll; the body no longer says it again. The dates and the whole
-/// are one card of label-and-value rows — "Kept from", "Kept until" where stopped, "The whole"
-/// where the look-back says one — wide enough that no date wraps (walk W.3 on PR #280); a
-/// commitment still kept draws only the "Kept from" row rather than a "—" that would say nothing.
+/// The name is drawn once, as the navigation bar's title with the rhythm as its
+/// `navigationSubtitle`, replacing #290's name-twice — a `.largeTitle` in the body beneath the
+/// bar's own — and #289's name in the bar with the rhythm as the body's first line. The bar is set
+/// `.large`, and on a page that fits the screen it draws inline and centred until a scroll and
+/// back; the owner judges that on the phone. The dates and the whole are one card of
+/// label-and-value rows — "Kept from", "Kept until" where stopped, "The whole" where the look-back
+/// says one — wide enough that no date wraps (walk W.3 on PR #280); a commitment still kept draws
+/// only the "Kept from" row rather than a "—" that would say nothing. A tick's page has that card
+/// and nothing else above its lines.
 /// The heading over the lines — "Weeks", "Months" or "Months and weeks" — and the `Grid` carry the
 /// same horizontal inset as the card's own inner padding, so the line labels and the card labels
 /// share a left edge and the fractions share the card's right edge. Still a hand-drawn
@@ -599,6 +603,15 @@ struct LookBackView: View {
             // draw in the lane beside the chart instead, since none of them have an x-position to
             // read off this proxy that would mean anything — only their own fixed y-position,
             // cached in state below and read by the lane.
+            //
+            // Charts' own axes were tried again on 2026-09-28 (`look-back-one-title`) and not
+            // taken. `AxisValueLabel(collisionResolution: .greedy)` on the days that hold a point
+            // dropped the newest day's label and still clipped one mid-swipe at the plot's right
+            // edge; `anchor: .topTrailing`, and a 16pt trailing `chartPlotStyle` padding, only
+            // moved the clip to the left edge; a native leading values axis squeezed the plot as
+            // the lane does, and cut the leading date under a wide bound. Under Year and All it
+            // read better — four months where this says one — but taking that for one axis
+            // would leave two placement schemes on one card, so it stays hand-placed.
             .chartOverlay { proxy in
                 GeometryReader { geometry in
                     Color.clear

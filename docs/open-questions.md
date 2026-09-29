@@ -227,6 +227,10 @@ Things that are built, or deliberately not built, in a state someone will trip o
   2026". Seen in #275's W.5 walk picture, the first simulator picture of a swiped graph; outside
   #275's diff, so not fixed there. Found at #275's third G7 pass, 2026-09-23; owed by a chore or
   the next Story that touches the graph.
+  Tried natively in `look-back-one-title`, 2026-09-28: `AxisValueLabel(collisionResolution:
+  .greedy)` dropped the newest day's label and still clipped one at the plot's edge mid-swipe, and
+  `anchor: .topTrailing` and a 16pt trailing plot padding only moved the clip to the left edge, so
+  this stays open.
 - **A shipped requirement is unreachable after #303, and stays on purpose for a phone upgrading
   from an earlier form.** `openspec/specs/commitment/spec.md` § *A change that carries records
   leaves a save in progress until its roster place is written* is untouched by
@@ -292,6 +296,9 @@ Things that are built, or deliberately not built, in a state someone will trip o
   never the era rule's day. The owner left all three at G7 as a later shell tidy, not a Story: the
   seam says every day, every month and every point with its position, and nothing in the delta is
   contradicted.
+  Tried natively in `look-back-one-title`, 2026-09-28: Charts gave four months under Year and
+  under All on a fifteen-month history, against the one label above, but never the newest month, and it was
+  not taken, to keep one placement scheme on the card.
 - **A values-axis bound wider than 30% of the graph card is drawn truncated.** Found at the same
   G7. The lane beside the chart is clamped to 30% of the card so a long bound cannot squeeze the
   plot to a sliver, and a label that does not fit truncates with an ellipsis, so the axis can read
@@ -299,6 +306,9 @@ Things that are built, or deliberately not built, in a state someone will trip o
   the kit's `lowestInWords` and `highestInWords`, untouched — and the case is a thirty-eight-digit
   whole that the delta names as reachable rather than one anybody has typed. Left at G7 as a later
   shell decision: a smaller font for a long bound, or a lane that may grow to half the card.
+  Tried natively in `look-back-one-title`, 2026-09-28: a leading values axis truncated the same
+  38-digit bound and squeezed the plot as the lane does, and cut the leading date label, so this
+  stays open.
 - **The app died once during #274's walk with "Fatal error: Range requires lowerBound <=
   upperBound", and the explanation on record is wrong.** Seen 2026-09-21 by the implementer
   driving the simulator: a Mon, Wed, Sat number commitment, a number entered on its kept-from
