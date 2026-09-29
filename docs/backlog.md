@@ -336,6 +336,92 @@ it as a gap rather than saying it unprompted.*
 - **Open** — how the choice is drawn on Settings (a row of swatches, a list, a menu) is for the
   Story grill's layout round.
 
+### B-070 — see where a number is heading over months
+*Captured 2026-09-29.*
+
+> "In the Look-Back screen, I want to have Trend lines for numbers (e.g. weight)"
+
+- **Trigger** — reading a weight's look-back, where the day-to-day values wobble and the question is
+  which way they are going.
+- **Touches** — `look-back`. *A number commitment's look-back says a graph of the numbers its days
+  hold* shipped with #274, so the values are already drawn; no requirement says anything like a
+  trend, so this is a new line on an existing graph rather than a graph.
+- **Principle** — tested against *five percent of seven things*: **fails** — it deepens a look-back
+  that already works rather than making a new thing possible. Captured anyway: weight is the one
+  commitment on the day-one week whose point is its direction.
+- **Open** — what is a trend line: a moving average over a number of days, or one straight line
+  fitted through them all? The first bends with the months, the second says one thing about the
+  whole span.
+- **Open** — numbers only, or a total's graph too? The quote says numbers; a total's graph already
+  carries a target rule across it.
+- **Open** — does it read across a gap, or across a change of era? A look-back says nothing where one
+  era gives way to the next (#300), and a line drawn through that boundary says something there.
+
+### B-071 — add a total's usual amounts in one tap each
+*Captured 2026-09-29.*
+
+> "Add a total's usual amounts in one tap each"
+
+- **Trigger** — adding to a running total on the day screen, where the same few amounts come up day
+  after day and each one is typed.
+- **Touches** — `day-screen`, whose total entry reads what is committed in it as an amount to add;
+  probably `commitment` too, if the usual amounts are declared with the commitment the way a
+  number's range is.
+- **Principle** — tested against *entered where you stand*: **passes.** It stays in the row and cuts
+  the interaction to what the value allows — a known amount is one tap, not a few — which is the
+  same move B-034 made for a number with a short range.
+- **Open** — where do the usual amounts come from: declared on the commitment sheet, or worked out
+  from the additions the record already holds? The second needs no setting and changes under you.
+- **Open** — how many, and does the typed entry stay beside them for the amount that is not usual?
+- **Open** — can a one-tap addition be taken back? An addition today is kept as typed, and a
+  mis-tap that adds is easier to make than a mis-typed number.
+
+### B-072 — read dates and weekdays in my phone's language
+*Captured 2026-09-29.*
+
+> "Say dates and weekdays the way the phone's language does"
+
+- **Trigger** — every screen that says a day: the day title's weekday, the rhythm in words
+  ("Mon, Wed, Sat"), a look-back's months and weeks — all in English on a phone that may not be.
+- **Touches** — `schedule`, `look-back` and `day-screen`, and **a reversal of ADR-1022**, *the day is
+  said in the app's own words, not the device's*. Several shipped requirements say their words
+  SHALL NOT follow the device's language, region, locale or calendar preferences: the rhythm in
+  words, a look-back's months, its weeks and its numbers. The day picker already follows the device
+  (ADR-1022's 2026-09-09 amendment), and `docs/open-questions.md` records the copy's moments as said
+  in the phone's region format, so the app already speaks two ways at once.
+- **Principle** — tested against *an iPhone, in your hand*: **passes.** The phone is set to the
+  language its owner reads, and an app that says its days in another one is arguing with the phone
+  it lives on.
+- **Open** — the language only, or the region's formats too — the order of day and month, the first
+  day of the week? The **week** is Monday through Sunday for everyone (`docs/open-questions.md`
+  § *Settled*), and following the region would reopen that.
+- **Open** — the app's own words are English everywhere else — buttons, headings, refusals. Is this
+  dates and weekdays only, leaving a German phone reading "Kept from" beside "Montag", or the first
+  step of translating the app?
+- **Open** — ADR-1022 argued against this for reasons it names; the grill should read them before
+  reversing it, not after.
+
+### B-073 — know when a weekly quota can no longer be met without today
+*Captured 2026-09-29.*
+
+> "A weekly quota row says when the week can no longer be met without today"
+
+- **Trigger** — a weekly quota like yuno 5× a week, late in the week, when the days left are exactly
+  the ticks still owed and skipping today means the week is lost.
+- **Touches** — `record`, whose history answers a commitment's **standing** in the week of a date,
+  and `day-screen`, whose quota row says that standing inside the rhythm words. Not B-025 said
+  again: its grill chose the kept count ("1/3x a week") over what the week still asks, the owner's
+  call against the recommendation, and this is a third thing — a signal on the one day it matters.
+- **Principle** — tested against *nothing congratulates you*: **passes on the letter.** It warns
+  rather than rewards, and says nothing about a run of weeks. It is the pressure side of the same
+  mechanic streaks are built on, though, so the grill should say so out loud.
+- **Open** — only on the day it becomes true, or on every day after it too? After today is missed
+  the week *cannot* be met at all, which is a different thing to say, or nothing.
+- **Open** — how is it said: words on the row, a mark, a colour? Colour on a row has been argued
+  once already (ADR-1045 § *Decision 8*).
+- **Open** — counted as of the row's own date, like standing is, so a back-filled day says what that
+  day could still reach?
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
