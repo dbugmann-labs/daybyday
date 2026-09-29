@@ -4,6 +4,10 @@
   2026-09-09, where that Story dissolved; this record is written by `chore/mark-the-offered-row`,
   which that grill named in its place
 - Date: 2026-09-09
+- Amended: 2026-09-29 — the *Resume* swipe on a stopped row of the commitments screen gives up
+  green for the accent: resuming is an act on the roster, like *Edit* beside it, and not a mark of a
+  day done. Green is now the checkmark's alone across both screens — the kept row's and the
+  toolbar's. Written by `chore/resume-in-the-accent`.
 - Amended: 2026-09-28 — the phone now says by touch what the trailing slot says by colour: one
   light impact for every change the screen keeps, and a selection tick when a day turns, never
   the success haptic, since the phone's triple tap is its own way of congratulating and nothing
