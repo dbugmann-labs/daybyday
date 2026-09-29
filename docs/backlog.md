@@ -306,6 +306,36 @@ it as a gap rather than saying it unprompted.*
   settle, or ignore it once a jump has run.
 - **Open** — can it be shown in the Simulator inside 0.35 s, or is it a `phone:` step?
 
+### B-069 — choose the app's accent colour in Settings
+*Captured 2026-09-29.*
+
+> "I'm still not 100% happy.. Is it possible that you use System Blue per default, and give me all
+> the options that you showed in the as a setting in the "Settings"?"
+
+- **Trigger** — after the icon chore (#357) tried a fixed accent in the icon's colour: slate teal
+  first, then ink, and the owner was happy with neither on the simulator. The options are the P10
+  shortlist, as light and dark pairs: slate teal `#3B7D82`/`#7FBFC3`, ink `#3A4F6B`/`#A3B5CF`, plum
+  `#7B3F6E`/`#D9A3CC`, brass `#7F5E14`/`#DDB65E`, graphite `#3A3A3C`/`#E5E5EA`. System blue is the
+  default. The owner's answers the same day: the accent only, and the home-screen icon stays the one
+  ink icon; #357 ships the icon with the controls in system blue, and this want waits for a week of
+  living with blue.
+- **Touches** — probably `restore`, where **Settings** and the app's two settings so far (the copy
+  place and the birthday switch) are specified; `unclaimed` if a look is judged not to belong
+  there. Not a shell chore: a choice the app keeps is a **setting**, and ADR-1019 puts "a choice of
+  where something is stored" outside the shell.
+- **Principle** — tested against *five percent of seven things*: **passes, weakly.** It neither
+  deepens a commitment nor makes a new record possible; it changes how every screen looks. So it
+  ranks below any want that makes a new thing possible, and its case is that the owner uses the
+  app five times a day and cannot settle on one colour.
+- **Open** — does a **copy** carry the choice, and does a **restore** replace it? `CONTEXT.md` says
+  neither existing setting travels in a copy.
+- **Open** — ADR-1045 holds that an accent is implementation detail, not domain vocabulary. A
+  setting a person picks by name would make it a term; that ADR is amended if this is promoted.
+- **Open** — slate teal reads at 4.24:1 on the grey grouped-list background, under 4.5:1 for text.
+  Offer it anyway, lighten it, or drop it?
+- **Open** — how the choice is drawn on Settings (a row of swatches, a list, a menu) is for the
+  Story grill's layout round.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
