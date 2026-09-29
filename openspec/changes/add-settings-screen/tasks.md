@@ -34,7 +34,7 @@ red, a Kit signature that has to move, a word on a moved line that has to change
 
 - [x] 5.1 `openspec validate add-settings-screen --strict` exits 0, and `pnpm run checks` is clean
 - [x] 5.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing with the same count a run on `origin/main` reports, both read off runs
-- [ ] 5.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
+- [x] 5.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 5.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked — W.7 to W.9 by the conductor on the G7 approval — and the walk comment's URL is in W.10. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `openspec/specs/restore/spec.md` changed in this one requirement's three sentences and nowhere else, and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
 
 ## The walk
@@ -47,7 +47,7 @@ A fresh install, calendar access reset, and the simulator's On My iPhone holding
 - [x] W.4 A folder in On My iPhone picked as the copy place — the row naming it, and "Last copy …" directly under it.
 - [x] W.5 The switch turned on and the calendar prompt allowed — the switch on in the app's tint, not green.
 - [x] W.6 Only if the walk can swap the record at its place for a run of bytes, as `take-out-an-unreadable-store`'s did: the day screen's red cause and "A copy can be restored from Settings" under it. If it cannot, say so in the walk comment and tick this; it is never a `phone:` line.
-- [ ] W.7 phone: a copy restored from Settings, the sheet closed with Done — the day screen drawing what the copy holds.
-- [ ] W.8 phone: birthdays turned on in Settings with calendar access given, the sheet swiped down — the Birthdays group on a day a birthday falls.
-- [ ] W.9 phone: calendar access turned off for DayByDay — Settings shows the refused line, and "Open iPhone Settings" opens DayByDay's page in the phone's Settings.
+- [x] W.7 phone: a copy restored from Settings, the sheet closed with Done — the day screen drawing what the copy holds.
+- [x] W.8 phone: birthdays turned on in Settings with calendar access given, the sheet swiped down — the Birthdays group on a day a birthday falls.
+- [x] W.9 phone: calendar access turned off for DayByDay — Settings shows the refused line, and "Open iPhone Settings" opens DayByDay's page in the phone's Settings.
 - [x] W.10 **The handover** — W.1–W.6, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL, https://github.com/dbugmann-labs/daybyday/pull/355#issuecomment-5885347602. W.7–W.9 are the human's at G7; the conductor ticks them on the G7 approval.
