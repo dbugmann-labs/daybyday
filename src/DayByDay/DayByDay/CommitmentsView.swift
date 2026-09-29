@@ -686,18 +686,23 @@ private struct CommitmentSheet: View {
                     }
                     .disabled(changing != nil)
 
-                    // Plain `TextField`s bound to `String`: no formatter, no `keyboardType` that
-                    // forbids a minus or a separator, and nothing that blocks a character — this
-                    // screen says "that is not a number" out loud rather than the shell silently
-                    // refusing the keystroke. `design.md` § *One reading of a typed number*.
+                    // Plain `TextField`s bound to `String`: no formatter, and nothing that blocks a
+                    // legal character — this screen says "that is not a number" out loud rather
+                    // than the shell silently refusing the keystroke. `design.md` § *One reading
+                    // of a typed number*. The keyboard is `.numbersAndPunctuation` and not
+                    // `.decimalPad` because a range end may be negative and the decimal pad has
+                    // no minus; this one has digits, minus, dot and comma, so no legal character
+                    // is out of reach and the refusal stays reachable for what is typed anyway.
                     switch kindChoice {
                     case .tick, .note:
                         EmptyView()
                     case .number:
                         HStack {
                             TextField("Lowest", text: $lowest)
+                                .keyboardType(.numbersAndPunctuation)
                                 .onChange(of: lowest) { _, _ in screen.sheetFieldEdited(.range) }
                             TextField("Highest", text: $highest)
+                                .keyboardType(.numbersAndPunctuation)
                                 .onChange(of: highest) { _, _ in screen.sheetFieldEdited(.range) }
                         }
                         .disabled(!canChangeMoreThanNameAndCategory)
@@ -712,6 +717,7 @@ private struct CommitmentSheet: View {
                         }
                     case .total:
                         TextField("Target", text: $target)
+                            .keyboardType(.numbersAndPunctuation)
                             .onChange(of: target) { _, _ in screen.sheetFieldEdited(.target) }
                             .disabled(!canChangeMoreThanNameAndCategory)
                             .foregroundStyle(canChangeMoreThanNameAndCategory ? Color.primary : Color.secondary)
