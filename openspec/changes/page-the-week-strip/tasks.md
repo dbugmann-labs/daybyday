@@ -58,8 +58,8 @@ scenario box, write the one test named for it, watch it fail, make it pass.
 
 - [x] 8.1 `openspec validate page-the-week-strip --strict` exits 0, and `pnpm run checks` is clean
 - [x] 8.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
-- [ ] 8.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
-- [ ] 8.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked — W.5 by the conductor — and the walk comment's URL is in W.6. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `openspec/specs/day-screen/spec.md` gained this delta's three requirements whole and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
+- [x] 8.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
+- [x] 8.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked — W.5 by the conductor — and the walk comment's URL is in W.6. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `openspec/specs/day-screen/spec.md` gained this delta's three requirements whole and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
 
 ## The walk
 
@@ -69,5 +69,5 @@ A fresh install, so every commitment is kept from Friday 4 September 2026.
 - [x] W.2 `›` tapped — the same weekday of the next week in the text-colour capsule, the strip saying that week, the Today button in the toolbar.
 - [x] W.3 From there, the strip swiped right — back on today, today in the blue capsule, no Today button.
 - [x] W.4 `‹` tapped until the week of 31 August 2026 — Friday 4 September 2026 in the capsule, 31 to 3 faded, `‹` faded.
-- [ ] W.5 phone: a swipe follows the finger from its first movement with no hop, and the week sliding in has no filled capsule; a chevron tap slides the strip; a tap at either screen edge beside the strip does not page; `‹` in W.4's state does nothing.
+- [x] W.5 phone: a swipe follows the finger from its first movement with no hop, and the week sliding in has no filled capsule; a chevron tap slides the strip; a tap at either screen edge beside the strip does not page; `‹` in W.4's state does nothing.
 - [x] W.6 **The handover** — W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. W.5 is the human's at G7; the conductor ticks it on the G7 approval. https://github.com/dbugmann-labs/daybyday/pull/349#issuecomment-5884584097
