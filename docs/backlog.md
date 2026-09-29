@@ -422,6 +422,28 @@ it as a gap rather than saying it unprompted.*
 - **Open** — counted as of the row's own date, like standing is, so a back-filled day says what that
   day could still reach?
 
+### B-074 — enter a number below zero where its range allows one
+*Captured 2026-09-29, from the twenty-second grooming sweep. The wording is `chore/entry-sheet`'s
+(#361) PR body; the owner confirmed it as a gap rather than saying it unprompted.*
+
+> "The decimal pad has no minus key, and a range end may be negative, so a number below zero
+> cannot be typed on the day screen."
+
+- **Trigger** — entering a number, or a starting number, on the day screen for a commitment whose
+  range reaches below zero. The number and total entries set `.keyboardType(.decimalPad)`
+  (`ContentView.swift`, on `main` at 1f4fe49), and #361's compact sheet keeps it. The commitment
+  sheet's range fields use `.numbersAndPunctuation`, so a negative range can be declared and then
+  never entered.
+- **Touches** — `day-screen`'s number entry, and probably only the app shell: the entry hands the
+  shell no bounds to choose a keyboard from, so either the shell picks a keyboard with a minus for
+  every number, or the seam starts saying whether the range reaches below zero.
+- **Principle** — tested against *entered where you stand*: **passes.** A value the commitment
+  allows and the row cannot take is an entry that cannot be made where it belongs.
+- **Open** — a total's amount too? An addition below zero is a correction, and *Take back last*
+  already exists for one.
+- **Open** — nothing on the day-one week is below zero. Is any commitment the owner keeps, or means
+  to, ranged that way, or is this a promise nobody is calling in yet?
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
