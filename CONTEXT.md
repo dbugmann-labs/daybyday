@@ -1055,6 +1055,13 @@ drawn on **every** date wherever one-offs are being kept, holding the **one-off 
 rows where none stands there; "draws no such group where none stands" above is withdrawn. Where
 one-offs cannot be read, still no group is drawn.
 
+**Amended 2026-09-28**, by `chore/one-off-bar` (ADR-1063). The One-offs group no longer holds the
+**one-off entry**: "holding the one-off entry last" above is withdrawn, and the entry is a bar at the
+foot of the day screen instead. The group still holds the one-off rows standing on its date, and a
+day view still holds it, holding no rows, where none stands there; but the day screen draws it only
+where it holds at least one row, since the bar is now the offer, so "drawn on **every** date" above
+is withdrawn for the drawing and stands for what a day view holds.
+
 **Amended 2026-09-24**, at the Feature grill of B-059, `FEAT: birthday` (#322). A day view also
 draws the **birthdays** falling on its date as one group, headed *Birthdays*, before every group of
 commitments — and only while the person has turned birthdays on.
@@ -1966,6 +1973,14 @@ field is told and ended the same way. It is not offered where one-offs cannot be
 a time — only one has focus, and leaving it commits it — so a refusal in one replaces what was told
 under another; one told under a row also ends once that row is no longer drawn. Added while its
 delta was written.
+
+**Amended 2026-09-28**, by `chore/one-off-bar` (ADR-1063). The entry is no longer the line the
+One-offs group ends with, and is no longer typed in place: it is a **bar pinned at the foot of the
+day screen**, the way Messages pins its field, drawn on every day the entry is offered and on no
+other. It is always in reach, sits above the keyboard, and is never scrolled to, so the toolbar's
+`+` that brought it into focus is gone. Committing and what is told under it are unchanged — "under
+the entry" is now under the bar's field — and a one-off it makes still appears as a row in the group.
+A horizontal drag on the bar does not move the day.
 
 **Calendar date** — a year, a month of that year and a day of that month: the argument every
 due-ness question is asked about. It carries no clock, no time zone and no locale, and a

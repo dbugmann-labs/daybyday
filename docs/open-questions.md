@@ -917,6 +917,19 @@ Things that are built, or deliberately not built, in a state someone will trip o
   2026-09-28, and left out of that Story's fix round by the owner; wants a Story or a shell chore of
   its own.
 
+- **A one-off name field emptied letter by letter can keep its first letter.** On the phone, the
+  owner typed into a one-off field, edited, and deleted every letter; "very often" the field went
+  on showing the first one. They were not sure whether it was the one-off entry or a row's rename
+  field. The simulator did not reproduce it in 50 tries across both fields, whether typed with
+  `typeText`, typed with real key taps, deleted by holding the delete key, or emptied after a
+  refusal. The text bindings that would govern it (`oneOffEntryTextBinding`,
+  `oneOffRowTextBinding`) are unchanged by `chore/one-off-bar`, which moved only where the entry is
+  drawn, so it is taken to predate that chore. That is unmeasured on `main`. The best guess is the
+  phone keyboard's predictive or autocorrect path, which synthetic input does not drive, racing a
+  `Binding(get:set:)` whose `set` is guarded. Found on the phone at `chore/one-off-bar` (#351),
+  2026-09-28. The owner asked for it to be noted, not fixed. The first step is to reproduce it on
+  the phone with predictive text off.
+
 ## Settled
 
 - 2026-09-22 — **ADR-1055 says "the same name and the same kind" where the shipped chain rule said
