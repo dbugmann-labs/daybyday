@@ -98,6 +98,117 @@ private struct OpenSettings: Identifiable {
     let screen: CommitmentsScreen
 }
 
+/// What a row's tap is entering, and the row it is entering it on. Names are unique on a roster,
+/// so the case and the name are the identity.
+private enum EntryTarget: Identifiable {
+    case number(DayView.Row)
+    case note(DayView.Row)
+    case total(DayView.Row)
+
+    var row: DayView.Row {
+        switch self {
+        case .number(let row), .note(let row), .total(let row): return row
+        }
+    }
+
+    var id: String {
+        switch self {
+        case .number(let row): return "number \(row.name)"
+        case .note(let row): return "note \(row.name)"
+        case .total(let row): return "total \(row.name)"
+        }
+    }
+}
+
+/// The one compact sheet a number, a total and a note are entered in: Cancel, the row's name and
+/// the primary in a bar, then the field. It says exactly what the alerts and the note sheet said
+/// and nothing more — the number and its range hint, `<sum> of <target>` over an empty "Amount"
+/// field, the note — and adds only the words *Add* and *Take back last*. The decimal pad has no
+/// Return key, so the primary is the commit; a note's Return inserts a line.
+private struct EntrySheet: View {
+    let target: EntryTarget
+    @Binding var text: String
+    let asOf: CalendarDate
+    let onSave: () -> Void
+    let onTakeBack: () -> Void
+    let onCancel: () -> Void
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Button("Cancel", action: onCancel)
+                Spacer()
+                Text(target.row.name)
+                    .font(.headline)
+                    .lineLimit(1)
+                Spacer()
+                Button(primaryTitle, action: onSave)
+                    .fontWeight(.semibold)
+            }
+            content
+        }
+        .padding([.horizontal, .top], 20)
+        .padding(.top, 8)
+        .presentationDragIndicator(.visible)
+        .presentationDetents(detents)
+        .onAppear { focused = true }
+    }
+
+    // A fixed height per face, not a measured one: the sheet rises above the keyboard by itself
+    // and leaves the field directly over the keys with the day's rows above. `.presentationSizing(
+    // .fitted)` was tried and filled the screen instead.
+    private var detents: Set<PresentationDetent> {
+        switch target {
+        case .number: return [.height(200)]
+        case .total: return [.height(240)]
+        case .note: return [.medium]
+        }
+    }
+
+    private var primaryTitle: String {
+        if case .total = target { return "Add" }
+        return "Save"
+    }
+
+    @ViewBuilder private var content: some View {
+        switch target {
+        case .number(let row):
+            TextField(row.numberEntry(asOf: asOf)?.hint ?? "", text: $text)
+                .keyboardType(.decimalPad)
+                .font(.title2.monospacedDigit())
+                .focused($focused)
+            Spacer(minLength: 0)
+        case .total(let row):
+            if let totalEntry = row.totalEntry(asOf: asOf) {
+                Text(totalEntry.soFarOfTarget)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            TextField("Amount", text: $text)
+                .keyboardType(.decimalPad)
+                .font(.title2.monospacedDigit())
+                .focused($focused)
+            if row.offersTakeBackLast(asOf: asOf) {
+                Button("Take back last", action: onTakeBack)
+                    .buttonStyle(.borderless)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            Spacer(minLength: 0)
+        case .note:
+            TextEditor(text: $text)
+                .scrollContentBackground(.hidden)
+                .padding(8)
+                .background(
+                    Color(.secondarySystemGroupedBackground),
+                    in: RoundedRectangle(cornerRadius: 12)
+                )
+                .focused($focused)
+                .padding(.bottom)
+        }
+    }
+}
+
 struct ContentView: View {
     // One copy place, built with `momentNow` and handed to every screen built here — the day
     // screen, the commitments screen the toolbar button below pushes and the Settings sheet —
@@ -134,17 +245,15 @@ struct ContentView: View {
     // depends on the sheet's content having appeared. It is dropped after that call.
     @State private var settingsScreen: OpenSettings?
     @State private var lastSettingsScreen: CommitmentsScreen?
-    @State private var enteringRow: DayView.Row?
+    // The row whose number, total or note is being entered, and which of the three it is: one
+    // compact sheet for all of them, `EntrySheet` below.
+    @State private var entering: EntryTarget?
     @State private var enteringText = ""
     // The chosen row whose values are open in a popover, or `nil` while none is — a chosen
-    // entry's tap opens this rather than `enteringRow`'s alert (`design.md` § *The shell rides
+    // entry's tap opens this rather than `entering`'s sheet (`design.md` § *The shell rides
     // this Story*). Attached to that row's own `Button` in `rowView(_:)`, so the popover is
     // anchored to the row that opened it rather than presented once for the whole list.
     @State private var choosingRow: DayView.Row?
-    @State private var enteringNoteRow: DayView.Row?
-    @State private var enteringNoteText = ""
-    @State private var enteringTotalRow: DayView.Row?
-    @State private var enteringTotalText = ""
     // Which one-off name field, if any, has focus — the entry or a row's rename field. Only one
     // field is ever focused at a time (`design.md` § *A refusal under a name field is its own
     // value, and there is one at a time*), so a single `@FocusState` value stands for all of
@@ -358,109 +467,30 @@ struct ContentView: View {
                     }
                 }
             }
-            .alert(
-                enteringRow?.name ?? "",
-                isPresented: Binding(
-                    get: { enteringRow != nil },
-                    set: { isPresented in
-                        if !isPresented {
-                            enteringRow = nil
-                        }
-                    }
-                ),
-                presenting: enteringRow
-            ) { row in
-                TextField(row.numberEntry(asOf: today())?.hint ?? "", text: $enteringText)
-                    .keyboardType(.decimalPad)
-                Button("Save") {
-                    keeping { try screen.enter(enteringText, on: row) }
-                    enteringRow = nil
-                }
-                Button("Cancel", role: .cancel) {
-                    enteringRow = nil
-                }
-            }
-            .sheet(
-                isPresented: Binding(
-                    get: { enteringNoteRow != nil },
-                    set: { isPresented in
-                        if !isPresented {
-                            enteringNoteRow = nil
-                        }
-                    }
+            // A number, a total and a note are each entered in one compact sheet over the day,
+            // sized to its content with the day's rows still visible above it. It replaces the
+            // alert a number and a total once took, which the HIG keeps for interruptions and
+            // which cannot show the range hint once its field holds a number, and the full-height
+            // sheet a note and, before the alert, a total took, which spent a whole screen and
+            // two navigation animations on a few keystrokes. Nothing here decides anything: the
+            // text still goes to `DayScreen.enter(_:on:)` as typed, the take-back is still offered
+            // exactly where `offersTakeBackLast(asOf:)` says it is, and Cancel and a swipe down
+            // still call nothing.
+            .sheet(item: $entering) { target in
+                EntrySheet(
+                    target: target,
+                    text: $enteringText,
+                    asOf: today(),
+                    onSave: {
+                        keeping { try screen.enter(enteringText, on: target.row) }
+                        entering = nil
+                    },
+                    onTakeBack: {
+                        keeping { try screen.takeBackLast(on: target.row) }
+                        entering = nil
+                    },
+                    onCancel: { entering = nil }
                 )
-            ) {
-                if let row = enteringNoteRow {
-                    NavigationStack {
-                        ZStack {
-                            Color(.systemGroupedBackground)
-                                .ignoresSafeArea()
-                            TextEditor(text: $enteringNoteText)
-                                .scrollContentBackground(.hidden)
-                                .padding(8)
-                                .background(
-                                    Color(.secondarySystemGroupedBackground),
-                                    in: RoundedRectangle(cornerRadius: 12)
-                                )
-                                .padding()
-                        }
-                        .navigationTitle(row.name)
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .cancellationAction) {
-                                Button("Cancel") {
-                                    enteringNoteRow = nil
-                                }
-                            }
-                            ToolbarItem(placement: .confirmationAction) {
-                                Button("Save") {
-                                    keeping { try screen.enter(enteringNoteText, on: row) }
-                                    enteringNoteRow = nil
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            // A total takes an amount in an alert over the day, the same way a number entry takes
-            // a number, rather than in a sheet that replaces the day with a screen. Adding to a
-            // running total is a few keystrokes against a number you already know, and the sheet
-            // spent a whole screen and two navigation animations on them. The message says what
-            // the row was saying — `soFarOfTarget`, the package's own words — because the alert
-            // now covers the row that said it. Nothing here decides anything: the amount still
-            // goes to `DayScreen.enter(_:on:)` as typed and the take-back is still offered exactly
-            // where `offersTakeBackLast(asOf:)` says it is, which is what the sheet did too.
-            .alert(
-                enteringTotalRow?.name ?? "",
-                isPresented: Binding(
-                    get: { enteringTotalRow != nil },
-                    set: { isPresented in
-                        if !isPresented {
-                            enteringTotalRow = nil
-                        }
-                    }
-                ),
-                presenting: enteringTotalRow
-            ) { row in
-                TextField("Amount", text: $enteringTotalText)
-                    .keyboardType(.decimalPad)
-                Button("Save") {
-                    keeping { try screen.enter(enteringTotalText, on: row) }
-                    enteringTotalRow = nil
-                }
-                if row.offersTakeBackLast(asOf: today()) {
-                    Button("Take back last", role: .destructive) {
-                        keeping { try screen.takeBackLast(on: row) }
-                        enteringTotalRow = nil
-                    }
-                }
-                Button("Cancel", role: .cancel) {
-                    enteringTotalRow = nil
-                }
-            } message: { row in
-                if let totalEntry = row.totalEntry(asOf: today()) {
-                    Text(totalEntry.soFarOfTarget)
-                }
             }
         }
         .onChange(of: scenePhase) { _, phase in
@@ -1454,13 +1484,13 @@ struct ContentView: View {
                 } else if let entry {
                     enteringText =
                         (entry.number ?? entry.startingNumber).map { "\($0)" } ?? ""
-                    enteringRow = row
+                    entering = .number(row)
                 } else if let noteEntry {
-                    enteringNoteText = noteEntry.note ?? ""
-                    enteringNoteRow = row
+                    enteringText = noteEntry.note ?? ""
+                    entering = .note(row)
                 } else if totalEntry != nil {
-                    enteringTotalText = ""
-                    enteringTotalRow = row
+                    enteringText = ""
+                    entering = .total(row)
                 } else if reduceMotion {
                     keeping { try screen.tick(row) }
                 } else {
