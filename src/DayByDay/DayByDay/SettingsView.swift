@@ -129,7 +129,7 @@ private func restoreCountsText(
 
 /// The words a person reads for the moment a copy was made — the day, in words, and the hour and
 /// the minute, `HH:mm`. `design.md` § *The shell*.
-func momentText(_ moment: Moment) -> String {
+private func momentText(_ moment: Moment) -> String {
     var components = DateComponents()
     components.year = moment.day.year
     components.month = moment.day.month
@@ -158,7 +158,7 @@ private func momentNow() -> Moment? {
 }
 
 /// Wraps `UIActivityViewController` around the URLs a copy or a take-out answers, so
-/// `CommitmentsView` can hand them to the platform's share sheet. `design.md` § *The shell*:
+/// `SettingsView` can hand them to the platform's share sheet. `design.md` § *The shell*:
 /// `ShareLink` needs its items before the tap, and neither a copy nor a take-out exists until
 /// then. A copy hands over one URL; a take-out, several — `openspec/specs/restore/spec.md` § *The
 /// shape*.
@@ -236,7 +236,7 @@ private func copyPlaceStopText(_ stop: CopyPlace.Stop) -> String {
 }
 
 /// The URL the last copy made answered, wrapped so `.sheet(item:)` can drive the share sheet
-/// directly — the same idiom `SheetTarget` above drives `CommitmentSheet` with.
+/// directly, since a `URL` alone is not `Identifiable` for that.
 private struct CopyShare: Identifiable {
     let url: URL
     var id: URL { url }

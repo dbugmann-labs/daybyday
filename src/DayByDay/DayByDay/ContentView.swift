@@ -99,8 +99,8 @@ private struct OpenSettings: Identifiable {
 }
 
 struct ContentView: View {
-    // One copy place, built with `momentNow` and handed to both screens — a day screen opened
-    // here and a commitments screen opened by the toolbar button below —
+    // One copy place, built with `momentNow` and handed to every screen built here — the day
+    // screen, the commitments screen the toolbar button below pushes and the Settings sheet —
     // `openspec/changes/copy-on-every-change/design.md` § *One copy place, handed to both
     // screens*. `@State` rather than a `let`: `CopyPlace` is a reference type this view never
     // reassigns, but `@State` is what SwiftUI's own convention already uses for `screen` below,
@@ -128,7 +128,10 @@ struct ContentView: View {
     @State private var commitmentsScreen: CommitmentsScreen?
     // Settings builds a Kit screen of its own each time it opens, `add-settings-screen/design.md`
     // § *Settings builds a Kit screen of its own each time it opens*, and drops it on dismissal.
-    // `settingsScreen` is what the sheet is open to; it is set on opening and dropped on dismissal.
+    // `settingsScreen` is what the sheet is open to and is `nil` once it is dismissed;
+    // `lastSettingsScreen` holds the same Kit screen, set beside it in the Settings button's action,
+    // so `onDismiss`'s `returnedTo(from:)` can name the screen the sheet was open to and never
+    // depends on the sheet's content having appeared. It is dropped after that call.
     @State private var settingsScreen: OpenSettings?
     @State private var lastSettingsScreen: CommitmentsScreen?
     @State private var enteringRow: DayView.Row?
@@ -327,8 +330,9 @@ struct ContentView: View {
                     }
                     .accessibilityLabel("Commitments")
                     Button {
-                        settingsScreen = OpenSettings(
-                            screen: CommitmentsScreen(asOf: today(), copyingTo: copyPlace))
+                        let opened = CommitmentsScreen(asOf: today(), copyingTo: copyPlace)
+                        lastSettingsScreen = opened
+                        settingsScreen = OpenSettings(screen: opened)
                         birthdaySwitch.shown()
                     } label: {
                         Image(systemName: "gearshape")
@@ -481,14 +485,13 @@ struct ContentView: View {
         .sheet(
             item: $settingsScreen,
             onDismiss: {
-                // The sheet's own state is already nil here; `returnedTo(from:)` needs the screen
-                // it was open to, kept in `lastSettingsScreen` until now.
+                // `settingsScreen` is already nil here; `lastSettingsScreen` is the screen the sheet
+                // was open to.
                 screen.returnedTo(from: lastSettingsScreen)
                 lastSettingsScreen = nil
             }
         ) { open in
             SettingsView(screen: open.screen, birthdaySwitch: birthdaySwitch)
-                .onAppear { lastSettingsScreen = open.screen }
         }
         // Losing focus commits (`design.md` § *The shell*): whichever one-off field just gave up
         // focus — by a tap elsewhere, which is what this exists to catch, or by the checkmark or
