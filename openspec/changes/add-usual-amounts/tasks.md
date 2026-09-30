@@ -74,17 +74,17 @@ unticked scenario box, write the one test named for it, watch it fail, make it p
 
 - [x] 8.1 `CommitmentsView`'s sheet draws the usual amounts card as `design.md` § *The shell* says: on Total only, filled from `Change.usualAmounts`, *Add usual amount* always last, a row swiped away, every edit telling `.usualAmounts` edited, each refusal under the row its `Int` names in the words given there, and the stopped refusal's words amended
 - [x] 8.2 `ContentView`'s total entry is the half-height sheet of § *What the shell draws*, the alert gone: the field focused as it opens, the usual amounts under it, a tap calling `add(_:on:)` and closing, Save through `enter(_:on:)`, *Take back last* only where offered
-- [ ] 8.3 The app target builds for the simulator, and `WalkthroughUITests` passes unedited
+- [x] 8.3 The app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 9. The records
 
-- [ ] 9.1 Confirm `CONTEXT.md` § *Total entry*'s 2026-09-30 amendment describes what shipped; a sentence that turns out wrong is a stop and a G4 question, never an edit
-- [ ] 9.2 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
+- [x] 9.1 Confirm `CONTEXT.md` § *Total entry*'s 2026-09-30 amendment describes what shipped; a sentence that turns out wrong is a stop and a G4 question, never an edit
+- [x] 9.2 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
 
 ## 10. Gates and the archive handover
 
-- [ ] 10.1 `openspec validate add-usual-amounts --strict` exits 0, and `pnpm run checks` is clean
-- [ ] 10.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
+- [x] 10.1 `openspec validate add-usual-amounts --strict` exits 0, and `pnpm run checks` is clean
+- [x] 10.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
 - [ ] 10.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 10.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked — W.5 and W.6 by the conductor — and the walk comment's URL is in W.7. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `commitment/spec.md` gained the five ADDED requirements, carries the renamed change requirement and not the old heading, and that `day-screen/spec.md` gained its two and carries the renamed total entry requirement, with the six MODIFIED requirements whole and no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
 
@@ -92,10 +92,10 @@ unticked scenario box, write the one test named for it, watch it fail, make it p
 
 A fresh install, with a total named "Protein", target 120, defined through the commitments screen.
 
-- [ ] W.1 The commitment sheet changing "Protein", the usual amounts card under the first holding 20 with no name and 35 "Müesli", *Add usual amount* last.
-- [ ] W.2 The total entry sheet for "Protein" open over the dimmed day, "0 of 120" under the name, five usual amounts smallest first under the field, the keyboard up and nothing scrolled.
-- [ ] W.3 After 35 "Müesli" is tapped, the entry closed and the day showing, the "Protein" row reading "35 of 120" under its name — the shell draws the entry's words there, as it does on `main`.
-- [ ] W.4 The commitment sheet with a sixth usual amount saved, "Five usual amounts at most." in red under the sixth row.
+- [x] W.1 The commitment sheet changing "Protein", the usual amounts card under the first holding 20 with no name and 35 "Müesli", *Add usual amount* last.
+- [x] W.2 The total entry sheet for "Protein" open over the dimmed day, "0 of 120" under the name, five usual amounts smallest first under the field, the keyboard up and nothing scrolled.
+- [x] W.3 After 35 "Müesli" is tapped, the entry closed and the day showing, the "Protein" row reading "35 of 120" under its name — the shell draws the entry's words there, as it does on `main`.
+- [x] W.4 The commitment sheet with a sixth usual amount saved, "Five usual amounts at most." in red under the sixth row.
 - [ ] W.5 phone: a usual amount tapped on the phone adds it and closes the entry, and *Take back last* then undoes it.
 - [ ] W.6 phone: the entry opens with the keyboard already up — the owner may ask for it reverted once used (`grill.md` § *Layout*).
-- [ ] W.7 **The handover** — W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. W.5 and W.6 are the human's at G7; the conductor ticks them on the G7 approval.
+- [x] W.7 **The handover** — W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. W.5 and W.6 are the human's at G7; the conductor ticks them on the G7 approval.
