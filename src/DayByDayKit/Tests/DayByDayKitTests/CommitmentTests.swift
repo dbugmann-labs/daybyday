@@ -495,3 +495,27 @@ func twoNumberCommitmentsDifferingOnlyInTheirRangeAreDifferentCommitments() {
     #expect(withRange != withNoRange)
     #expect(withRange != withWiderRange)
 }
+
+@Test("a usual amount is formed from an amount above zero and reads back its amount and its name")
+func aUsualAmountIsFormedFromAnAmountAboveZeroAndReadsBackItsAmountAndItsName() {
+    let muesli = Commitment.UsualAmount(35, named: "Müesli")
+    #expect(muesli?.amount == 35)
+    #expect(muesli?.name == "Müesli")
+
+    let half = Commitment.UsualAmount(Decimal(string: "0.5")!, named: nil)
+    #expect(half?.amount == Decimal(string: "0.5")!)
+    #expect(half?.name == nil)
+}
+
+@Test("an amount of zero or below forms no usual amount")
+func anAmountOfZeroOrBelowFormsNoUsualAmount() {
+    #expect(Commitment.UsualAmount(0, named: "Shake") == nil)
+    #expect(Commitment.UsualAmount(-1, named: "Shake") == nil)
+    #expect(Commitment.UsualAmount(Decimal(string: "0.0001")!, named: "Shake") != nil)
+}
+
+@Test("a usual amount named only blank space has no name, and any other name is kept as given")
+func aUsualAmountNamedOnlyBlankSpaceHasNoNameAndAnyOtherNameIsKeptAsGiven() {
+    #expect(Commitment.UsualAmount(20, named: "  \t")?.name == nil)
+    #expect(Commitment.UsualAmount(20, named: " Shake ")?.name == " Shake ")
+}
