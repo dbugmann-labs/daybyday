@@ -897,6 +897,12 @@ from the other two entries: their blank commit is the take-back, and a total's t
 only the *last* addition, so the same gesture would silently delete something a person would have
 to remember to miss. Agreed 2026-09-08, same grill.
 
+**Amended 2026-09-30**, while writing the delta of `add-usual-amounts` (#365), on its grill's settled
+answers. A total entry says a third thing: the **usual amounts** its commitment declares, smallest
+first, each offered as one tap beside the field. A tap is an addition exactly as a typed amount is,
+and closes the entry as a commit does; the field still opens empty, and a blank commit still keeps
+nothing. The entry is a half-height sheet over the day rather than an alert.
+
 **Usual amount** — an amount a total commitment declares as one it is often added by, with a name
 if the person gives it one: *Müesli*, 35. Its **total entry** offers each as one tap, beside the
 field and never in its place, so an amount that is not usual is still typed. Tapped, it is an
