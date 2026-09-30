@@ -216,10 +216,13 @@ struct ContentView: View {
     @State private var daySettling = false
     @State private var daySettleMove: (() -> Void)?
     @State private var daySettleGeneration = 0
-    // Set once a drag has locked horizontal, cleared when the next touch goes down on a one-off's
-    // tick (`PressReportingButtonStyle`). A tick that fires while it is set is the tail of a day
-    // swipe that started on it, and ticks nothing.
-    @State private var swipeClaimedTouch = false
+    // Until when a one-off's tick is the tail of a day swipe rather than a tap of its own. Pushed
+    // out by every sample the day swipe reports and by its end. Read off the phone with
+    // `NSLog` on the simulator, 2026-09-30: the drag's samples come first, then `onEnded`, then
+    // the Button's action, all at the one touch-up — and the button's pressed state arrives
+    // *after* the first samples of a fast flick, so anything cleared by it can wipe what those
+    // samples set. Nothing clears this but time.
+    @State private var swipeClaimsTicksUntil = Date.distantPast
     // The week strip's own live drag offset — `weekStrip`'s own counterpart to `dragTranslation`
     // above, kept apart from it (`tasks.md` § 6.2: "the day swipe... and `settle(to:then:)`'s
     // rows untouched") since the strip pages independently of the rows beneath it: a strip drag
@@ -1785,7 +1788,7 @@ struct ContentView: View {
                 if !isRenaming {
                     Button {
                         // A day swipe that started on this tick is the swipe's, not the tick's.
-                        guard !swipeClaimedTouch else {
+                        guard Date() >= swipeClaimsTicksUntil else {
                             return
                         }
                         if offersTick {
@@ -1827,7 +1830,7 @@ struct ContentView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                         .contentShape(Rectangle())
                     }
-                    .buttonStyle(PressReportingButtonStyle { swipeClaimedTouch = false })
+                    .buttonStyle(.plain)
                 }
             }
             if row == screen.notice?.oneOffRow {
@@ -2053,6 +2056,7 @@ struct ContentView: View {
                 isDraggingDay = true
             }
             .onChanged { value in
+                swipeClaimsTicksUntil = Date().addingTimeInterval(0.35)
                 if lockedDragAxis == nil {
                     lockedDragAxis =
                         abs(value.translation.width) > abs(value.translation.height)
@@ -2061,7 +2065,6 @@ struct ContentView: View {
                 guard lockedDragAxis == .horizontal else {
                     return
                 }
-                swipeClaimedTouch = true
                 if value.translation.width < 0 {
                     dragTranslation = screen.nextDayView == nil ? 0 : value.translation.width
                 } else {
@@ -2069,6 +2072,7 @@ struct ContentView: View {
                 }
             }
             .onEnded { value in
+                swipeClaimsTicksUntil = Date().addingTimeInterval(0.35)
                 defer { lockedDragAxis = nil }
                 guard lockedDragAxis == .horizontal else {
                     settle(to: 0, then: nil)
@@ -2303,21 +2307,5 @@ struct ContentView: View {
         }
         weekStripSettleMove = nil
         weekStripIsSettling = false
-    }
-}
-
-/// A plain button that says when a touch goes down on it, so the one-off tick can tell a fresh
-/// touch from the tail of a day swipe that began there.
-private struct PressReportingButtonStyle: ButtonStyle {
-    let onPress: () -> Void
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .opacity(configuration.isPressed ? 0.6 : 1)
-            .onChange(of: configuration.isPressed) { _, pressed in
-                if pressed {
-                    onPress()
-                }
-            }
     }
 }
