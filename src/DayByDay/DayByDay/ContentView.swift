@@ -108,6 +108,20 @@ private struct NoteEditorField: View {
     }
 }
 
+/// The total entry's Amount field, focused as the sheet opens so the keyboard is up. Like
+/// `NoteEditorField` it holds its own `@FocusState`, so the focus takes on every open.
+private struct TotalAmountField: View {
+    @Binding var text: String
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        TextField("Amount", text: $text)
+            .keyboardType(.decimalPad)
+            .focused($focused)
+            .task { focused = true }
+    }
+}
+
 /// The Kit screen the Settings sheet is open to, wrapped so `.sheet(item:)` can drive the sheet.
 private struct OpenSettings: Identifiable {
     let id = UUID()
@@ -456,7 +470,7 @@ struct ContentView: View {
                 }
             }
             // A total takes an amount in a half-height sheet over the dimmed day: the row's name
-            // with `soFarOfTarget` under it, the amount field focused only when tapped, so the keyboard is down as it opens, the row's usual
+            // with `soFarOfTarget` under it, the amount field focused as it opens so the keyboard is up, the row's usual
             // amounts under it — a tap adds one and closes — and *Take back last* below, where
             // `offersTakeBackLast(asOf:)` says it is. Nothing here decides anything: every word
             // and every amount is the Kit's, the field's text still goes to `enter(_:on:)` as
@@ -476,8 +490,7 @@ struct ContentView: View {
                     NavigationStack {
                         Form {
                             Section {
-                                TextField("Amount", text: $enteringTotalText)
-                                    .keyboardType(.decimalPad)
+                                TotalAmountField(text: $enteringTotalText)
                             }
                             if let totalEntry, !totalEntry.usualAmounts.isEmpty {
                                 Section {
@@ -497,7 +510,7 @@ struct ContentView: View {
                                             .contentShape(Rectangle())
                                         }
                                         .listRowInsets(
-                                            EdgeInsets(top: 2, leading: 16, bottom: 2, trailing: 16)
+                                            EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
                                         )
                                         .foregroundStyle(.primary)
                                     }
