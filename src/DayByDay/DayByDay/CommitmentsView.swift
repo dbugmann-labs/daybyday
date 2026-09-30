@@ -557,12 +557,6 @@ struct CommitmentsView: View {
     }
 }
 
-/// The one sheet that both defines a new commitment and changes one already on either of
-/// `screen`'s lists — B-037. Reached by a `+` in `CommitmentsView`'s toolbar for defining and by
-/// a tap on a row for changing. Its fields start from `screen.whatItIsMadeOf(commitment)` when it
-/// is open to change one, and from `screen.dayToKeepFrom` when it is open to define; either way, a
-/// refusal leaves every field exactly as it was typed rather than closing the sheet, because a
-/// rhythm built control by control is most of the work a refusal would otherwise throw away.
 /// One row of the usual amounts card, both fields as typed.
 private struct UsualAmountRow: Identifiable {
     let id = UUID()
@@ -570,6 +564,12 @@ private struct UsualAmountRow: Identifiable {
     var name: String
 }
 
+/// The one sheet that both defines a new commitment and changes one already on either of
+/// `screen`'s lists — B-037. Reached by a `+` in `CommitmentsView`'s toolbar for defining and by
+/// a tap on a row for changing. Its fields start from `screen.whatItIsMadeOf(commitment)` when it
+/// is open to change one, and from `screen.dayToKeepFrom` when it is open to define; either way, a
+/// refusal leaves every field exactly as it was typed rather than closing the sheet, because a
+/// rhythm built control by control is most of the work a refusal would otherwise throw away.
 private struct CommitmentSheet: View {
     let screen: CommitmentsScreen
     let changing: Commitment?
@@ -880,10 +880,12 @@ private struct CommitmentSheet: View {
                                 }
                             }
                         }
-                        Button("Add usual amount") {
-                            usualAmountRows.append(UsualAmountRow(amount: "", name: ""))
-                            isEdited = true
-                            screen.sheetFieldEdited(.usualAmounts)
+                        if screen.offersAnotherUsualAmount(after: typedUsualAmounts) {
+                            Button("Add usual amount") {
+                                usualAmountRows.append(UsualAmountRow(amount: "", name: ""))
+                                isEdited = true
+                                screen.sheetFieldEdited(.usualAmounts)
+                            }
                         }
                     }
                 }
