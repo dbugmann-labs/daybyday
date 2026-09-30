@@ -6,8 +6,8 @@ unticked scenario box, write the one test named for it, watch it fail, make it p
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they are exactly the forty-two titles boxed in §§ 3–7. Any other uncovered title is a stop.
-- [ ] 1.2 Once the roster form is 7, the carried `RosterStoreTests` and `RestoreTests` fixtures that declare form 6 as "the form this app writes" move to form 7 with a `usualAmounts` key on each entry, and nothing else in them changes; each still asserts what its title says. Tick when the suite is green but for §§ 3–7's new tests.
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they are exactly the forty-two titles boxed in §§ 3–7. Any other uncovered title is a stop.
+- [x] 1.2 Once the roster form is 7, the carried `RosterStoreTests` and `RestoreTests` fixtures that declare form 6 as "the form this app writes" move to form 7 with a `usualAmounts` key on each entry, and nothing else in them changes; each still asserts what its title says. Tick when the suite is green but for §§ 3–7's new tests.
 
 ## 2. The seam
 
@@ -15,30 +15,30 @@ unticked scenario box, write the one test named for it, watch it fail, make it p
 
 ## 3. `Commitment.UsualAmount`
 
-- [ ] 3.1 a usual amount is formed from an amount above zero and reads back its amount and its name
-- [ ] 3.2 an amount of zero or below forms no usual amount
-- [ ] 3.3 a usual amount named only blank space has no name, and any other name is kept as given — catches a trimmed name
+- [x] 3.1 a usual amount is formed from an amount above zero and reads back its amount and its name
+- [x] 3.2 an amount of zero or below forms no usual amount
+- [x] 3.3 a usual amount named only blank space has no name, and any other name is kept as given — catches a trimmed name
 
 ## 4. `Roster`
 
-- [ ] 4.1 a roster declares usual amounts on a total commitment and reads them back
-- [ ] 4.2 declaring usual amounts puts no era on and leaves everything else about the commitment as it was — catches `declare` routed through `put(era:)`
-- [ ] 4.3 a commitment's usual amounts stay through a new era, a rename, a stop and a take-up again — catches an act that forms an entry without them
-- [ ] 4.4 a stopped commitment's usual amounts are declared and it stays stopped
-- [ ] 4.5 declaring usual amounts on a commitment that is not a total is refused
-- [ ] 4.6 declaring more than five usual amounts is refused
-- [ ] 4.7 declaring two usual amounts alike is refused — catches names compared as typed
-- [ ] 4.8 declaring usual amounts on a commitment a roster does not hold is refused
-- [ ] 4.9 a roster answers usual amounts smallest first, an unnamed one before a named one of the same amount — catches a case-sensitive name order
+- [x] 4.1 a roster declares usual amounts on a total commitment and reads them back
+- [x] 4.2 declaring usual amounts puts no era on and leaves everything else about the commitment as it was — catches `declare` routed through `put(era:)`
+- [x] 4.3 a commitment's usual amounts stay through a new era, a rename, a stop and a take-up again — catches an act that forms an entry without them
+- [x] 4.4 a stopped commitment's usual amounts are declared and it stays stopped
+- [x] 4.5 declaring usual amounts on a commitment that is not a total is refused
+- [x] 4.6 declaring more than five usual amounts is refused
+- [x] 4.7 declaring two usual amounts alike is refused — catches names compared as typed
+- [x] 4.8 declaring usual amounts on a commitment a roster does not hold is refused
+- [x] 4.9 a roster answers usual amounts smallest first, an unnamed one before a named one of the same amount — catches a case-sensitive name order
 
 ## 5. `RosterStore`
 
 - [ ] 5.1 usual amounts declared through a commitments screen are held by a roster store opened afterwards at the same place — catches an era written without them
-- [ ] 5.2 a roster store holding usual amounts no total could declare is refused
-- [ ] 5.3 a roster store holding eras of one commitment declaring different usual amounts is refused
-- [ ] 5.4 a roster kept before a commitment could declare usual amounts is read with every commitment declaring none — catches a read that rewrites the place
-- [ ] 5.5 a roster store declaring a form written before usual amounts and saying something about them is refused
-- [ ] 5.6 a roster store declaring the form this app writes and saying nothing about usual amounts is refused
+- [x] 5.2 a roster store holding usual amounts no total could declare is refused
+- [x] 5.3 a roster store holding eras of one commitment declaring different usual amounts is refused
+- [x] 5.4 a roster kept before a commitment could declare usual amounts is read with every commitment declaring none — catches a read that rewrites the place
+- [x] 5.5 a roster store declaring a form written before usual amounts and saying something about them is refused
+- [x] 5.6 a roster store declaring the form this app writes and saying nothing about usual amounts is refused
 - [ ] 5.7 usual amounts declared over a roster kept before they existed are read back
 
 ## 6. `CommitmentsScreen`

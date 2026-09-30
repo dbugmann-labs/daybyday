@@ -3855,3 +3855,30 @@ func aRosterAnswersUsualAmountsSmallestFirstAnUnnamedOneBeforeANamedOneOfTheSame
             usual(45, "Chicken breast"),
         ])
 }
+
+@Test("usual amounts stay through an undo of a stop, a category, a move and a change of an era")
+func usualAmountsStayThroughAnUndoOfAStopACategoryAMoveAndAChangeOfAnEra() {
+    let protein = totalCommitment("Protein")
+    let water = totalCommitment("Water", target: 2)
+    var roster = Roster()
+    _ = roster.add(water)
+    _ = roster.add(protein)
+    roster.declare([usual(35, "Müesli")], for: protein)
+
+    _ = roster.retire(protein, keptUntil: CalendarDate(year: 2026, month: 8, day: 30)!)
+    _ = roster.add(protein)
+    #expect(roster.usualAmounts(of: protein) == [usual(35, "Müesli")])
+
+    _ = roster.put(protein, under: "Food")
+    #expect(roster.usualAmounts(of: protein) == [usual(35, "Müesli")])
+
+    _ = roster.move(protein, toOffset: 0, under: "Food")
+    #expect(roster.usualAmounts(of: protein) == [usual(35, "Müesli")])
+
+    let era = roster.eras(of: protein).first!
+    let changed = Commitment(
+        era: era, schedule: everyDay, keptFrom: era.keptFrom,
+        kind: .total(target: Commitment.Target(150)!))!
+    _ = roster.change(era, to: changed, under: "Food")
+    #expect(roster.usualAmounts(of: protein) == [usual(35, "Müesli")])
+}
