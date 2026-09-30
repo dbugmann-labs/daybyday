@@ -331,6 +331,7 @@ months later.
   `TextEditor`). The number and total entries are system alerts, whose field iOS focuses on its own as far as
   the conductor knows; asked to say otherwise, the owner kept the chore to the note alone. Decided without #361 (`chore/entry-sheet`), which the owner
   put back to draft undecided; if #361 is revived it rebuilds this sheet and must keep the focus.
+  Merged the same day as PR #364; the owner walked it on the phone.
 
 - 2026-09-30 — enter a number below zero where its range allows one (B-074) → **dropped as a want and
   recorded in `docs/open-questions.md` § *Known gaps*.** The parser takes "-3" and the specs allow a
