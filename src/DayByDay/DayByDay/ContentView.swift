@@ -92,6 +92,22 @@ private func date(from calendarDate: CalendarDate) -> Date {
     return Calendar.current.date(from: components)!
 }
 
+/// The note sheet's field, focused as the sheet opens so the keyboard rises with it. It holds
+/// its own `@FocusState`, and that is what makes the focus take on every open: the sheet's
+/// content is built fresh each time, so this view is new each time and asks for focus once its
+/// `TextEditor` is in the tree — asking from the presenter would name a field that does not
+/// exist yet (B-075).
+private struct NoteEditorField: View {
+    @Binding var text: String
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        TextEditor(text: $text)
+            .focused($focused)
+            .task { focused = true }
+    }
+}
+
 /// The Kit screen the Settings sheet is open to, wrapped so `.sheet(item:)` can drive the sheet.
 private struct OpenSettings: Identifiable {
     let id = UUID()
@@ -395,7 +411,7 @@ struct ContentView: View {
                         ZStack {
                             Color(.systemGroupedBackground)
                                 .ignoresSafeArea()
-                            TextEditor(text: $enteringNoteText)
+                            NoteEditorField(text: $enteringNoteText)
                                 .scrollContentBackground(.hidden)
                                 .padding(8)
                                 .background(
