@@ -142,3 +142,8 @@ entry opens — the owner reversed their own change once used, as W.6 left room 
 option C as the designer drew it: the field focused only when tapped. The same walk asked for a
 tighter sheet (less space under the head, around the usual amounts, and lower rows, so the five sit
 closer) and for *Add usual amount* to be offered no longer once five rows are on the sheet.
+
+**Amended again the same day, at the second G7 phone walk.** The keyboard **rises** as the entry
+opens after all — the owner's own words: "I actually prefer the keyboard being opened". The compact
+spacing around the list stays as built ("perfect"); the usual-amount rows get slightly more space
+between them than the compact build, and less than the first.
