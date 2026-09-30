@@ -897,6 +897,15 @@ from the other two entries: their blank commit is the take-back, and a total's t
 only the *last* addition, so the same gesture would silently delete something a person would have
 to remember to miss. Agreed 2026-09-08, same grill.
 
+**Usual amount** — an amount a total commitment declares as one it is often added by, with a name
+if the person gives it one: *Müesli*, 35. Its **total entry** offers each as one tap, beside the
+field and never in its place, so an amount that is not usual is still typed. Tapped, it is an
+**addition** like any typed one — the day keeps the 35 and never the name, and *Take back last*
+undoes it the same way. It belongs to the whole commitment, the way its name does and its
+**target** does not, so changing one puts no new **era** on it. A total's alone: a number replaces
+its day rather than adding to it, and its repeats are the **starting number**'s and the **short
+range**'s already. Agreed 2026-09-30 at the Feature grill of B-071.
+
 **Store** — where a value survives the app being closed and opened again: kept at a *place* the app
 names, so that whatever opens a store at that place next holds the same value. A change is kept the
 moment it is made — there is no separate moment at which a store is saved, because the app can be
