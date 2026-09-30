@@ -98,7 +98,7 @@ func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
         case .notKept:
             Text("The roster could not be read or could not be written.")
         case .stoppedCommitmentDoesNotTakeThisChange:
-            Text("Take it up again first to change anything but its name or category.")
+            Text("Take it up again first to change anything but its name, category or usual amounts.")
         case .wouldLeaveARecordedDayNotDue:
             Text("Choose a day that leaves every recorded day due.")
         case .rangeIsNotARange:
@@ -128,6 +128,12 @@ func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
             Text("That copy is damaged.")
         case .copyFromALaterVersion:
             Text("That copy is from a newer version of DayByDay.")
+        case .usualAmountIsNotAnAmount:
+            Text("That's not an amount.")
+        case .usualAmountAlike:
+            Text("You already have that one.")
+        case .moreThanFiveUsualAmounts:
+            Text("Five usual amounts at most.")
         case .nameAlreadyInUse(let name):
             // The sheet's own wording — a define and a rename alike, `grill.md` § *Settled* 6 —
             // naming the collision and the field to fix, unlike the old foot-of-sheet caption it
@@ -557,6 +563,13 @@ struct CommitmentsView: View {
 /// is open to change one, and from `screen.dayToKeepFrom` when it is open to define; either way, a
 /// refusal leaves every field exactly as it was typed rather than closing the sheet, because a
 /// rhythm built control by control is most of the work a refusal would otherwise throw away.
+/// One row of the usual amounts card, both fields as typed.
+private struct UsualAmountRow: Identifiable {
+    let id = UUID()
+    var amount: String
+    var name: String
+}
+
 private struct CommitmentSheet: View {
     let screen: CommitmentsScreen
     let changing: Commitment?
@@ -587,6 +600,9 @@ private struct CommitmentSheet: View {
     @State private var lowest: String
     @State private var highest: String
     @State private var target: String
+    /// The usual amounts card's rows, as typed: an amount and a name, each with an identity of its
+    /// own so a row taken away does not move the text of the ones after it.
+    @State private var usualAmountRows: [UsualAmountRow]
     @State private var restartDate: Date
     /// Whether a person has changed anything since the sheet opened. Set only by the `onChange`
     /// handlers below, which do not fire on the initial population, so an untouched sheet is
@@ -616,6 +632,10 @@ private struct CommitmentSheet: View {
                 && !screen.categoriesInUse.contains(initialCategory))
         _keptFromDate = State(initialValue: date(from: madeOf?.keptFrom ?? screen.dayToKeepFrom))
         _restartDate = State(initialValue: date(from: screen.dayToKeepFrom))
+        _usualAmountRows = State(
+            initialValue: (madeOf?.usualAmounts ?? []).map {
+                UsualAmountRow(amount: "\($0.amount)", name: $0.name ?? "")
+            })
 
         switch madeOf?.rhythm {
         case .weekdays(let weekdays):
@@ -696,6 +716,40 @@ private struct CommitmentSheet: View {
             return nil
         }
         return sheetRefusal.refusal
+    }
+
+    private func amountBinding(_ id: UUID) -> Binding<String> {
+        Binding(
+            get: { usualAmountRows.first { $0.id == id }?.amount ?? "" },
+            set: { newValue in
+                guard let index = usualAmountRows.firstIndex(where: { $0.id == id }) else { return }
+                usualAmountRows[index].amount = newValue
+                isEdited = true
+                screen.sheetFieldEdited(.usualAmounts)
+            })
+    }
+
+    private func nameBinding(_ id: UUID) -> Binding<String> {
+        Binding(
+            get: { usualAmountRows.first { $0.id == id }?.name ?? "" },
+            set: { newValue in
+                guard let index = usualAmountRows.firstIndex(where: { $0.id == id }) else { return }
+                usualAmountRows[index].name = newValue
+                isEdited = true
+                screen.sheetFieldEdited(.usualAmounts)
+            })
+    }
+
+    /// The refusal the screen tells under the usual amounts card that names row `index`, or `nil`.
+    private func usualAmountRefusal(under index: Int) -> CommitmentsScreen.Refusal? {
+        guard let refusal = sheetRefusal(under: .usualAmounts) else { return nil }
+        switch refusal {
+        case .usualAmountIsNotAnAmount(let place), .usualAmountAlike(let place),
+            .moreThanFiveUsualAmounts(let place):
+            return place == index ? refusal : nil
+        default:
+            return nil
+        }
     }
 
     var body: some View {
@@ -794,6 +848,38 @@ private struct CommitmentSheet: View {
                                 Image(systemName: "chevron.up.chevron.down")
                                     .foregroundStyle(Color.secondary)
                             }
+                        }
+                    }
+                }
+
+                // The usual amounts, a card of their own under the first, on a total only. Each
+                // refusal sits under the row its place names; the rows are sent as typed on Save.
+                if kindChoice == .total {
+                    Section {
+                        ForEach(Array(usualAmountRows.enumerated()), id: \.element.id) { index, row in
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    TextField("Amount", text: amountBinding(row.id))
+                                        .keyboardType(.numbersAndPunctuation)
+                                        .frame(maxWidth: 90)
+                                    TextField("Name", text: nameBinding(row.id))
+                                }
+                                if let refusal = usualAmountRefusal(under: index) {
+                                    refusalText(refusal)
+                                }
+                            }
+                            .swipeActions {
+                                Button("Delete", role: .destructive) {
+                                    usualAmountRows.removeAll { $0.id == row.id }
+                                    isEdited = true
+                                    screen.sheetFieldEdited(.usualAmounts)
+                                }
+                            }
+                        }
+                        Button("Add usual amount") {
+                            usualAmountRows.append(UsualAmountRow(amount: "", name: ""))
+                            isEdited = true
+                            screen.sheetFieldEdited(.usualAmounts)
                         }
                     }
                 }
@@ -966,6 +1052,11 @@ private struct CommitmentSheet: View {
         return restartLowerBound...upperBound
     }
 
+    /// The rows of the usual amounts card as typed, blank ones included.
+    private var typedUsualAmounts: [CommitmentsScreen.TypedUsualAmount] {
+        usualAmountRows.map { .init(amount: $0.amount, name: $0.name) }
+    }
+
     /// The `Rhythm` the form is currently offering, from whichever fields `rhythmKind` selects.
     private var rhythmBeingBuilt: Rhythm {
         switch rhythmKind {
@@ -1003,12 +1094,12 @@ private struct CommitmentSheet: View {
             refusal = screen.change(
                 commitment, toName: name, on: rhythmBeingBuilt, keptFrom: keptFrom,
                 under: category.isEmpty ? nil : category, lowest: lowest, highest: highest,
-                target: target)
+                target: target, usualAmounts: typedUsualAmounts)
         } else {
             refusal = screen.define(
                 name: name, on: rhythmBeingBuilt, keptFrom: keptFrom,
                 under: category.isEmpty ? nil : category, kind: kindChoice, lowest: lowest,
-                highest: highest, target: target)
+                highest: highest, target: target, usualAmounts: typedUsualAmounts)
         }
 
         if refusal == nil {

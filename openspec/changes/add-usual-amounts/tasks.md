@@ -72,8 +72,8 @@ unticked scenario box, write the one test named for it, watch it fail, make it p
 
 ## 8. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 8.1 `CommitmentsView`'s sheet draws the usual amounts card as `design.md` § *The shell* says: on Total only, filled from `Change.usualAmounts`, *Add usual amount* always last, a row swiped away, every edit telling `.usualAmounts` edited, each refusal under the row its `Int` names in the words given there, and the stopped refusal's words amended
-- [ ] 8.2 `ContentView`'s total entry is the half-height sheet of § *What the shell draws*, the alert gone: the field focused as it opens, the usual amounts under it, a tap calling `add(_:on:)` and closing, Save through `enter(_:on:)`, *Take back last* only where offered
+- [x] 8.1 `CommitmentsView`'s sheet draws the usual amounts card as `design.md` § *The shell* says: on Total only, filled from `Change.usualAmounts`, *Add usual amount* always last, a row swiped away, every edit telling `.usualAmounts` edited, each refusal under the row its `Int` names in the words given there, and the stopped refusal's words amended
+- [x] 8.2 `ContentView`'s total entry is the half-height sheet of § *What the shell draws*, the alert gone: the field focused as it opens, the usual amounts under it, a tap calling `add(_:on:)` and closing, Save through `enter(_:on:)`, *Take back last* only where offered
 - [ ] 8.3 The app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 9. The records
