@@ -307,6 +307,39 @@ to Wants the same day, 2026-09-30, unfixed, by the owner's choice.*
 - **Open** — counted as of the row's own date, like standing is, so a back-filled day says what that
   day could still reach?
 
+### B-076 — note something that happened to me on the day it happens, and see how often it comes
+*Captured 2026-09-30, from a braindump of two bullets folded into one entry: the look-back is "for
+this type" and has no use without the first.*
+
+> "Reporting something (e.g. Augenmigräne) - nothing that is due, but something than can be entered
+> (with notes) on any day"
+
+> "Look-back for this type: showing the dates & frequency it was noted, including option to see
+> notes"
+
+- **Trigger** — the day an Augenmigräne comes, and later, the question of how often they come and
+  what the notes said about each one.
+- **Touches** — `unclaimed`. Nothing in any capability holds a thing that is never due: `record`
+  keeps a tick, number, note or total only *on a calendar date it is due on*, and `one-off` is owed
+  once, on one date. The nearest thing today is a **note** commitment on every day: its look-back
+  already says each note under its day, newest first, and counts them, which is most of the second
+  bullet. What it lacks is the "nothing is due" — its row stands on every day, and a day without a
+  migraine reads as *not kept*. `EPIC: Daily commitments` (#1) is "the commitments you owe
+  yourself", and this is not one, so promoting it is a second Epic or an amended outcome.
+- **Principle** — tested against *five percent of seven things*: **passes.** It makes a new kind of
+  record possible — something that happens rather than something owed — instead of deepening one
+  that exists.
+- **Open** — is this a commitment of a new rhythm ("never due, open on any day"), or a different
+  thing from a commitment altogether? The first reuses the roster, the look-back and the note; the
+  second keeps "commitment" meaning what you owe.
+- **Open** — where is it entered? *Entered where you stand* puts every daily entry in a day
+  screen's row, and a row for something not due is what *offered* was landed to keep off the screen.
+  A row on every day, a row only on days it holds something plus a way to add one, or something else.
+- **Open** — is the note required, optional, or is the entry itself the fact and the note an extra?
+  "with notes" reads as optional.
+- **Open** — what is frequency: a count per month like a tick's look-back, the days between
+  occurrences, or the dates alone? And more than one on a day — once per day, or each one?
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
