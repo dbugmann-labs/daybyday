@@ -31,11 +31,21 @@ public struct DayView: Hashable, Sendable {
         public let note: String?
     }
 
+    /// A usual amount a total entry offers, said in this package's own words: the amount as
+    /// declared with no digit added or dropped, and the name or none.
+    public struct UsualAmount: Hashable, Sendable {
+        public let amount: String
+        public let name: String?
+    }
+
     /// What a total commitment's row offers in a tick's place.
     public struct TotalEntry: Hashable, Sendable {
         /// The day's sum and the commitment's target, in this package's own words — "150 of
         /// 120".
         public let soFarOfTarget: String
+        /// The usual amounts the commitment declares now, smallest first, as a roster answers
+        /// them — empty where it declares none.
+        public let usualAmounts: [UsualAmount]
     }
 
     /// What a row makes of an amount committed in its total entry.
@@ -73,6 +83,13 @@ public struct DayView: Hashable, Sendable {
         /// The sum the history the day view was formed from has added for this row's commitment
         /// on this row's date. Not given back by anything but `totalEntry(asOf:)`.
         let total: Decimal
+
+        /// The usual amounts this row's commitment declares as the roster the day view was
+        /// formed from answers them, read at formation and part of the row — a commitment's
+        /// identity is all its equality is, so a change of usual amounts alone would otherwise
+        /// leave a row equal to the one before it. Not given back by anything but
+        /// `totalEntry(asOf:)`.
+        let usualAmounts: [UsualAmount]
 
         /// This row's commitment's standing on a weekly quota — the days of its week, from its
         /// Monday through this row's date, that a weekly-quota era of the commitment's chain
@@ -185,7 +202,8 @@ public struct DayView: Hashable, Sendable {
                 return nil
             }
 
-            return TotalEntry(soFarOfTarget: "\(total) of \(target.amount)")
+            return TotalEntry(
+                soFarOfTarget: "\(total) of \(target.amount)", usualAmounts: usualAmounts)
         }
 
         /// What this row makes of `amount` — an addition of this row's commitment on this row's
@@ -442,6 +460,9 @@ public struct DayView: Hashable, Sendable {
                             for: commitment, heldNumber: number, on: date, in: history),
                         note: history.note(for: commitment, on: date),
                         total: history.total(for: commitment, on: date),
+                        usualAmounts: (roster?.usualAmounts(of: commitment) ?? []).map {
+                            UsualAmount(amount: "\($0.amount)", name: $0.name)
+                        },
                         weekStanding: weekStanding)
                 }
             guard !rows.isEmpty else {

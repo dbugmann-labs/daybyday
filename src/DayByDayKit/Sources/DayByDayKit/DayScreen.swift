@@ -1146,6 +1146,49 @@ public final class DayScreen {
         copyPlace?.keptAChange()
     }
 
+    /// Adds `usualAmount`, one of the usual amounts `row`'s total entry says, as an addition of
+    /// its amount on `row`'s day, and keeps the change before `dayView` says so; the day keeps the
+    /// amount and never the name. Asks for no confirmation and adds once each time it is asked.
+    /// Does nothing when `row` is not one this screen's day view holds, when this screen is not
+    /// keeping a record, when `row` offers no total entry as of `today`, or when `usualAmount` is
+    /// not one that entry says. Throws when the change could not be kept at the record's place,
+    /// leaving `dayView` as it was and telling on `row` naming no cause; an amount that would
+    /// take the day's sum past what can be kept exactly keeps nothing and is told on `row` as
+    /// too large to add.
+    public func add(_ usualAmount: DayView.UsualAmount, on row: DayView.Row) throws {
+        guard dayView.rows.contains(row) else {
+            return
+        }
+        guard let recordStore else {
+            return
+        }
+        guard let entry = row.totalEntry(asOf: today), entry.usualAmounts.contains(usualAmount),
+            let amount = Decimal(string: usualAmount.amount, locale: nil),
+            let record = row.totalRecord(amount, asOf: today)
+        else {
+            return
+        }
+
+        switch record {
+        case .addition(let addition):
+            do {
+                try recordStore.add(addition)
+            } catch {
+                notice = Notice(row: row)
+                throw error
+            }
+        case .notAboveZero:
+            return
+        case .tooLargeToAdd:
+            notice = Notice(row: row, cause: "Too large to add")
+            return
+        }
+        notice = nil
+
+        dayView = dayViewOfShownDay()
+        copyPlace?.keptAChange()
+    }
+
     /// Takes back the last addition `row`'s day holds, and keeps the change before `dayView`
     /// says so. Does nothing when `row` is not one this screen's day view holds, when this screen
     /// is not keeping a record, or when `row` offers no take-back as of `today`. Throws when the

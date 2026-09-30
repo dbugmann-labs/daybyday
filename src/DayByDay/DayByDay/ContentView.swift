@@ -108,6 +108,20 @@ private struct NoteEditorField: View {
     }
 }
 
+/// The total entry's Amount field, focused as the sheet opens so the keyboard is up. Like
+/// `NoteEditorField` it holds its own `@FocusState`, so the focus takes on every open.
+private struct TotalAmountField: View {
+    @Binding var text: String
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        TextField("Amount", text: $text)
+            .keyboardType(.decimalPad)
+            .focused($focused)
+            .task { focused = true }
+    }
+}
+
 /// The Kit screen the Settings sheet is open to, wrapped so `.sheet(item:)` can drive the sheet.
 private struct OpenSettings: Identifiable {
     let id = UUID()
@@ -455,16 +469,13 @@ struct ContentView: View {
                     }
                 }
             }
-            // A total takes an amount in an alert over the day, the same way a number entry takes
-            // a number, rather than in a sheet that replaces the day with a screen. Adding to a
-            // running total is a few keystrokes against a number you already know, and the sheet
-            // spent a whole screen and two navigation animations on them. The message says what
-            // the row was saying — `soFarOfTarget`, the package's own words — because the alert
-            // now covers the row that said it. Nothing here decides anything: the amount still
-            // goes to `DayScreen.enter(_:on:)` as typed and the take-back is still offered exactly
-            // where `offersTakeBackLast(asOf:)` says it is, which is what the sheet did too.
-            .alert(
-                enteringTotalRow?.name ?? "",
+            // A total takes an amount in a half-height sheet over the dimmed day: the row's name
+            // with `soFarOfTarget` under it, the amount field focused as it opens so the keyboard is up, the row's usual
+            // amounts under it — a tap adds one and closes — and *Take back last* below, where
+            // `offersTakeBackLast(asOf:)` says it is. Nothing here decides anything: every word
+            // and every amount is the Kit's, the field's text still goes to `enter(_:on:)` as
+            // typed and a usual amount to `add(_:on:)`. `design.md` § *What the shell draws*.
+            .sheet(
                 isPresented: Binding(
                     get: { enteringTotalRow != nil },
                     set: { isPresented in
@@ -472,27 +483,69 @@ struct ContentView: View {
                             enteringTotalRow = nil
                         }
                     }
-                ),
-                presenting: enteringTotalRow
-            ) { row in
-                TextField("Amount", text: $enteringTotalText)
-                    .keyboardType(.decimalPad)
-                Button("Save") {
-                    keeping { try screen.enter(enteringTotalText, on: row) }
-                    enteringTotalRow = nil
-                }
-                if row.offersTakeBackLast(asOf: today()) {
-                    Button("Take back last", role: .destructive) {
-                        keeping { try screen.takeBackLast(on: row) }
-                        enteringTotalRow = nil
+                )
+            ) {
+                if let row = enteringTotalRow {
+                    let totalEntry = row.totalEntry(asOf: today())
+                    NavigationStack {
+                        Form {
+                            Section {
+                                TotalAmountField(text: $enteringTotalText)
+                            }
+                            if let totalEntry, !totalEntry.usualAmounts.isEmpty {
+                                Section {
+                                    ForEach(totalEntry.usualAmounts, id: \.self) { usualAmount in
+                                        Button {
+                                            keeping { try screen.add(usualAmount, on: row) }
+                                            enteringTotalRow = nil
+                                        } label: {
+                                            HStack {
+                                                Text(usualAmount.amount)
+                                                    .frame(minWidth: 56, alignment: .leading)
+                                                if let name = usualAmount.name {
+                                                    Text(name)
+                                                }
+                                                Spacer()
+                                            }
+                                            .contentShape(Rectangle())
+                                        }
+                                        .listRowInsets(
+                                            EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+                                        )
+                                        .foregroundStyle(.primary)
+                                    }
+                                }
+                            }
+                            if row.offersTakeBackLast(asOf: today()) {
+                                Section {
+                                    Button("Take back last", role: .destructive) {
+                                        keeping { try screen.takeBackLast(on: row) }
+                                        enteringTotalRow = nil
+                                    }
+                                }
+                            }
+                        }
+                        .listSectionSpacing(.compact)
+                        .contentMargins(.top, 0, for: .scrollContent)
+                        .environment(\.defaultMinListRowHeight, 32)
+                        .navigationTitle(row.name)
+                        .navigationSubtitle(totalEntry?.soFarOfTarget ?? "")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Cancel") {
+                                    enteringTotalRow = nil
+                                }
+                            }
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Save") {
+                                    keeping { try screen.enter(enteringTotalText, on: row) }
+                                    enteringTotalRow = nil
+                                }
+                            }
+                        }
                     }
-                }
-                Button("Cancel", role: .cancel) {
-                    enteringTotalRow = nil
-                }
-            } message: { row in
-                if let totalEntry = row.totalEntry(asOf: today()) {
-                    Text(totalEntry.soFarOfTarget)
+                    .presentationDetents([.medium])
                 }
             }
         }

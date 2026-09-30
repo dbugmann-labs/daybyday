@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import DayByDayKit
 
@@ -3664,4 +3665,220 @@ func stoppingACommitmentAsOfADayBeforeItsNewestEraBeganStopsTheEraBehindIt() {
     #expect(deepRoster.eras(of: reading).count == 1)
     #expect(deepRoster.commitments(on: deepStopDay) == [reading])
     #expect(deepRoster.commitments(on: CalendarDate(year: 2026, month: 8, day: 28)!).isEmpty)
+}
+
+private let everyDay = Schedule.weekdays([
+    .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+])
+
+private func totalCommitment(_ name: String, target: Decimal = 120)
+    -> Commitment
+{
+    Commitment(
+        name: name, schedule: everyDay, keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!,
+        kind: .total(target: Commitment.Target(target)!))!
+}
+
+private func usual(_ amount: Decimal, _ name: String? = nil) -> Commitment.UsualAmount {
+    Commitment.UsualAmount(amount, named: name)!
+}
+
+@Test("a roster declares usual amounts on a total commitment and reads them back")
+func aRosterDeclaresUsualAmountsOnATotalCommitmentAndReadsThemBack() {
+    let protein = totalCommitment("Protein")
+    var roster = Roster()
+    _ = roster.add(protein)
+
+    let declared = roster.declare([usual(20), usual(35, "Müesli")], for: protein)
+
+    #expect(declared)
+    #expect(roster.usualAmounts(of: protein) == [usual(20), usual(35, "Müesli")])
+
+    let creatine = totalCommitment("Creatine")
+    _ = roster.add(creatine)
+    #expect(roster.usualAmounts(of: creatine).isEmpty)
+
+    roster.declare([], for: protein)
+    #expect(roster.usualAmounts(of: protein).isEmpty)
+}
+
+@Test("declaring usual amounts puts no era on and leaves everything else about the commitment as it was")
+func declaringUsualAmountsPutsNoEraOnAndLeavesEverythingElseAboutTheCommitmentAsItWas() {
+    let waterPlants = Commitment(
+        name: "Water plants", schedule: everyDay, keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    let protein = totalCommitment("Protein")
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(protein, under: "Food")
+
+    roster.declare([usual(35, "Müesli")], for: protein)
+
+    let eras = roster.eras(of: protein)
+    #expect(eras.count == 1)
+    #expect(eras.first?.name == "Protein")
+    #expect(eras.first?.keptFrom == CalendarDate(year: 2026, month: 1, day: 1)!)
+    #expect(eras.first?.kind == .total(target: Commitment.Target(120)!))
+    #expect(eras.first?.rhythmInWords == everyDay.inWords)
+    #expect(roster.commitments == [waterPlants, protein])
+    #expect(roster.groups.map(\.category) == [nil, "Food"] || roster.groups.map(\.category) == ["Food", nil])
+    #expect(roster.groups.first { $0.category == "Food" }?.commitments == [protein])
+    #expect(roster.usualAmounts(of: waterPlants).isEmpty)
+}
+
+@Test("a commitment's usual amounts stay through a new era, a rename, a stop and a take-up again")
+func aCommitmentsUsualAmountsStayThroughANewEraARenameAStopAndATakeUpAgain() {
+    let protein = totalCommitment("Protein")
+    var roster = Roster()
+    _ = roster.add(protein)
+    roster.declare([usual(35, "Müesli")], for: protein)
+
+    let newEra = Commitment(
+        era: protein, schedule: everyDay, keptFrom: CalendarDate(year: 2026, month: 9, day: 1)!,
+        kind: .total(target: Commitment.Target(150)!))!
+    let putOn = roster.put(
+        era: newEra, on: protein, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!,
+        under: nil)
+    let renamed = roster.rename(protein, to: "Protein intake")
+    let stopped = roster.retire(protein, keptUntil: CalendarDate(year: 2026, month: 9, day: 30)!)
+    let takenUp = roster.keepAgain(protein, from: CalendarDate(year: 2026, month: 10, day: 5)!)
+    #expect(putOn && renamed && stopped && takenUp)
+
+    #expect(roster.usualAmounts(of: protein) == [usual(35, "Müesli")])
+    let earliest = roster.eras(of: protein).last!
+    #expect(roster.usualAmounts(of: earliest) == [usual(35, "Müesli")])
+    #expect(roster.entries.allSatisfy { $0.usualAmounts == [usual(35, "Müesli")] })
+}
+
+@Test("a stopped commitment's usual amounts are declared and it stays stopped")
+func aStoppedCommitmentsUsualAmountsAreDeclaredAndItStaysStopped() {
+    let protein = totalCommitment("Protein")
+    var roster = Roster()
+    _ = roster.add(protein)
+    _ = roster.retire(protein, keptUntil: CalendarDate(year: 2026, month: 8, day: 30)!)
+
+    let declared = roster.declare([usual(20)], for: protein)
+
+    #expect(declared)
+    #expect(roster.stopped == [protein])
+    #expect(roster.usualAmounts(of: protein) == [usual(20)])
+    #expect(roster.commitments.isEmpty)
+}
+
+@Test("declaring usual amounts on a commitment that is not a total is refused")
+func declaringUsualAmountsOnACommitmentThatIsNotATotalIsRefused() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: everyDay, keptFrom: keptFrom, kind: .tick)!
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 40, highest: 150)))!
+    let journal = Commitment(name: "Journal", schedule: everyDay, keptFrom: keptFrom, kind: .note)!
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.add(weight)
+    _ = roster.add(journal)
+    let untouched = roster
+
+    let results = [gym, weight, journal].map { roster.declare([usual(20)], for: $0) }
+
+    #expect(results == [false, false, false])
+    #expect(roster == untouched)
+    #expect(roster.entries.allSatisfy { $0.usualAmounts.isEmpty })
+}
+
+@Test("declaring more than five usual amounts is refused")
+func declaringMoreThanFiveUsualAmountsIsRefused() {
+    let protein = totalCommitment("Protein")
+    var roster = Roster()
+    _ = roster.add(protein)
+
+    let six = roster.declare([10, 20, 30, 40, 50, 60].map { usual($0) }, for: protein)
+
+    #expect(!six)
+    #expect(roster.usualAmounts(of: protein).isEmpty)
+    let five = roster.declare([10, 20, 30, 40, 50].map { usual($0) }, for: protein)
+    #expect(five)
+}
+
+@Test("declaring two usual amounts alike is refused")
+func declaringTwoUsualAmountsAlikeIsRefused() {
+    let protein = totalCommitment("Protein")
+    var roster = Roster()
+    _ = roster.add(protein)
+
+    let names = roster.declare([usual(35, "Müesli"), usual(35, " MÜESLI ")], for: protein)
+    #expect(!names)
+    #expect(roster.usualAmounts(of: protein).isEmpty)
+
+    let unnamed = roster.declare([usual(20), usual(Decimal(string: "20.0")!)], for: protein)
+    #expect(!unnamed)
+
+    let three = roster.declare([usual(35, "Müesli"), usual(35, "Muesli"), usual(35)], for: protein)
+    #expect(three)
+}
+
+@Test("declaring usual amounts on a commitment a roster does not hold is refused")
+func declaringUsualAmountsOnACommitmentARosterDoesNotHoldIsRefused() {
+    let protein = totalCommitment("Protein")
+    let creatine = totalCommitment("Creatine", target: 5)
+    var roster = Roster()
+    _ = roster.add(protein)
+    _ = roster.add(creatine)
+    _ = roster.delete(creatine)
+    let afterDelete = roster
+
+    let deleted = roster.declare([usual(5)], for: creatine)
+    #expect(!deleted)
+    #expect(roster == afterDelete)
+
+    let neverHeld = totalCommitment("Protein")
+    let unheld = roster.declare([usual(5)], for: neverHeld)
+    #expect(!unheld)
+    #expect(roster == afterDelete)
+}
+
+@Test("a roster answers usual amounts smallest first, an unnamed one before a named one of the same amount")
+func aRosterAnswersUsualAmountsSmallestFirstAnUnnamedOneBeforeANamedOneOfTheSameAmount() {
+    let protein = totalCommitment("Protein")
+    var roster = Roster()
+    _ = roster.add(protein)
+
+    let declared = roster.declare(
+        [
+            usual(45, "Chicken breast"), usual(35, "Müesli"), usual(20), usual(35, "almonds"),
+            usual(35),
+        ], for: protein)
+
+    #expect(declared)
+    #expect(
+        roster.usualAmounts(of: protein) == [
+            usual(20), usual(35), usual(35, "almonds"), usual(35, "Müesli"),
+            usual(45, "Chicken breast"),
+        ])
+}
+
+@Test("usual amounts stay through an undo of a stop, a category, a move and a change of an era")
+func usualAmountsStayThroughAnUndoOfAStopACategoryAMoveAndAChangeOfAnEra() {
+    let protein = totalCommitment("Protein")
+    let water = totalCommitment("Water", target: 2)
+    var roster = Roster()
+    _ = roster.add(water)
+    _ = roster.add(protein)
+    roster.declare([usual(35, "Müesli")], for: protein)
+
+    _ = roster.retire(protein, keptUntil: CalendarDate(year: 2026, month: 8, day: 30)!)
+    _ = roster.add(protein)
+    #expect(roster.usualAmounts(of: protein) == [usual(35, "Müesli")])
+
+    _ = roster.put(protein, under: "Food")
+    #expect(roster.usualAmounts(of: protein) == [usual(35, "Müesli")])
+
+    _ = roster.move(protein, toOffset: 0, under: "Food")
+    #expect(roster.usualAmounts(of: protein) == [usual(35, "Müesli")])
+
+    let era = roster.eras(of: protein).first!
+    let changed = Commitment(
+        era: era, schedule: everyDay, keptFrom: era.keptFrom,
+        kind: .total(target: Commitment.Target(150)!))!
+    _ = roster.change(era, to: changed, under: "Food")
+    #expect(roster.usualAmounts(of: protein) == [usual(35, "Müesli")])
 }

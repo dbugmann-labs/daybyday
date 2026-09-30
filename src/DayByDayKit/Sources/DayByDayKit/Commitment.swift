@@ -27,6 +27,22 @@ public struct Commitment: Sendable {
         var uuidString: String { value.uuidString }
     }
 
+    /// An amount a total commitment offers to add in one tap, with the name a person gave it or
+    /// none. `openspec/changes/add-usual-amounts/design.md` § *The seam*.
+    public struct UsualAmount: Hashable, Sendable {
+        public let amount: Decimal
+        public let name: String?
+
+        public init?(_ amount: Decimal, named name: String?) {
+            guard amount > 0 else {
+                return nil
+            }
+
+            self.amount = amount
+            self.name = name.flatMap { Blank.saysNothing($0) ? nil : $0 }
+        }
+    }
+
     public let identity: Identity
     public let name: String
     let schedule: Schedule

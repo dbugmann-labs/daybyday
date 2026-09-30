@@ -458,6 +458,14 @@ public final class CommitmentsScreen {
         /// carrying that commitment's name exactly as the roster holds it. `design.md` § *The
         /// seam*. Declared for § 1.5; § 10 gives it its behaviour.
         case nameAlreadyInUse(String)
+        /// A usual amount typed whose amount is blank or not a number above zero, naming its
+        /// place in the list handed in, from zero, blank rows counted. `design.md` § *One sheet
+        /// field, and the refusal names the row*.
+        case usualAmountIsNotAnAmount(Int)
+        /// A usual amount typed alike with one typed before it, naming its place as above.
+        case usualAmountAlike(Int)
+        /// The sixth usual amount typed, naming its place as above.
+        case moreThanFiveUsualAmounts(Int)
     }
 
     /// A field of the sheet a commitments screen draws — a define, a change or a restart form —
@@ -467,6 +475,8 @@ public final class CommitmentsScreen {
     /// field, and the foot is no field at all*.
     public enum SheetField: Equatable, Sendable {
         case name, rhythm, keptFrom, range, target, restartDay
+        /// The whole card of usual amounts: a row added or taken away is an edit of it.
+        case usualAmounts
     }
 
     /// A refusal told on a commitments screen's sheet, and which field of it the refusal is about
@@ -533,7 +543,7 @@ public final class CommitmentsScreen {
         public let category: String?
         /// `false` for a commitment its roster has stopped keeping: it has no days left for a
         /// rhythm, a kept-from day, a range or a target to decide about, so the only change it
-        /// takes is to its name and its category. `openspec/changes/change-range-and-target
+        /// takes is to its name, its category and its usual amounts. `openspec/changes/change-range-and-target
         /// /design.md` § *Two members renamed*.
         public let canChangeMoreThanNameAndCategory: Bool
         /// The kind this commitment's days take, with the range or the target that kind
@@ -544,6 +554,26 @@ public final class CommitmentsScreen {
         /// its schedule is an interval of days, `false` otherwise.
         /// `openspec/changes/add-interval-restart/design.md` § *The seam*.
         public let canRestart: Bool
+        /// The usual amounts this commitment declares, smallest first — none for a kind that is
+        /// not a total.
+        public let usualAmounts: [Commitment.UsualAmount]
+    }
+
+    /// Whether another usual amount is offered after `typed`: only while fewer than five rows are
+    /// on the sheet, blank ones counted. It changes nothing a define or a change refuses.
+    public func offersAnotherUsualAmount(after typed: [TypedUsualAmount]) -> Bool {
+        typed.count < 5
+    }
+
+    /// A usual amount as a person typed it: the amount and the name, both as text.
+    public struct TypedUsualAmount: Equatable, Sendable {
+        public let amount: String
+        public let name: String
+
+        public init(amount: String, name: String) {
+            self.amount = amount
+            self.name = name
+        }
     }
 
     /// Forms a commitment from `name`, the schedule `rhythm` names when kept from `keptFrom`,
@@ -554,7 +584,8 @@ public final class CommitmentsScreen {
     /// ignored*.
     public func define(
         name: String, on rhythm: Rhythm, keptFrom: CalendarDate, under category: String?,
-        kind: KindChoice = .tick, lowest: String = "", highest: String = "", target: String = ""
+        kind: KindChoice = .tick, lowest: String = "", highest: String = "", target: String = "",
+        usualAmounts: [TypedUsualAmount] = []
     ) -> Refusal? {
         if case .weekdays(let weekdays) = rhythm, weekdays.isEmpty {
             refuse(.defining(.dueOnNoDay), on: .rhythm)
@@ -595,6 +626,17 @@ public final class CommitmentsScreen {
             }
         }
 
+        var declared: [Commitment.UsualAmount] = []
+        if case .total = formedKind {
+            switch Self.usualAmounts(from: usualAmounts) {
+            case .success(let read):
+                declared = read
+            case .failure(let refusal):
+                refuse(.defining(refusal), on: .usualAmounts)
+                return refusal
+            }
+        }
+
         let commitment = Commitment(name: name, schedule: schedule, keptFrom: keptFrom, kind: formedKind)!
 
         guard let rosterStore else {
@@ -603,11 +645,19 @@ public final class CommitmentsScreen {
         }
 
         do {
-            guard try rosterStore.add(commitment, under: category) else {
+            var nextRoster = rosterStore.roster
+            guard nextRoster.add(commitment, under: category) else {
                 let refusal = Refusal.nameAlreadyInUse(Self.nameAlreadyHeld(name, among: kept + stopped))
                 refuse(.defining(refusal), on: .name)
                 return refusal
             }
+            // Through `Roster.declare`, never a hand-built entry: it holds the five and the alike
+            // checks and answers smallest first. One write, so a place that cannot be written
+            // leaves neither the commitment nor its usual amounts kept.
+            if !declared.isEmpty {
+                nextRoster.declare(declared, for: commitment)
+            }
+            try rosterStore.replace(with: nextRoster)
         } catch {
             refuse(.defining(.notKept), on: nil)
             return .notKept
@@ -626,6 +676,33 @@ public final class CommitmentsScreen {
     private enum Reading<Value> {
         case success(Value)
         case failure(Refusal)
+    }
+
+    /// `typed` read as the usual amounts a total declares: a row with both fields blank is no
+    /// usual amount and is left out; any other reads as an amount above zero, as a target is
+    /// read. Every refusal names the row by its place in `typed`, blank rows counted.
+    private static func usualAmounts(
+        from typed: [TypedUsualAmount]
+    ) -> Reading<[Commitment.UsualAmount]> {
+        var read: [Commitment.UsualAmount] = []
+        for (index, row) in typed.enumerated() {
+            if Blank.saysNothing(row.amount), Blank.saysNothing(row.name) {
+                continue
+            }
+            guard case .number(let value) = TypedNumber.read(row.amount),
+                let usualAmount = Commitment.UsualAmount(value, named: row.name)
+            else {
+                return .failure(.usualAmountIsNotAnAmount(index))
+            }
+            guard !read.contains(where: { Roster.holdsTwoAlike([$0, usualAmount]) }) else {
+                return .failure(.usualAmountAlike(index))
+            }
+            guard read.count < 5 else {
+                return .failure(.moreThanFiveUsualAmounts(index))
+            }
+            read.append(usualAmount)
+        }
+        return .success(read)
     }
 
     /// `lowest` and `highest` read as a range for the number kind — `nil` where both are blank,
@@ -724,7 +801,8 @@ public final class CommitmentsScreen {
             name: newest.name, rhythm: Rhythm(newest.schedule), keptFrom: keptFrom,
             category: entry.category, canChangeMoreThanNameAndCategory: entry.keptUntil == nil,
             kind: newest.kind,
-            canRestart: entry.keptUntil == nil && Self.isIntervalSchedule(newest.schedule))
+            canRestart: entry.keptUntil == nil && Self.isIntervalSchedule(newest.schedule),
+            usualAmounts: entry.usualAmounts)
     }
 
     /// Whether `schedule` is an interval of days — the one rhythm a restart applies to.
@@ -828,7 +906,8 @@ public final class CommitmentsScreen {
             era: earliestCommitment, schedule: rebuiltSchedule, keptFrom: newKeptFrom,
             kind: earliestCommitment.kind)!
         roster.entries[earliestSurvivingIndex] = Roster.Entry(
-            commitment: rebuilt, keptUntil: earliestEntry.keptUntil, category: earliestEntry.category)
+            commitment: rebuilt, keptUntil: earliestEntry.keptUntil, category: earliestEntry.category,
+            usualAmounts: earliestEntry.usualAmounts)
 
         for index in toDrop.sorted(by: >) {
             roster.entries.remove(at: index)
@@ -861,7 +940,9 @@ public final class CommitmentsScreen {
 
     /// Changes `commitment`, on either of this screen's lists, for the commitment `name`,
     /// `rhythm`, `keptFrom` and, where its kind has room for one, `lowest`/`highest` or `target`
-    /// name, under `category`. Works out from those which of three acts the change needs, doing
+    /// name, under `category`, and `usualAmounts` where `commitment` is a total — `nil` being the
+    /// ones it already declares, declared through `Roster.declare` on every era the save leaves and
+    /// putting no era on. Works out from those which of three acts the change needs, doing
     /// each it needs and no other, at the roster place alone: a different name renames the
     /// commitment through every era of it; a different day kept from changes its earliest era
     /// for one kept from that day; a different rhythm, range or target puts a new era on it, kept
@@ -883,7 +964,8 @@ public final class CommitmentsScreen {
     /// tells each refusal apart, and changes nothing it has deleted*.
     public func change(
         _ commitment: Commitment, toName name: String, on rhythm: Rhythm, keptFrom: CalendarDate,
-        under category: String?, lowest: String? = nil, highest: String? = nil, target: String? = nil
+        under category: String?, lowest: String? = nil, highest: String? = nil, target: String? = nil,
+        usualAmounts: [TypedUsualAmount]? = nil
     ) -> Refusal? {
         guard kept.contains(commitment) || stopped.contains(commitment) else {
             return nil
@@ -931,6 +1013,23 @@ public final class CommitmentsScreen {
             return refusal
         }
         let sameKind = newKind == currentCommitment.kind
+
+        // Read after the target and before the stopped guard and the roster, as `define` reads
+        // them; `nil` is the usual amounts the commitment already declares, and a kind that is not
+        // a total ignores them. `design.md` § *One sheet field, and the refusal names the row*.
+        var declaredUsualAmounts: [Commitment.UsualAmount]?
+        if let usualAmounts, case .total = currentCommitment.kind {
+            switch Self.usualAmounts(from: usualAmounts) {
+            case .success(let read):
+                declaredUsualAmounts = Roster.smallestFirst(read)
+            case .failure(let refusal):
+                refuse(.changing(commitment, refusal), on: .usualAmounts)
+                return refusal
+            }
+        }
+        let usualAmountsChanged =
+            declaredUsualAmounts.map { $0 != entry.usualAmounts } ?? false
+
         let ambiguousField = Self.ambiguousField(
             askedRhythm: rhythm, askedKeptFrom: keptFrom, askedKind: newKind,
             currentRhythm: Rhythm(currentCommitment.schedule), currentKeptFrom: currentKeptFrom,
@@ -945,9 +1044,11 @@ public final class CommitmentsScreen {
         let normalizedCategory = Self.normalizedCategory(category)
         let putsNewEra = !sameRhythm || !sameKind
 
-        guard nameChanged || keptFromChanged || putsNewEra || normalizedCategory != entry.category
+        guard
+            nameChanged || keptFromChanged || putsNewEra || normalizedCategory != entry.category
+                || usualAmountsChanged
         else {
-            // The five things name what is already there, and the category it is already
+            // The six things name what is already there, and the category it is already
             // under: change nothing, write nothing, refuse nothing.
             return nil
         }
@@ -1003,7 +1104,8 @@ public final class CommitmentsScreen {
                 let survivor = candidateRoster.entries[identityStart + 1]
                 candidateRoster.entries.remove(at: identityStart)
                 candidateRoster.entries[identityStart] = Roster.Entry(
-                    commitment: survivor.commitment, keptUntil: nil, category: normalizedCategory)
+                    commitment: survivor.commitment, keptUntil: nil, category: normalizedCategory,
+                    usualAmounts: survivor.usualAmounts)
             }
 
             nextRoster = candidateRoster
@@ -1019,7 +1121,13 @@ public final class CommitmentsScreen {
             let existing = nextRoster.entries[index]
             nextRoster.entries[index] = Roster.Entry(
                 commitment: existing.commitment, keptUntil: existing.keptUntil,
-                category: normalizedCategory)
+                category: normalizedCategory, usualAmounts: existing.usualAmounts)
+        }
+
+        if usualAmountsChanged, let declaredUsualAmounts {
+            // Through `Roster.declare`, on every era the save leaves and after every act above,
+            // so an era put on by this same save carries them too.
+            nextRoster.declare(declaredUsualAmounts, for: commitment)
         }
 
         if let recordStore,

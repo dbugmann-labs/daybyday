@@ -6,6 +6,10 @@ public struct Roster: Hashable, Sendable {
         let commitment: Commitment
         let keptUntil: CalendarDate?
         let category: String?
+        /// The usual amounts the commitment declares, written alike on every era of it and held
+        /// smallest first. `openspec/changes/add-usual-amounts/design.md` § *Usual amounts are the
+        /// roster's*.
+        let usualAmounts: [Commitment.UsualAmount]
     }
 
     var entries: [Entry]
@@ -130,6 +134,86 @@ public struct Roster: Hashable, Sendable {
         return groups
     }
 
+    /// The usual amounts `commitment` declares, smallest first — none where it declares none or
+    /// this roster does not hold it.
+    public func usualAmounts(of commitment: Commitment) -> [Commitment.UsualAmount] {
+        entries.first { $0.commitment.identity == commitment.identity }?.usualAmounts ?? []
+    }
+
+    /// Declares `usualAmounts` on `commitment`, kept or stopped, writing them on every era of it
+    /// in place of the ones it held, and answers `true`. Puts no era on and changes nothing else.
+    @discardableResult
+    public mutating func declare(
+        _ usualAmounts: [Commitment.UsualAmount], for commitment: Commitment
+    ) -> Bool {
+        guard
+            let newest = entries.first(where: { $0.commitment.identity == commitment.identity }),
+            Self.couldDeclare(usualAmounts, on: newest.commitment.kind)
+        else {
+            return false
+        }
+
+        let smallestFirst = Self.smallestFirst(usualAmounts)
+
+        for index in entries.indices
+        where entries[index].commitment.identity == commitment.identity {
+            entries[index] = Entry(
+                commitment: entries[index].commitment, keptUntil: entries[index].keptUntil,
+                category: entries[index].category, usualAmounts: smallestFirst)
+        }
+        return true
+    }
+
+    /// Whether a commitment of `kind` could declare `usualAmounts`: it is a total, the list holds
+    /// no more than five, and no two in it are alike. Package-internal: `RosterDocument` asks it of
+    /// what a stored roster says.
+    static func couldDeclare(_ usualAmounts: [Commitment.UsualAmount], on kind: Commitment.Kind)
+        -> Bool
+    {
+        guard case .total = kind else {
+            return false
+        }
+        return usualAmounts.count <= 5 && !holdsTwoAlike(usualAmounts)
+    }
+
+    /// `usualAmounts` smallest amount first; of two with one amount the unnamed first, and two
+    /// names character by character with case and blank space at either end disregarded.
+    static func smallestFirst(_ usualAmounts: [Commitment.UsualAmount]) -> [Commitment.UsualAmount]
+    {
+        usualAmounts.sorted { lhs, rhs in
+            if lhs.amount != rhs.amount {
+                return lhs.amount < rhs.amount
+            }
+            switch (lhs.name, rhs.name) {
+            case (nil, _?):
+                return true
+            case (let lhsName?, let rhsName?):
+                return Blank.trimmed(lhsName).lowercased() < Blank.trimmed(rhsName).lowercased()
+            default:
+                return false
+            }
+        }
+    }
+
+    /// Whether two of `usualAmounts` are alike: their amounts equal and either neither named or
+    /// their names one name, as two commitment names are one — `sameName`. Package-internal:
+    /// `CommitmentsScreen` reads a typed usual amount against those already read by it.
+    static func holdsTwoAlike(_ usualAmounts: [Commitment.UsualAmount]) -> Bool {
+        for (index, first) in usualAmounts.enumerated() {
+            for second in usualAmounts[(index + 1)...] where first.amount == second.amount {
+                switch (first.name, second.name) {
+                case (nil, nil):
+                    return true
+                case (let lhs?, let rhs?) where sameName(lhs, rhs):
+                    return true
+                default:
+                    continue
+                }
+            }
+        }
+        return false
+    }
+
     /// Adds `commitment` after every commitment already held, and answers `true`. When this
     /// roster holds it stopped, takes it up again in the place it has — clearing the day it was
     /// kept until — and answers `true`. Answers `false` and changes nothing when this roster is
@@ -191,13 +275,15 @@ public struct Roster: Hashable, Sendable {
 
             entries[index] = Entry(
                 commitment: entries[index].commitment, keptUntil: nil,
-                category: category(entries[index].category))
+                category: category(entries[index].category),
+                usualAmounts: entries[index].usualAmounts)
             emptied = false
             return true
         }
 
         entries.append(
-            Entry(commitment: commitment, keptUntil: nil, category: category(nil)))
+            Entry(
+                commitment: commitment, keptUntil: nil, category: category(nil), usualAmounts: []))
         emptied = false
         return true
     }
@@ -249,7 +335,8 @@ public struct Roster: Hashable, Sendable {
         where entries[index].commitment.identity == commitment.identity {
             entries[index] = Entry(
                 commitment: Commitment(renaming: entries[index].commitment, to: name),
-                keptUntil: entries[index].keptUntil, category: entries[index].category)
+                keptUntil: entries[index].keptUntil, category: entries[index].category,
+                usualAmounts: entries[index].usualAmounts)
         }
         return true
     }
@@ -272,7 +359,7 @@ public struct Roster: Hashable, Sendable {
 
         entries[index] = Entry(
             commitment: entries[index].commitment, keptUntil: date,
-            category: entries[index].category)
+            category: entries[index].category, usualAmounts: entries[index].usualAmounts)
 
         let runLength = entries[index...].prefix { $0.commitment.identity == commitment.identity }.count
         entries.replaceSubrange(
@@ -312,13 +399,15 @@ public struct Roster: Hashable, Sendable {
 
         let stoppedEra = entries[index].commitment
         let category = entries[index].category
+        let usualAmounts = entries[index].usualAmounts
         let resumeDate = date.days(until: stoppedEra.keptFrom) > 0 ? stoppedEra.keptFrom : date
 
         guard resumeDate.days(until: keptUntil) < -1 else {
             // The new era would begin no later than the day after the day it was kept until:
             // dropped, leaving the stopped era in place with its kept-until day cleared, as though
             // it had never been stopped.
-            entries[index] = Entry(commitment: stoppedEra, keptUntil: nil, category: category)
+            entries[index] = Entry(
+                commitment: stoppedEra, keptUntil: nil, category: category, usualAmounts: usualAmounts)
             emptied = false
             return true
         }
@@ -330,8 +419,11 @@ public struct Roster: Hashable, Sendable {
         let resumedEra = Commitment(
             era: stoppedEra, schedule: resumedSchedule, keptFrom: resumeDate, kind: stoppedEra.kind)!
 
-        let precedingEntry = Entry(commitment: stoppedEra, keptUntil: keptUntil, category: category)
-        entries[index] = Entry(commitment: resumedEra, keptUntil: nil, category: category)
+        let precedingEntry = Entry(
+            commitment: stoppedEra, keptUntil: keptUntil, category: category,
+            usualAmounts: usualAmounts)
+        entries[index] = Entry(
+            commitment: resumedEra, keptUntil: nil, category: category, usualAmounts: usualAmounts)
         entries.insert(precedingEntry, at: index + 1)
 
         let runLength = entries[index...].prefix { $0.commitment.identity == commitment.identity }.count
@@ -375,7 +467,7 @@ public struct Roster: Hashable, Sendable {
 
         entries[index] = Entry(
             commitment: entries[index].commitment, keptUntil: entries[index].keptUntil,
-            category: Self.normalized(category))
+            category: Self.normalized(category), usualAmounts: entries[index].usualAmounts)
         return true
     }
 
@@ -412,11 +504,13 @@ public struct Roster: Hashable, Sendable {
             return false
         }
 
+        let usualAmounts = entries[index].usualAmounts
         let precedingEntry = Entry(
             commitment: entries[index].commitment, keptUntil: date,
-            category: entries[index].category)
+            category: entries[index].category, usualAmounts: usualAmounts)
         entries[index] = Entry(
-            commitment: era, keptUntil: nil, category: Self.normalized(category))
+            commitment: era, keptUntil: nil, category: Self.normalized(category),
+            usualAmounts: usualAmounts)
         entries.insert(precedingEntry, at: index + 1)
 
         let runLength = entries[index...].prefix { $0.commitment.identity == commitment.identity }.count
@@ -456,7 +550,9 @@ public struct Roster: Hashable, Sendable {
             let behind = rest.first
         {
             let keptUntil = Self.earlier(frontKeptUntil, behind.keptUntil ?? frontKeptUntil)
-            front = Entry(commitment: behind.commitment, keptUntil: keptUntil, category: front.category)
+            front = Entry(
+                commitment: behind.commitment, keptUntil: keptUntil, category: front.category,
+                usualAmounts: front.usualAmounts)
             rest.removeFirst()
         }
 
@@ -475,7 +571,9 @@ public struct Roster: Hashable, Sendable {
                 continue
             }
 
-            let cut = Entry(commitment: entry.commitment, keptUntil: keptUntil, category: entry.category)
+            let cut = Entry(
+                commitment: entry.commitment, keptUntil: keptUntil, category: entry.category,
+                usualAmounts: entry.usualAmounts)
             if front.commitment.schedule == cut.commitment.schedule,
                 front.commitment.kind == cut.commitment.kind, keptUntil == dayBeforeFront
             {
@@ -483,7 +581,8 @@ public struct Roster: Hashable, Sendable {
                     commitment: Commitment(
                         era: front.commitment, schedule: front.commitment.schedule,
                         keptFrom: cut.commitment.keptFrom, kind: front.commitment.kind)!,
-                    keptUntil: front.keptUntil, category: front.category)
+                    keptUntil: front.keptUntil, category: front.category,
+                    usualAmounts: front.usualAmounts)
                 result[result.count - 1] = joined
                 front = joined
             } else {
@@ -545,12 +644,15 @@ public struct Roster: Hashable, Sendable {
         guard offset != sourceKeptIndex, offset != sourceKeptIndex + 1 else {
             entries[sourceIndex] = Entry(
                 commitment: entries[sourceIndex].commitment,
-                keptUntil: entries[sourceIndex].keptUntil, category: normalized)
+                keptUntil: entries[sourceIndex].keptUntil, category: normalized,
+                usualAmounts: entries[sourceIndex].usualAmounts)
             return true
         }
 
         var entry = entries.remove(at: sourceIndex)
-        entry = Entry(commitment: entry.commitment, keptUntil: entry.keptUntil, category: normalized)
+        entry = Entry(
+            commitment: entry.commitment, keptUntil: entry.keptUntil, category: normalized,
+            usualAmounts: entry.usualAmounts)
 
         // `offset == keptBeforeMove.count` means "after the last of them"; every other offset
         // names the commitment that stood there before the move, before which the moved
@@ -697,7 +799,7 @@ public struct Roster: Hashable, Sendable {
 
         entries[index] = Entry(
             commitment: changed, keptUntil: entries[index].keptUntil,
-            category: Self.normalized(category))
+            category: Self.normalized(category), usualAmounts: entries[index].usualAmounts)
         return true
     }
 

@@ -191,6 +191,11 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
+- **Nothing tests that two usual amounts' names sort with blank space at either end disregarded.**
+  `commitment`'s *A total declares at most five usual amounts, no two alike, answered smallest
+  first* orders names on one amount ignoring case and blank space at either end, but no scenario
+  pads a name with spaces, so taking the trim out of the sort passes every test. Found by mutation
+  at #365's G7 on 2026-09-30 and left for a covering Story rather than reopening the delta there.
 - **A number below zero cannot be typed on the day screen.** The typed number entry opens the
   decimal pad, which has no minus, though a range end may be negative and an unranged number may be
   anything; the parser takes "-3", so only the keyboard stands in the way. The commitment sheet's
