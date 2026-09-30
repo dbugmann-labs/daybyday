@@ -593,7 +593,7 @@ func aCopyHoldingErasThatHoldNoDayIsRestoredWithThemMended() throws {
 
     let rosterJSON = """
         {
-          "version": 6,
+          "version": 7,
           "emptied": false,
           "commitments": [
             {
@@ -603,7 +603,8 @@ func aCopyHoldingErasThatHoldNoDayIsRestoredWithThemMended() throws {
                 "schedule": { "weekdays": ["tuesday", "thursday"] },
                 "identity": "\(identity)"
               },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -613,7 +614,8 @@ func aCopyHoldingErasThatHoldNoDayIsRestoredWithThemMended() throws {
                 "identity": "\(identity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 30 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -623,7 +625,8 @@ func aCopyHoldingErasThatHoldNoDayIsRestoredWithThemMended() throws {
                 "identity": "\(identity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 30 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -633,7 +636,8 @@ func aCopyHoldingErasThatHoldNoDayIsRestoredWithThemMended() throws {
                 "identity": "\(identity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 30 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             }
           ]
         }

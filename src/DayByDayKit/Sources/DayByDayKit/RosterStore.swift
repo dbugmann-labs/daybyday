@@ -107,6 +107,8 @@ public final class RosterStore {
                     == (document.version >= RosterDocument.categoryIntroducedInVersion)
                 && $0.commitment.identityKeyPresent
                     == (document.version >= RosterDocument.identityIntroducedInVersion)
+                && $0.usualAmountsKeyPresent
+                    == (document.version >= RosterDocument.usualAmountsIntroducedInVersion)
         }
         let emptiedKeyAgrees =
             (document.emptied != nil)
@@ -379,7 +381,7 @@ public final class RosterStore {
                 && a.commitment.schedule == b.commitment.schedule
                 && a.commitment.keptFrom == b.commitment.keptFrom
                 && a.commitment.kind == b.commitment.kind && a.keptUntil == b.keptUntil
-                && a.category == b.category
+                && a.category == b.category && a.usualAmounts == b.usualAmounts
         }
     }
 }

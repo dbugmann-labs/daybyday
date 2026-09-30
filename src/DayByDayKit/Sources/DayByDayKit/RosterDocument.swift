@@ -10,7 +10,7 @@ import Foundation
 struct RosterDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 6
+    static let currentVersion = 7
 
     /// The form a commitment record first carried an `identity` key at: forms at or after this
     /// one carry it on every entry's commitment, forms before it never do, on the same footing as
@@ -41,6 +41,10 @@ struct RosterDocument: Codable {
     /// `design.md` § *Emptied is a mark on the roster, not the file's absence*.
     static let emptiedIntroducedInVersion = 6
 
+    /// The form `usualAmounts` was introduced at: forms at or after this one carry the key on
+    /// every entry — an empty list where a commitment declares none — and forms before it never do.
+    static let usualAmountsIntroducedInVersion = 7
+
     var version: Int
     var commitments: [RosterEntryRecord]
 
@@ -56,7 +60,8 @@ struct RosterDocument: Codable {
                 commitment: CommitmentRecord(entry.commitment),
                 keptUntil: entry.keptUntil.map(DateRecord.init),
                 removed: nil,
-                category: entry.category)
+                category: entry.category,
+                usualAmounts: entry.usualAmounts.map(UsualAmountRecord.init))
         }
         emptied = roster.emptied
     }
@@ -96,9 +101,13 @@ struct RosterDocument: Codable {
         var currentIdentity: Commitment.Identity?
         var currentRunEntries: [Roster.Entry] = []
         var currentRunIsRemoved = false
+        var declaresWhatNoTotalCould = false
 
         func closeCurrentRun() {
             guard let currentIdentity else { return }
+            if !Self.erasAgreeOnUsualAmounts(currentRunEntries) {
+                declaresWhatNoTotalCould = true
+            }
             if currentRunIsRemoved {
                 erased.insert(currentIdentity)
             } else {
@@ -151,20 +160,64 @@ struct RosterDocument: Codable {
                 currentRunIsRemoved = true
             }
 
+            guard let usualAmounts = usualAmounts(of: entry) else {
+                return nil
+            }
+
             currentRunEntries.append(
                 Roster.Entry(
                     commitment: commitment, keptUntil: keptUntil, category: entry.category,
-                    usualAmounts: []))
+                    usualAmounts: usualAmounts))
         }
         if let currentIdentity {
             closedIdentities.insert(currentIdentity)
         }
         closeCurrentRun()
 
+        guard !declaresWhatNoTotalCould else {
+            return nil
+        }
+
         var roster = Roster()
         roster.entries = entries
         roster.emptied = (emptied ?? false) || (!commitments.isEmpty && entries.isEmpty)
         return Formed(roster: roster, erased: erased)
+    }
+
+    /// The usual amounts `entry` declares, smallest first: none in a form before
+    /// `usualAmountsIntroducedInVersion`, and `nil` where the form carries them and this entry's
+    /// say something no usual amount could — the key null, an amount not above zero, a name of
+    /// nothing but blank space.
+    private func usualAmounts(of entry: RosterEntryRecord) -> [Commitment.UsualAmount]? {
+        guard version >= Self.usualAmountsIntroducedInVersion else {
+            return []
+        }
+        guard let records = entry.usualAmounts else {
+            return nil
+        }
+        var formed: [Commitment.UsualAmount] = []
+        for record in records {
+            guard record.name.map({ !Blank.saysNothing($0) }) ?? true,
+                let usualAmount = Commitment.UsualAmount(record.amount, named: record.name)
+            else {
+                return nil
+            }
+            formed.append(usualAmount)
+        }
+        return Roster.smallestFirst(formed)
+    }
+
+    /// Whether one commitment's eras, newest first, declare the same usual amounts, and those
+    /// are ones its newest era's kind could declare.
+    private static func erasAgreeOnUsualAmounts(_ eras: [Roster.Entry]) -> Bool {
+        guard let newest = eras.first else {
+            return true
+        }
+        guard eras.allSatisfy({ $0.usualAmounts == newest.usualAmounts }) else {
+            return false
+        }
+        return newest.usualAmounts.isEmpty
+            || Roster.couldDeclare(newest.usualAmounts, on: newest.commitment.kind)
     }
 
     /// A roster folded from a document kept before a commitment had an identity, and the
@@ -384,17 +437,24 @@ struct RosterEntryRecord: Codable {
     var removed: Bool?
     var category: String?
     var categoryKeyPresent: Bool
+    var usualAmounts: [UsualAmountRecord]?
+    var usualAmountsKeyPresent: Bool
 
     private enum CodingKeys: String, CodingKey {
-        case commitment, keptUntil, removed, category
+        case commitment, keptUntil, removed, category, usualAmounts
     }
 
-    init(commitment: CommitmentRecord, keptUntil: DateRecord?, removed: Bool?, category: String?) {
+    init(
+        commitment: CommitmentRecord, keptUntil: DateRecord?, removed: Bool?, category: String?,
+        usualAmounts: [UsualAmountRecord]
+    ) {
         self.commitment = commitment
         self.keptUntil = keptUntil
         self.removed = removed
         self.category = category
         self.categoryKeyPresent = true
+        self.usualAmounts = usualAmounts
+        self.usualAmountsKeyPresent = true
     }
 
     init(from decoder: Decoder) throws {
@@ -404,6 +464,8 @@ struct RosterEntryRecord: Codable {
         removed = try container.decodeIfPresent(Bool.self, forKey: .removed)
         categoryKeyPresent = container.contains(.category)
         category = try container.decodeIfPresent(String.self, forKey: .category)
+        usualAmountsKeyPresent = container.contains(.usualAmounts)
+        usualAmounts = try container.decodeIfPresent([UsualAmountRecord].self, forKey: .usualAmounts)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -412,5 +474,34 @@ struct RosterEntryRecord: Codable {
         try container.encodeIfPresent(keptUntil, forKey: .keptUntil)
         try container.encodeIfPresent(removed, forKey: .removed)
         try container.encode(category, forKey: .category)
+        try container.encodeIfPresent(usualAmounts, forKey: .usualAmounts)
+    }
+}
+
+/// One usual amount as a roster entry writes it: the amount as a target is written, and the name or
+/// `null`. `design.md` § *Migration*.
+struct UsualAmountRecord: Codable, Equatable {
+    var amount: Decimal
+    var name: String?
+
+    init(_ usualAmount: Commitment.UsualAmount) {
+        amount = usualAmount.amount
+        name = usualAmount.name
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case amount, name
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        amount = try container.decode(Decimal.self, forKey: .amount)
+        name = try container.decodeIfPresent(String.self, forKey: .name)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(amount, forKey: .amount)
+        try container.encode(name, forKey: .name)
     }
 }

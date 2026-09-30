@@ -321,10 +321,10 @@ func aRosterStoreWrittenInALaterFormThanThisAppKnowsIsRefused() throws {
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 7, "commitments": []}"#.utf8)
+    let bytes = Data(#"{"version": 8, "commitments": []}"#.utf8)
     try bytes.write(to: place)
 
-    #expect(throws: RosterStoreError.laterForm(at: place, version: 7)) {
+    #expect(throws: RosterStoreError.laterForm(at: place, version: 8)) {
         try RosterStore(at: place)
     }
     #expect(try Data(contentsOf: place) == bytes)
@@ -1977,10 +1977,10 @@ func aRosterStoreDeclaringALaterFormWhoseBodyThisAppCannotReadIsRefusedAsALaterF
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 7, "commitments": "not an array"}"#.utf8)
+    let bytes = Data(#"{"version": 8, "commitments": "not an array"}"#.utf8)
     try bytes.write(to: place)
 
-    #expect(throws: RosterStoreError.laterForm(at: place, version: 7)) {
+    #expect(throws: RosterStoreError.laterForm(at: place, version: 8)) {
         try RosterStore(at: place)
     }
     #expect(try Data(contentsOf: place) == bytes)
@@ -3267,7 +3267,7 @@ func aRosterStoreDeclaringTheFormThisAppWritesAndSayingSomethingAboutRemovalIsRe
     let bytes = Data(
         """
         {
-          "version": 6,
+          "version": 7,
           "emptied": false,
           "commitments": [
             {
@@ -3278,7 +3278,8 @@ func aRosterStoreDeclaringTheFormThisAppWritesAndSayingSomethingAboutRemovalIsRe
                 "identity": "11111111-1111-1111-1111-111111111111"
               },
               "removed": false,
-              "category": null
+              "category": null,
+              "usualAmounts": []
             }
           ]
         }
@@ -3299,7 +3300,7 @@ func aRosterStoreDeclaringTheFormThisAppWritesAndSayingNothingAboutBeingEmptiedI
     let bytes = Data(
         """
         {
-          "version": 6,
+          "version": 7,
           "commitments": [
             {
               "commitment": {
@@ -3308,7 +3309,8 @@ func aRosterStoreDeclaringTheFormThisAppWritesAndSayingNothingAboutBeingEmptiedI
                 "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
                 "identity": "11111111-1111-1111-1111-111111111111"
               },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             }
           ]
         }
@@ -3361,7 +3363,7 @@ func aRosterStoreSayingItWasEmptiedWhileHoldingACommitmentIsRefused() throws {
     let bytes = Data(
         """
         {
-          "version": 6,
+          "version": 7,
           "emptied": true,
           "commitments": [
             {
@@ -3371,7 +3373,8 @@ func aRosterStoreSayingItWasEmptiedWhileHoldingACommitmentIsRefused() throws {
                 "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
                 "identity": "11111111-1111-1111-1111-111111111111"
               },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             }
           ]
         }
@@ -3716,7 +3719,7 @@ func aStoredRosterHoldingErasThatHoldNoDayIsReadBackWithoutThem() throws {
     let bytes = Data(
         """
         {
-          "version": 6,
+          "version": 7,
           "emptied": false,
           "commitments": [
             {
@@ -3726,7 +3729,8 @@ func aStoredRosterHoldingErasThatHoldNoDayIsReadBackWithoutThem() throws {
                 "schedule": { "weekdays": ["tuesday", "thursday"] },
                 "identity": "\(identity)"
               },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -3736,7 +3740,8 @@ func aStoredRosterHoldingErasThatHoldNoDayIsReadBackWithoutThem() throws {
                 "identity": "\(identity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 30 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -3746,7 +3751,8 @@ func aStoredRosterHoldingErasThatHoldNoDayIsReadBackWithoutThem() throws {
                 "identity": "\(identity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 30 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -3756,7 +3762,8 @@ func aStoredRosterHoldingErasThatHoldNoDayIsReadBackWithoutThem() throws {
                 "identity": "\(identity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 30 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             }
           ]
         }
@@ -3805,7 +3812,7 @@ func alikeErasStandingSideBySideAreReadBackAsOne() throws {
     let firstBytes = Data(
         """
         {
-          "version": 6,
+          "version": 7,
           "emptied": false,
           "commitments": [
             {
@@ -3815,7 +3822,8 @@ func alikeErasStandingSideBySideAreReadBackAsOne() throws {
                 "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
                 "identity": "\(firstIdentity)"
               },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -3825,7 +3833,8 @@ func alikeErasStandingSideBySideAreReadBackAsOne() throws {
                 "identity": "\(firstIdentity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 30 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -3835,7 +3844,8 @@ func alikeErasStandingSideBySideAreReadBackAsOne() throws {
                 "identity": "\(firstIdentity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 30 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             }
           ]
         }
@@ -3857,7 +3867,7 @@ func alikeErasStandingSideBySideAreReadBackAsOne() throws {
     let secondBytes = Data(
         """
         {
-          "version": 6,
+          "version": 7,
           "emptied": false,
           "commitments": [
             {
@@ -3867,7 +3877,8 @@ func alikeErasStandingSideBySideAreReadBackAsOne() throws {
                 "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
                 "identity": "\(secondIdentity)"
               },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -3877,7 +3888,8 @@ func alikeErasStandingSideBySideAreReadBackAsOne() throws {
                 "identity": "\(secondIdentity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 31 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             }
           ]
         }
@@ -3901,7 +3913,7 @@ func erasHoldingTheSameDaysAreReadBackWithTheNewerKeepingThem() throws {
     let firstBytes = Data(
         """
         {
-          "version": 6,
+          "version": 7,
           "emptied": false,
           "commitments": [
             {
@@ -3911,7 +3923,8 @@ func erasHoldingTheSameDaysAreReadBackWithTheNewerKeepingThem() throws {
                 "schedule": { "everyNDays": 4, "from": { "year": 2026, "month": 8, "day": 18 } },
                 "identity": "\(firstIdentity)"
               },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -3921,7 +3934,8 @@ func erasHoldingTheSameDaysAreReadBackWithTheNewerKeepingThem() throws {
                 "identity": "\(firstIdentity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 17 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -3931,7 +3945,8 @@ func erasHoldingTheSameDaysAreReadBackWithTheNewerKeepingThem() throws {
                 "identity": "\(firstIdentity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 19 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             }
           ]
         }
@@ -3958,7 +3973,7 @@ func erasHoldingTheSameDaysAreReadBackWithTheNewerKeepingThem() throws {
     let secondBytes = Data(
         """
         {
-          "version": 6,
+          "version": 7,
           "emptied": false,
           "commitments": [
             {
@@ -3968,7 +3983,8 @@ func erasHoldingTheSameDaysAreReadBackWithTheNewerKeepingThem() throws {
                 "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
                 "identity": "\(secondIdentity)"
               },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -3978,7 +3994,8 @@ func erasHoldingTheSameDaysAreReadBackWithTheNewerKeepingThem() throws {
                 "identity": "\(secondIdentity)"
               },
               "keptUntil": { "year": 2026, "month": 1, "day": 31 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             }
           ]
         }
@@ -4001,7 +4018,7 @@ func theNewestEraOfACommitmentStoppedOnTheDayItBeganIsReadBackAsItIs() throws {
     let bytes = Data(
         """
         {
-          "version": 6,
+          "version": 7,
           "emptied": false,
           "commitments": [
             {
@@ -4012,7 +4029,8 @@ func theNewestEraOfACommitmentStoppedOnTheDayItBeganIsReadBackAsItIs() throws {
                 "identity": "\(identity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 31 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -4022,7 +4040,8 @@ func theNewestEraOfACommitmentStoppedOnTheDayItBeganIsReadBackAsItIs() throws {
                 "identity": "\(identity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 30 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             }
           ]
         }
@@ -4047,7 +4066,7 @@ func aStoppedNewestEraHoldingNoDayIsReadBackWithoutItTheEraBehindItStopped() thr
     let bytes = Data(
         """
         {
-          "version": 6,
+          "version": 7,
           "emptied": false,
           "commitments": [
             {
@@ -4058,7 +4077,8 @@ func aStoppedNewestEraHoldingNoDayIsReadBackWithoutItTheEraBehindItStopped() thr
                 "identity": "\(identity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 30 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -4068,7 +4088,8 @@ func aStoppedNewestEraHoldingNoDayIsReadBackWithoutItTheEraBehindItStopped() thr
                 "identity": "\(identity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 30 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             }
           ]
         }
@@ -4099,7 +4120,7 @@ func aStoppedNewestEraHoldingNoDayIsReadBackWithoutItTheEraBehindItStopped() thr
     let deepBytes = Data(
         """
         {
-          "version": 6,
+          "version": 7,
           "emptied": false,
           "commitments": [
             {
@@ -4110,7 +4131,8 @@ func aStoppedNewestEraHoldingNoDayIsReadBackWithoutItTheEraBehindItStopped() thr
                 "identity": "\(deepIdentity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 25 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -4120,7 +4142,8 @@ func aStoppedNewestEraHoldingNoDayIsReadBackWithoutItTheEraBehindItStopped() thr
                 "identity": "\(deepIdentity)"
               },
               "keptUntil": { "year": 2026, "month": 9, "day": 9 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -4130,7 +4153,8 @@ func aStoppedNewestEraHoldingNoDayIsReadBackWithoutItTheEraBehindItStopped() thr
                 "identity": "\(deepIdentity)"
               },
               "keptUntil": { "year": 2026, "month": 8, "day": 31 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             }
           ]
         }
@@ -4160,7 +4184,7 @@ func alikeErasWithDaysBetweenThemAreReadBackAsTwo() throws {
     let bytes = Data(
         """
         {
-          "version": 6,
+          "version": 7,
           "emptied": false,
           "commitments": [
             {
@@ -4170,7 +4194,8 @@ func alikeErasWithDaysBetweenThemAreReadBackAsTwo() throws {
                 "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
                 "identity": "\(identity)"
               },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             },
             {
               "commitment": {
@@ -4180,7 +4205,8 @@ func alikeErasWithDaysBetweenThemAreReadBackAsTwo() throws {
                 "identity": "\(identity)"
               },
               "keptUntil": { "year": 2026, "month": 1, "day": 31 },
-              "category": null
+              "category": null,
+              "usualAmounts": []
             }
           ]
         }
@@ -4196,4 +4222,34 @@ func alikeErasWithDaysBetweenThemAreReadBackAsTwo() throws {
         store.roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 15)!) == [gym])
     #expect(
         store.roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!).count == 2)
+}
+
+@Test("a roster written with usual amounts is read back with them, in form 7, each amount exactly")
+func aRosterWrittenWithUsualAmountsIsReadBackWithThemInForm7EachAmountExactly() throws {
+    let place = freshPlace()
+    let protein = Commitment(
+        name: "Protein",
+        schedule: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]),
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!,
+        kind: .total(target: Commitment.Target(120)!))!
+    var roster = Roster()
+    _ = roster.add(protein)
+    roster.declare(
+        [
+            Commitment.UsualAmount(Decimal(string: "0.50")!, named: nil)!,
+            Commitment.UsualAmount(35, named: " Müesli ")!,
+        ], for: protein)
+    let store = try RosterStore(at: place)
+    try store.replace(with: roster)
+
+    let reopened = try RosterStore(at: place)
+
+    #expect(
+        reopened.roster.usualAmounts(of: protein) == [
+            Commitment.UsualAmount(Decimal(string: "0.5")!, named: nil)!,
+            Commitment.UsualAmount(35, named: " Müesli ")!,
+        ])
+    let envelope = try JSONDecoder().decode(
+        RosterDocumentEnvelope.self, from: Data(contentsOf: place))
+    #expect(envelope.version == 7)
 }

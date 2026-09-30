@@ -148,16 +148,39 @@ public struct Roster: Hashable, Sendable {
     ) -> Bool {
         guard
             let newest = entries.first(where: { $0.commitment.identity == commitment.identity }),
-            case .total = newest.commitment.kind
+            Self.couldDeclare(usualAmounts, on: newest.commitment.kind)
         else {
             return false
         }
 
-        guard usualAmounts.count <= 5, !Self.holdsTwoAlike(usualAmounts) else {
+        let smallestFirst = Self.smallestFirst(usualAmounts)
+
+        for index in entries.indices
+        where entries[index].commitment.identity == commitment.identity {
+            entries[index] = Entry(
+                commitment: entries[index].commitment, keptUntil: entries[index].keptUntil,
+                category: entries[index].category, usualAmounts: smallestFirst)
+        }
+        return true
+    }
+
+    /// Whether a commitment of `kind` could declare `usualAmounts`: it is a total, the list holds
+    /// no more than five, and no two in it are alike. Package-internal: `RosterDocument` asks it of
+    /// what a stored roster says.
+    static func couldDeclare(_ usualAmounts: [Commitment.UsualAmount], on kind: Commitment.Kind)
+        -> Bool
+    {
+        guard case .total = kind else {
             return false
         }
+        return usualAmounts.count <= 5 && !holdsTwoAlike(usualAmounts)
+    }
 
-        let smallestFirst = usualAmounts.sorted { lhs, rhs in
+    /// `usualAmounts` smallest amount first; of two with one amount the unnamed first, and two
+    /// names character by character with case and blank space at either end disregarded.
+    static func smallestFirst(_ usualAmounts: [Commitment.UsualAmount]) -> [Commitment.UsualAmount]
+    {
+        usualAmounts.sorted { lhs, rhs in
             if lhs.amount != rhs.amount {
                 return lhs.amount < rhs.amount
             }
@@ -170,14 +193,6 @@ public struct Roster: Hashable, Sendable {
                 return false
             }
         }
-
-        for index in entries.indices
-        where entries[index].commitment.identity == commitment.identity {
-            entries[index] = Entry(
-                commitment: entries[index].commitment, keptUntil: entries[index].keptUntil,
-                category: entries[index].category, usualAmounts: smallestFirst)
-        }
-        return true
     }
 
     /// Whether two of `usualAmounts` are alike: their amounts equal and either neither named or
