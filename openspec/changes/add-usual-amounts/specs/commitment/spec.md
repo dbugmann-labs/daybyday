@@ -295,6 +295,25 @@ refusal. Usual amounts typed for another kind SHALL be ignored. A refused ask SH
   sheet
 - **AND** once its usual amounts field is told edited, it tells nothing on its sheet
 
+### Requirement: A commitments screen offers another usual amount only while fewer than five are on its sheet
+
+A commitments screen SHALL say, of the usual amounts on its sheet, whether it offers another. It
+SHALL offer another while fewer than five are on the sheet and SHALL NOT offer one once five or more
+are, counting every usual amount on the sheet whether typed or left with both fields blank, and
+whatever is typed in them. What it offers SHALL NOT change what it refuses: a sixth usual amount
+handed to it in a define or a change, however it arrives, SHALL still be refused as more than five.
+
+#### Scenario: a commitments screen offers another usual amount while fewer than five are on its sheet, blank ones counted
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where nothing
+  has been kept, and is asked whether it offers another usual amount after usual amounts typed as
+  "10", "20", "30" and "40", every name blank
+- **THEN** it offers another
+- **AND** after none it offers another
+- **AND** after "10", "20", "30", "40" and "50", every name blank, it offers none
+- **AND** after "10", "20", "30", "40" and one with both its fields blank, it offers none
+- **AND** after "10", "20", "30", "40", "abc" and "10", every name blank, it offers none
+
 ## RENAMED Requirements
 
 - FROM: `### Requirement: A commitments screen changes a commitment by renaming it, moving the day it is kept from, or putting a new era on it`

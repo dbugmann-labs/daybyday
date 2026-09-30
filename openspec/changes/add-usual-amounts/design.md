@@ -41,6 +41,7 @@ public struct TypedUsualAmount: Equatable, Sendable { public init(amount: String
 case usualAmounts                                                              // CommitmentsScreen.SheetField
 case usualAmountIsNotAnAmount(Int), usualAmountAlike(Int), moreThanFiveUsualAmounts(Int)          // CommitmentsScreen.Refusal
 public let usualAmounts: [Commitment.UsualAmount]                              // CommitmentsScreen.Change
+public func offersAnotherUsualAmount(after typed: [TypedUsualAmount]) -> Bool  // CommitmentsScreen
 public func define(name:on:keptFrom:under:kind:lowest:highest:target:usualAmounts: [TypedUsualAmount] = []) -> Refusal?
 public func change(_:toName:on:keptFrom:under:lowest:highest:target:usualAmounts: [TypedUsualAmount]? = nil) -> Refusal?
 public struct UsualAmount: Hashable, Sendable { public let amount: String; public let name: String? }  // DayView
@@ -50,7 +51,9 @@ public func add(_ usualAmount: DayView.UsualAmount, on row: DayView.Row) throws 
 
 `nil` for `change`'s `usualAmounts` is the ones the commitment already declares, as `nil` for
 `target` already is, so every carried test compiles unedited. The `Int` on each refusal is the usual
-amount's place, from zero, in the list handed in, blank ones counted.
+amount's place, from zero, in the list handed in, blank ones counted. `offersAnotherUsualAmount`
+counts every row handed in, blank ones too, so a sheet can never hold a sixth row, and a row left
+blank is filled rather than added past; the refusal of a sixth stays, for a list from anywhere else.
 
 ### Usual amounts are the roster's, held on each entry beside the category
 
@@ -84,15 +87,15 @@ doc comment adding the usual amounts: renaming it touches every caller for no be
 **The commitment sheet** draws, while the kind chosen is Total, a second card under the first: one
 row per usual amount, an amount field (`.numbersAndPunctuation`, as the target's) then a name field
 with the placeholder "Name", filled from `Change.usualAmounts` in their order, and *Add usual amount*
-as the card's last row, never hidden. A row is taken away by swiping it. Any edit, add or removal
+as the card's last row, offered only where `offersAnotherUsualAmount(after:)` says of the rows on it. A row is taken away by swiping it. Any edit, add or removal
 tells `.usualAmounts` edited. A refusal is drawn under the row its `Int` names, in the sheet's red:
 "That's not an amount.", "You already have that one." and "Five usual amounts at most." The card is
 editable on a stopped total, whose refusal now reads "Take it up again first to change anything
 but its name, category or usual amounts."; the rows are sent as typed on Save, blank ones included.
 
 **The total entry** leaves the alert for a half-height sheet over the dimmed day, as drawn below:
-Cancel and Save either side of the row's name, `soFarOfTarget` under it, the Amount field focused as
-the sheet opens so the keyboard is up, the usual amounts in a list under it — amount column, then the
+Cancel and Save either side of the row's name, `soFarOfTarget` under it, the Amount field focused
+only when tapped so the keyboard is down as the sheet opens, the usual amounts in a list under it — amount column, then the
 name — and *Take back last* in red below, only where `offersTakeBackLast` says. Save commits the
 field through `enter(_:on:)`; a tap on a usual amount calls `add(_:on:)`; either closes the sheet, as
 *Take back last* does, and a refusal is told on the row as today. No confirmation before a tap.
@@ -100,7 +103,10 @@ field through `enter(_:on:)`; a tap on a usual amount calls `add(_:on:)`; either
 ### What the shell draws
 
 Option C, a half-height sheet, chosen at the layout round from
-https://claude.ai/artifact/PSyixPF6zQg3RgjgJkQVLp, with the owner's one change: the keyboard up.
+https://claude.ai/artifact/PSyixPF6zQg3RgjgJkQVLp, as the designer drew it: the keyboard down until
+the field is tapped (the owner's G7 walk, reversing their layout-round change). Both sheets are
+compact: rows lower, and less space under the head and around the list. The commitment sheet's sixth
+row is the designer's, drawn to place a refusal; with five rows on it *Add usual amount* is not offered.
 
 ```
 ┌──────────────────────────────┐
@@ -110,7 +116,7 @@ https://claude.ai/artifact/PSyixPF6zQg3RgjgJkQVLp, with the owner's one change: 
 ││ (Cancel)   Protein   (Save)││  title = row name
 ││           30 of 120        ││  subtitle = soFarOfTarget
 ││ ┌────────────────────────┐ ││
-││ │ Amount                 │ ││  focused as the sheet opens; keyboard up (owner's change)
+││ │ Amount                 │ ││  focused only when tapped; keyboard down as it opens
 ││ └────────────────────────┘ ││
 ││ ┌────────────────────────┐ ││
 ││ │ 20                     │ ││  amount column, then name;
@@ -160,13 +166,13 @@ birthday place and the copy's own form do not move; a copy made after this nests
   one-save target-and-usual-amounts scenario reopens the store.
 - **Carried roster-store tests whose fixtures declare form 6 as "the form this app writes".** → Box
   1.2 moves them to form 7 and nothing else; any other red is a stop.
-- **Five usual amounts under a raised keyboard not fitting half a screen.** → Grill 7 makes a walk
-  that scrolls to the fifth a G7 finding, not a licence to scroll.
+- **Five usual amounts not fitting half a screen.** → Grill 7 makes a walk that scrolls to the fifth
+  a G7 finding, not a licence to scroll.
 - **Draft PR #361 moved the same entry to a sheet**; the two collide if it is revived.
 
 ## Open Questions
 
-None. `grill.md` § *Left open* is "None.", and the keyboard rising is a `phone:` line rather than an
-open question. Writing the delta turned up two edges — a row left blank, and the order of two names
+None. `grill.md` § *Left open* is "None.", and the keyboard, left to the phone at the layout round,
+was settled down at G7 (`grill.md`, amended 2026-09-30). Writing the delta turned up two edges — a row left blank, and the order of two names
 of one amount — and both are decided above from the range precedent and grill 12, so no residual
 round is outstanding.
