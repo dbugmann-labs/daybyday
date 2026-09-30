@@ -240,27 +240,6 @@ to Wants the same day, 2026-09-30, unfixed, by the owner's choice.*
 - **Open** — how the choice is drawn on Settings (a row of swatches, a list, a menu) is for the
   Story grill's layout round.
 
-### B-070 — see where a number is heading over months
-*Captured 2026-09-29.*
-
-> "In the Look-Back screen, I want to have Trend lines for numbers (e.g. weight)"
-
-- **Trigger** — reading a weight's look-back, where the day-to-day values wobble and the question is
-  which way they are going.
-- **Touches** — `look-back`. *A number commitment's look-back says a graph of the numbers its days
-  hold* shipped with #274, so the values are already drawn; no requirement says anything like a
-  trend, so this is a new line on an existing graph rather than a graph.
-- **Principle** — tested against *five percent of seven things*: **fails** — it deepens a look-back
-  that already works rather than making a new thing possible. Captured anyway: weight is the one
-  commitment on the day-one week whose point is its direction.
-- **Open** — what is a trend line: a moving average over a number of days, or one straight line
-  fitted through them all? The first bends with the months, the second says one thing about the
-  whole span.
-- **Open** — numbers only, or a total's graph too? The quote says numbers; a total's graph already
-  carries a target rule across it.
-- **Open** — does it read across a gap, or across a change of era? A look-back says nothing where one
-  era gives way to the next (#300), and a line drawn through that boundary says something there.
-
 ### B-072 — read dates and weekdays in my phone's language
 *Captured 2026-09-29.*
 
@@ -307,11 +286,57 @@ to Wants the same day, 2026-09-30, unfixed, by the owner's choice.*
 - **Open** — counted as of the row's own date, like standing is, so a back-filled day says what that
   day could still reach?
 
+### B-076 — note something that happened to me on the day it happens, and see how often it comes
+*Captured 2026-09-30, from a braindump of two bullets folded into one entry: the look-back is "for
+this type" and has no use without the first.*
+
+> "Reporting something (e.g. Augenmigräne) - nothing that is due, but something than can be entered
+> (with notes) on any day"
+
+> "Look-back for this type: showing the dates & frequency it was noted, including option to see
+> notes"
+
+- **Trigger** — the day an Augenmigräne comes, and later, the question of how often they come and
+  what the notes said about each one.
+- **Touches** — `unclaimed`. Nothing in any capability holds a thing that is never due: `record`
+  keeps a tick, number, note or total only *on a calendar date it is due on*, and `one-off` is owed
+  once, on one date. The nearest thing today is a **note** commitment on every day: its look-back
+  already says each note under its day, newest first, and counts them, which is most of the second
+  bullet. What it lacks is the "nothing is due" — its row stands on every day, and a day without a
+  migraine reads as *not kept*. `EPIC: Daily commitments` (#1) is "the commitments you owe
+  yourself", and this is not one, so promoting it is a second Epic or an amended outcome.
+- **Principle** — tested against *five percent of seven things*: **passes.** It makes a new kind of
+  record possible — something that happens rather than something owed — instead of deepening one
+  that exists.
+- **Open** — is this a commitment of a new rhythm ("never due, open on any day"), or a different
+  thing from a commitment altogether? The first reuses the roster, the look-back and the note; the
+  second keeps "commitment" meaning what you owe.
+- **Open** — where is it entered? *Entered where you stand* puts every daily entry in a day
+  screen's row, and a row for something not due is what *offered* was landed to keep off the screen.
+  A row on every day, a row only on days it holds something plus a way to add one, or something else.
+- **Open** — is the note required, optional, or is the entry itself the fact and the note an extra?
+  "with notes" reads as optional.
+- **Open** — what is frequency: a count per month like a tick's look-back, the days between
+  occurrences, or the dates alone? And more than one on a day — once per day, or each one?
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-09-30 — see where a number is heading over months (B-070) → `add-number-trend` (#369) under
+  `FEAT: look-back` (#271), reopened with `EPIC: Looking back` (#269); one Story, presented at G2
+  without `/to-tickets`. A number commitment's look-back gets a switch that draws a **trend** over its
+  graph: a moving average of the numbers held in the seven calendar days ending on a day, stopping at
+  the last day the graph counts, never a forecast. It crosses an era boundary and a gap the way the
+  trace does; numbers only, since a total's target rule already says what matters; the switch opens
+  off on every visit and remembers nothing, as the span does — the owner's call against the
+  recommendation that it always be drawn. Taken despite failing *five percent of seven things*, and
+  despite the entry's Principle line being wrong: weight is not on the day-one week, and nothing on
+  file says the owner keeps a number commitment. Named **trend**, not "trend line", because a
+  **line** on the look-back is a row of text. Which days carry a trend point and a window holding no
+  number are left to the Story's grill and its layout round. `CONTEXT.md` gained **Trend**.
 
 - 2026-09-30 — add a total's usual amounts in one tap each (B-071) → `FEAT: commitment` (#26),
   reopened with `EPIC: Daily commitments` (#1); its Stories come from `/to-tickets 26` at G2. A total
@@ -1469,3 +1494,15 @@ found nothing.
     recommended chore; B-063 → dropped on the phone check. `CONTEXT.md` gained **Usual amount**.
   - **Not taken** — B-039, B-041, B-054, B-066, B-069, B-070, B-072, B-073 with the dispositions of
     the twenty-second pass unchanged.
+- 2026-09-30 — targeted pass over B-070 (`/atlas backlog B-070`), the twenty-third, on
+  `chore/backlog` (PR #368, holding B-076 unmerged), `origin/main` at 6a61e3c.
+  - **Sweep** — no new silence since cluster B's sweep: #362, #364 and #367 were shell chores, #366
+    added usual amounts, which are declared and changed on the change sheet, so the lifecycle verbs
+    hold; `docs/open-questions.md` gained two gaps and no want; no issue was open.
+  - **Promoted** — B-070 → #369 under #271, reopened with #269, blocked by nothing. Eleven questions
+    over four rounds and one fact agent, every answer as recommended except the switch; Q10 was asked
+    twice because "trend line" collides with **line**. Presented at G2 without `/to-tickets`, as
+    B-056, B-060, B-065 and B-067 were. `CONTEXT.md` gained **Trend**.
+  - **Not re-judged** — B-039, B-041, B-054, B-066, B-069, B-072, B-073 with the dispositions of the
+    twenty-second pass unchanged; B-076, captured since, waits for a pass of its own — it is
+    unclaimed and may need a second Epic.

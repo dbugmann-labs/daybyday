@@ -2314,6 +2314,16 @@ sum reached the **target** of the era holding its day, and is said as that sum o
 greater, the highest sum or the highest target, because a sum is an amount and its heights should
 compare honestly, and the **target rule** must stay in view.
 
+**Trend** — a second trace a number commitment's **graph** can draw over its own: for a day, the
+average of the numbers held in the seven calendar days ending on it, so a daily wobble evens out and
+the months still bend. It says which way the number has been going and stops at the last day the
+graph counts — never a forecast. It crosses an **era** boundary and a gap the way the graph's trace
+does, because a new range does not change what a kilogram means. A number's alone: a **total**'s
+daily sum swings with the day rather than drifting, and its **target rule** already says what matters.
+Shown only when the person turns it on with a switch on the **look-back**, which opens off on every
+visit and remembers nothing, as the span does. Not a **line**, which on this page is a row of text.
+Agreed 2026-09-30 at the grooming grill of B-070.
+
 **Target rule** — the horizontal mark across a total commitment's **graph** at the **target** each
 day was owed, running the whole dates axis, days with no point included, and labelled with that target. It follows the era
 holding each day, so it steps where a target changed: the step is the target, not a mark of the
