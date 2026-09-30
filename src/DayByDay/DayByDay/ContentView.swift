@@ -92,33 +92,113 @@ private func date(from calendarDate: CalendarDate) -> Date {
     return Calendar.current.date(from: components)!
 }
 
-/// The note sheet's field, focused as the sheet opens so the keyboard rises with it. It holds
-/// its own `@FocusState`, and that is what makes the focus take on every open: the sheet's
-/// content is built fresh each time, so this view is new each time and asks for focus once its
-/// `TextEditor` is in the tree — asking from the presenter would name a field that does not
-/// exist yet (B-075).
-private struct NoteEditorField: View {
+/// The note sheet's field. A `UITextView` that takes first responder itself the moment it lands in
+/// a window — `didMoveToWindow`, once — so the keyboard is asked for while the sheet is being
+/// presented and rises alongside it, as it does with the number's alert. The SwiftUI way, a
+/// `TextEditor` with `.task { focused = true }` (B-075), only asked once the sheet had finished
+/// sliding in, a visible pause; `.defaultFocus` does not take on iOS at all. The look is
+/// `TextEditor`'s own — a clear background, the body font, the text view's default insets — and
+/// the text still goes back to the presenter as typed, through the binding.
+private struct NoteEditorField: UIViewRepresentable {
     @Binding var text: String
-    @FocusState private var focused: Bool
 
-    var body: some View {
-        TextEditor(text: $text)
-            .focused($focused)
-            .task { focused = true }
+    func makeUIView(context: Context) -> UITextView {
+        let view = FocusOnAppearTextView()
+        view.delegate = context.coordinator
+        view.backgroundColor = .clear
+        view.font = .preferredFont(forTextStyle: .body)
+        view.adjustsFontForContentSizeCategory = true
+        view.text = text
+        return view
+    }
+
+    func updateUIView(_ view: UITextView, context: Context) {
+        context.coordinator.text = $text
+        if view.text != text {
+            view.text = text
+        }
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator(text: $text) }
+
+    final class Coordinator: NSObject, UITextViewDelegate {
+        var text: Binding<String>
+
+        init(text: Binding<String>) { self.text = text }
+
+        func textViewDidChange(_ view: UITextView) {
+            text.wrappedValue = view.text
+        }
     }
 }
 
-/// The total entry's Amount field, focused as the sheet opens so the keyboard is up. Like
-/// `NoteEditorField` it holds its own `@FocusState`, so the focus takes on every open.
-private struct TotalAmountField: View {
-    @Binding var text: String
-    @FocusState private var focused: Bool
+private final class FocusOnAppearTextView: UITextView {
+    private var askedForFocus = false
 
-    var body: some View {
-        TextField("Amount", text: $text)
-            .keyboardType(.decimalPad)
-            .focused($focused)
-            .task { focused = true }
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if window != nil, !askedForFocus {
+            askedForFocus = true
+            becomeFirstResponder()
+        }
+    }
+}
+
+/// The total entry's Amount field, for the same reason as `NoteEditorField`: a `UITextField` with
+/// the decimal pad that takes first responder in `didMoveToWindow`, so the keyboard rises with the
+/// sheet rather than after it. The text goes back as typed, through the binding.
+private struct TotalAmountField: UIViewRepresentable {
+    @Binding var text: String
+
+    func makeUIView(context: Context) -> UITextField {
+        let view = FocusOnAppearTextField()
+        view.placeholder = "Amount"
+        view.keyboardType = .decimalPad
+        view.font = .preferredFont(forTextStyle: .body)
+        view.adjustsFontForContentSizeCategory = true
+        view.text = text
+        view.addTarget(
+            context.coordinator, action: #selector(Coordinator.editingChanged(_:)),
+            for: .editingChanged)
+        return view
+    }
+
+    func updateUIView(_ view: UITextField, context: Context) {
+        context.coordinator.text = $text
+        if view.text != text {
+            view.text = text
+        }
+    }
+
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView view: UITextField, context: Context)
+        -> CGSize?
+    {
+        CGSize(width: proposal.width ?? view.intrinsicContentSize.width,
+            height: view.intrinsicContentSize.height)
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator(text: $text) }
+
+    final class Coordinator: NSObject {
+        var text: Binding<String>
+
+        init(text: Binding<String>) { self.text = text }
+
+        @objc func editingChanged(_ field: UITextField) {
+            text.wrappedValue = field.text ?? ""
+        }
+    }
+}
+
+private final class FocusOnAppearTextField: UITextField {
+    private var askedForFocus = false
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if window != nil, !askedForFocus {
+            askedForFocus = true
+            becomeFirstResponder()
+        }
     }
 }
 
@@ -443,7 +523,6 @@ struct ContentView: View {
                             Color(.systemGroupedBackground)
                                 .ignoresSafeArea()
                             NoteEditorField(text: $enteringNoteText)
-                                .scrollContentBackground(.hidden)
                                 .padding(8)
                                 .background(
                                     Color(.secondarySystemGroupedBackground),
