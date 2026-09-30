@@ -136,3 +136,9 @@ The commitment sheet — the usual amounts in a card of their own, under the fir
 The figures are examples. "Add usual amount", the "Name" placeholder and the refusal's words are the
 shell's placeholders, not the seam's; the refusal's words are `spec-author`'s, beside "A commitment
 called … already exists."
+
+**Amended 2026-09-30 at G7, from the owner's phone walk.** The keyboard does **not** rise as the
+entry opens — the owner reversed their own change once used, as W.6 left room for, so the entry is
+option C as the designer drew it: the field focused only when tapped. The same walk asked for a
+tighter sheet (less space under the head, around the usual amounts, and lower rows, so the five sit
+closer) and for *Add usual amount* to be offered no longer once five rows are on the sheet.
