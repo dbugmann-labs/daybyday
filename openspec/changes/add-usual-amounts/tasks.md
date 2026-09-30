@@ -94,7 +94,7 @@ A fresh install, with a total named "Protein", target 120, defined through the c
 
 - [ ] W.1 The commitment sheet changing "Protein", the usual amounts card under the first holding 20 with no name and 35 "Müesli", *Add usual amount* last.
 - [ ] W.2 The total entry sheet for "Protein" open over the dimmed day, "0 of 120" under the name, five usual amounts smallest first under the field, the keyboard up and nothing scrolled.
-- [ ] W.3 After 35 "Müesli" is tapped, the entry closed; opened again, it says "35 of 120" — the row never says the sum.
+- [ ] W.3 After 35 "Müesli" is tapped, the entry closed and the day showing, the "Protein" row reading "35 of 120" under its name — the shell draws the entry's words there, as it does on `main`.
 - [ ] W.4 The commitment sheet with a sixth usual amount saved, "Five usual amounts at most." in red under the sixth row.
 - [ ] W.5 phone: a usual amount tapped on the phone adds it and closes the entry, and *Take back last* then undoes it.
 - [ ] W.6 phone: the entry opens with the keyboard already up — the owner may ask for it reverted once used (`grill.md` § *Layout*).
