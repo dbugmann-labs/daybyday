@@ -11,7 +11,7 @@ unticked scenario box, write the one test named for it, watch it fail, make it p
 
 ## 2. The seam
 
-- [ ] 2.1 Every member in `design.md` § *The seam* exists with that signature, `usualAmounts` held on `Roster.Entry` and written by `RosterEntryRecord`, and no other public signature in the Kit changes; `CommitmentRecord` is untouched.
+- [x] 2.1 Every member in `design.md` § *The seam* exists with that signature, `usualAmounts` held on `Roster.Entry` and written by `RosterEntryRecord`, and no other public signature in the Kit changes; `CommitmentRecord` is untouched.
 
 ## 3. `Commitment.UsualAmount`
 
@@ -60,15 +60,15 @@ unticked scenario box, write the one test named for it, watch it fail, make it p
 
 ## 7. `DayView` and `DayScreen`
 
-- [ ] 7.1 a total entry says the usual amounts its commitment declares, smallest first and as declared
-- [ ] 7.2 a total entry on a day of an earlier era says the usual amounts its commitment declares now — catches a list read off the era
-- [ ] 7.3 two total rows alike but for the usual amounts their commitment declares are different rows — catches a row equal under identity
-- [ ] 7.4 a usual amount tapped in a total entry is added to the day, and kept before the day view says so
-- [ ] 7.5 an addition made by a usual amount is taken back as the day's last
-- [ ] 7.6 a usual amount whose addition cannot be kept is refused and leaves the day view as it was
-- [ ] 7.7 a day screen returned to from a commitments screen offers the usual amounts declared there
-- [ ] 7.8 a usual amount that would take the day's sum past what can be kept exactly is refused and told on the row
-- [ ] 7.9 a usual amount a day screen cannot add on a row changes nothing and tells nothing — catches `add` trusting the amount it is handed
+- [x] 7.1 a total entry says the usual amounts its commitment declares, smallest first and as declared
+- [x] 7.2 a total entry on a day of an earlier era says the usual amounts its commitment declares now — catches a list read off the era
+- [x] 7.3 two total rows alike but for the usual amounts their commitment declares are different rows — catches a row equal under identity
+- [x] 7.4 a usual amount tapped in a total entry is added to the day, and kept before the day view says so
+- [x] 7.5 an addition made by a usual amount is taken back as the day's last
+- [x] 7.6 a usual amount whose addition cannot be kept is refused and leaves the day view as it was
+- [x] 7.7 a day screen returned to from a commitments screen offers the usual amounts declared there
+- [x] 7.8 a usual amount that would take the day's sum past what can be kept exactly is refused and told on the row
+- [x] 7.9 a usual amount a day screen cannot add on a row changes nothing and tells nothing — catches `add` trusting the amount it is handed
 
 ## 8. The shell (ADR-1019: no rule the Kit does not state)
 
