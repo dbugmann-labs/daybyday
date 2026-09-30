@@ -3763,3 +3763,95 @@ func aStoppedCommitmentsUsualAmountsAreDeclaredAndItStaysStopped() {
     #expect(roster.usualAmounts(of: protein) == [usual(20)])
     #expect(roster.commitments.isEmpty)
 }
+
+@Test("declaring usual amounts on a commitment that is not a total is refused")
+func declaringUsualAmountsOnACommitmentThatIsNotATotalIsRefused() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: everyDay, keptFrom: keptFrom, kind: .tick)!
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 40, highest: 150)))!
+    let journal = Commitment(name: "Journal", schedule: everyDay, keptFrom: keptFrom, kind: .note)!
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.add(weight)
+    _ = roster.add(journal)
+    let untouched = roster
+
+    let results = [gym, weight, journal].map { roster.declare([usual(20)], for: $0) }
+
+    #expect(results == [false, false, false])
+    #expect(roster == untouched)
+    #expect(roster.entries.allSatisfy { $0.usualAmounts.isEmpty })
+}
+
+@Test("declaring more than five usual amounts is refused")
+func declaringMoreThanFiveUsualAmountsIsRefused() {
+    let protein = totalCommitment("Protein")
+    var roster = Roster()
+    _ = roster.add(protein)
+
+    let six = roster.declare([10, 20, 30, 40, 50, 60].map { usual($0) }, for: protein)
+
+    #expect(!six)
+    #expect(roster.usualAmounts(of: protein).isEmpty)
+    let five = roster.declare([10, 20, 30, 40, 50].map { usual($0) }, for: protein)
+    #expect(five)
+}
+
+@Test("declaring two usual amounts alike is refused")
+func declaringTwoUsualAmountsAlikeIsRefused() {
+    let protein = totalCommitment("Protein")
+    var roster = Roster()
+    _ = roster.add(protein)
+
+    let names = roster.declare([usual(35, "Müesli"), usual(35, " MÜESLI ")], for: protein)
+    #expect(!names)
+    #expect(roster.usualAmounts(of: protein).isEmpty)
+
+    let unnamed = roster.declare([usual(20), usual(Decimal(string: "20.0")!)], for: protein)
+    #expect(!unnamed)
+
+    let three = roster.declare([usual(35, "Müesli"), usual(35, "Muesli"), usual(35)], for: protein)
+    #expect(three)
+}
+
+@Test("declaring usual amounts on a commitment a roster does not hold is refused")
+func declaringUsualAmountsOnACommitmentARosterDoesNotHoldIsRefused() {
+    let protein = totalCommitment("Protein")
+    let creatine = totalCommitment("Creatine", target: 5)
+    var roster = Roster()
+    _ = roster.add(protein)
+    _ = roster.add(creatine)
+    _ = roster.delete(creatine)
+    let afterDelete = roster
+
+    let deleted = roster.declare([usual(5)], for: creatine)
+    #expect(!deleted)
+    #expect(roster == afterDelete)
+
+    let neverHeld = totalCommitment("Protein")
+    let unheld = roster.declare([usual(5)], for: neverHeld)
+    #expect(!unheld)
+    #expect(roster == afterDelete)
+}
+
+@Test("a roster answers usual amounts smallest first, an unnamed one before a named one of the same amount")
+func aRosterAnswersUsualAmountsSmallestFirstAnUnnamedOneBeforeANamedOneOfTheSameAmount() {
+    let protein = totalCommitment("Protein")
+    var roster = Roster()
+    _ = roster.add(protein)
+
+    let declared = roster.declare(
+        [
+            usual(45, "Chicken breast"), usual(35, "Müesli"), usual(20), usual(35, "almonds"),
+            usual(35),
+        ], for: protein)
+
+    #expect(declared)
+    #expect(
+        roster.usualAmounts(of: protein) == [
+            usual(20), usual(35), usual(35, "almonds"), usual(35, "Müesli"),
+            usual(45, "Chicken breast"),
+        ])
+}

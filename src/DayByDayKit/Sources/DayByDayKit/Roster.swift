@@ -146,13 +146,56 @@ public struct Roster: Hashable, Sendable {
     public mutating func declare(
         _ usualAmounts: [Commitment.UsualAmount], for commitment: Commitment
     ) -> Bool {
+        guard
+            let newest = entries.first(where: { $0.commitment.identity == commitment.identity }),
+            case .total = newest.commitment.kind
+        else {
+            return false
+        }
+
+        guard usualAmounts.count <= 5, !Self.holdsTwoAlike(usualAmounts) else {
+            return false
+        }
+
+        let smallestFirst = usualAmounts.sorted { lhs, rhs in
+            if lhs.amount != rhs.amount {
+                return lhs.amount < rhs.amount
+            }
+            switch (lhs.name, rhs.name) {
+            case (nil, _?):
+                return true
+            case (let lhsName?, let rhsName?):
+                return Blank.trimmed(lhsName).lowercased() < Blank.trimmed(rhsName).lowercased()
+            default:
+                return false
+            }
+        }
+
         for index in entries.indices
         where entries[index].commitment.identity == commitment.identity {
             entries[index] = Entry(
                 commitment: entries[index].commitment, keptUntil: entries[index].keptUntil,
-                category: entries[index].category, usualAmounts: usualAmounts)
+                category: entries[index].category, usualAmounts: smallestFirst)
         }
         return true
+    }
+
+    /// Whether two of `usualAmounts` are alike: their amounts equal and either neither named or
+    /// their names one name, as two commitment names are one — `sameName`.
+    private static func holdsTwoAlike(_ usualAmounts: [Commitment.UsualAmount]) -> Bool {
+        for (index, first) in usualAmounts.enumerated() {
+            for second in usualAmounts[(index + 1)...] where first.amount == second.amount {
+                switch (first.name, second.name) {
+                case (nil, nil):
+                    return true
+                case (let lhs?, let rhs?) where sameName(lhs, rhs):
+                    return true
+                default:
+                    continue
+                }
+            }
+        }
+        return false
     }
 
     /// Adds `commitment` after every commitment already held, and answers `true`. When this
