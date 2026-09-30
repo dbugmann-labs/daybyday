@@ -722,7 +722,9 @@ private struct CommitmentSheet: View {
         Binding(
             get: { usualAmountRows.first { $0.id == id }?.amount ?? "" },
             set: { newValue in
-                guard let index = usualAmountRows.firstIndex(where: { $0.id == id }) else { return }
+                guard let index = usualAmountRows.firstIndex(where: { $0.id == id }),
+                    usualAmountRows[index].amount != newValue
+                else { return }
                 usualAmountRows[index].amount = newValue
                 isEdited = true
                 screen.sheetFieldEdited(.usualAmounts)
@@ -733,7 +735,9 @@ private struct CommitmentSheet: View {
         Binding(
             get: { usualAmountRows.first { $0.id == id }?.name ?? "" },
             set: { newValue in
-                guard let index = usualAmountRows.firstIndex(where: { $0.id == id }) else { return }
+                guard let index = usualAmountRows.firstIndex(where: { $0.id == id }),
+                    usualAmountRows[index].name != newValue
+                else { return }
                 usualAmountRows[index].name = newValue
                 isEdited = true
                 screen.sheetFieldEdited(.usualAmounts)
