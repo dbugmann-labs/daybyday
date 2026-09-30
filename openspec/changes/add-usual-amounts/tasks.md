@@ -33,30 +33,30 @@ unticked scenario box, write the one test named for it, watch it fail, make it p
 
 ## 5. `RosterStore`
 
-- [ ] 5.1 usual amounts declared through a commitments screen are held by a roster store opened afterwards at the same place — catches an era written without them
+- [x] 5.1 usual amounts declared through a commitments screen are held by a roster store opened afterwards at the same place — catches an era written without them
 - [x] 5.2 a roster store holding usual amounts no total could declare is refused
 - [x] 5.3 a roster store holding eras of one commitment declaring different usual amounts is refused
 - [x] 5.4 a roster kept before a commitment could declare usual amounts is read with every commitment declaring none — catches a read that rewrites the place
 - [x] 5.5 a roster store declaring a form written before usual amounts and saying something about them is refused
 - [x] 5.6 a roster store declaring the form this app writes and saying nothing about usual amounts is refused
-- [ ] 5.7 usual amounts declared over a roster kept before they existed are read back
+- [x] 5.7 usual amounts declared over a roster kept before they existed are read back
 
 ## 6. `CommitmentsScreen`
 
-- [ ] 6.1 a total commitment defined with usual amounts through a commitments screen declares them
-- [ ] 6.2 a usual amount's amount is read as a target is read — catches `Decimal(string:)` in place of `TypedNumber`
-- [ ] 6.3 a usual amount typed with both its fields blank is no usual amount and is not refused — catches a blank row counted towards five
-- [ ] 6.4 a usual amount that is not an amount is refused under its row
-- [ ] 6.5 a usual amount alike with one typed before it is refused under its row
-- [ ] 6.6 a sixth usual amount is refused under its row — catches an index counting blank rows out
-- [ ] 6.7 usual amounts typed on a kind that is not a total are ignored rather than refused
-- [ ] 6.8 a usual amount is refused only where nothing else typed on the sheet is, and before the roster is asked
-- [ ] 6.9 what a commitments screen tells about a usual amount ends when its usual amounts are edited
-- [ ] 6.10 a commitments screen says the usual amounts a total commitment declares, smallest first, and none for another kind
-- [ ] 6.11 a total commitment's usual amounts changed through a commitments screen put no era on it and leave the record place as it was — catches a list change taken for a new era
-- [ ] 6.12 a target and the usual amounts changed in one save put one era on, and every era declares the new usual amounts
-- [ ] 6.13 a stopped total commitment's usual amounts changed through a commitments screen are declared, and it stays stopped — catches the stopped guard counting them
-- [ ] 6.14 a change naming the usual amounts a total commitment already declares, in another order, changes nothing — catches a write on a reordered list
+- [x] 6.1 a total commitment defined with usual amounts through a commitments screen declares them
+- [x] 6.2 a usual amount's amount is read as a target is read — catches `Decimal(string:)` in place of `TypedNumber`
+- [x] 6.3 a usual amount typed with both its fields blank is no usual amount and is not refused — catches a blank row counted towards five
+- [x] 6.4 a usual amount that is not an amount is refused under its row
+- [x] 6.5 a usual amount alike with one typed before it is refused under its row
+- [x] 6.6 a sixth usual amount is refused under its row — catches an index counting blank rows out
+- [x] 6.7 usual amounts typed on a kind that is not a total are ignored rather than refused
+- [x] 6.8 a usual amount is refused only where nothing else typed on the sheet is, and before the roster is asked
+- [x] 6.9 what a commitments screen tells about a usual amount ends when its usual amounts are edited
+- [x] 6.10 a commitments screen says the usual amounts a total commitment declares, smallest first, and none for another kind
+- [x] 6.11 a total commitment's usual amounts changed through a commitments screen put no era on it and leave the record place as it was — catches a list change taken for a new era
+- [x] 6.12 a target and the usual amounts changed in one save put one era on, and every era declares the new usual amounts
+- [x] 6.13 a stopped total commitment's usual amounts changed through a commitments screen are declared, and it stays stopped — catches the stopped guard counting them
+- [x] 6.14 a change naming the usual amounts a total commitment already declares, in another order, changes nothing — catches a write on a reordered list
 
 ## 7. `DayView` and `DayScreen`
 

@@ -253,3 +253,176 @@ func aCommitmentsScreenSaysTheUsualAmountsATotalCommitmentDeclaresSmallestFirstA
     #expect(screen.whatItIsMadeOf(protein)?.usualAmounts == [usual(20), usual(35, "Müesli")])
     #expect(screen.whatItIsMadeOf(gym)?.usualAmounts == [])
 }
+
+/// A total "Protein" of target 120 kept from 1 January 2026 at `place`, declaring `declaring`.
+private func keptProtein(at place: URL, declaring: [Commitment.UsualAmount] = []) throws
+    -> Commitment
+{
+    let protein = Commitment(
+        name: "Protein", schedule: allSevenSchedule, keptFrom: newYear,
+        kind: .total(target: Commitment.Target(120)!))!
+    let store = try RosterStore(at: place)
+    try store.add(protein)
+    var declared = store.roster
+    declared.declare(declaring, for: protein)
+    try store.replace(with: declared)
+    return protein
+}
+
+@MainActor
+@Test("a total commitment's usual amounts changed through a commitments screen put no era on it and leave the record place as it was")
+func aTotalCommitmentsUsualAmountsChangedThroughACommitmentsScreenPutNoEraOnItAndLeaveTheRecordPlaceAsItWas()
+    throws
+{
+    let places = freshRosterAndRecordPlaces()
+    let protein = try keptProtein(at: places.roster, declaring: [usual(20)])
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    try RecordStore(at: places.record).add(Addition(30, for: protein, on: august3rd)!)
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let recordBytes = try Data(contentsOf: places.record)
+
+    let refusal = screen.change(
+        protein, toName: "Protein", on: allSeven, keptFrom: newYear, under: nil, target: "120",
+        usualAmounts: [Typed(amount: "35", name: "Müesli"), Typed(amount: "20", name: "")])
+
+    #expect(refusal == nil)
+    let later = try RosterStore(at: places.roster)
+    #expect(later.roster.eras(of: protein).count == 1)
+    #expect(later.roster.usualAmounts(of: protein) == [usual(20), usual(35, "Müesli")])
+    #expect(try Data(contentsOf: places.record) == recordBytes)
+}
+
+@MainActor
+@Test("a target and the usual amounts changed in one save put one era on, and every era declares the new usual amounts")
+func aTargetAndTheUsualAmountsChangedInOneSavePutOneEraOnAndEveryEraDeclaresTheNewUsualAmounts()
+    throws
+{
+    let places = freshRosterAndRecordPlaces()
+    let protein = try keptProtein(at: places.roster, declaring: [usual(20)])
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.change(
+        protein, toName: "Protein", on: allSeven, keptFrom: newYear, under: nil, target: "150",
+        usualAmounts: [Typed(amount: "35", name: "Müesli")])
+
+    #expect(refusal == nil)
+    let later = try RosterStore(at: places.roster)
+    let eras = later.roster.eras(of: protein)
+    #expect(eras.count == 2)
+    #expect(eras.first?.kind == .total(target: Commitment.Target(150)!))
+    #expect(later.roster.usualAmounts(of: protein) == [usual(35, "Müesli")])
+    #expect(later.roster.entries.allSatisfy { $0.usualAmounts == [usual(35, "Müesli")] })
+}
+
+@MainActor
+@Test("a stopped total commitment's usual amounts changed through a commitments screen are declared, and it stays stopped")
+func aStoppedTotalCommitmentsUsualAmountsChangedThroughACommitmentsScreenAreDeclaredAndItStaysStopped()
+    throws
+{
+    let places = freshRosterAndRecordPlaces()
+    let protein = try keptProtein(at: places.roster)
+    let gym = Commitment(name: "Gym", schedule: allSevenSchedule, keptFrom: newYear)!
+    let store = try RosterStore(at: places.roster)
+    try store.add(gym)
+    try store.retire(protein, keptUntil: CalendarDate(year: 2026, month: 8, day: 30)!)
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.change(
+        protein, toName: "Protein", on: allSeven, keptFrom: newYear, under: nil,
+        usualAmounts: [Typed(amount: "20", name: "")])
+
+    #expect(refusal == nil)
+    #expect(screen.stopped.map(\.name) == ["Protein"])
+    #expect(screen.whatItIsMadeOf(try #require(screen.stopped.first))?.usualAmounts == [usual(20)])
+    #expect(screen.kept.map(\.name) == ["Gym"])
+}
+
+/// The bytes at `place` laid out differently — pretty-printed, where a store writes them compact —
+/// so a write that changed nothing observable would still change the place's bytes.
+private func relaidOut(_ place: URL) throws -> Data {
+    let object = try JSONSerialization.jsonObject(with: Data(contentsOf: place))
+    let data = try JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted])
+    try data.write(to: place)
+    return data
+}
+
+@MainActor
+@Test("a change naming the usual amounts a total commitment already declares, in another order, changes nothing")
+func aChangeNamingTheUsualAmountsATotalCommitmentAlreadyDeclaresInAnotherOrderChangesNothing()
+    throws
+{
+    let places = freshRosterAndRecordPlaces()
+    let protein = try keptProtein(at: places.roster, declaring: [usual(20), usual(35, "Müesli")])
+    try RecordStore(at: places.record).add(
+        Addition(30, for: protein, on: CalendarDate(year: 2026, month: 8, day: 3)!)!)
+    let rosterBytes = try relaidOut(places.roster)
+    let recordBytes = try relaidOut(places.record)
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.change(
+        protein, toName: "Protein", on: allSeven, keptFrom: newYear, under: nil, target: "120",
+        usualAmounts: [Typed(amount: "35", name: "Müesli"), Typed(amount: "20", name: "")])
+
+    #expect(refusal == nil)
+    #expect(try Data(contentsOf: places.roster) == rosterBytes)
+    #expect(try Data(contentsOf: places.record) == recordBytes)
+}
+
+@MainActor
+@Test("usual amounts declared through a commitments screen are held by a roster store opened afterwards at the same place")
+func usualAmountsDeclaredThroughACommitmentsScreenAreHeldByARosterStoreOpenedAfterwardsAtTheSamePlace()
+    throws
+{
+    let place = freshRosterPlace()
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: place)
+
+    let defined = screen.define(
+        name: "Protein", on: allSeven, keptFrom: newYear, under: nil, kind: .total,
+        target: "120",
+        usualAmounts: [Typed(amount: "35", name: "Müesli"), Typed(amount: "0.50", name: "")])
+    let protein = try #require(screen.kept.first)
+    let changed = screen.change(
+        protein, toName: "Protein", on: allSeven, keptFrom: newYear, under: nil, target: "150")
+
+    #expect(defined == nil)
+    #expect(changed == nil)
+    let later = try RosterStore(at: place)
+    #expect(later.roster.eras(of: protein).count == 2)
+    #expect(
+        later.roster.usualAmounts(of: protein)
+            == [usual(Decimal(string: "0.5")!), usual(35, "Müesli")])
+}
+
+@MainActor
+@Test("usual amounts declared over a roster kept before they existed are read back")
+func usualAmountsDeclaredOverARosterKeptBeforeTheyExistedAreReadBack() throws {
+    let place = freshRosterPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(
+        """
+        { "version": 6, "emptied": false, "commitments": [
+          { "commitment": {
+              "kind": { "total": { "target": 120 } },
+              "name": "Protein",
+              "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+              "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+              "identity": "11111111-1111-1111-1111-111111111111" },
+            "category": null } ] }
+        """.utf8
+    ).write(to: place)
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: place)
+    let protein = try #require(screen.kept.first)
+
+    let refusal = screen.change(
+        protein, toName: "Protein", on: allSeven, keptFrom: newYear, under: nil,
+        usualAmounts: [Typed(amount: "35", name: "Müesli")])
+
+    #expect(refusal == nil)
+    let later = try RosterStore(at: place)
+    #expect(later.roster.usualAmounts(of: protein) == [usual(35, "Müesli")])
+}
