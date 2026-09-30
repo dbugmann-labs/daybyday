@@ -828,7 +828,8 @@ public final class CommitmentsScreen {
             era: earliestCommitment, schedule: rebuiltSchedule, keptFrom: newKeptFrom,
             kind: earliestCommitment.kind)!
         roster.entries[earliestSurvivingIndex] = Roster.Entry(
-            commitment: rebuilt, keptUntil: earliestEntry.keptUntil, category: earliestEntry.category)
+            commitment: rebuilt, keptUntil: earliestEntry.keptUntil, category: earliestEntry.category,
+            usualAmounts: earliestEntry.usualAmounts)
 
         for index in toDrop.sorted(by: >) {
             roster.entries.remove(at: index)
@@ -1003,7 +1004,8 @@ public final class CommitmentsScreen {
                 let survivor = candidateRoster.entries[identityStart + 1]
                 candidateRoster.entries.remove(at: identityStart)
                 candidateRoster.entries[identityStart] = Roster.Entry(
-                    commitment: survivor.commitment, keptUntil: nil, category: normalizedCategory)
+                    commitment: survivor.commitment, keptUntil: nil, category: normalizedCategory,
+                    usualAmounts: survivor.usualAmounts)
             }
 
             nextRoster = candidateRoster
@@ -1019,7 +1021,7 @@ public final class CommitmentsScreen {
             let existing = nextRoster.entries[index]
             nextRoster.entries[index] = Roster.Entry(
                 commitment: existing.commitment, keptUntil: existing.keptUntil,
-                category: normalizedCategory)
+                category: normalizedCategory, usualAmounts: existing.usualAmounts)
         }
 
         if let recordStore,

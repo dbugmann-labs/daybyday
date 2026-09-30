@@ -152,7 +152,9 @@ struct RosterDocument: Codable {
             }
 
             currentRunEntries.append(
-                Roster.Entry(commitment: commitment, keptUntil: keptUntil, category: entry.category))
+                Roster.Entry(
+                    commitment: commitment, keptUntil: keptUntil, category: entry.category,
+                    usualAmounts: []))
         }
         if let currentIdentity {
             closedIdentities.insert(currentIdentity)
@@ -281,7 +283,8 @@ struct RosterDocument: Codable {
                 return nil
             }
             let head = Roster.Entry(
-                commitment: item.commitment, keptUntil: item.keptUntil, category: item.category)
+                commitment: item.commitment, keptUntil: item.keptUntil, category: item.category,
+                usualAmounts: [])
             chains.append(Chain(representative: item.commitment, headIndex: index, head: head))
             originallyKeptOrStopped.append((item.commitment.name, item.commitment.kind))
             identities.updateValue(item.commitment.identity, forKey: CommitmentRecord.bare(item.commitment))
@@ -308,7 +311,9 @@ struct RosterDocument: Codable {
                     keptFrom: item.commitment.keptFrom, kind: item.commitment.kind)!
                 identities.updateValue(era.identity, forKey: CommitmentRecord.bare(item.commitment))
                 chain.eras.append(
-                    Roster.Entry(commitment: era, keptUntil: keptUntil, category: item.category))
+                    Roster.Entry(
+                        commitment: era, keptUntil: keptUntil, category: item.category,
+                        usualAmounts: []))
                 chain.front = item.commitment.keptFrom
                 chain.frontIndex = index
                 continue
@@ -327,7 +332,8 @@ struct RosterDocument: Codable {
             }
 
             let standalone = Roster.Entry(
-                commitment: item.commitment, keptUntil: keptUntil, category: item.category)
+                commitment: item.commitment, keptUntil: keptUntil, category: item.category,
+                usualAmounts: [])
             chains.append(Chain(representative: item.commitment, headIndex: index, head: standalone))
             identities.updateValue(item.commitment.identity, forKey: CommitmentRecord.bare(item.commitment))
         }
