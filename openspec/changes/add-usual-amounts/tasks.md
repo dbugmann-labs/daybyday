@@ -86,7 +86,7 @@ unticked scenario box, write the one test named for it, watch it fail, make it p
 
 - [x] 10.1 `openspec validate add-usual-amounts --strict` exits 0, and `pnpm run checks` is clean
 - [x] 10.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
-- [ ] 10.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
+- [x] 10.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 10.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked — W.5 and W.6 by the conductor — and the walk comment's URL is in W.7. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `commitment/spec.md` gained the six ADDED requirements, carries the renamed change requirement and not the old heading, and that `day-screen/spec.md` gained its two and carries the renamed total entry requirement, with the six MODIFIED requirements whole and no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
 
 ## The walk
@@ -97,6 +97,6 @@ A fresh install, with a total named "Protein", target 120, defined through the c
 - [x] W.2 The total entry sheet for "Protein" opened again after W.3, over the dimmed day, "35 of 120" under the name, the keyboard up, and all five usual amounts smallest first under the field with nothing scrolled; the hand-back says whether *Take back last* shows above the keyboard or sits under it, read off the picture.
 - [x] W.3 After 35 "Müesli" is tapped, the entry closed and the day showing, the "Protein" row reading "35 of 120" under its name — the shell draws the entry's words there, as it does on `main`.
 - [x] W.4 The commitment sheet with five rows on it, the fifth typed as a second 35 "Müesli", *Add usual amount* not offered, and after Save "You already have that one." in red under the fifth row.
-- [ ] W.5 phone: a usual amount tapped on the phone adds it and closes the entry, and *Take back last* then undoes it.
-- [ ] W.6 phone: the entry opens with the keyboard already up.
+- [x] W.5 phone: a usual amount tapped on the phone adds it and closes the entry, and *Take back last* then undoes it.
+- [x] W.6 phone: the entry opens with the keyboard already up.
 - [x] W.7 **The handover** — W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. W.5 and W.6 are the human's at G7; the conductor ticks them on the G7 approval. https://github.com/dbugmann-labs/daybyday/pull/366#issuecomment-5911762001
