@@ -201,6 +201,39 @@ it as a gap rather than saying it unprompted.*
 - **Open** — does a spoken note leave the phone? Apple's recogniser can run on the device for some
   languages and not others, and a note is the most personal thing the record holds.
 
+### B-066 — come back from Commitments to a day screen that is whole at once
+
+*Captured 2026-09-28. Sent to `chore/day-paging` (PR #362) at the twenty-second pass and returned
+to Wants the same day, 2026-09-30, unfixed, by the owner's choice.*
+
+> "When moving from commitmens back to the day screen, the heading (e.g. Monday) is loaded after
+> the rest, with a small delay - this is not so nice visually"
+
+- **Trigger** — leaving the Commitments screen for the day screen, when the rows are drawn and the
+  day title ("Monday") arrives a moment after them. A defect the owner saw on the phone, not a new
+  thing to do.
+- **Touches** — `day-screen`, and only the app shell. *A day screen says which day it is showing*
+  says what the title is and never when it is drawn, so no requirement is broken; how the title
+  lands during the return is shell work, a chore under ADR-1019 the way B-050 was. It sits beside
+  B-061, B-062 and B-064 as a defect in how the day screen is drawn rather than in what it says.
+- **Principle** — tested against *an iPhone, in your hand*: **passes.** The day title is how the
+  screen says which day a tick lands on, and a screen that settles in two steps reads as a screen
+  still loading, on a return made several times a day.
+- **Open** — is it every return from Commitments, or only some — after a change was saved there,
+  on the first return after launch, only when the day shown is not today?
+- **Open** — does the same late title show on returning from a look back or any other pushed
+  screen, or only from Commitments? That decides whether the chore is about one transition or all
+  of them.
+- **Open** — can it be shown in the Simulator? A delay this short may only be visible on the phone,
+  which would make it a `phone:` step.
+- **Measured 2026-09-30**, on the simulator at `chore/day-paging`, by recording the return and reading
+  the frames: the rows and date row draw first and the weekday title about 0.4 s later. Not caused by
+  `returnedTo` or the `commitmentsScreen = nil` in `onChange(of: showingCommitments)` — both disabled,
+  the lag stayed — and `.toolbarTitleDisplayMode(.large)` does not help. **`.inlineLarge` removes it**
+  and moves the title up beside the toolbar buttons on every day screen; the owner chose to keep the
+  large title and leave the lag rather than take a layout nobody chose. The next attempt starts from
+  a cause, not a workaround.
+
 ### B-069 — choose the app's accent colour in Settings
 *Captured 2026-09-29.*
 
@@ -384,7 +417,9 @@ months later.
   matched before. B-066 is a transition rather than paging and rides along because it is the same
   screen in the same file. Taken ahead of every Feature-shaped cluster because B-064 writes ticks
   nobody meant into the record, and because #347, which the four paging wants queued behind, has
-  merged.
+  merged. **B-066 came back the same day**: the chore (PR #362) fixed the other four and found the
+  only cure for the late title to be `.inlineLarge`, a layout change, which the owner declined; the
+  entry is in *Wants* again with the measurement.
 
 - 2026-09-29 — open Commitments to the roster alone, and the app's settings somewhere of their own
   (B-067) → Story #353 `add-settings-screen` under `FEAT: restore` (#264), reopened with
@@ -1451,7 +1486,9 @@ found nothing.
     `chore/day-paging`, a chore on the app shell under ADR-1019; the Decided line above carries
     what each asks. Recommended because B-064 writes ticks nobody meant into the record, because
     #347 — which the paging wants queued behind — has merged, and because a chore needs no gate.
-    B-066 is a transition, not paging, and rides along as the same screen in the same file.
+    B-066 is a transition, not paging, and rode along as the same screen in the same file — and
+    came back: the chore confirmed the lag but its only cure was `.inlineLarge`, and the owner kept
+    the large title. PR #362 carries the other four.
   - **Not taken**, each with the disposition this pass proposed:
     - **B**, typing a value into the entry sheet: B-071, B-074, B-063, B-075. Wait for #361, which
       rebuilds that sheet; B-063 and B-075 may need no code once it lands — the keyboard's dictation
