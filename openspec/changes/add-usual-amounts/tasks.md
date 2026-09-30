@@ -57,7 +57,7 @@ unticked scenario box, write the one test named for it, watch it fail, make it p
 - [x] 6.12 a target and the usual amounts changed in one save put one era on, and every era declares the new usual amounts
 - [x] 6.13 a stopped total commitment's usual amounts changed through a commitments screen are declared, and it stays stopped — catches the stopped guard counting them
 - [x] 6.14 a change naming the usual amounts a total commitment already declares, in another order, changes nothing — catches a write on a reordered list
-- [ ] 6.15 a commitments screen offers another usual amount while fewer than five are on its sheet, blank ones counted — catches blank rows counted out
+- [x] 6.15 a commitments screen offers another usual amount while fewer than five are on its sheet, blank ones counted — catches blank rows counted out
 
 ## 7. `DayView` and `DayScreen`
 

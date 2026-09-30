@@ -186,8 +186,7 @@ struct RosterDocument: Codable {
 
     /// The usual amounts `entry` declares, smallest first: none in a form before
     /// `usualAmountsIntroducedInVersion`, and `nil` where the form carries them and this entry's
-    /// say something no usual amount could — the key null, an amount not above zero, a name of
-    /// nothing but blank space.
+    /// say something no usual amount could — the key null, or an amount not above zero.
     private func usualAmounts(of entry: RosterEntryRecord) -> [Commitment.UsualAmount]? {
         guard version >= Self.usualAmountsIntroducedInVersion else {
             return []
@@ -197,9 +196,7 @@ struct RosterDocument: Codable {
         }
         var formed: [Commitment.UsualAmount] = []
         for record in records {
-            guard record.name.map({ !Blank.saysNothing($0) }) ?? true,
-                let usualAmount = Commitment.UsualAmount(record.amount, named: record.name)
-            else {
+            guard let usualAmount = Commitment.UsualAmount(record.amount, named: record.name) else {
                 return nil
             }
             formed.append(usualAmount)

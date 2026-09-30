@@ -196,8 +196,9 @@ public struct Roster: Hashable, Sendable {
     }
 
     /// Whether two of `usualAmounts` are alike: their amounts equal and either neither named or
-    /// their names one name, as two commitment names are one — `sameName`.
-    private static func holdsTwoAlike(_ usualAmounts: [Commitment.UsualAmount]) -> Bool {
+    /// their names one name, as two commitment names are one — `sameName`. Package-internal:
+    /// `CommitmentsScreen` reads a typed usual amount against those already read by it.
+    static func holdsTwoAlike(_ usualAmounts: [Commitment.UsualAmount]) -> Bool {
         for (index, first) in usualAmounts.enumerated() {
             for second in usualAmounts[(index + 1)...] where first.amount == second.amount {
                 switch (first.name, second.name) {

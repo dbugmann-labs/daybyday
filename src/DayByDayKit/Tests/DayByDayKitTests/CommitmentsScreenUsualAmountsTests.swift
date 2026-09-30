@@ -426,3 +426,19 @@ func usualAmountsDeclaredOverARosterKeptBeforeTheyExistedAreReadBack() throws {
     let later = try RosterStore(at: place)
     #expect(later.roster.usualAmounts(of: protein) == [usual(35, "Müesli")])
 }
+
+private func typedRows(_ amounts: [String]) -> [Typed] {
+    amounts.map { Typed(amount: $0, name: "") }
+}
+
+@MainActor
+@Test("a commitments screen offers another usual amount while fewer than five are on its sheet, blank ones counted")
+func aCommitmentsScreenOffersAnotherUsualAmountWhileFewerThanFiveAreOnItsSheetBlankOnesCounted() {
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: freshRosterPlace())
+
+    #expect(screen.offersAnotherUsualAmount(after: typedRows(["10", "20", "30", "40"])))
+    #expect(screen.offersAnotherUsualAmount(after: []))
+    #expect(!screen.offersAnotherUsualAmount(after: typedRows(["10", "20", "30", "40", "50"])))
+    #expect(!screen.offersAnotherUsualAmount(after: typedRows(["10", "20", "30", "40", ""])))
+    #expect(!screen.offersAnotherUsualAmount(after: typedRows(["10", "20", "30", "40", "abc", "10"])))
+}

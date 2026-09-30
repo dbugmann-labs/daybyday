@@ -264,6 +264,8 @@ func aUsualAmountADayScreenCannotAddOnARowChangesNothingAndTellsNothing() throws
     screen.showNextDay()
     try screen.add(protein, on: try row("Protein"))
     #expect(screen.notice == nil)
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    #expect(try row("Protein").totalEntry(asOf: tuesday)?.soFarOfTarget == "0 of 120")
     screen.showToday()
     #expect(try entry(screen, "Protein").soFarOfTarget == "0 of 120")
 

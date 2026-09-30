@@ -559,6 +559,12 @@ public final class CommitmentsScreen {
         public let usualAmounts: [Commitment.UsualAmount]
     }
 
+    /// Whether another usual amount is offered after `typed`: only while fewer than five rows are
+    /// on the sheet, blank ones counted. It changes nothing a define or a change refuses.
+    public func offersAnotherUsualAmount(after typed: [TypedUsualAmount]) -> Bool {
+        typed.count < 5
+    }
+
     /// A usual amount as a person typed it: the amount and the name, both as text.
     public struct TypedUsualAmount: Equatable, Sendable {
         public let amount: String
@@ -688,7 +694,7 @@ public final class CommitmentsScreen {
             else {
                 return .failure(.usualAmountIsNotAnAmount(index))
             }
-            guard !read.contains(where: { Self.alike($0, usualAmount) }) else {
+            guard !read.contains(where: { Roster.holdsTwoAlike([$0, usualAmount]) }) else {
                 return .failure(.usualAmountAlike(index))
             }
             guard read.count < 5 else {
@@ -697,19 +703,6 @@ public final class CommitmentsScreen {
             read.append(usualAmount)
         }
         return .success(read)
-    }
-
-    /// Whether two usual amounts are alike: one amount, and either neither named or names that
-    /// are one name — `sameName`, as two commitment names are compared.
-    private static func alike(_ lhs: Commitment.UsualAmount, _ rhs: Commitment.UsualAmount) -> Bool {
-        guard lhs.amount == rhs.amount else {
-            return false
-        }
-        switch (lhs.name, rhs.name) {
-        case (nil, nil): return true
-        case (let lhsName?, let rhsName?): return sameName(lhsName, rhsName)
-        default: return false
-        }
     }
 
     /// `lowest` and `highest` read as a range for the number kind — `nil` where both are blank,
@@ -1055,7 +1048,7 @@ public final class CommitmentsScreen {
             nameChanged || keptFromChanged || putsNewEra || normalizedCategory != entry.category
                 || usualAmountsChanged
         else {
-            // The five things name what is already there, and the category it is already
+            // The six things name what is already there, and the category it is already
             // under: change nothing, write nothing, refuse nothing.
             return nil
         }
