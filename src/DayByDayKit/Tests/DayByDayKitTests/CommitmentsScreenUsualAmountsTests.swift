@@ -163,3 +163,93 @@ func aSixthUsualAmountIsRefusedUnderItsRow() throws {
     withABlank.insert(Typed(amount: "", name: ""), at: 2)
     #expect(definingProtein(withABlank, on: screen) == .moreThanFiveUsualAmounts(6))
 }
+
+@MainActor
+@Test("usual amounts typed on a kind that is not a total are ignored rather than refused")
+func usualAmountsTypedOnAKindThatIsNotATotalAreIgnoredRatherThanRefused() throws {
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: freshRosterPlace())
+    let typed = [Typed(amount: "abc", name: "Shake"), Typed(amount: "20", name: "")]
+
+    let gym = screen.define(
+        name: "Gym", on: allSeven, keptFrom: monday, under: nil, kind: .tick, usualAmounts: typed)
+    #expect(gym == nil)
+    let gymCommitment = try #require(screen.kept.first { $0.name == "Gym" })
+    #expect(screen.whatItIsMadeOf(gymCommitment)?.kind == .tick)
+    #expect(screen.whatItIsMadeOf(gymCommitment)?.usualAmounts == [])
+
+    let weight = screen.define(
+        name: "Weight", on: allSeven, keptFrom: monday, under: nil, kind: .number, lowest: "40",
+        highest: "150", usualAmounts: typed)
+    let journal = screen.define(
+        name: "Journal", on: allSeven, keptFrom: monday, under: nil, kind: .note,
+        usualAmounts: typed)
+    #expect(weight == nil)
+    #expect(journal == nil)
+    for commitment in screen.kept {
+        #expect(screen.whatItIsMadeOf(commitment)?.usualAmounts == [])
+    }
+    #expect(screen.kept.count == 3)
+}
+
+@MainActor
+@Test("a usual amount is refused only where nothing else typed on the sheet is, and before the roster is asked")
+func aUsualAmountIsRefusedOnlyWhereNothingElseTypedOnTheSheetIsAndBeforeTheRosterIsAsked() throws {
+    let place = freshRosterPlace()
+    let protein = Commitment(
+        name: "Protein", schedule: allSevenSchedule, keptFrom: newYear,
+        kind: .total(target: Commitment.Target(120)!))!
+    try RosterStore(at: place).add(protein)
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: place)
+    let typed = [Typed(amount: "abc", name: "Shake")]
+
+    #expect(
+        definingProtein(typed, on: screen, name: "   ", target: "50") == .namesNothing)
+    #expect(
+        definingProtein(typed, on: screen, name: "Creatine", target: "abc")
+            == .targetIsNotATarget)
+    #expect(
+        definingProtein(typed, on: screen, name: "PROTEIN", target: "50")
+            == .usualAmountIsNotAnAmount(0))
+}
+
+@MainActor
+@Test("what a commitments screen tells about a usual amount ends when its usual amounts are edited")
+func whatACommitmentsScreenTellsAboutAUsualAmountEndsWhenItsUsualAmountsAreEdited() {
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: freshRosterPlace())
+
+    let refusal = definingProtein([Typed(amount: "abc", name: "Shake")], on: screen)
+    screen.sheetFieldEdited(.name)
+    screen.sheetFieldEdited(.target)
+
+    #expect(refusal == .usualAmountIsNotAnAmount(0))
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(field: .usualAmounts, refusal: .usualAmountIsNotAnAmount(0)))
+
+    screen.sheetFieldEdited(.usualAmounts)
+
+    #expect(screen.sheetRefusal == nil)
+}
+
+@MainActor
+@Test("a commitments screen says the usual amounts a total commitment declares, smallest first, and none for another kind")
+func aCommitmentsScreenSaysTheUsualAmountsATotalCommitmentDeclaresSmallestFirstAndNoneForAnotherKind()
+    throws
+{
+    let place = freshRosterPlace()
+    let protein = Commitment(
+        name: "Protein", schedule: allSevenSchedule, keptFrom: newYear,
+        kind: .total(target: Commitment.Target(120)!))!
+    let gym = Commitment(name: "Gym", schedule: allSevenSchedule, keptFrom: newYear)!
+    let store = try RosterStore(at: place)
+    try store.add(protein)
+    try store.add(gym)
+    var declared = store.roster
+    declared.declare([usual(35, "Müesli"), usual(20)], for: protein)
+    try store.replace(with: declared)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: place)
+
+    #expect(screen.whatItIsMadeOf(protein)?.usualAmounts == [usual(20), usual(35, "Müesli")])
+    #expect(screen.whatItIsMadeOf(gym)?.usualAmounts == [])
+}
