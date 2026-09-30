@@ -132,6 +132,10 @@ decision it records is the owner's, twice.*
 - **Re-read 2026-09-15**, at the ninth pass, as the amendment above asked: **leave**, not drop. The
   one-tap argument is gone, but the two Open lines below still price it at an evening per attempt
   with no test, and the iOS 27 API may make it free. Re-decide when the SDK carries it.
+- **Re-read 2026-09-30**, at the twenty-second pass: the SDK carries it — this machine builds with
+  Xcode 27 and the iOS 27 SDK — but the project's deployment target is iOS 26, so using
+  `reorderable(collectionID:)` means raising the minimum to iOS 27 for one gesture. **Leave**; the
+  decision it now waits on is the deployment target, which is the owner's.
 - **Open** — is it buildable at all? Two things were measured rather than guessed at #147, and any
   future attempt starts from them: **`.onMove` and `.dropDestination(for:)` cannot share a
   `ForEach`** — instrumented, `.onMove` won every long press and `.dropDestination` never fired —
@@ -173,48 +177,6 @@ it as a gap rather than saying it unprompted.*
 - **Open** — where does the row come from? A day view draws what is due; a Tuesday row for gym is a
   row for something not due, which is the thing *offered* was landed to keep off the screen.
 
-### B-061 — come back to the app on a whole day, never half-way between two
-
-*Captured 2026-09-25.*
-
-> "When I switch to another app (swipe on the bottom of the screen on the iphone), and then I go
-> back to DayByDay, then the day screen is stuck between 2 day screens (the app switch swipe
-> starts a day change which is stopped.. It feels buggy)"
-
-- **Trigger** — leaving the app from the day screen with the home-indicator swipe, then coming
-  back to it. A defect the owner hit on the phone, not a new thing to do.
-- **Touches** — `day-screen`, and only the app shell. The paging is shell work under ADR-1043, and
-  `add-adjacent-day-views`' `design.md` keeps every motion, distance and threshold out of the kit,
-  so no requirement says where a page comes to rest. Likely a shell chore under ADR-1019, the way
-  B-050 was.
-- **Principle** — tested against *an iPhone, in your hand*: **passes.** The home-indicator swipe is
-  how every app is left on this phone, so a day screen that catches the start of it is a screen
-  arguing with the phone it lives on.
-- **Open** — does a half-way page ever settle on its own — on the next touch, on the next swipe —
-  or does it stay until something moves the day?
-- **Open** — can it be shown in the Simulator at all? The swipe that starts it is the system's, so
-  this may be a `phone:` step only, which prices it like B-041.
-
-### B-062 — open every day at its top
-
-*Captured 2026-09-25.*
-
-> "When I scroll to the bottom of the day screen and I switch to another day (swiping, day picker
-> or chevron), then this new day is directly also scrolled to the bottom.. I don't want that, it
-> should always show another day on top"
-
-- **Trigger** — a long day scrolled to its end, then a move to another day by any of the three
-  ways there: the swipe, the day picker, a chevron.
-- **Touches** — `day-screen`, and only the app shell: where a day's list is scrolled to is shell
-  state, and no requirement says where a day opens. Same paging as B-061, so the two cluster.
-- **Principle** — tested against *entered where you stand*: **passes.** A day opened at its bottom
-  puts its first rows off the screen, and those are rows an entry is made in; landing at the end
-  means a scroll before the first tap.
-- **Open** — is *Today* a fourth way there that should also open at the top? The quote names three,
-  and *Today* is also a move to another day.
-- **Open** — does coming back to the app from the background count as another day? The quote is
-  about moving between days, not about returning to the same one.
-
 ### B-063 — speak a note instead of typing it, in German
 
 *Captured 2026-09-25.*
@@ -238,73 +200,6 @@ it as a gap rather than saying it unprompted.*
   up first? That is a new control and a microphone permission, where the keyboard's key is neither.
 - **Open** — does a spoken note leave the phone? Apple's recogniser can run on the device for some
   languages and not others, and a note is the most personal thing the record holds.
-
-### B-064 — swipe to another day without ticking what the swipe started on
-
-*Captured 2026-09-28.*
-
-> "When I swipe between days, and I start the swipe where I would tick or untick a one off, it does
-> the tick/untick even tho I don't want to"
-
-- **Trigger** — a swipe to the day before or after whose finger lands on a one-off row's tick. A
-  defect the owner hit on the phone, and one that writes: the unwanted tick or untick is kept in the
-  record, not only drawn.
-- **Touches** — `day-screen`, and only the app shell. No requirement mentions a swipe; the paging is
-  shell work under ADR-1043, and the one-off row is a button inside the same list the day swipe is
-  attached to. Same paging as B-061 and B-062, so the three cluster.
-- **Principle** — tested against *an iPhone, in your hand*: **passes.** A day screen is rows from top
-  to bottom, so a thumb starting a swipe has nowhere to land that is not a row; a swipe that ticks
-  what it started on turns moving between days into an entry nobody meant.
-- **Answered 2026-09-28, by the owner** — **only one-off rows**: a swipe started on a commitment's or
-  a birthday's tick does not tick it. **The swipe still happens**: the day moves *and* the one-off is
-  ticked or unticked, so the gesture is read twice rather than taken by the wrong one.
-- **Open** — can it be shown in the Simulator? XCUITest's synthetic drags have not matched a thumb
-  before (B-041), so this may be a `phone:` step.
-
-### B-066 — come back from Commitments to a day screen that is whole at once
-
-*Captured 2026-09-28.*
-
-> "When moving from commitmens back to the day screen, the heading (e.g. Monday) is loaded after
-> the rest, with a small delay - this is not so nice visually"
-
-- **Trigger** — leaving the Commitments screen for the day screen, when the rows are drawn and the
-  day title ("Monday") arrives a moment after them. A defect the owner saw on the phone, not a new
-  thing to do.
-- **Touches** — `day-screen`, and only the app shell. *A day screen says which day it is showing*
-  says what the title is and never when it is drawn, so no requirement is broken; how the title
-  lands during the return is shell work, a chore under ADR-1019 the way B-050 was. It sits beside
-  B-061, B-062 and B-064 as a defect in how the day screen is drawn rather than in what it says.
-- **Principle** — tested against *an iPhone, in your hand*: **passes.** The day title is how the
-  screen says which day a tick lands on, and a screen that settles in two steps reads as a screen
-  still loading, on a return made several times a day.
-- **Open** — is it every return from Commitments, or only some — after a change was saved there,
-  on the first return after launch, only when the day shown is not today?
-- **Open** — does the same late title show on returning from a look back or any other pushed
-  screen, or only from Commitments? That decides whether the chore is about one transition or all
-  of them.
-- **Open** — can it be shown in the Simulator? A delay this short may only be visible on the phone,
-  which would make it a `phone:` step.
-
-### B-068 — land on the day I tapped, even while a swipe is still settling
-*Captured 2026-09-28, from the twenty-first grooming sweep. The wording is the sweep's.*
-
-> "A jump tapped during a swipe's settle lands one day off."
-
-- **Trigger** — a week strip day or `Today` tapped within the ~0.35 s a carried swipe takes to
-  settle. The jump runs first, then the settle's `showNextDay()` or `showPreviousDay()` runs on top,
-  so the screen ends one day past the tap after a leftward swipe and one short after a rightward one.
-  Found at `add-week-strip`'s (#346) G7 and left out of its fix round by the owner; recorded in
-  `docs/open-questions.md` as wanting "a Story or a shell chore of its own".
-- **Touches** — `day-screen`, and probably only the app shell: the settle is `settle(to:then:)` in
-  `ContentView.swift`, and no requirement says when a jump lands. Same paging as B-061, B-062 and
-  B-064, and it queues behind #347 `page-the-week-strip`, which adds a second horizontal gesture.
-- **Principle** — tested against *an iPhone, in your hand*: **passes.** The strip sits right above
-  where the thumb swipes, so a quick tap after a swipe is the ordinary case, and a screen a day off
-  is where a tick lands on the wrong day.
-- **Open** — the fix is for every control that jumps, not only the strip: cancel the pending
-  settle, or ignore it once a jump has run.
-- **Open** — can it be shown in the Simulator inside 0.35 s, or is it a `phone:` step?
 
 ### B-069 — choose the app's accent colour in Settings
 *Captured 2026-09-29.*
@@ -444,11 +339,52 @@ it as a gap rather than saying it unprompted.*
 - **Open** — nothing on the day-one week is below zero. Is any commitment the owner keeps, or means
   to, ranged that way, or is this a promise nobody is calling in yet?
 
+### B-075 — start typing a note the moment its entry opens
+*Captured 2026-09-30, at the twenty-second grooming pass.*
+
+> "When I click on Diary, I want the textarea to immediately be focused so I can start typing"
+
+- **Trigger** — tapping a note commitment's row on the day screen (the owner's is called
+  *Diary*), then a second tap into the field before a word can be typed.
+- **Touches** — `day-screen`'s note entry, and only the app shell: which field holds focus when a
+  sheet opens is a drawing rule, and no requirement says anything about it.
+- **Principle** — tested against *entered where you stand*: **passes.** The entry is already in the
+  row; this removes the one tap between opening it and making it.
+- **Open** — `chore/entry-sheet` (#361) rebuilds the note entry as a compact sheet and says "the
+  keyboard rises with it". If that is true of the note sheet too, this is done when #361 merges and
+  the entry is closed on that evidence; if the keyboard rises only for a number and a total, this is
+  the follow-up.
+- **Open** — the same for a number and a total, so every entry sheet opens ready to type?
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-09-30 — come back to the app on a whole day (B-061), open every day at its top (B-062),
+  swipe to another day without ticking the one-off the swipe started on (B-064), come back from
+  Commitments to a day screen that is whole at once (B-066), and land on the day tapped even while a
+  swipe is still settling (B-068) → **one chore on the app shell, `chore/day-paging`, under
+  ADR-1019.** Five defects the owner hit on the phone in how the day screen pages and draws, none of
+  them touching a requirement: no spec says where a page comes to rest, where a day opens, which
+  gesture a touch belongs to, or when the title lands. What each one asks, so the chore can be
+  built from this line: (B-061) leaving the app with the home-indicator swipe must not leave the
+  screen half-way between two days — it settles on one. (B-062) a day reached by a swipe, the day
+  picker, a chevron, the week strip or *Today* opens scrolled to its top. (B-064) a swipe that
+  starts on a **one-off** row's tick moves the day and leaves the one-off as it was; today the
+  gesture is read twice — the day moves *and* the one-off is ticked or unticked, and that tick is
+  kept in the record — and only on one-off rows, since a swipe started on a commitment's or a
+  birthday's tick already ticks nothing (the owner's account of 2026-09-28). (B-066) returning from Commitments draws the
+  day title with the rows, not after them. (B-068) a jump — the week strip, *Today* — tapped during
+  a carried swipe's ~0.35 s settle lands on the day tapped, for every control that jumps: the
+  pending `settle(to:then:)` in `ContentView.swift` is cancelled or ignored once a jump has run
+  (`docs/open-questions.md` holds the measurement from #346's G7). The walk is mostly `phone:`
+  lines — a system swipe, a settle under 0.35 s and a thumb's drag are what the simulator has not
+  matched before. B-066 is a transition rather than paging and rides along because it is the same
+  screen in the same file. Taken ahead of every Feature-shaped cluster because B-064 writes ticks
+  nobody meant into the record, and because #347, which the four paging wants queued behind, has
+  merged.
 
 - 2026-09-29 — open Commitments to the roster alone, and the app's settings somewhere of their own
   (B-067) → Story #353 `add-settings-screen` under `FEAT: restore` (#264), reopened with
@@ -1499,3 +1435,32 @@ found nothing.
     *Take-out* and *Birthday* were amended.
   - **Not re-judged** — B-039, B-041, B-054, B-061..B-064, B-066, B-068. #353 and #347 share no
     spec; both change `ContentView.swift`, in different regions, so a rebase covers it.
+- 2026-09-30 — pass over 14 wants, the twenty-second, on `chore/backlog` (PR #359, holding
+  B-069..B-073 unmerged), `origin/main` at 1f4fe49.
+  - **Sweep** — one silence, confirmed and captured before clustering: **B-074**, a number below
+    zero cannot be typed on the day screen, found by `chore/entry-sheet` (#361) and named in its PR
+    body as "a defect for the backlog"; it was already on `main`, where the number and total entries
+    use the decimal pad. Day-one week: every line shipped. Lifecycle verbs unchanged since the
+    eleventh pass; no new capability spec. `docs/open-questions.md` gained two entries since the
+    B-067 sweep and neither is a want: the one-off field that keeps a letter (the owner asked for a
+    note, not a fix) and the copy's moments in the phone's region format (under B-072's Touches).
+    B-041's re-read fell due and is recorded on the entry: the SDK carries the API, the target does
+    not.
+  - **Housekeeping** — B-075 captured mid-pass from the owner and placed in cluster B.
+  - **Taken forward** — **A**, day-screen paging and drawing: B-061, B-062, B-064, B-066, B-068 →
+    `chore/day-paging`, a chore on the app shell under ADR-1019; the Decided line above carries
+    what each asks. Recommended because B-064 writes ticks nobody meant into the record, because
+    #347 — which the paging wants queued behind — has merged, and because a chore needs no gate.
+    B-066 is a transition, not paging, and rides along as the same screen in the same file.
+  - **Not taken**, each with the disposition this pass proposed:
+    - **B**, typing a value into the entry sheet: B-071, B-074, B-063, B-075. Wait for #361, which
+      rebuilds that sheet; B-063 and B-075 may need no code once it lands — the keyboard's dictation
+      key in German, and a sheet whose keyboard rises with it. Handed to a session of its own by the
+      owner, to be logged as cluster B of this pass.
+    - **C**, the week's ticks: B-073 and B-054, Stories against `record` and `day-screen`; B-054's
+      grill may answer "gym is a quota". The next Feature-shaped cluster to take: B-073 is a thin
+      new signal rather than a deeper version of something that exists.
+    - **D**, a reminder: B-039 — unclaimed, unchanged since the eleventh pass.
+    - **Singletons**: B-069 waits for the owner's week with system blue, from 2026-09-29; B-072
+      reverses ADR-1022 across three capabilities and is a sitting of its own; B-070 fails *five
+      percent of seven things*; B-041 leave, as re-read above.
