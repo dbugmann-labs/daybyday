@@ -191,6 +191,14 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
+- **A number below zero cannot be typed on the day screen.** The typed number entry opens the
+  decimal pad, which has no minus, though a range end may be negative and an unranged number may be
+  anything; the parser takes "-3", so only the keyboard stands in the way. The commitment sheet's
+  range fields use a keyboard with a minus for this reason, so a negative range can be declared and
+  never entered. The fixes are a keyboard with a minus on every typed number, a shell chore, or the
+  entry telling the shell whether its range reaches below zero, a Story. Found by
+  `chore/entry-sheet` (#361) as B-074; the owner left it here on 2026-09-30 because nothing on the
+  week is below zero.
 - **A short range whose values a `Decimal` cannot all hold offers one value eleven times.** A
   range is short where both bounds are whole and it holds eleven values or fewer, and a chosen
   entry offers every whole number between its bounds. Bounds near thirty-eight significant digits

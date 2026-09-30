@@ -177,30 +177,6 @@ it as a gap rather than saying it unprompted.*
 - **Open** — where does the row come from? A day view draws what is due; a Tuesday row for gym is a
   row for something not due, which is the thing *offered* was landed to keep off the screen.
 
-### B-063 — speak a note instead of typing it, in German
-
-*Captured 2026-09-25.*
-
-> "In notes, It would be nice to have a voice input option (in German), so I can talk instead of
-> write, and it is then written down (in German)"
-
-- **Trigger** — a note entry on the day screen, where a sentence typed with one thumb is slower
-  than the same sentence said.
-- **Touches** — `day-screen`'s note entry (*A day screen enters the note a row's entry takes, and
-  keeps the change before the day view says so*); the note is committed and read exactly as a typed
-  one would be, so the change is probably the shell's alone — and possibly nothing at all, see Open.
-- **Principle** — tested against *entered where you stand*: **passes.** The note is still made in
-  the row it belongs to, with less interaction than typing it; the principle is about where an entry
-  is made, and "a sentence is typed there" names the place, not the keyboard.
-- **Open** — does the keyboard already do it? The system keyboard carries its own dictation key where
-  Dictation is on in the phone's settings. If the note field shows it and it writes German, this want
-  is a setting on the phone and not a line of code; if the field hides it, or it will not write
-  German, that is the finding.
-- **Open** — or is the want a control of the row's own — one tap to talk, without the keyboard coming
-  up first? That is a new control and a microphone permission, where the keyboard's key is neither.
-- **Open** — does a spoken note leave the phone? Apple's recogniser can run on the device for some
-  languages and not others, and a note is the most personal thing the record holds.
-
 ### B-066 — come back from Commitments to a day screen that is whole at once
 
 *Captured 2026-09-28. Sent to `chore/day-paging` (PR #362) at the twenty-second pass and returned
@@ -285,25 +261,6 @@ to Wants the same day, 2026-09-30, unfixed, by the owner's choice.*
 - **Open** — does it read across a gap, or across a change of era? A look-back says nothing where one
   era gives way to the next (#300), and a line drawn through that boundary says something there.
 
-### B-071 — add a total's usual amounts in one tap each
-*Captured 2026-09-29.*
-
-> "Add a total's usual amounts in one tap each"
-
-- **Trigger** — adding to a running total on the day screen, where the same few amounts come up day
-  after day and each one is typed.
-- **Touches** — `day-screen`, whose total entry reads what is committed in it as an amount to add;
-  probably `commitment` too, if the usual amounts are declared with the commitment the way a
-  number's range is.
-- **Principle** — tested against *entered where you stand*: **passes.** It stays in the row and cuts
-  the interaction to what the value allows — a known amount is one tap, not a few — which is the
-  same move B-034 made for a number with a short range.
-- **Open** — where do the usual amounts come from: declared on the commitment sheet, or worked out
-  from the additions the record already holds? The second needs no setting and changes under you.
-- **Open** — how many, and does the typed entry stay beside them for the amount that is not usual?
-- **Open** — can a one-tap addition be taken back? An addition today is kept as typed, and a
-  mis-tap that adds is easier to make than a mis-typed number.
-
 ### B-072 — read dates and weekdays in my phone's language
 *Captured 2026-09-29.*
 
@@ -350,50 +307,43 @@ to Wants the same day, 2026-09-30, unfixed, by the owner's choice.*
 - **Open** — counted as of the row's own date, like standing is, so a back-filled day says what that
   day could still reach?
 
-### B-074 — enter a number below zero where its range allows one
-*Captured 2026-09-29, from the twenty-second grooming sweep. The wording is `chore/entry-sheet`'s
-(#361) PR body; the owner confirmed it as a gap rather than saying it unprompted.*
-
-> "The decimal pad has no minus key, and a range end may be negative, so a number below zero
-> cannot be typed on the day screen."
-
-- **Trigger** — entering a number, or a starting number, on the day screen for a commitment whose
-  range reaches below zero. The number and total entries set `.keyboardType(.decimalPad)`
-  (`ContentView.swift`, on `main` at 1f4fe49), and #361's compact sheet keeps it. The commitment
-  sheet's range fields use `.numbersAndPunctuation`, so a negative range can be declared and then
-  never entered.
-- **Touches** — `day-screen`'s number entry, and probably only the app shell: the entry hands the
-  shell no bounds to choose a keyboard from, so either the shell picks a keyboard with a minus for
-  every number, or the seam starts saying whether the range reaches below zero.
-- **Principle** — tested against *entered where you stand*: **passes.** A value the commitment
-  allows and the row cannot take is an entry that cannot be made where it belongs.
-- **Open** — a total's amount too? An addition below zero is a correction, and *Take back last*
-  already exists for one.
-- **Open** — nothing on the day-one week is below zero. Is any commitment the owner keeps, or means
-  to, ranged that way, or is this a promise nobody is calling in yet?
-
-### B-075 — start typing a note the moment its entry opens
-*Captured 2026-09-30, at the twenty-second grooming pass.*
-
-> "When I click on Diary, I want the textarea to immediately be focused so I can start typing"
-
-- **Trigger** — tapping a note commitment's row on the day screen (the owner's is called
-  *Diary*), then a second tap into the field before a word can be typed.
-- **Touches** — `day-screen`'s note entry, and only the app shell: which field holds focus when a
-  sheet opens is a drawing rule, and no requirement says anything about it.
-- **Principle** — tested against *entered where you stand*: **passes.** The entry is already in the
-  row; this removes the one tap between opening it and making it.
-- **Open** — `chore/entry-sheet` (#361) rebuilds the note entry as a compact sheet and says "the
-  keyboard rises with it". If that is true of the note sheet too, this is done when #361 merges and
-  the entry is closed on that evidence; if the keyboard rises only for a number and a total, this is
-  the follow-up.
-- **Open** — the same for a number and a total, so every entry sheet opens ready to type?
-
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-09-30 — add a total's usual amounts in one tap each (B-071) → `FEAT: commitment` (#26),
+  reopened with `EPIC: Daily commitments` (#1); its Stories come from `/to-tickets 26` at G2. A total
+  declares its **usual amounts** on the commitment sheet, each an amount with a name if one is given
+  (*Müesli*, 35), and its total entry offers each as one tap beside the field, which stays for the
+  amount that is not usual. A tap is an addition like a typed one: the day keeps the amount and never
+  the name, and *Take back last* is the undo, with no confirmation. Usual amounts belong to the whole
+  commitment, like its name, so changing one puts no new era on it; totals only, since a number's
+  repeats are the starting number's and the short range's. Home is #26 rather than `FEAT: day-screen`
+  (#27) because the declaration is the commitment's and the day screen only reads it. How many, and
+  how the entry draws them, are left to the Story's grill and its layout round. `CONTEXT.md` gained
+  **Usual amount**.
+
+- 2026-09-30 — start typing a note the moment its entry opens (B-075) → **a chore on the app shell,
+  `chore/note-focus`, under ADR-1019.** The note sheet's field takes focus as the sheet opens, so the
+  keyboard rises with it; nothing on `main` focuses it today (`ContentView.swift`, the note sheet's
+  `TextEditor`). The number and total entries are system alerts, whose field iOS focuses on its own as far as
+  the conductor knows; asked to say otherwise, the owner kept the chore to the note alone. Decided without #361 (`chore/entry-sheet`), which the owner
+  put back to draft undecided; if #361 is revived it rebuilds this sheet and must keep the focus.
+
+- 2026-09-30 — enter a number below zero where its range allows one (B-074) → **dropped as a want and
+  recorded in `docs/open-questions.md` § *Known gaps*.** The parser takes "-3" and the specs allow a
+  number below zero — unranged, or on a range reaching below zero — but the typed number entry's
+  decimal pad has no minus. Nothing on the owner's week is below zero, and the fixes cost either every
+  typed number a smaller keyboard or a Story for a promise nobody is calling in; the owner chose the
+  gap over both. A total's amount is not part of it: an addition below zero is refused by design
+  (`CONTEXT.md` § *Addition*).
+
+- 2026-09-30 — speak a note instead of typing it, in German (B-063) → **dropped: the phone already
+  does it.** The owner checked on the phone: the note field shows the system keyboard's dictation key,
+  and dictating from a German keyboard writes German. The field sets nothing that could hide it. A
+  control of the row's own to talk without the keyboard was not what was wanted.
 
 - 2026-09-30 — come back to the app on a whole day (B-061), open every day at its top (B-062),
   swipe to another day without ticking the one-off the swipe started on (B-064), come back from
@@ -1501,3 +1451,20 @@ found nothing.
     - **Singletons**: B-069 waits for the owner's week with system blue, from 2026-09-29; B-072
       reverses ADR-1022 across three capabilities and is a sitting of its own; B-070 fails *five
       percent of seven things*; B-041 leave, as re-read above.
+- 2026-09-30 — cluster B of the twenty-second pass, groomed as its own session on `chore/backlog`
+  (holding PR #363 from the `chore/day-paging` session, 25b2fab), `origin/main` at 1d70310.
+  - **Sweep** — no new silence: nothing in `openspec/specs/`, `docs/open-questions.md` or
+    `CONTEXT.md` changed since the twenty-second pass swept that morning (1f4fe49..1d70310 touched the
+    backlog alone), and no issue was open.
+  - **#361** — the pass line above parked the cluster behind `chore/entry-sheet` (#361). The owner put
+    it back to draft, undecided whether it lands, and asked for the cluster groomed against `main` as
+    if it did not exist.
+  - **Taken forward** — **B**, typing a value into the entry sheet. Ten questions over three rounds,
+    two fact agents and one phone check. B-071 → `FEAT: commitment` (#26), reopened under #1; the
+    owner amended the recommended declaration with a name per amount and went against a
+    recommendation on B-074 alone. Challenged at G1 that it deepens the total entry rather than making something new,
+    that cluster C's B-073 was this morning's next thin signal, and that no total is on the day-one
+    week; approved with #26 as home. B-075 → `chore/note-focus`; B-074 → a known gap, against the
+    recommended chore; B-063 → dropped on the phone check. `CONTEXT.md` gained **Usual amount**.
+  - **Not taken** — B-039, B-041, B-054, B-066, B-069, B-070, B-072, B-073 with the dispositions of
+    the twenty-second pass unchanged.
