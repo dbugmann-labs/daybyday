@@ -18,7 +18,7 @@ addition costs a tap and an unusual one is still typed.
 - A total entry says the usual amounts beside the sum and the target, and a row differs by them.
 - A day screen adds a tapped usual amount as it adds a typed one; *Take back last* undoes it.
 - The shell draws the usual amounts in a card of their own on the commitment sheet, and the total
-  entry becomes a half-height sheet listing them under the field, focused only when tapped.
+  entry becomes a half-height sheet listing them under the field, which opens with the keyboard up.
 
 ## Capabilities
 

@@ -95,7 +95,7 @@ but its name, category or usual amounts."; the rows are sent as typed on Save, b
 
 **The total entry** leaves the alert for a half-height sheet over the dimmed day, as drawn below:
 Cancel and Save either side of the row's name, `soFarOfTarget` under it, the Amount field focused
-only when tapped so the keyboard is down as the sheet opens, the usual amounts in a list under it — amount column, then the
+as the sheet opens so the keyboard is up, the usual amounts in a list under it — amount column, then the
 name — and *Take back last* in red below, only where `offersTakeBackLast` says. Save commits the
 field through `enter(_:on:)`; a tap on a usual amount calls `add(_:on:)`; either closes the sheet, as
 *Take back last* does, and a refusal is told on the row as today. No confirmation before a tap.
@@ -103,8 +103,8 @@ field through `enter(_:on:)`; a tap on a usual amount calls `add(_:on:)`; either
 ### What the shell draws
 
 Option C, a half-height sheet, chosen at the layout round from
-https://claude.ai/artifact/PSyixPF6zQg3RgjgJkQVLp, as the designer drew it: the keyboard down until
-the field is tapped (the owner's G7 walk, reversing their layout-round change). Both sheets are
+https://claude.ai/artifact/PSyixPF6zQg3RgjgJkQVLp, with the owner's one change: the keyboard up as
+the entry opens (their second G7 walk, reversing the first). Both sheets are
 compact: rows lower, and less space under the head and around the list. The commitment sheet's sixth
 row is the designer's, drawn to place a refusal; with five rows on it *Add usual amount* is not offered.
 
@@ -116,7 +116,7 @@ row is the designer's, drawn to place a refusal; with five rows on it *Add usual
 ││ (Cancel)   Protein   (Save)││  title = row name
 ││           30 of 120        ││  subtitle = soFarOfTarget
 ││ ┌────────────────────────┐ ││
-││ │ Amount                 │ ││  focused only when tapped; keyboard down as it opens
+││ │ Amount                 │ ││  focused as the sheet opens; keyboard up
 ││ └────────────────────────┘ ││
 ││ ┌────────────────────────┐ ││
 ││ │ 20                     │ ││  amount column, then name;
@@ -166,13 +166,13 @@ birthday place and the copy's own form do not move; a copy made after this nests
   one-save target-and-usual-amounts scenario reopens the store.
 - **Carried roster-store tests whose fixtures declare form 6 as "the form this app writes".** → Box
   1.2 moves them to form 7 and nothing else; any other red is a stop.
-- **Five usual amounts not fitting half a screen.** → Grill 7 makes a walk that scrolls to the fifth
+- **Five usual amounts under a raised keyboard not fitting half a screen.** → Grill 7 makes a walk that scrolls to the fifth
   a G7 finding, not a licence to scroll.
 - **Draft PR #361 moved the same entry to a sheet**; the two collide if it is revived.
 
 ## Open Questions
 
 None. `grill.md` § *Left open* is "None.", and the keyboard, left to the phone at the layout round,
-was settled down at G7 (`grill.md`, amended 2026-09-30). Writing the delta turned up two edges — a row left blank, and the order of two names
+was settled up at the second G7 walk (`grill.md`, amended twice 2026-09-30). Writing the delta turned up two edges — a row left blank, and the order of two names
 of one amount — and both are decided above from the range precedent and grill 12, so no residual
 round is outstanding.
