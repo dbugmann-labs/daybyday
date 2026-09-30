@@ -207,6 +207,22 @@ struct ContentView: View {
     // `width` while a finger is down, and the settle's target while one is not.
     @State private var pageWidth: CGFloat = 0
     @State private var dragTranslation: CGFloat = 0
+    // A day swipe's own settle, kept so a jump can cancel it and a cancelled drag can be told
+    // from a released one. `daySettling` is true from `settle(to:then:)` starting an animated
+    // slide until that slide lands; `daySettleMove` is the day move that landing will make;
+    // `daySettleGeneration` is bumped by every cancel, and a slide's completion acts only where
+    // the generation it captured still stands — so a week strip tap, `Today` or the day picker
+    // that ran inside the ~0.35 s window is never followed by the swipe's own move on top.
+    @State private var daySettling = false
+    @State private var daySettleMove: (() -> Void)?
+    @State private var daySettleGeneration = 0
+    // Until when a one-off's tick is the tail of a day swipe rather than a tap of its own. Pushed
+    // out by every sample the day swipe reports and by its end. Read off the phone with
+    // `NSLog` on the simulator, 2026-09-30: the drag's samples come first, then `onEnded`, then
+    // the Button's action, all at the one touch-up — and the button's pressed state arrives
+    // *after* the first samples of a fast flick, so anything cleared by it can wipe what those
+    // samples set. Nothing clears this but time.
+    @State private var swipeClaimsTicksUntil = Date.distantPast
     // The week strip's own live drag offset — `weekStrip`'s own counterpart to `dragTranslation`
     // above, kept apart from it (`tasks.md` § 6.2: "the day swipe... and `settle(to:then:)`'s
     // rows untouched") since the strip pages independently of the rows beneath it: a strip drag
@@ -332,6 +348,7 @@ struct ContentView: View {
                     if screen.offersGoingBackToToday {
                         Button("Today") {
                             commitFocusedOneOffField(forDeparture: true)
+                            cancelPendingDaySettle()
                             screen.showToday()
                         }
                     }
@@ -482,6 +499,8 @@ struct ContentView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase != .active {
                 commitFocusedOneOffField(forDeparture: true)
+                finishDaySettleNow()
+                snapBackIfNotSettling()
             }
             if phase == .active {
                 // `screen.shown(asOf:)` reads `birthdaySwitch` itself first — `design.md`
@@ -1120,6 +1139,7 @@ struct ContentView: View {
                     // being shown" — rather than trusting the call to mean a turn, so a tap on the
                     // day already shown does not tick (ADR-1045, amended 2026-09-28).
                     let before = screen.dayPickerReach.opensOn
+                    cancelPendingDaySettle()
                     screen.showDay(date)
                     if screen.dayPickerReach.opensOn != before {
                         daysTurned += 1
@@ -1155,6 +1175,7 @@ struct ContentView: View {
                             day: components.day!)
                     else { return }
                     commitFocusedOneOffField(forDeparture: true)
+                    cancelPendingDaySettle()
                     screen.showDay(picked)
                     pickingDay = false
                 }
@@ -1184,14 +1205,21 @@ struct ContentView: View {
     private var pagedDayContent: some View {
         GeometryReader { proxy in
             let width = proxy.size.width
+            // Each list is keyed by its role and the day shown, so every day move draws all
+            // three afresh at the top: a list that was scrolled and then became a neighbour, or a
+            // neighbour that becomes the day, never carries an old offset into the day it opens.
+            let shownDay = "\(screen.dayPickerReach.opensOn)"
             HStack(spacing: 0) {
                 dayList(for: screen.previousDayView)
                     .frame(width: width)
+                    .id("previous-\(shownDay)")
                 dayList(for: screen.dayView)
                     .frame(width: width)
                     .accessibilityIdentifier("CurrentDayList")
+                    .id("shown-\(shownDay)")
                 dayList(for: screen.nextDayView)
                     .frame(width: width)
+                    .id("next-\(shownDay)")
             }
             .offset(x: -width + dragTranslation)
             // Horizontal-only clip: `.clipped()` (dropped) clips to the *whole* rendered
@@ -1224,6 +1252,9 @@ struct ContentView: View {
             .onChange(of: isDraggingDay) { _, dragging in
                 if !dragging {
                     lockedDragAxis = nil
+                    // A drag the system cancelled — the home-indicator swipe, a call banner —
+                    // never reaches `onEnded`, and left the page wherever the finger was.
+                    snapBackIfNotSettling()
                 }
             }
         }
@@ -1756,6 +1787,10 @@ struct ContentView: View {
                 // setting the row's height itself, the way the deleted `minHeight: 44` did.
                 if !isRenaming {
                     Button {
+                        // A day swipe that started on this tick is the swipe's, not the tick's.
+                        guard Date() >= swipeClaimsTicksUntil else {
+                            return
+                        }
                         if offersTick {
                             // A tick or a take-back is the only mutation `\.key` (rather than the
                             // row's own value) lets `List` see as a move, so this is the only
@@ -2021,6 +2056,7 @@ struct ContentView: View {
                 isDraggingDay = true
             }
             .onChanged { value in
+                swipeClaimsTicksUntil = Date().addingTimeInterval(0.35)
                 if lockedDragAxis == nil {
                     lockedDragAxis =
                         abs(value.translation.width) > abs(value.translation.height)
@@ -2036,6 +2072,7 @@ struct ContentView: View {
                 }
             }
             .onEnded { value in
+                swipeClaimsTicksUntil = Date().addingTimeInterval(0.35)
                 defer { lockedDragAxis = nil }
                 guard lockedDragAxis == .horizontal else {
                     settle(to: 0, then: nil)
@@ -2077,15 +2114,60 @@ struct ContentView: View {
             return
         }
 
+        let generation = daySettleGeneration
+        daySettling = true
+        daySettleMove = move
         withAnimation(.easeOut, completionCriteria: .logicallyComplete) {
             dragTranslation = target
         } completion: {
+            guard generation == daySettleGeneration else {
+                return
+            }
+            daySettling = false
+            daySettleMove = nil
             dragTranslation = 0
             if move != nil {
                 daysTurned += 1
             }
             move?()
         }
+    }
+
+    /// Drops the slide in flight, if any, without making its move: called by every control that
+    /// jumps to a day of its own, before it does, so the ~0.35 s a carried swipe takes to land
+    /// never ends with a second, stale move on top of the jump.
+    private func cancelPendingDaySettle() {
+        daySettleGeneration += 1
+        daySettling = false
+        daySettleMove = nil
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            dragTranslation = 0
+        }
+    }
+
+    /// Lands the slide in flight at once, making its move, for the app leaving the foreground:
+    /// an animation's completion is not promised to arrive from the background.
+    private func finishDaySettleNow() {
+        guard daySettling else {
+            return
+        }
+        let move = daySettleMove
+        cancelPendingDaySettle()
+        if move != nil {
+            daysTurned += 1
+        }
+        move?()
+    }
+
+    /// Springs a page left part-way across back to the day it shows, where no release is
+    /// carrying it anywhere: the drag was cancelled rather than ended.
+    private func snapBackIfNotSettling() {
+        guard !daySettling, dragTranslation != 0 else {
+            return
+        }
+        settle(to: 0, then: nil)
     }
 
     /// A horizontal drag on the week strip pages it to the week before or the week after —
