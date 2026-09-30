@@ -458,6 +458,14 @@ public final class CommitmentsScreen {
         /// carrying that commitment's name exactly as the roster holds it. `design.md` § *The
         /// seam*. Declared for § 1.5; § 10 gives it its behaviour.
         case nameAlreadyInUse(String)
+        /// A usual amount typed whose amount is blank or not a number above zero, naming its
+        /// place in the list handed in, from zero, blank rows counted. `design.md` § *One sheet
+        /// field, and the refusal names the row*.
+        case usualAmountIsNotAnAmount(Int)
+        /// A usual amount typed alike with one typed before it, naming its place as above.
+        case usualAmountAlike(Int)
+        /// The sixth usual amount typed, naming its place as above.
+        case moreThanFiveUsualAmounts(Int)
     }
 
     /// A field of the sheet a commitments screen draws — a define, a change or a restart form —
@@ -467,6 +475,8 @@ public final class CommitmentsScreen {
     /// field, and the foot is no field at all*.
     public enum SheetField: Equatable, Sendable {
         case name, rhythm, keptFrom, range, target, restartDay
+        /// The whole card of usual amounts: a row added or taken away is an edit of it.
+        case usualAmounts
     }
 
     /// A refusal told on a commitments screen's sheet, and which field of it the refusal is about
@@ -544,6 +554,20 @@ public final class CommitmentsScreen {
         /// its schedule is an interval of days, `false` otherwise.
         /// `openspec/changes/add-interval-restart/design.md` § *The seam*.
         public let canRestart: Bool
+        /// The usual amounts this commitment declares, smallest first — none for a kind that is
+        /// not a total.
+        public let usualAmounts: [Commitment.UsualAmount]
+    }
+
+    /// A usual amount as a person typed it: the amount and the name, both as text.
+    public struct TypedUsualAmount: Equatable, Sendable {
+        public let amount: String
+        public let name: String
+
+        public init(amount: String, name: String) {
+            self.amount = amount
+            self.name = name
+        }
     }
 
     /// Forms a commitment from `name`, the schedule `rhythm` names when kept from `keptFrom`,
@@ -554,7 +578,8 @@ public final class CommitmentsScreen {
     /// ignored*.
     public func define(
         name: String, on rhythm: Rhythm, keptFrom: CalendarDate, under category: String?,
-        kind: KindChoice = .tick, lowest: String = "", highest: String = "", target: String = ""
+        kind: KindChoice = .tick, lowest: String = "", highest: String = "", target: String = "",
+        usualAmounts: [TypedUsualAmount] = []
     ) -> Refusal? {
         if case .weekdays(let weekdays) = rhythm, weekdays.isEmpty {
             refuse(.defining(.dueOnNoDay), on: .rhythm)
@@ -595,6 +620,17 @@ public final class CommitmentsScreen {
             }
         }
 
+        var declared: [Commitment.UsualAmount] = []
+        if case .total = formedKind {
+            switch Self.usualAmounts(from: usualAmounts) {
+            case .success(let read):
+                declared = read
+            case .failure(let refusal):
+                refuse(.defining(refusal), on: .usualAmounts)
+                return refusal
+            }
+        }
+
         let commitment = Commitment(name: name, schedule: schedule, keptFrom: keptFrom, kind: formedKind)!
 
         guard let rosterStore else {
@@ -603,11 +639,19 @@ public final class CommitmentsScreen {
         }
 
         do {
-            guard try rosterStore.add(commitment, under: category) else {
+            var nextRoster = rosterStore.roster
+            guard nextRoster.add(commitment, under: category) else {
                 let refusal = Refusal.nameAlreadyInUse(Self.nameAlreadyHeld(name, among: kept + stopped))
                 refuse(.defining(refusal), on: .name)
                 return refusal
             }
+            // Through `Roster.declare`, never a hand-built entry: it holds the five and the alike
+            // checks and answers smallest first. One write, so a place that cannot be written
+            // leaves neither the commitment nor its usual amounts kept.
+            if !declared.isEmpty {
+                nextRoster.declare(declared, for: commitment)
+            }
+            try rosterStore.replace(with: nextRoster)
         } catch {
             refuse(.defining(.notKept), on: nil)
             return .notKept
@@ -626,6 +670,46 @@ public final class CommitmentsScreen {
     private enum Reading<Value> {
         case success(Value)
         case failure(Refusal)
+    }
+
+    /// `typed` read as the usual amounts a total declares: a row with both fields blank is no
+    /// usual amount and is left out; any other reads as an amount above zero, as a target is
+    /// read. Every refusal names the row by its place in `typed`, blank rows counted.
+    private static func usualAmounts(
+        from typed: [TypedUsualAmount]
+    ) -> Reading<[Commitment.UsualAmount]> {
+        var read: [Commitment.UsualAmount] = []
+        for (index, row) in typed.enumerated() {
+            if Blank.saysNothing(row.amount), Blank.saysNothing(row.name) {
+                continue
+            }
+            guard case .number(let value) = TypedNumber.read(row.amount),
+                let usualAmount = Commitment.UsualAmount(value, named: row.name)
+            else {
+                return .failure(.usualAmountIsNotAnAmount(index))
+            }
+            guard !read.contains(where: { Self.alike($0, usualAmount) }) else {
+                return .failure(.usualAmountAlike(index))
+            }
+            guard read.count < 5 else {
+                return .failure(.moreThanFiveUsualAmounts(index))
+            }
+            read.append(usualAmount)
+        }
+        return .success(read)
+    }
+
+    /// Whether two usual amounts are alike: one amount, and either neither named or names that
+    /// are one name — `sameName`, as two commitment names are compared.
+    private static func alike(_ lhs: Commitment.UsualAmount, _ rhs: Commitment.UsualAmount) -> Bool {
+        guard lhs.amount == rhs.amount else {
+            return false
+        }
+        switch (lhs.name, rhs.name) {
+        case (nil, nil): return true
+        case (let lhsName?, let rhsName?): return sameName(lhsName, rhsName)
+        default: return false
+        }
     }
 
     /// `lowest` and `highest` read as a range for the number kind — `nil` where both are blank,
@@ -724,7 +808,8 @@ public final class CommitmentsScreen {
             name: newest.name, rhythm: Rhythm(newest.schedule), keptFrom: keptFrom,
             category: entry.category, canChangeMoreThanNameAndCategory: entry.keptUntil == nil,
             kind: newest.kind,
-            canRestart: entry.keptUntil == nil && Self.isIntervalSchedule(newest.schedule))
+            canRestart: entry.keptUntil == nil && Self.isIntervalSchedule(newest.schedule),
+            usualAmounts: entry.usualAmounts)
     }
 
     /// Whether `schedule` is an interval of days — the one rhythm a restart applies to.
