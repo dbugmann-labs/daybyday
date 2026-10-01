@@ -29,13 +29,13 @@ fail, make it pass.
 
 ## 5. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 5.1 `LookBackView` draws as `design.md` § *The shell* says: a "Trend" toggle in button style beside the narrowed span picker only where `graph.trend` is not empty, off on every visit, untouched by a change of span, and when on a trace through `graph.trend` in the label colour under its own `series:`, over the unchanged trace; the tap and its callout read `graph.points` only
-- [ ] 5.2 The app target builds for the simulator, and `WalkthroughUITests` passes unedited
+- [x] 5.1 `LookBackView` draws as `design.md` § *The shell* says: a "Trend" toggle in button style beside the narrowed span picker only where `graph.trend` is not empty, off on every visit, untouched by a change of span, and when on a trace through `graph.trend` in the label colour under its own `series:`, over the unchanged trace; the tap and its callout read `graph.points` only
+- [x] 5.2 The app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 6. The records
 
-- [ ] 6.1 Confirm `CONTEXT.md` § *Trend*'s 2026-10-01 amendment describes what shipped; a sentence that turns out wrong is a stop and a G4 question, never an edit
-- [ ] 6.2 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
+- [x] 6.1 Confirm `CONTEXT.md` § *Trend*'s 2026-10-01 amendment describes what shipped; a sentence that turns out wrong is a stop and a G4 question, never an edit
+- [x] 6.2 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
 
 ## 7. Gates and the archive handover
 
