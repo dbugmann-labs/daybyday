@@ -334,8 +334,11 @@ struct LookBackView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// The picker of spans above the graph card — grill decisions 6 and 7. "Month" is selected on
-    /// opening (`span`'s default), and every span keeps the plot scrollable sideways.
+    /// The row above the graph card — grill decisions 6 and 7. The picker of spans shares it with
+    /// the "Trend" toggle, in button style, about 80pt wide beside the narrowed picker; the toggle
+    /// shows only where `graph.trend` is not empty, so a total's picker keeps the full row.
+    /// "Month" is selected on opening (`span`'s default), and every span keeps the plot
+    /// scrollable sideways. A change of span leaves the toggle as it was.
     @ViewBuilder
     private func graphSection(_ graph: LookBack.Graph) -> some View {
         HStack {
