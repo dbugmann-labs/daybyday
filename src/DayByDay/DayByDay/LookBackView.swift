@@ -47,6 +47,9 @@ struct LookBackView: View {
     let commitment: Commitment
 
     @State private var span: Span = .month
+    /// Whether a number's trend is drawn — off on every visit and untouched by a change of span,
+    /// `design.md` § *The shell*. The only thing the shell decides about it.
+    @State private var showsTrend = false
     // Where the two values-axis labels, and each distinct target's own, sit in the lane beside
     // the chart — read once from the chart's own `ChartProxy` inside `graphCard(_:)` and cached
     // here, since the lane is a sibling view of the `Chart` with no access to the proxy itself.
@@ -331,17 +334,28 @@ struct LookBackView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// The picker of spans above the graph card — grill decisions 6 and 7. "Month" is selected on
-    /// opening (`span`'s default), and every span keeps the plot scrollable sideways.
+    /// The row above the graph card — grill decisions 6 and 7. The picker of spans shares it with
+    /// the "Trend" toggle, in button style, about 80pt wide beside the narrowed picker; the toggle
+    /// shows only where `graph.trend` is not empty, so a total's picker keeps the full row.
+    /// "Month" is selected on opening (`span`'s default), and every span keeps the plot
+    /// scrollable sideways. A change of span leaves the toggle as it was.
     @ViewBuilder
     private func graphSection(_ graph: LookBack.Graph) -> some View {
-        Picker("Span", selection: $span) {
-            ForEach(Span.allCases, id: \.self) { span in
-                Text(span.rawValue).tag(span)
+        HStack {
+            Picker("Span", selection: $span) {
+                ForEach(Span.allCases, id: \.self) { span in
+                    Text(span.rawValue).tag(span)
+                }
+            }
+            .pickerStyle(.segmented)
+            .onChange(of: span) { _, _ in selectedDay = nil }
+
+            if !graph.trend.isEmpty {
+                Toggle("Trend", isOn: $showsTrend)
+                    .toggleStyle(.button)
+                    .frame(width: 80)
             }
         }
-        .pickerStyle(.segmented)
-        .onChange(of: span) { _, _ in selectedDay = nil }
 
         graphCard(graph)
     }
@@ -481,11 +495,27 @@ struct LookBackView: View {
                     // draws exactly as it did — `design.md` § *The shell rides this Story*.
                     LineMark(
                         x: .value("Day", point.day),
-                        y: .value("Value", (point.value as NSDecimalNumber).doubleValue)
+                        y: .value("Value", (point.value as NSDecimalNumber).doubleValue),
+                        series: .value("Series", "trace")
                     )
                     .foregroundStyle(Color.secondary)
                     .symbol(.circle)
                     .symbolSize(20)
+                }
+
+                // The trend, over the trace and never joined to it: its own `series:`, the label
+                // colour, no dots — `design.md` § *The shell*. Drawn from `graph.trend` as it
+                // comes; the tap below still reads `graph.points` alone.
+                if showsTrend {
+                    ForEach(graph.trend, id: \.day) { point in
+                        LineMark(
+                            x: .value("Day", point.day),
+                            y: .value("Trend", (point.value as NSDecimalNumber).doubleValue),
+                            series: .value("Series", "trend")
+                        )
+                        .foregroundStyle(Color.primary)
+                        .lineStyle(StrokeStyle(lineWidth: 2.5))
+                    }
                 }
 
                 // A total's kept point is ringed, its dot in the label colour rather than the

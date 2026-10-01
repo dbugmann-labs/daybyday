@@ -2725,3 +2725,155 @@ func aLookBackThatSaysNoNoteSaysNoCount() throws {
 
     #expect(tickScreen.lookBack(at: gym)?.noteCountInWords == nil)
 }
+
+/// A look-back at "Weight" on a schedule listing every day, kept from 1 March 2026, holding each
+/// `(day of March, number)` given, as of `today`'s day of March — the setting most trend
+/// scenarios share.
+@MainActor
+private func weightGraph(holding numbers: [(Int, Decimal)], asOf today: Int) throws -> LookBack.Graph? {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: CalendarDate(year: 2026, month: 3, day: 1)!,
+        kind: .number(range: nil))!
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(weight)
+    let recordStore = try RecordStore(at: places.record)
+    for (day, value) in numbers {
+        try recordStore.add(Number(value, for: weight, on: CalendarDate(year: 2026, month: 3, day: day)!)!)
+    }
+    let screen = CommitmentsScreen(
+        asOf: CalendarDate(year: 2026, month: 3, day: today)!, keepingRosterAt: places.roster,
+        keepingRecordAt: places.record)
+    return screen.lookBack(at: weight)?.graph
+}
+
+@MainActor
+@Test("a number commitment's graph says a trend point on each day it says a point, and on no other day")
+func aNumberCommitmentsGraphSaysATrendPointOnEachDayItSaysAPointAndOnNoOtherDay() throws {
+    let graph = try weightGraph(holding: [(1, 70), (3, 72), (4, 74)], asOf: 6)
+
+    #expect(graph?.days.count == 6)
+    #expect(graph?.trend.map(\.day) == [0, 2, 3])
+}
+
+@MainActor
+@Test("a number commitment's graph with one point says one trend point of that point's value")
+func aNumberCommitmentsGraphWithOnePointSaysOneTrendPointOfThatPointsValue() throws {
+    let graph = try weightGraph(holding: [(3, 72.5)], asOf: 5)
+
+    #expect(graph?.trend == [LookBack.Graph.TrendPoint(day: 2, value: 72.5)])
+}
+
+@MainActor
+@Test("a total commitment's graph says no trend")
+func aTotalCommitmentsGraphSaysNoTrend() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let protein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: CalendarDate(year: 2026, month: 3, day: 1)!,
+        kind: .total(target: Commitment.Target(120)!))!
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(protein)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Addition(150, for: protein, on: CalendarDate(year: 2026, month: 3, day: 1)!)!)
+    try recordStore.add(Addition(90, for: protein, on: CalendarDate(year: 2026, month: 3, day: 2)!)!)
+
+    let screen = CommitmentsScreen(
+        asOf: CalendarDate(year: 2026, month: 3, day: 2)!, keepingRosterAt: places.roster,
+        keepingRecordAt: places.record)
+    let graph = screen.lookBack(at: protein)?.graph
+
+    #expect(graph?.points.count == 2)
+    #expect(graph?.trend == [])
+}
+
+@MainActor
+@Test("a trend point averages the points its window holds however few, the first being its own point's value")
+func aTrendPointAveragesThePointsItsWindowHoldsHoweverFewTheFirstBeingItsOwnPointsValue() throws {
+    let graph = try weightGraph(holding: [(1, 70), (3, 72), (4, 74)], asOf: 4)
+
+    #expect(graph?.trend.map(\.value) == [70, 71, 72])
+}
+
+@MainActor
+@Test("a trend point averages only the points held in the seven calendar days ending on its day")
+func aTrendPointAveragesOnlyThePointsHeldInTheSevenCalendarDaysEndingOnItsDay() throws {
+    let graph = try weightGraph(holding: [(1, 80), (7, 74), (8, 70)], asOf: 8)
+
+    #expect(graph?.trend.map(\.value) == [80, 77, 72])
+}
+
+@MainActor
+@Test("a trend point averages the points either side of a boundary between eras")
+func aTrendPointAveragesThePointsEitherSideOfABoundaryBetweenEras() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let olderWeight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: CalendarDate(year: 2026, month: 3, day: 1)!,
+        kind: .number(range: nil))!
+    let newerWeight = Commitment(
+        era: olderWeight, schedule: .weekdays([.tuesday, .thursday]),
+        keptFrom: CalendarDate(year: 2026, month: 3, day: 4)!, kind: .number(range: nil))!
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(olderWeight)
+    try rosterStore.put(
+        era: newerWeight, on: olderWeight,
+        keptUntil: CalendarDate(year: 2026, month: 3, day: 3)!, under: nil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(80, for: olderWeight, on: CalendarDate(year: 2026, month: 3, day: 2)!)!)
+    try recordStore.add(Number(70, for: newerWeight, on: CalendarDate(year: 2026, month: 3, day: 5)!)!)
+
+    let screen = CommitmentsScreen(
+        asOf: CalendarDate(year: 2026, month: 3, day: 8)!, keepingRosterAt: places.roster,
+        keepingRecordAt: places.record)
+
+    #expect(screen.lookBack(at: newerWeight)?.graph?.trend.map(\.value) == [80, 75])
+}
+
+@MainActor
+@Test("a trend point takes in no number the record holds for a day of a gap")
+func aTrendPointTakesInNoNumberTheRecordHoldsForADayOfAGap() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let olderWeight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: CalendarDate(year: 2026, month: 3, day: 1)!,
+        kind: .number(range: nil))!
+    let newerWeight = Commitment(
+        era: olderWeight, schedule: everyDay,
+        keptFrom: CalendarDate(year: 2026, month: 3, day: 6)!, kind: .number(range: nil))!
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(olderWeight)
+    try rosterStore.put(
+        era: newerWeight, on: olderWeight,
+        keptUntil: CalendarDate(year: 2026, month: 3, day: 3)!, under: nil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(72, for: olderWeight, on: CalendarDate(year: 2026, month: 3, day: 2)!)!)
+    try recordStore.add(Number(90, for: olderWeight, on: CalendarDate(year: 2026, month: 3, day: 4)!)!)
+    try recordStore.add(Number(70, for: newerWeight, on: CalendarDate(year: 2026, month: 3, day: 7)!)!)
+
+    let screen = CommitmentsScreen(
+        asOf: CalendarDate(year: 2026, month: 3, day: 8)!, keepingRosterAt: places.roster,
+        keepingRecordAt: places.record)
+    let trend = screen.lookBack(at: newerWeight)?.graph?.trend
+
+    #expect(trend?.map(\.day) == [1, 6])
+    #expect(trend?.map(\.value) == [72, 71])
+}
+
+@MainActor
+@Test("a trend point's average is carried unrounded")
+func aTrendPointsAverageIsCarriedUnrounded() throws {
+    let graph = try weightGraph(holding: [(1, 80), (2, 81), (3, 83)], asOf: 3)
+
+    #expect(graph?.trend.last?.value == Decimal(244) / Decimal(3))
+    #expect(graph?.trend.last?.value != 81.33)
+}
