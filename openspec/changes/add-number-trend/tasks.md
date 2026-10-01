@@ -42,7 +42,7 @@ fail, make it pass.
 - [x] 7.1 `openspec validate add-number-trend --strict` exits 0, and `pnpm run checks` is clean
 - [x] 7.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
 - [x] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
-- [ ] 7.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.4. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `look-back/spec.md` gained the two ADDED requirements whole and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
+- [x] 7.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.4. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `look-back/spec.md` gained the two ADDED requirements whole and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
 
 ## The walk
 
