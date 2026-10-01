@@ -54,4 +54,4 @@ back up with a day-to-day wobble of about one.
 - [x] W.1 Weight's look-back at Month, "Trend" off beside the narrowed span picker: the grey trace and its dots alone.
 - [x] W.2 The same page after tapping "Trend": the button tinted, and a heavier trace in the label colour, without dots, over the grey one and not joined to it.
 - [x] W.3 The same visit after tapping "Year": "Trend" still on, and the trend bending away from the day-to-day trace across the months.
-- [x] W.4 **The handover** — W.1–W.3, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.4 **The handover** — W.1–W.3, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. https://github.com/dbugmann-labs/daybyday/pull/370#issuecomment-5926109932
