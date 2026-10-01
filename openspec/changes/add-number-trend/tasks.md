@@ -39,8 +39,8 @@ fail, make it pass.
 
 ## 7. Gates and the archive handover
 
-- [ ] 7.1 `openspec validate add-number-trend --strict` exits 0, and `pnpm run checks` is clean
-- [ ] 7.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
+- [x] 7.1 `openspec validate add-number-trend --strict` exits 0, and `pnpm run checks` is clean
+- [x] 7.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
 - [ ] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 7.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.4. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `look-back/spec.md` gained the two ADDED requirements whole and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
 
@@ -51,7 +51,7 @@ screen, never seeded — with a number commitment "Weight" on every day, kept fr
 back, holding numbers on three or four days of each week since, drifting down several units and
 back up with a day-to-day wobble of about one.
 
-- [ ] W.1 Weight's look-back at Month, "Trend" off beside the narrowed span picker: the grey trace and its dots alone.
-- [ ] W.2 The same page after tapping "Trend": the button tinted, and a heavier trace in the label colour, without dots, over the grey one and not joined to it.
-- [ ] W.3 The same visit after tapping "Year": "Trend" still on, and the trend bending away from the day-to-day trace across the months.
-- [ ] W.4 **The handover** — W.1–W.3, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.1 Weight's look-back at Month, "Trend" off beside the narrowed span picker: the grey trace and its dots alone.
+- [x] W.2 The same page after tapping "Trend": the button tinted, and a heavier trace in the label colour, without dots, over the grey one and not joined to it.
+- [x] W.3 The same visit after tapping "Year": "Trend" still on, and the trend bending away from the day-to-day trace across the months.
+- [x] W.4 **The handover** — W.1–W.3, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
