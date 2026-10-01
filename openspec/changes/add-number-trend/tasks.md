@@ -7,25 +7,25 @@ fail, make it pass.
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they are exactly the eight titles boxed in §§ 3–4. Any other uncovered title is a stop.
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they are exactly the eight titles boxed in §§ 3–4. Any other uncovered title is a stop.
 
 ## 2. The seam
 
-- [ ] 2.1 Every member in `design.md` § *The seam* exists with that signature, the trend formed inside `LookBack.graph(from:through:eras:history:)` from its points, and no other public signature in the Kit changes.
+- [x] 2.1 Every member in `design.md` § *The seam* exists with that signature, the trend formed inside `LookBack.graph(from:through:eras:history:)` from its points, and no other public signature in the Kit changes.
 
 ## 3. A trend point on each day the graph says a point
 
-- [ ] 3.1 a number commitment's graph says a trend point on each day it says a point, and on no other day — catches a trend carried on to today
-- [ ] 3.2 a number commitment's graph with one point says one trend point of that point's value
-- [ ] 3.3 a total commitment's graph says no trend — catches a trend formed for every graph
+- [x] 3.1 a number commitment's graph says a trend point on each day it says a point, and on no other day — catches a trend carried on to today
+- [x] 3.2 a number commitment's graph with one point says one trend point of that point's value
+- [x] 3.3 a total commitment's graph says no trend — catches a trend formed for every graph
 
 ## 4. The average
 
-- [ ] 4.1 a trend point averages the points its window holds however few, the first being its own point's value — catches a sum divided by seven
-- [ ] 4.2 a trend point averages only the points held in the seven calendar days ending on its day — catches a window of six or eight days
-- [ ] 4.3 a trend point averages the points either side of a boundary between eras — catches a window cut at the era
-- [ ] 4.4 a trend point takes in no number the record holds for a day of a gap — catches a window read off the record
-- [ ] 4.5 a trend point's average is carried unrounded — catches a value rounded to the inputs' digits
+- [x] 4.1 a trend point averages the points its window holds however few, the first being its own point's value — catches a sum divided by seven
+- [x] 4.2 a trend point averages only the points held in the seven calendar days ending on its day — catches a window of six or eight days
+- [x] 4.3 a trend point averages the points either side of a boundary between eras — catches a window cut at the era
+- [x] 4.4 a trend point takes in no number the record holds for a day of a gap — catches a window read off the record
+- [x] 4.5 a trend point's average is carried unrounded — catches a value rounded to the inputs' digits
 
 ## 5. The shell (ADR-1019: no rule the Kit does not state)
 

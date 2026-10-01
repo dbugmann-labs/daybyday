@@ -39,6 +39,9 @@ public struct LookBack: Hashable, Sendable {
         public let days: [String]
         public let months: [Month]
         public let points: [Point]
+        /// A number's seven-day average, one `TrendPoint` on each day the graph says a point,
+        /// oldest first — empty on a total's graph. `design.md` § *The seam*.
+        public let trend: [TrendPoint]
         public let lowest: Decimal
         public let lowestInWords: String
         public let highest: Decimal
@@ -60,6 +63,11 @@ public struct LookBack: Hashable, Sendable {
             /// Whether a total's point reached its day's target — `nil` on a number's point,
             /// which the graph judges nothing about. `design.md` § *`isKept` is optional*.
             public let isKept: Bool?
+        }
+
+        public struct TrendPoint: Hashable, Sendable {
+            public let day: Int
+            public let value: Decimal
         }
 
         public struct Stretch: Hashable, Sendable {
@@ -514,6 +522,11 @@ public struct LookBack: Hashable, Sendable {
 
         return LookBack.Graph(
             days: days, months: months, points: points,
+            trend: isTotal ? [] : points.indices.map { i in
+                let held = points[...i].filter { points[i].day - $0.day < 7 }
+                return Graph.TrendPoint(
+                    day: points[i].day, value: held.reduce(0) { $0 + $1.value } / Decimal(held.count))
+            },
             lowest: lowest, lowestInWords: LookBackWords.number(lowest),
             highest: highest, highestInWords: LookBackWords.number(highest),
             targetRule: stretches)
