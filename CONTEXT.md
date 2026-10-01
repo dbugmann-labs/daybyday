@@ -2324,6 +2324,12 @@ Shown only when the person turns it on with a switch on the **look-back**, which
 visit and remembers nothing, as the span does. Not a **line**, which on this page is a row of text.
 Agreed 2026-09-30 at the grooming grill of B-070.
 
+**Amended 2026-10-01**, at the grill of `add-number-trend` (#369). A trend stands only where the
+graph has a **point**, one trend point on each, so it invents nothing on a day nothing was entered;
+each averages the points the graph has in the seven days ending on its day, however few, so the
+first is its own number and one number is a trend. A number the record holds for a day of a **gap**
+is no point, and no trend point takes it in. It is never said as a number, only drawn.
+
 **Target rule** — the horizontal mark across a total commitment's **graph** at the **target** each
 day was owed, running the whole dates axis, days with no point included, and labelled with that target. It follows the era
 holding each day, so it steps where a target changed: the step is the target, not a mark of the
