@@ -20,6 +20,28 @@ public struct Happenings: Hashable, Sendable {
         return true
     }
 
+    /// Gives the earliest noted occurrence alike to `occurrence` the time and note given.
+    public mutating func change(
+        _ occurrence: Occurrence, to time: TimeOfDay?, saying note: String?
+    ) -> Bool {
+        guard let index = occurrences.firstIndex(of: occurrence) else {
+            return false
+        }
+        let changed = Occurrence(
+            ofIdentity: occurrence.happening, on: occurrence.day, at: time, saying: note)
+        occurrences[index] = changed
+        return true
+    }
+
+    /// Removes the earliest noted occurrence alike to `occurrence`.
+    public mutating func takeBack(_ occurrence: Occurrence) -> Bool {
+        guard let index = occurrences.firstIndex(of: occurrence) else {
+            return false
+        }
+        occurrences.remove(at: index)
+        return true
+    }
+
     public func holding(name: String) -> Happening? {
         let wanted = Blank.trimmed(name).lowercased()
         return all.first { Blank.trimmed($0.name).lowercased() == wanted }

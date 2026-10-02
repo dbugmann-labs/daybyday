@@ -80,6 +80,36 @@ public final class HappeningStore {
         return true
     }
 
+    /// Kept at `place` before this returns. `false`, without throwing and without writing, where
+    /// `Happenings.change` refuses.
+    @discardableResult
+    public func change(
+        _ occurrence: Occurrence, to time: TimeOfDay?, saying note: String?
+    ) throws -> Bool {
+        var next = happenings
+        guard next.change(occurrence, to: time, saying: note) else {
+            return false
+        }
+        try write(next)
+
+        happenings = next
+        return true
+    }
+
+    /// Kept at `place` before this returns. `false`, without throwing and without writing, where
+    /// `Happenings.takeBack` refuses.
+    @discardableResult
+    public func takeBack(_ occurrence: Occurrence) throws -> Bool {
+        var next = happenings
+        guard next.takeBack(occurrence) else {
+            return false
+        }
+        try write(next)
+
+        happenings = next
+        return true
+    }
+
     /// Writes `next` as the whole document, `.sortedKeys` so a keyed container's keys do not
     /// follow Foundation's per-process hash order, on top of `Happenings`' own order.
     private func write(_ next: Happenings) throws {

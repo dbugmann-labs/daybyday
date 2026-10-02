@@ -758,6 +758,57 @@ public final class DayScreen {
         return nil
     }
 
+    /// The occurrences, on the day shown, of the happening `row` names, in the row's order.
+    public func occurrences(of row: DayView.HappeningRow) -> [Occurrence] {
+        guard let happening = happenings.first(where: { $0.name == row.name }) else {
+            return []
+        }
+        return heldHappenings.occurrences(of: happening, on: shownDay)
+    }
+
+    /// Changes `occurrence` to `time` and `note`.
+    @discardableResult
+    public func change(
+        _ occurrence: Occurrence, to time: TimeOfDay?, saying note: String, asOf now: Moment
+    ) -> OccurrenceRefusal? {
+        guard let happeningStore, happeningStore.happenings.occurrences.contains(occurrence) else {
+            return .notKept
+        }
+        let changed = Occurrence(
+            ofIdentity: occurrence.happening, on: occurrence.day, at: time,
+            saying: Blank.trimmed(note))
+        guard changed != occurrence else {
+            return nil
+        }
+        let comesLater =
+            occurrence.day.days(until: today) < 0 || occurrence.day.days(until: now.day) < 0
+            || (occurrence.day == now.day
+                && time.map { ($0.hour, $0.minute) > (now.hour, now.minute) } == true)
+        guard !comesLater else {
+            return .notYetCome
+        }
+        guard (try? happeningStore.change(occurrence, to: time, saying: changed.note)) == true
+        else {
+            return .notKept
+        }
+
+        notice = nil
+        dayView = dayView.withHappenings(happeningStore.happenings)
+        return nil
+    }
+
+    /// Takes `occurrence` back.
+    @discardableResult
+    public func takeBack(_ occurrence: Occurrence) -> OccurrenceRefusal? {
+        guard let happeningStore, (try? happeningStore.takeBack(occurrence)) == true else {
+            return .notKept
+        }
+
+        notice = nil
+        dayView = dayView.withHappenings(happeningStore.happenings)
+        return nil
+    }
+
     /// What this screen says about birthdays: `.off` draws no Birthdays group on any day and
     /// asks the calendar nothing; anything else draws one wherever a birthday falls, unticked
     /// throughout but for `.on`. `design.md` § *One state, the calendar first*.

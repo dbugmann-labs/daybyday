@@ -377,18 +377,12 @@ public struct DayView: Hashable, Sendable {
     func withHappenings(_ happenings: Happenings) -> DayView {
         var formed = self
         formed.happeningRows = happenings.all.compactMap { happening in
-            let came = happenings.occurrences.filter {
-                $0.happening == happening.identity && $0.day == date
-            }
+            let came = happenings.occurrences(of: happening, on: date)
             guard !came.isEmpty else {
                 return nil
             }
-            let timed = came.compactMap(\.time).sorted().map {
-                String(format: "%02d:%02d", $0.hour, $0.minute)
-            }
-            let untimed = Array(repeating: "no time", count: came.count - timed.count)
             return HappeningRow(
-                name: happening.name, timesInWords: (timed + untimed).joined(separator: ", "))
+                name: happening.name, timesInWords: came.map(\.timeInWords).joined(separator: ", "))
         }
         return formed
     }
@@ -616,5 +610,17 @@ extension Decimal {
         var value = self
         NSDecimalRound(&rounded, &value, 0, .down)
         return rounded == self
+    }
+}
+
+extension Happenings {
+    /// The occurrences of `happening` on `day` in a row's order: those with a time first, earliest
+    /// first, then those with none, each run in the order noted.
+    func occurrences(of happening: Happening, on day: CalendarDate) -> [Occurrence] {
+        let came = occurrences.filter { $0.happening == happening.identity && $0.day == day }
+        let timed = came.filter { $0.time != nil }.enumerated().sorted {
+            ($0.element.time!, $0.offset) < ($1.element.time!, $1.offset)
+        }.map(\.element)
+        return timed + came.filter { $0.time == nil }
     }
 }

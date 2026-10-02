@@ -36,3 +36,13 @@ public struct Occurrence: Hashable, Sendable {
         self.note = note.flatMap { Blank.saysNothing($0) ? nil : $0 }
     }
 }
+
+extension Occurrence {
+    /// The time as a happening row says it: "09:10", or "no time".
+    public var timeInWords: String {
+        guard let time else {
+            return "no time"
+        }
+        return String(format: "%02d:%02d", time.hour, time.minute)
+    }
+}
