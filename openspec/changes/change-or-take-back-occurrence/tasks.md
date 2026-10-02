@@ -44,20 +44,20 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 ## 5. The shell (ADR-1019: no rule the Kit does not state)
 
 - [x] 5.1 `ContentView` draws the row's tap, the popover, the filled-in sheet, its *Take back* and the confirmation exactly as `design.md` § *The shell* and § *What the shell draws* say, reading `occurrences(of:)` and handing `momentNow()` to `change`
-- [ ] 5.2 `git diff --stat origin/main... -- src/DayByDay/` lists `ContentView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
+- [x] 5.2 `git diff --stat origin/main... -- src/DayByDay/` lists `ContentView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 6. The records
 
 **The `CONTEXT.md` entries are written by this Story's proposal commit, not by the implementation.**
 
-- [ ] 6.1 Confirm `CONTEXT.md` § *Happening row* and § *Occurrence* and their 2026-10-02 amendments describe what shipped; a sentence that turns out wrong is a stop and a G4 question
-- [ ] 6.2 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
+- [x] 6.1 Confirm `CONTEXT.md` § *Happening row* and § *Occurrence* and their 2026-10-02 amendments describe what shipped; a sentence that turns out wrong is a stop and a G4 question
+- [x] 6.2 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
 
 ## 7. The gates and the archive handover
 
-- [ ] 7.1 `openspec validate change-or-take-back-occurrence --strict` exits 0, and `pnpm run checks` is clean
-- [ ] 7.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with fifteen more tests than a run on `origin/main` reports, both read off runs
-- [ ] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
+- [x] 7.1 `openspec validate change-or-take-back-occurrence --strict` exits 0, and `pnpm run checks` is clean
+- [x] 7.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with fifteen more tests than a run on `origin/main` reports, both read off runs
+- [x] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 7.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.9. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/happening/spec.md` gains this delta's three requirements and seven scenarios, `openspec/specs/day-screen/spec.md` its four requirements and eight scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
