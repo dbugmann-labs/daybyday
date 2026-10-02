@@ -1618,6 +1618,13 @@ lands, and the commitments screen becomes the roster alone: its two lists and wh
 What moves is where these are drawn, not what they do. A commitments screen still makes, takes out and
 restores a copy exactly as above; it is only drawn from Settings.
 
+**Amended 2026-10-02**, while the delta of `add-happening` (#375) was written. A commitments screen
+also holds the **happenings**, in a section of its own below its two lists, where one is made and
+renamed on a sheet of one field. Its two lists are still the roster alone: nothing done to a happening
+reaches the roster's places, writes a **copy**, or ends or replaces a **refused change** or a **sheet
+refusal**, and what a happening's sheet tells is a third thing beside both, ended as a sheet refusal
+is — by its field edited, the next ask, the sheet closing or the app being shown.
+
 **Refused change** — the change a screen was asked for last and would not make: which change it was,
 the commitment it was asked about where there is one, and why it was refused. A screen keeps at most
 one, because one refusal is one event and the ask a person is waiting on an answer for is the one
@@ -1701,6 +1708,13 @@ writes it too, whole or not at all, so a day screen returned to from a commitmen
 restored a copy reads it again, and "never written but by a tick" above is withdrawn. The commitments
 screen and the **copy place** read it where the day screen keeps it: a screen given no birthday place
 keeps its ticks in the file of that name beside its **record place**, which in the app is this one.
+
+**Happening place** — the one place the **happenings** are kept at, the **happening store**'s file,
+chosen exactly as the other four are and a file of its own beside them, so a happening file that will
+not open never takes a record, a roster, the one-offs or the birthday ticks down with it. A
+commitments screen that cannot read it lists no happening and says why, naming a file written by a
+later version as the others do; it makes and renames none, leaves what is there untouched, and keeps
+its commitments as ever. Agreed 2026-10-02 while writing the delta of `add-happening` (#375).
 
 **Copy** — one file holding what the **record store**, the **roster store** and the one-off store
 hold at one moment, written for a person to keep somewhere the phone is not: their own files,
@@ -2021,6 +2035,11 @@ else: no words, no name and not whether birthdays are turned on. It is the fourt
 tick until it is taken back whatever the calendar hands. Agreed 2026-09-24 while writing the delta
 of `add-birthday` (#326).
 
+**Happening store** — the store that keeps the **happenings**: each one's identity and name, in the
+order they were made, and nothing another store holds. It is the fifth store, at a place of its own,
+and it is in no **copy** until `carry-happenings-in-a-copy` (#380). Agreed 2026-10-02 while writing
+the delta of `add-happening` (#375).
+
 **One-off entry** — the line a **day view**'s One-offs group always ends with, where a person types a
 new one-off's name in place, as in Apple Reminders; the toolbar's `+` brings it into focus. It is
 deliberately not a **one-off**, which is what `one-off` holds — this is the place one is made, in the
@@ -2059,6 +2078,12 @@ made, renamed, stopped and deleted from a section of its own on the **commitment
 also where its look-back is reached from: **stopping** one takes it off the day screen and keeps
 every occurrence, and **deleting** one removes it with them. Agreed 2026-10-02 at the Feature grill
 of B-076, at the twenty-fourth grooming pass; the capability is `happening`, under an Epic of its own.
+
+**Amended 2026-10-02**, while the delta of `add-happening` (#375) was written. A happening also
+carries an **identity**, given when it is made and never shown, as a commitment's is: "a name and
+nothing else" above is what a person gives and sees. A rename keeps it, and with it the happening's
+place and its occurrences. Two happenings may not share a name, judged as the roster judges a
+commitment's, and they stand in the order they were made, newest last. ADR-1065.
 
 **Occurrence** — one time a **happening** came: a **moment**, or a **calendar date** alone where its
 time is left blank, and an optional note. A day may hold several occurrences of one happening, each counted
