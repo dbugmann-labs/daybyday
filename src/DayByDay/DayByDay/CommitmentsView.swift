@@ -184,6 +184,22 @@ private enum SheetTarget: Identifiable {
     }
 }
 
+/// Which happening `HappeningSheet` is open for — a new one, or the one it renames.
+private enum HappeningSheetTarget: Identifiable {
+    case making
+    case renaming(Happening)
+
+    var id: Int {
+        switch self {
+        case .making: 0
+        case .renaming(let happening): happening.hashValue
+        }
+    }
+
+    var happening: Happening? {
+        if case .renaming(let happening) = self { happening } else { nil }
+    }
+}
 
 /// The roster's own management surface: what it keeps, what it has stopped, and the sheet — B-037
 /// — that defines a new commitment on one of the four rhythms `CommitmentsScreen` offers, or
@@ -192,6 +208,7 @@ struct CommitmentsView: View {
     let screen: CommitmentsScreen
 
     @State private var sheetTarget: SheetTarget?
+    @State private var happeningSheetTarget: HappeningSheetTarget?
     /// Bumped in `.sheet(item:onDismiss:)`'s `onDismiss`, and read by `body` where the lists are
     /// built, so a dismissed sheet always leaves this view's `List` re-evaluated against
     /// `screen.kept`/`keptGroups`/`stopped` — `tasks.md` § 14.4. A rename or a rhythm change kept
@@ -433,6 +450,38 @@ struct CommitmentsView: View {
                 }
             }
 
+            Section {
+                switch screen.happeningState {
+                case .kept:
+                    if screen.happenings.isEmpty {
+                        Text("No happenings yet.")
+                    }
+                    ForEach(screen.happenings, id: \.identity) { happening in
+                        Text(happening.name)
+                            .swipeActions(edge: .leading) {
+                                Button {
+                                    happeningSheetTarget = .renaming(happening)
+                                } label: {
+                                    Image(systemName: "pencil")
+                                }
+                                .tint(.accentColor)
+                                .accessibilityLabel("Edit")
+                            }
+                    }
+                    Button("New happening") {
+                        happeningSheetTarget = .making
+                    }
+                case .notKept:
+                    Text("The happenings could not be read or could not be written.")
+                case .writtenByALaterVersion:
+                    Text(
+                        "The happenings were written by a newer version of DayByDay and must not be deleted."
+                    )
+                }
+            } header: {
+                Text("Happenings")
+            }
+
             switch screen.rosterState {
             case .kept:
                 EmptyView()
@@ -554,7 +603,88 @@ struct CommitmentsView: View {
         .sheet(item: $sheetTarget, onDismiss: { listRevision += 1 }) { target in
             CommitmentSheet(screen: screen, changing: target.commitment)
         }
+        .sheet(item: $happeningSheetTarget, onDismiss: { listRevision += 1 }) { target in
+            HappeningSheet(screen: screen, renaming: target.happening)
+        }
     }
+}
+
+/// The one sheet that makes a happening and renames one: a single name field with *Cancel* and
+/// *Add* or *Save*. A kept ask dismisses; a refused one stays open over its red caption, the field
+/// as typed. Decides nothing — `screen.makeHappening` and `screen.rename` judge, this draws
+/// (ADR-1019).
+private struct HappeningSheet: View {
+    let screen: CommitmentsScreen
+    let renaming: Happening?
+
+    @State private var name: String
+    @Environment(\.dismiss) private var dismiss
+
+    init(screen: CommitmentsScreen, renaming: Happening?) {
+        self.screen = screen
+        self.renaming = renaming
+        _name = State(initialValue: renaming?.name ?? "")
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Name", text: $name)
+                        .onChange(of: name) { _, _ in screen.happeningNameEdited() }
+
+                    if let refusal = screen.happeningRefusal {
+                        happeningRefusalText(refusal)
+                    }
+                }
+            }
+            .navigationTitle(renaming.map { "Rename \($0.name)" } ?? "New happening")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(renaming == nil ? "Add" : "Save") {
+                        save()
+                    }
+                }
+            }
+        }
+        .onDisappear {
+            screen.happeningSheetClosed()
+        }
+    }
+
+    private func save() {
+        let refusal =
+            if let renaming {
+                screen.rename(renaming, to: name)
+            } else {
+                screen.makeHappening(named: name)
+            }
+
+        if refusal == nil {
+            dismiss()
+        }
+    }
+}
+
+/// The words a person reads under the happening sheet's name field.
+@ViewBuilder
+private func happeningRefusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
+    Group {
+        switch refusal {
+        case .nameAlreadyInUse(let name):
+            Text("A happening called \"\(name)\" already exists.")
+        case .namesNothing:
+            Text("Give it a name.")
+        default:
+            Text("The happenings could not be read or could not be written.")
+        }
+    }
+    .font(.caption)
+    .foregroundStyle(.red)
 }
 
 /// One row of the usual amounts card, both fields as typed.
