@@ -1758,6 +1758,12 @@ outside the twenty-four or a minute outside the sixty forms no moment, exactly a
 date forms no calendar date. Agreed 2026-09-15, while the delta of `make-a-copy` (#266) was being
 written; ADR-1054.
 
+**Amended 2026-10-02**, at the Feature grill of B-076. "No store holds a moment and none will" is
+withdrawn: an **occurrence** of a **happening** is a moment, held in the happening's store, because the
+owner asked for the time of day an eye migraine came. Nothing else changes — a moment is still read at
+the edge of the app, and the rule engine still speaks calendar dates alone, since nothing that is due
+ever holds one.
+
 **Copy place** — the one folder a person picked, once, for the app to write its **copy** at on its
 own. It is chosen by the person and never named by the app, because it has to be a place that
 outlives the phone, and no such place is the app's to name. While there is none, the app copies only
@@ -2042,6 +2048,26 @@ other. It is always in reach, sits above the keyboard, and is never scrolled to,
 `+` that brought it into focus is gone. Committing and what is told under it are unchanged — "under
 the entry" is now under the bar's field — and a one-off it makes still appears as a row in the group.
 A horizontal drag on the bar does not move the day.
+
+**Happening** — something that comes to a person rather than something they owe: an eye migraine, a
+bad night, a sick day. It is a **name** and nothing else — no rhythm, no day it is kept from, no kind
+and no category — and a person may have several, each named by them. Deliberately not a
+**commitment**: it is never due, so it is never kept and never missed, and a day it did not come on
+says nothing. What it holds are its **occurrences**. A **day view** draws the happenings as a group
+of their own, where a person both sees what came that day and notes that one did. A happening is
+made, renamed, stopped and deleted from a section of its own on the **commitments screen**, which is
+also where its look-back is reached from: **stopping** one takes it off the day screen and keeps
+every occurrence, and **deleting** one removes it with them. Agreed 2026-10-02 at the Feature grill
+of B-076, at the twenty-fourth grooming pass; the capability is `happening`, under an Epic of its own.
+
+**Occurrence** — one time a **happening** came: a **moment**, or a **calendar date** alone where its
+time is left blank, and an optional note. A day may hold several occurrences of one happening, each counted
+on its own, which makes it the first thing the app keeps that is not one per day. An occurrence is
+noted on today or on a past day and never on a day that has not arrived; noted on today its time
+starts at the current one. Its time and its note can be changed, and it can be **taken back**;
+moving it to another day is taking it back and noting it there. A happening's look-back says its
+occurrences newest first, each with its day, its time and its note, and counts them per calendar
+month, a month with none included. Agreed 2026-10-02 with **happening**.
 
 **Calendar date** — a year, a month of that year and a day of that month: the argument every
 due-ness question is asked about. It carries no clock, no time zone and no locale, and a

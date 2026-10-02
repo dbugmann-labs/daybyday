@@ -286,44 +286,27 @@ to Wants the same day, 2026-09-30, unfixed, by the owner's choice.*
 - **Open** — counted as of the row's own date, like standing is, so a back-filled day says what that
   day could still reach?
 
-### B-076 — note something that happened to me on the day it happens, and see how often it comes
-*Captured 2026-09-30, from a braindump of two bullets folded into one entry: the look-back is "for
-this type" and has no use without the first.*
-
-> "Reporting something (e.g. Augenmigräne) - nothing that is due, but something than can be entered
-> (with notes) on any day"
-
-> "Look-back for this type: showing the dates & frequency it was noted, including option to see
-> notes"
-
-- **Trigger** — the day an Augenmigräne comes, and later, the question of how often they come and
-  what the notes said about each one.
-- **Touches** — `unclaimed`. Nothing in any capability holds a thing that is never due: `record`
-  keeps a tick, number, note or total only *on a calendar date it is due on*, and `one-off` is owed
-  once, on one date. The nearest thing today is a **note** commitment on every day: its look-back
-  already says each note under its day, newest first, and counts them, which is most of the second
-  bullet. What it lacks is the "nothing is due" — its row stands on every day, and a day without a
-  migraine reads as *not kept*. `EPIC: Daily commitments` (#1) is "the commitments you owe
-  yourself", and this is not one, so promoting it is a second Epic or an amended outcome.
-- **Principle** — tested against *five percent of seven things*: **passes.** It makes a new kind of
-  record possible — something that happens rather than something owed — instead of deepening one
-  that exists.
-- **Open** — is this a commitment of a new rhythm ("never due, open on any day"), or a different
-  thing from a commitment altogether? The first reuses the roster, the look-back and the note; the
-  second keeps "commitment" meaning what you owe.
-- **Open** — where is it entered? *Entered where you stand* puts every daily entry in a day
-  screen's row, and a row for something not due is what *offered* was landed to keep off the screen.
-  A row on every day, a row only on days it holds something plus a way to add one, or something else.
-- **Open** — is the note required, optional, or is the entry itself the fact and the note an extra?
-  "with notes" reads as optional.
-- **Open** — what is frequency: a count per month like a tick's look-back, the days between
-  occurrences, or the dates alone? And more than one on a day — once per day, or each one?
-
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-10-02 — note something that happened to me on the day it happens, and see how often it comes
+  (B-076) → `FEAT: happening` (#372) under a new `EPIC: Happenings` (#371); its Stories come at G2.
+  A **happening** is something that comes to a person rather than something they owe — an eye
+  migraine, a bad night — a name and nothing else, several named by the owner, and deliberately not a
+  **commitment**: never due, never kept or missed, in its own store and its own day-screen group, as
+  one-offs and birthdays are. Each time it comes is an **occurrence**: a moment, or a date alone where
+  the time is left blank, with an optional note; several on one day each count, noted on today or a
+  past day only, its time pre-filled on today, changeable and taken back like any record. Made,
+  renamed, stopped and deleted from a section of its own on the commitments screen, where its
+  look-back is reached: occurrences newest first and a count per calendar month, empty months
+  included. The owner chose the time of day and one-per-occurrence against the recommendation; the
+  first withdraws `CONTEXT.md` § *Moment*'s "no store holds a moment and none will". The entry's
+  claim that *offered* keeps not-due rows off the day screen was wrong — that rule is § *Day view*
+  and ADR-1028. Severity, duration, a category and a reminder are out. `CONTEXT.md` gained
+  **Happening** and **Occurrence**.
 
 - 2026-09-30 — see where a number is heading over months (B-070) → `add-number-trend` (#369) under
   `FEAT: look-back` (#271), reopened with `EPIC: Looking back` (#269); one Story, presented at G2
@@ -1506,3 +1489,17 @@ found nothing.
   - **Not re-judged** — B-039, B-041, B-054, B-066, B-069, B-072, B-073 with the dispositions of the
     twenty-second pass unchanged; B-076, captured since, waits for a pass of its own — it is
     unclaimed and may need a second Epic.
+- 2026-10-02 — pass over 8 wants, the twenty-fourth, on `chore/backlog` (fast-forwarded to
+  `origin/main` at ecd6100, nothing unmerged).
+  - **Sweep** — no new silence: since the twenty-third pass only #370 `add-number-trend` landed,
+    a look-back view with no lifecycle verb missing; `docs/open-questions.md` unchanged; day-one week
+    all shipped; no issue open.
+  - **Promoted** — B-076 → #372 under #371, a new Epic, as #238 and #321 were. Fifteen questions
+    over three rounds and one fact agent; every answer as recommended except the time of day and one
+    count per occurrence. Recommended over cluster C, which the twenty-second pass named next, because
+    B-076 was captured after that judgement and is the only want here that makes a new kind of record
+    possible. `CONTEXT.md` gained **Happening** and **Occurrence**; **Moment** amended.
+  - **Not taken** — **C**, B-073 and B-054, Stories against `record` and `day-screen`: next. **D**,
+    B-039: passed over at every pass since the sixth sweep with no blocker named — propose a drop on
+    its merits next pass. B-069 waits for the week with system blue, to about 2026-10-06; B-072 a
+    sitting of its own; B-041 waits on the deployment target, the owner's; B-066 waits for a cause.
