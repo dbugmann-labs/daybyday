@@ -189,10 +189,15 @@ private enum HappeningSheetTarget: Identifiable {
     case making
     case renaming(Happening)
 
-    var id: String {
+    enum ID: Hashable {
+        case making
+        case renaming(Happening.Identity)
+    }
+
+    var id: ID {
         switch self {
-        case .making: "making"
-        case .renaming(let happening): "renaming \(happening.identity.hashValue)"
+        case .making: .making
+        case .renaming(let happening): .renaming(happening.identity)
         }
     }
 
