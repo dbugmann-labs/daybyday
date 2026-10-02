@@ -112,12 +112,12 @@ public final class CommitmentsScreen {
     /// until #380, so `keptAChange()` is never called here.
     @discardableResult
     public func makeHappening(named name: String) -> Refusal? {
+        guard let store = happeningStore else {
+            return refuseHappening(.notKept)
+        }
         let trimmed = Blank.trimmed(name)
         guard let happening = Happening(name: trimmed) else {
             return refuseHappening(.namesNothing)
-        }
-        guard let store = happeningStore else {
-            return refuseHappening(.notKept)
         }
         if let listed = store.happenings.holding(name: trimmed) {
             return refuseHappening(.nameAlreadyInUse(listed.name))

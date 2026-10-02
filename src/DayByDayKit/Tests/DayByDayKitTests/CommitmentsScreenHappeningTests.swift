@@ -381,6 +381,7 @@ func aCommitmentsScreenThatCannotReadItsHappeningPlaceListsNoneAndLeavesThePlace
     #expect(screen.happenings.isEmpty)
     #expect(screen.happeningState == .notKept)
     #expect(made == .notKept)
+    #expect(screen.makeHappening(named: "  ") == .notKept)
     #expect(try Data(contentsOf: happeningPlace) == bytes)
     #expect(screen.kept.map(\.name) == ["Gym"])
     let run = screen.define(

@@ -189,10 +189,10 @@ private enum HappeningSheetTarget: Identifiable {
     case making
     case renaming(Happening)
 
-    var id: Int {
+    var id: String {
         switch self {
-        case .making: 0
-        case .renaming(let happening): happening.hashValue
+        case .making: "making"
+        case .renaming(let happening): "renaming \(happening.identity.hashValue)"
         }
     }
 
@@ -450,6 +450,22 @@ struct CommitmentsView: View {
                 }
             }
 
+            switch screen.rosterState {
+            case .kept:
+                EmptyView()
+            case .notKept:
+                Text("The roster could not be read or could not be written.")
+            case .writtenByALaterVersion:
+                Text("The roster was written by a newer version of DayByDay and must not be deleted.")
+            }
+
+            // Decides nothing — `screen.recordsBelongToNoCommitment` already carried back every
+            // record it could and is the one place this is judged, per ADR-1019. `design.md` §
+            // *The shell rides this Story*.
+            if screen.recordsBelongToNoCommitment {
+                Text("Some records belong to no commitment.")
+            }
+
             Section {
                 switch screen.happeningState {
                 case .kept:
@@ -480,22 +496,6 @@ struct CommitmentsView: View {
                 }
             } header: {
                 Text("Happenings")
-            }
-
-            switch screen.rosterState {
-            case .kept:
-                EmptyView()
-            case .notKept:
-                Text("The roster could not be read or could not be written.")
-            case .writtenByALaterVersion:
-                Text("The roster was written by a newer version of DayByDay and must not be deleted.")
-            }
-
-            // Decides nothing — `screen.recordsBelongToNoCommitment` already carried back every
-            // record it could and is the one place this is judged, per ADR-1019. `design.md` §
-            // *The shell rides this Story*.
-            if screen.recordsBelongToNoCommitment {
-                Text("Some records belong to no commitment.")
             }
         }
         // Apple documents `.default` and `.compact` but publishes no point value for either.

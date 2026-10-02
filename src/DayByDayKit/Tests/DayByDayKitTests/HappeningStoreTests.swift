@@ -91,6 +91,14 @@ func aChangeTheHappeningsRefuseLeavesTheHappeningStoresPlaceUntouched() throws {
     try store.add(kopfweh)
     let kept = try Data(contentsOf: place)
 
+    // Nothing can be written from here, so a refused ask that rewrote the place would throw.
+    let directory = place.deletingLastPathComponent()
+    try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
+    defer {
+        try? FileManager.default.setAttributes(
+            [.posixPermissions: 0o700], ofItemAtPath: directory.path)
+    }
+
     let alike = try store.add(try #require(Happening(name: "kopfweh")))
     #expect(!alike)
     #expect(try Data(contentsOf: place) == kept)
