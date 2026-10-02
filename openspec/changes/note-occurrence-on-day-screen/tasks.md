@@ -67,7 +67,7 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 - [x] 7.1 `openspec validate note-occurrence-on-day-screen --strict` exits 0, and `pnpm run checks` is clean
 - [x] 7.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with twenty-three more tests than a run on `origin/main` reports, both read off runs
-- [ ] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
+- [x] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [x] 7.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.10. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/happening/spec.md` gains this delta's three requirements and nine scenarios, `openspec/specs/day-screen/spec.md` its seven requirements and fourteen scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
@@ -81,6 +81,6 @@ A fresh install; "Augenmigräne", "Kopfweh" and "Schlecht geschlafen" made on th
 - [x] W.5 A past day, Kopfweh picked — the sheet's "Time" row reading "No time".
 - [x] W.6 A future day — no bolt, the "New one-off" field running full width.
 - [x] W.7 `happenings.json` replaced by bytes that are not a store, the app shown again — the store card's line "The happenings could not be read." and no bolt.
-- [ ] W.8 phone: on today, clear the sheet's time, set one with the time picker, clear it again, then Save — the row says "no time" for it.
-- [ ] W.9 phone: type a note of two lines with the keyboard up — both lines and the Save button stay in view.
+- [x] W.8 phone: on today, clear the sheet's time, set one with the time picker, clear it again, then Save — the row says "no time" for it.
+- [x] W.9 phone: type a note of two lines with the keyboard up — both lines and the Save button stay in view.
 - [x] W.10 **The handover** — W.1–W.7, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. https://github.com/dbugmann-labs/daybyday/pull/382#issuecomment-5956647626
