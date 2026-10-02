@@ -89,4 +89,4 @@ A fresh install, the commitments screen opened from the day screen's list symbol
 - [x] W.3 "Augenmigräne" and then "Kopfweh" added — the section listing Augenmigräne, Kopfweh, then *New happening*; no empty line.
 - [x] W.4 *New happening* tapped, "kopfweh" typed and Add tapped — the sheet still open, `A happening called "Kopfweh" already exists.` in red under the field.
 - [x] W.5 Kopfweh swiped right, the pencil tapped, renamed "Spannungskopfweh" and saved — the section listing Augenmigräne then Spannungskopfweh.
-- [x] W.6 **The handover** — W.1–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. https://github.com/dbugmann-labs/daybyday/pull/381#issuecomment-5952481115
+- [x] W.6 **The handover** — W.1–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. https://github.com/dbugmann-labs/daybyday/pull/381#issuecomment-5954885960
