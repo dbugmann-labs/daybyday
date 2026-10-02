@@ -395,7 +395,7 @@ func aCommitmentsScreenThatCannotReadItsHappeningPlaceListsNoneAndLeavesThePlace
 func aHappeningPlaceWrittenByALaterVersionMakesACommitmentsScreenThatSaysSo() throws {
     let places = freshRosterAndRecordPlaces()
     let happeningPlace = freshHappeningPlace()
-    let bytes = Data(#"{"version": 2, "happenings": []}"#.utf8)
+    let bytes = Data(#"{"version": \#(HappeningDocument.currentVersion + 1), "happenings": []}"#.utf8)
     try write(bytes, at: happeningPlace)
 
     let screen = CommitmentsScreen(

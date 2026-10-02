@@ -175,3 +175,115 @@ func aHappeningStoreHoldingWhatCouldNotBeAHappeningIsRefused() throws {
     let good = try placeHolding(store(entry(valid, "Kopfweh")))
     #expect(try HappeningStore(at: good).happenings.all.map(\.name) == ["Kopfweh"])
 }
+
+@Test("a happening store opened again holds the occurrences noted there, in their order")
+func aHappeningStoreOpenedAgainHoldsTheOccurrencesNotedThereInTheirOrder() throws {
+    let place = freshPlace()
+    let kopfweh = try #require(Happening(name: "Kopfweh"))
+    let second = try #require(CalendarDate(year: 2026, month: 10, day: 2))
+    let earlier = try #require(CalendarDate(year: 2026, month: 9, day: 30))
+
+    let first = try HappeningStore(at: place)
+    try first.add(kopfweh)
+    try first.note(
+        Occurrence(of: kopfweh, on: second, at: TimeOfDay(hour: 9, minute: 10), saying: "links"))
+    try first.note(Occurrence(of: kopfweh, on: earlier, at: nil, saying: nil))
+    try first.rename(kopfweh, to: "Spannungskopfweh")
+
+    let again = try HappeningStore(at: place)
+
+    #expect(again.happenings.occurrences.count == 2)
+    #expect(again.happenings.occurrences.map(\.happening) == [kopfweh.identity, kopfweh.identity])
+    #expect(again.happenings.all.map(\.name) == ["Spannungskopfweh"])
+    #expect(again.happenings.occurrences[0].day == second)
+    #expect(again.happenings.occurrences[0].time == TimeOfDay(hour: 9, minute: 10))
+    #expect(again.happenings.occurrences[0].note == "links")
+    #expect(again.happenings.occurrences[1].day == earlier)
+    #expect(again.happenings.occurrences[1].time == nil)
+    #expect(again.happenings.occurrences[1].note == nil)
+    #expect(again.happenings == first.happenings)
+    withExtendedLifetime(first) {}
+}
+
+@Test("an occurrence the happening store cannot keep is refused and not held")
+func anOccurrenceTheHappeningStoreCannotKeepIsRefusedAndNotHeld() throws {
+    let place = freshPlace()
+    let kopfweh = try #require(Happening(name: "Kopfweh"))
+    let second = try #require(CalendarDate(year: 2026, month: 10, day: 2))
+    let store = try HappeningStore(at: place)
+    try store.add(kopfweh)
+
+    let directory = place.deletingLastPathComponent()
+    try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
+    defer {
+        try? FileManager.default.setAttributes(
+            [.posixPermissions: 0o700], ofItemAtPath: directory.path)
+    }
+    let kept = try Data(contentsOf: place)
+
+    #expect(throws: HappeningStoreError.cannotWrite(at: place)) {
+        try store.note(
+            Occurrence(of: kopfweh, on: second, at: TimeOfDay(hour: 9, minute: 10), saying: nil))
+    }
+    #expect(store.happenings.all == [kopfweh])
+    #expect(store.happenings.occurrences.isEmpty)
+
+    let stranger = try #require(Happening(name: "Schlecht geschlafen"))
+    let refused = try store.note(Occurrence(of: stranger, on: second, at: nil, saying: nil))
+    #expect(!refused)
+    #expect(try Data(contentsOf: place) == kept)
+}
+
+@Test("a happening store in its first form is read as holding no occurrences")
+func aHappeningStoreInItsFirstFormIsReadAsHoldingNoOccurrences() throws {
+    let valid = "6F1B0F3E-0C1D-4F57-9A77-1B2E3C4D5E6F"
+    let bytes = Data(#"{"version": 1, "happenings": [{"identity": "\#(valid)", "name": "Kopfweh"}]}"#.utf8)
+    let place = try placeHolding(bytes)
+
+    let store = try HappeningStore(at: place)
+
+    #expect(store.happenings.all.map(\.name) == ["Kopfweh"])
+    #expect(store.happenings.occurrences.isEmpty)
+    #expect(try Data(contentsOf: place) == bytes)
+
+    let kopfweh = try #require(store.happenings.all.first)
+    let second = try #require(CalendarDate(year: 2026, month: 10, day: 2))
+    try store.note(Occurrence(of: kopfweh, on: second, at: nil, saying: nil))
+
+    let again = try HappeningStore(at: place)
+    #expect(again.happenings.all.map(\.name) == ["Kopfweh"])
+    #expect(again.happenings.occurrences.map(\.day) == [second])
+}
+
+@Test("a happening store holding an occurrence that could not be one is refused")
+func aHappeningStoreHoldingAnOccurrenceThatCouldNotBeOneIsRefused() throws {
+    let valid = "6F1B0F3E-0C1D-4F57-9A77-1B2E3C4D5E6F"
+    let other = "A1B2C3D4-0C1D-4F57-9A77-1B2E3C4D5E70"
+    func store(_ occurrence: String) -> Data {
+        Data(
+            #"""
+            {"version": 2, "happenings": [{"identity": "\#(valid)", "name": "Kopfweh"}], "occurrences": [\#(occurrence)]}
+            """#.utf8)
+    }
+    func occurrence(_ identity: String, _ date: String, _ time: String = "") -> String {
+        #"{"happening": "\#(identity)", "day": \#(date)\#(time)}"#
+    }
+    let october = #"{"year": 2026, "month": 10, "day": 2}"#
+
+    let bad = [
+        store(occurrence(other, october)),
+        store(occurrence(valid, #"{"year": 2026, "month": 2, "day": 30}"#)),
+        store(occurrence(valid, october, #", "hour": 24, "minute": 0"#)),
+    ]
+    for bytes in bad {
+        let place = try placeHolding(bytes)
+
+        #expect(throws: HappeningStoreError.notAStore(at: place)) {
+            try HappeningStore(at: place)
+        }
+        #expect(try Data(contentsOf: place) == bytes)
+    }
+
+    let good = try placeHolding(store(occurrence(valid, october, #", "hour": 9, "minute": 10"#)))
+    #expect(try HappeningStore(at: good).happenings.occurrences.count == 1)
+}
