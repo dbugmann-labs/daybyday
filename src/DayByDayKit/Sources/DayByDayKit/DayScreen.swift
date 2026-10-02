@@ -93,6 +93,12 @@ public final class DayScreen {
     /// copy place, handed to both screens*.
     private let copyPlace: CopyPlace?
 
+    /// The place happenings are kept at: one file, in the same directory as `recordPlace`, but
+    /// none of the places beside it. `openspec/changes/add-happening/design.md` § *Migration*.
+    public static var happeningPlace: URL {
+        applicationSupportPlace(fileName: "happenings.json")
+    }
+
     /// The place a day screen keeps its record when it is not told another: one file, in a
     /// directory of this app's own, under the platform's application-support directory.
     public static var recordPlace: URL {
@@ -126,6 +132,12 @@ public final class DayScreen {
         return applicationSupport
             .appendingPathComponent("DayByDay", isDirectory: true)
             .appendingPathComponent(fileName)
+    }
+
+    /// The place a screen given no happening place of its own keeps its happenings at: one file,
+    /// `happenings.json`, beside `recordPlace`, on the footing of `birthdayPlace(besideRecordAt:)`.
+    static func happeningPlace(besideRecordAt recordPlace: URL) -> URL {
+        recordPlace.deletingLastPathComponent().appendingPathComponent("happenings.json")
     }
 
     /// The place a screen given no birthday place of its own keeps its birthday ticks at: one
