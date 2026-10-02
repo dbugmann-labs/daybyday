@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { assertTypesVisible, renderGraph, type GraphIssue } from '../scripts/generate-graph.ts'
+import { assertTypesVisible, issuesFromPages, renderGraph, type GraphIssue } from '../scripts/generate-graph.ts'
 
 // `docs/graph.mmd` is regenerated and committed unattended, on every issue event. Two
 // properties make that safe to do repeatedly: the output is deterministic, so an unchanged
@@ -127,5 +127,14 @@ describe('assertTypesVisible', () => {
   // A genuinely empty tracker is not a broken token, and a new repository must not be a red run.
   it('passes on a repository with no issues at all', () => {
     expect(() => assertTypesVisible('owner/repo', [])).not.toThrow()
+  })
+})
+
+describe('issuesFromPages', () => {
+  const node = (number: number) => ({ number, title: `t${number}`, state: 'OPEN' as const, issueType: { name: 'Task' }, parent: null })
+  const page = (...numbers: number[]) => ({ data: { repository: { issues: { nodes: numbers.map(node) } } } })
+
+  it('joins every page, in order, so a tracker past one page is read whole', () => {
+    expect(issuesFromPages([page(1, 2), page(3), page(4, 5)]).map((i) => i.number)).toEqual([1, 2, 3, 4, 5])
   })
 })
