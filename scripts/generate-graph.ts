@@ -38,10 +38,10 @@ const LEVELS = new Map([
 ])
 
 const QUERY = `
-query($owner: String!, $name: String!) {
+query($owner: String!, $name: String!, $endCursor: String) {
   repository(owner: $owner, name: $name) {
-    issues(first: 100, states: [OPEN, CLOSED], orderBy: { field: CREATED_AT, direction: ASC }) {
-      pageInfo { hasNextPage }
+    issues(first: 100, after: $endCursor, states: [OPEN, CLOSED], orderBy: { field: CREATED_AT, direction: ASC }) {
+      pageInfo { hasNextPage endCursor }
       nodes {
         number
         title
@@ -160,48 +160,45 @@ export function renderGraph(issues: GraphIssue[]): string {
   return lines.join('\n')
 }
 
-export function fetchIssues(repo: string): GraphIssue[] {
-  const [owner, name] = repo.split('/')
-  const raw = execFileSync(
-    'gh',
-    ['api', 'graphql', '-f', `query=${QUERY}`, '-F', `owner=${owner}`, '-F', `name=${name}`],
-    { encoding: 'utf8' },
-  )
-
-  const parsed = JSON.parse(raw) as {
-    data: {
-      repository: {
-        issues: {
-          pageInfo: { hasNextPage: boolean }
-          nodes: {
-            number: number
-            title: string
-            state: 'OPEN' | 'CLOSED'
-            issueType: { name: string } | null
-            parent: { number: number } | null
-          }[]
-        }
+interface IssuesPage {
+  data: {
+    repository: {
+      issues: {
+        nodes: {
+          number: number
+          title: string
+          state: 'OPEN' | 'CLOSED'
+          issueType: { name: string } | null
+          parent: { number: number } | null
+        }[]
       }
     }
   }
+}
 
-  const { pageInfo, nodes } = parsed.data.repository.issues
-  if (pageInfo.hasNextPage) {
-    // Rule 5: stop rather than improvise. A silently truncated graph is worse than none.
-    throw new Error(
-      `${repo} has more than 100 issues; this generator does not paginate yet. ` +
-        'Add pagination to scripts/generate-graph.ts before trusting docs/graph.mmd again.',
-    )
-  }
+/** Flattens the pages `gh api graphql --paginate --slurp` returns into one list, in order. */
+export function issuesFromPages(pages: IssuesPage[]): GraphIssue[] {
+  return pages
+    .flatMap((page) => page.data.repository.issues.nodes)
+    .map((n) => ({
+      number: n.number,
+      title: n.title,
+      state: n.state,
+      type: n.issueType?.name ?? null,
+      parent: n.parent?.number ?? null,
+    }))
+}
 
-  const issues = nodes.map((n) => ({
-    number: n.number,
-    title: n.title,
-    state: n.state,
-    type: n.issueType?.name ?? null,
-    parent: n.parent?.number ?? null,
-  }))
+export function fetchIssues(repo: string): GraphIssue[] {
+  const [owner, name] = repo.split('/')
+  // gh follows pageInfo.endCursor into $endCursor itself; --slurp wraps the pages in one array.
+  const raw = execFileSync(
+    'gh',
+    ['api', 'graphql', '--paginate', '--slurp', '-f', `query=${QUERY}`, '-F', `owner=${owner}`, '-F', `name=${name}`],
+    { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
+  )
 
+  const issues = issuesFromPages(JSON.parse(raw) as IssuesPage[])
   assertTypesVisible(repo, issues)
   return issues
 }
