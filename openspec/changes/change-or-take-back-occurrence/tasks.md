@@ -43,7 +43,7 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 5. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 5.1 `ContentView` draws the row's tap, the popover, the filled-in sheet, its *Take back* and the confirmation exactly as `design.md` § *The shell* and § *What the shell draws* say, reading `occurrences(of:)` and handing `momentNow()` to `change`
+- [x] 5.1 `ContentView` draws the row's tap, the popover, the filled-in sheet, its *Take back* and the confirmation exactly as `design.md` § *The shell* and § *What the shell draws* say, reading `occurrences(of:)` and handing `momentNow()` to `change`
 - [ ] 5.2 `git diff --stat origin/main... -- src/DayByDay/` lists `ContentView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 6. The records
