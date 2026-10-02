@@ -23,7 +23,7 @@ public final class HappeningStore {
         guard envelope.version <= HappeningDocument.currentVersion else {
             throw HappeningStoreError.laterForm(at: place, version: envelope.version)
         }
-        guard envelope.version == HappeningDocument.currentVersion else {
+        guard (1...HappeningDocument.currentVersion).contains(envelope.version) else {
             throw HappeningStoreError.notAStore(at: place)
         }
         guard let document = try? JSONDecoder().decode(HappeningDocument.self, from: data),
@@ -58,6 +58,20 @@ public final class HappeningStore {
     public func rename(_ happening: Happening, to name: String) throws -> Bool {
         var next = happenings
         guard next.rename(happening, to: name) else {
+            return false
+        }
+        try write(next)
+
+        happenings = next
+        return true
+    }
+
+    /// Kept at `place` before this returns. `false`, without throwing and without writing, where
+    /// `Happenings.note` refuses.
+    @discardableResult
+    public func note(_ occurrence: Occurrence) throws -> Bool {
+        var next = happenings
+        guard next.note(occurrence) else {
             return false
         }
         try write(next)

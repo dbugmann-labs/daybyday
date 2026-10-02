@@ -76,6 +76,7 @@ public final class DayScreen {
     private let rosterPlace: URL
     private let oneOffPlace: URL
     private let birthdayPlace: URL
+    private let happeningPlace: URL
     private let calendar: BirthdayCalendar?
     private let birthdaySwitch: BirthdaySwitch?
     private var today: CalendarDate
@@ -84,6 +85,7 @@ public final class DayScreen {
     private var roster: Roster
     private var oneOffStore: OneOffStore?
     private var birthdayStore: BirthdayStore?
+    private var happeningStore: HappeningStore?
     private var birthdayTicksState: BirthdayTicksState
     private var lastBirthdayReading: CalendarReading
 
@@ -164,6 +166,7 @@ public final class DayScreen {
         keepingRosterAt rosterPlace: URL = DayScreen.rosterPlace,
         keepingOneOffsAt oneOffPlace: URL = DayScreen.oneOffPlace,
         keepingBirthdayTicksAt birthdayPlace: URL? = nil,
+        keepingHappeningsAt happeningPlace: URL? = nil,
         readingBirthdaysFrom calendar: BirthdayCalendar? = nil,
         whileOn birthdaySwitch: BirthdaySwitch? = nil,
         copyingTo copyPlace: CopyPlace? = nil
@@ -175,6 +178,7 @@ public final class DayScreen {
         self.rosterPlace = rosterPlace
         self.oneOffPlace = oneOffPlace
         self.birthdayPlace = birthdayPlace ?? Self.birthdayPlace(besideRecordAt: recordPlace)
+        self.happeningPlace = happeningPlace ?? Self.happeningPlace(besideRecordAt: recordPlace)
         self.calendar = calendar
         self.birthdaySwitch = birthdaySwitch
         self.copyPlace = copyPlace
@@ -193,6 +197,11 @@ public final class DayScreen {
         self.birthdayStore = openedBirthdays.store
         self.birthdayTicksState = openedBirthdays.state
 
+        let openedHappenings = Self.openHappenings(at: self.happeningPlace)
+        self.happeningStore = openedHappenings.store
+        self.happeningState = openedHappenings.state
+        self.happenings = openedHappenings.store?.happenings.all ?? []
+
         // `calendar` and `birthdaySwitch` here are the parameters above, not `self.calendar` and
         // `self.birthdaySwitch`: `self` is not yet fully initialized (`dayView` is being assigned
         // right now), so neither can be read back — the same reason `today`, not `self.today`,
@@ -209,7 +218,33 @@ public final class DayScreen {
             of: read.roster.groups(on: today), roster: read.roster, oneOffs: read.oneOffStore,
             asOf: today, on: today, in: read.recordStore?.history ?? History(),
             birthdayGroup: Self.birthdayGroup(
-                on: today, from: reading, calendar: calendar, ticks: openedBirthdays.store?.ticks))
+                on: today, from: reading, calendar: calendar, ticks: openedBirthdays.store?.ticks)
+        ).withHappenings(openedHappenings.store?.happenings ?? Happenings())
+    }
+
+    /// Opens the happening place at `place`, telling apart the one refusal a person can act on
+    /// differently, a later form, from every other. Writes nothing.
+    private static func openHappenings(at place: URL) -> (store: HappeningStore?, state: RosterState) {
+        do {
+            return (try HappeningStore(at: place), .kept)
+        } catch HappeningStoreError.laterForm {
+            return (nil, .writtenByALaterVersion)
+        } catch {
+            return (nil, .notKept)
+        }
+    }
+
+    /// Opens the happening place afresh and lists what it holds, or lists none and says why.
+    private func readHappenings() {
+        let opened = Self.openHappenings(at: happeningPlace)
+        happeningStore = opened.store
+        happeningState = opened.state
+        happenings = opened.store?.happenings.all ?? []
+    }
+
+    /// What the happening store holds as it stands, or nothing where the screen is not keeping it.
+    private var heldHappenings: Happenings {
+        happeningStore?.happenings ?? Happenings()
     }
 
     /// What reading the record, the roster and the one-off places produces: a restore in
@@ -669,6 +704,59 @@ public final class DayScreen {
 
     /// Anything but `.kept` means this screen holds no One-offs group on any day.
     public private(set) var oneOffState: OneOffState
+
+    /// The happenings this screen lists, in the order they were made.
+    public private(set) var happenings: [Happening] = []
+
+    /// Whether this screen is keeping its happenings: anything but `.kept` lists none and offers
+    /// no noting. Apart from `rosterState`, and not read by `saysACopyCanBeRestored`.
+    public private(set) var happeningState: RosterState = .kept
+
+    /// Whether this screen offers noting an occurrence of a happening on the day it shows.
+    public var offersNotingAHappening: Bool {
+        !happenings.isEmpty && shownDay.days(until: today) >= 0
+    }
+
+    /// The time an occurrence noted now starts at: the hour and minute of `now` where the day
+    /// shown is its date, none on any other day. Reads no place and changes nothing.
+    public func startingTime(asOf now: Moment) -> TimeOfDay? {
+        shownDay == now.day ? TimeOfDay(hour: now.hour, minute: now.minute) : nil
+    }
+
+    /// Why an occurrence was not noted.
+    public enum OccurrenceRefusal: Equatable, Sendable {
+        /// The day, or the time on today, has not come.
+        case notYetCome
+        /// It could not be kept: the happening place cannot be written, is not being kept, or the
+        /// happening is not one this screen lists.
+        case notKept
+    }
+
+    /// Notes an occurrence of `happening` on the day shown.
+    @discardableResult
+    public func note(
+        _ happening: Happening, at time: TimeOfDay?, saying note: String, asOf now: Moment
+    ) -> OccurrenceRefusal? {
+        guard let happeningStore, happenings.contains(happening) else {
+            return .notKept
+        }
+        let comesLater =
+            shownDay.days(until: today) < 0 || shownDay.days(until: now.day) < 0
+            || (shownDay == now.day && time.map { ($0.hour, $0.minute) > (now.hour, now.minute) } == true)
+        guard !comesLater else {
+            return .notYetCome
+        }
+
+        let occurrence = Occurrence(
+            of: happening, on: shownDay, at: time, saying: Blank.trimmed(note))
+        guard (try? happeningStore.note(occurrence)) == true else {
+            return .notKept
+        }
+
+        notice = nil
+        dayView = dayView.withHappenings(happeningStore.happenings)
+        return nil
+    }
 
     /// What this screen says about birthdays: `.off` draws no Birthdays group on any day and
     /// asks the calendar nothing; anything else draws one wherever a birthday falls, unticked
@@ -1240,7 +1328,7 @@ public final class DayScreen {
             of: roster.groups(on: day), roster: roster, oneOffs: oneOffStore, asOf: today, on: day,
             in: recordStore?.history ?? History(),
             birthdayGroup: birthdayGroup(on: day)
-        )
+        ).withHappenings(heldHappenings)
     }
 
     /// Reads the calendar again for the span around `day`, and sets `birthdayState` from that
@@ -1496,12 +1584,14 @@ public final class DayScreen {
         let openedBirthdays = Self.openBirthdays(at: birthdayPlace)
         self.birthdayStore = openedBirthdays.store
         self.birthdayTicksState = openedBirthdays.state
+        readHappenings()
         refreshBirthdays(for: shownDay)
 
         self.dayView = Self.formDayView(
             of: read.roster.groups(on: shownDay), roster: read.roster, oneOffs: read.oneOffStore,
             asOf: self.today, on: shownDay, in: read.recordStore?.history ?? History(),
-            birthdayGroup: birthdayGroup(on: shownDay))
+            birthdayGroup: birthdayGroup(on: shownDay)
+        ).withHappenings(heldHappenings)
     }
 
     /// The person has come back to this screen from somewhere else in the app: the roster, and
@@ -1516,11 +1606,13 @@ public final class DayScreen {
     /// from a commitments screen that has restored no copy, or from none at all, this is
     /// returned to exactly as being returned to always was.
     public func returnedTo(from commitmentsScreen: CommitmentsScreen? = nil) {
-        guard commitmentsScreen?.hasRestoredACopy == true else {
+        readHappenings()
+        if commitmentsScreen?.hasRestoredACopy == true {
+            returnedToAfterARestore()
+        } else {
             returnedToOrdinarily()
-            return
         }
-        returnedToAfterARestore()
+        dayView = dayView.withHappenings(heldHappenings)
     }
 
     /// Being returned to after a restore: opens the record, the roster, the one-off and the

@@ -361,6 +361,38 @@ public struct DayView: Hashable, Sendable {
     /// `nil`, is the only way to hand one in — `DayScreen` is their one caller.
     public let birthdayGroup: BirthdayGroup?
 
+    /// One happening that came on this day view's date: its name as now held and the times it came,
+    /// said in words. No note, and no tap.
+    public struct HappeningRow: Hashable, Sendable {
+        public let name: String
+        public let timesInWords: String
+    }
+
+    /// A row for each happening with an occurrence on this day view's date, in the order the
+    /// happenings were made. `[]` from every initializer; `DayScreen` fills it through
+    /// `withHappenings(_:)`.
+    public private(set) var happeningRows: [HappeningRow] = []
+
+    /// This day view with a row for each happening that came on its date.
+    func withHappenings(_ happenings: Happenings) -> DayView {
+        var formed = self
+        formed.happeningRows = happenings.all.compactMap { happening in
+            let came = happenings.occurrences.filter {
+                $0.happening == happening.identity && $0.day == date
+            }
+            guard !came.isEmpty else {
+                return nil
+            }
+            let timed = came.compactMap(\.time).sorted().map {
+                String(format: "%02d:%02d", $0.hour, $0.minute)
+            }
+            let untimed = Array(repeating: "no time", count: came.count - timed.count)
+            return HappeningRow(
+                name: happening.name, timesInWords: (timed + untimed).joined(separator: ", "))
+        }
+        return formed
+    }
+
     /// Every row this day view holds, read across `groups` in the order the groups are drawn —
     /// the same rows `groups` holds and each exactly once.
     public var rows: [Row] { groups.flatMap(\.rows) }

@@ -11,44 +11,44 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's twenty-three scenarios uncovered and no other
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's twenty-three scenarios uncovered and no other
 
 ## 2. The seam
 
-- [ ] 2.1 `TimeOfDay`, `Occurrence`, the `Happenings`, `HappeningStore`, `DayView` and `DayScreen` members exist with the signatures in `design.md` § *The seam*, and 3.1 is red before any of them does more than compile
-- [ ] 2.2 `Happenings`' equality and hash read its occurrences in order as well as its happenings; `Occurrence` synthesises both over all four fields
-- [ ] 2.3 `HappeningDocument` writes form 2 with `.sortedKeys` and `.atomic`, reads form 1 as no occurrences, and re-forms every occurrence through `Happenings.note` and `TimeOfDay(hour:minute:)`; notes are judged with `Blank` alone (ADR-1039)
-- [ ] 2.4 The one sanctioned carried-test edit: `CommitmentsScreenHappeningTests`' later-form fixture writes `HappeningDocument.currentVersion + 1` instead of the literal `2`, and nothing else in that test moves
-- [ ] 2.5 `DayScreen` opens the happening place at `init`, at `shown(asOf:)` and on both paths of `returnedTo(from:)`, beside the record place where none is given; it is not added to `readPlaces`, `RestoreInProgress` or `saysACopyCanBeRestored`
+- [x] 2.1 `TimeOfDay`, `Occurrence`, the `Happenings`, `HappeningStore`, `DayView` and `DayScreen` members exist with the signatures in `design.md` § *The seam*, and 3.1 is red before any of them does more than compile
+- [x] 2.2 `Happenings`' equality and hash read its occurrences in order as well as its happenings; `Occurrence` synthesises both over all four fields
+- [x] 2.3 `HappeningDocument` writes form 2 with `.sortedKeys` and `.atomic`, reads form 1 as no occurrences, and re-forms every occurrence through `Happenings.note` and `TimeOfDay(hour:minute:)`; notes are judged with `Blank` alone (ADR-1039)
+- [x] 2.4 The one sanctioned carried-test edit: `CommitmentsScreenHappeningTests`' later-form fixture writes `HappeningDocument.currentVersion + 1` instead of the literal `2`, and nothing else in that test moves
+- [x] 2.5 `DayScreen` opens the happening place at `init`, at `shown(asOf:)` and on both paths of `returnedTo(from:)`, beside the record place where none is given; it is not added to `readPlaces`, `RestoreInProgress` or `saysACopyCanBeRestored`
 
 ## 3. The nine scenarios of `happening` — one test each
 
-- [ ] 3.1 an occurrence holds its happening, its day, its time and its note as given — catches a trim in the value
-- [ ] 3.2 a note that says nothing is no note, and a time outside the clock is no time — catches an empty-string check instead of the blank test
-- [ ] 3.3 occurrences are held in the order noted, and two alike are both held — catches a set
-- [ ] 3.4 an occurrence of a happening not held is refused and changes nothing — catches a note with no membership check
-- [ ] 3.5 a happening renamed keeps its occurrences — catches occurrences keyed by name
-- [ ] 3.6 a happening store opened again holds the occurrences noted there, in their order — catches occurrences left out of the document
-- [ ] 3.7 an occurrence the happening store cannot keep is refused and not held — catches the held value replaced before the write
-- [ ] 3.8 a happening store in its first form is read as holding no occurrences — catches form 1 refused or rewritten on opening
-- [ ] 3.9 a happening store holding an occurrence that could not be one is refused — catches a decoder that skips a bad occurrence
+- [x] 3.1 an occurrence holds its happening, its day, its time and its note as given — catches a trim in the value
+- [x] 3.2 a note that says nothing is no note, and a time outside the clock is no time — catches an empty-string check instead of the blank test
+- [x] 3.3 occurrences are held in the order noted, and two alike are both held — catches a set
+- [x] 3.4 an occurrence of a happening not held is refused and changes nothing — catches a note with no membership check
+- [x] 3.5 a happening renamed keeps its occurrences — catches occurrences keyed by name
+- [x] 3.6 a happening store opened again holds the occurrences noted there, in their order — catches occurrences left out of the document
+- [x] 3.7 an occurrence the happening store cannot keep is refused and not held — catches the held value replaced before the write
+- [x] 3.8 a happening store in its first form is read as holding no occurrences — catches form 1 refused or rewritten on opening
+- [x] 3.9 a happening store holding an occurrence that could not be one is refused — catches a decoder that skips a bad occurrence
 
 ## 4. The fourteen scenarios of `day-screen` — one test each
 
-- [ ] 4.1 a day screen lists the happenings beside its record place in the order they were made — catches a default to the real Application Support file
-- [ ] 4.2 a day screen returned to or shown again reads its happening place afresh — catches a place read once at `init`
-- [ ] 4.3 a day screen offers noting a happening on today and a past day, and not on a later day — catches `offersNotingAHappening` true on every day
-- [ ] 4.4 a day screen that lists no happening offers no noting, whatever its other places hold — catches the offer gated on `recordState`
-- [ ] 4.5 an occurrence's time starts at now on today and at none on a past day — catches the comparison made against the screen's today
-- [ ] 4.6 an occurrence noted on today is kept at the happening place and drawn on the day — catches an untrimmed note or a second one dropped
-- [ ] 4.7 an occurrence noted with no time holds its day alone, on a past day and on today — catches the time required on today
-- [ ] 4.8 noting an occurrence writes no copy, leaves the other places as they were and ends a notice — catches `keptAChange()` copied from the one-offs
-- [ ] 4.9 an occurrence at a time later than now, or on a day that has not come, is refused as not yet come — catches `>=` where `>` is meant
-- [ ] 4.10 an occurrence the happening place cannot take is refused as not kept — catches a day view re-formed before the write
-- [ ] 4.11 a happening row says its times earliest first, then each occurrence with no time — catches the noted order kept
-- [ ] 4.12 a day view holds rows only for the happenings that came, in the order they were made — catches rows ordered by first time, or an adjacent day without them
-- [ ] 4.13 a day screen that cannot read its happening place lists none and leaves the place as it was — catches the restore line turned on
-- [ ] 4.14 a happening place written by a later version makes a day screen that says so — catches the two causes folded into one
+- [x] 4.1 a day screen lists the happenings beside its record place in the order they were made — catches a default to the real Application Support file
+- [x] 4.2 a day screen returned to or shown again reads its happening place afresh — catches a place read once at `init`
+- [x] 4.3 a day screen offers noting a happening on today and a past day, and not on a later day — catches `offersNotingAHappening` true on every day
+- [x] 4.4 a day screen that lists no happening offers no noting, whatever its other places hold — catches the offer gated on `recordState`
+- [x] 4.5 an occurrence's time starts at now on today and at none on a past day — catches the comparison made against the screen's today
+- [x] 4.6 an occurrence noted on today is kept at the happening place and drawn on the day — catches an untrimmed note or a second one dropped
+- [x] 4.7 an occurrence noted with no time holds its day alone, on a past day and on today — catches the time required on today
+- [x] 4.8 noting an occurrence writes no copy, leaves the other places as they were and ends a notice — catches `keptAChange()` copied from the one-offs
+- [x] 4.9 an occurrence at a time later than now, or on a day that has not come, is refused as not yet come — catches `>=` where `>` is meant
+- [x] 4.10 an occurrence the happening place cannot take is refused as not kept — catches a day view re-formed before the write
+- [x] 4.11 a happening row says its times earliest first, then each occurrence with no time — catches the noted order kept
+- [x] 4.12 a day view holds rows only for the happenings that came, in the order they were made — catches rows ordered by first time, or an adjacent day without them
+- [x] 4.13 a day screen that cannot read its happening place lists none and leaves the place as it was — catches the restore line turned on
+- [x] 4.14 a happening place written by a later version makes a day screen that says so — catches the two causes folded into one
 
 ## 5. The shell (ADR-1019: no rule the Kit does not state)
 
