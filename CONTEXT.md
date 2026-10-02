@@ -2113,6 +2113,12 @@ moving it to another day is taking it back and noting it there. A happening's lo
 occurrences newest first, each with its day, its time and its note, and counts them per calendar
 month, a month with none included. Agreed 2026-10-02 with **happening**.
 
+**Amended 2026-10-02**, while writing the delta of `change-or-take-back-occurrence` (#377). An
+occurrence has no identity, and needs none: one is changed or taken back by being alike to it, and
+of two alike — which nothing can tell apart — the earliest noted is the one acted on. A change gives
+it a new time and a new note, either of which may be none, and keeps its happening, its day and its
+place in the order noted; it is bounded at now on today, as noting is. Taking one back has no bound.
+
 **Happening row** — a **day view**'s row for one **happening** on a date it came: its name and the
 times its occurrences there came, "Kopfweh · 09:10, 18:40, no time" — each time on the twenty-four-
 hour clock, earliest first, then "no time" for each occurrence that holds none, every occurrence said
@@ -2120,6 +2126,11 @@ once however many are alike. It says no note, it is not due, and a happening tha
 date has no row there; the rows stand in the order the happenings were made, together in one card
 with no heading at the foot of the day. Agreed 2026-10-02 at the grill of
 `note-occurrence-on-day-screen` (#376), and named while its delta was written.
+
+**Amended 2026-10-02**, at the Story grill of `change-or-take-back-occurrence` (#377). A tap on the
+row reaches its occurrences there: one alone opens to be changed or **taken back**, and several are
+listed first, each with its time and its note, in the order the row says them. Taking one back asks
+before it is done, a note or none.
 
 **Calendar date** — a year, a month of that year and a day of that month: the argument every
 due-ness question is asked about. It carries no clock, no time zone and no locale, and a
