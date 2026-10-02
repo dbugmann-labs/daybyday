@@ -208,6 +208,133 @@ private struct OpenSettings: Identifiable {
     let screen: CommitmentsScreen
 }
 
+/// The happening a note sheet is open for, so `.sheet(item:)` can drive it.
+private struct NotedHappening: Identifiable {
+    let happening: Happening
+    var id: Happening.Identity { happening.identity }
+}
+
+/// `calendarDate`'s day with the hour and minute of `time`, as the instant a SwiftUI `DatePicker`
+/// needs — the reverse of `timeOfDay(from:)`, and edge code like `date(from:)` above (ADR-1004).
+private func date(at time: TimeOfDay) -> Date {
+    Calendar.current.date(bySettingHour: time.hour, minute: time.minute, second: 0, of: Date())
+        ?? Date()
+}
+
+/// The hour and minute a picked instant reads as, on the device's own calendar.
+private func timeOfDay(from date: Date) -> TimeOfDay? {
+    let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+    guard let hour = components.hour, let minute = components.minute else {
+        return nil
+    }
+    return TimeOfDay(hour: hour, minute: minute)
+}
+
+/// The sheet a happening is noted from: its name as the title, *Cancel* and *Save*, a *Time* row
+/// showing the time with a clear button, or *No time* to tap to set one, and the multi-line note
+/// field the note-commitment sheet uses. Decides nothing — `DayScreen.note` judges, and a refusal
+/// keeps the sheet open over its red line until the next Save or until it closes. ADR-1019;
+/// `openspec/changes/note-occurrence-on-day-screen/design.md` § *The shell*.
+private struct NoteHappeningSheet: View {
+    let happening: Happening
+    let boundedAtNow: Bool
+    let save: (TimeOfDay?, String) -> DayScreen.OccurrenceRefusal?
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var time: Date?
+    @State private var noteText = ""
+    @State private var refusal: DayScreen.OccurrenceRefusal?
+
+    init(
+        happening: Happening, startingTime: TimeOfDay?,
+        save: @escaping (TimeOfDay?, String) -> DayScreen.OccurrenceRefusal?
+    ) {
+        self.happening = happening
+        self.boundedAtNow = startingTime != nil
+        self.save = save
+        _time = State(initialValue: startingTime.map(date(at:)))
+    }
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
+                VStack(spacing: 12) {
+                    HStack {
+                        Text("Time")
+                        Spacer()
+                        if let picked = time {
+                            if boundedAtNow {
+                                DatePicker(
+                                    "Time",
+                                    selection: Binding(get: { picked }, set: { time = $0 }),
+                                    in: ...Date(), displayedComponents: .hourAndMinute
+                                )
+                                .labelsHidden()
+                            } else {
+                                DatePicker(
+                                    "Time",
+                                    selection: Binding(get: { picked }, set: { time = $0 }),
+                                    displayedComponents: .hourAndMinute
+                                )
+                                .labelsHidden()
+                            }
+                            Button {
+                                time = nil
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.borderless)
+                            .accessibilityLabel("Clear time")
+                        } else {
+                            Button("No time") {
+                                time = Date()
+                            }
+                            .buttonStyle(.borderless)
+                        }
+                    }
+                    .padding(12)
+                    .background(
+                        Color(.secondarySystemGroupedBackground),
+                        in: RoundedRectangle(cornerRadius: 12))
+                    NoteEditorField(text: $noteText)
+                        .padding(8)
+                        .background(
+                            Color(.secondarySystemGroupedBackground),
+                            in: RoundedRectangle(cornerRadius: 12))
+                    if let refusal {
+                        Text(
+                            refusal == .notYetCome
+                                ? "That time has not come yet." : "Not saved. Try again."
+                        )
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .padding()
+            }
+            .navigationTitle(happening.name)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        refusal = save(time.flatMap(timeOfDay(from:)), noteText)
+                        if refusal == nil {
+                            dismiss()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 struct ContentView: View {
     // One copy place, built with `momentNow` and handed to every screen built here — the day
     // screen, the commitments screen the toolbar button below pushes and the Settings sheet —
@@ -252,6 +379,7 @@ struct ContentView: View {
     // anchored to the row that opened it rather than presented once for the whole list.
     @State private var choosingRow: DayView.Row?
     @State private var enteringNoteRow: DayView.Row?
+    @State private var notingHappening: NotedHappening?
     @State private var enteringNoteText = ""
     @State private var enteringTotalRow: DayView.Row?
     @State private var enteringTotalText = ""
@@ -546,6 +674,21 @@ struct ContentView: View {
                             }
                         }
                     }
+                }
+            }
+            // A happening is noted in a sheet of its own, opened from the bolt's menu. `DayScreen`
+            // answers the starting time and judges the Save; this draws both. `design.md` § *The shell*.
+            .sheet(item: $notingHappening) { noted in
+                NoteHappeningSheet(
+                    happening: noted.happening,
+                    startingTime: momentNow().flatMap { screen.startingTime(asOf: $0) }
+                ) { time, note in
+                    guard let now = momentNow() else {
+                        return .notKept
+                    }
+                    var refusal: DayScreen.OccurrenceRefusal?
+                    keeping { refusal = screen.note(noted.happening, at: time, saying: note, asOf: now) }
+                    return refusal
                 }
             }
             // A total takes an amount in a half-height sheet over the dimmed day: the row's name
@@ -962,6 +1105,21 @@ struct ContentView: View {
                         .foregroundStyle(.red)
                     }
 
+                    switch screen.happeningState {
+                    case .kept:
+                        EmptyView()
+                    case .notKept:
+                        Text("The happenings could not be read.")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    case .writtenByALaterVersion:
+                        Text(
+                            "The happenings were written by a newer version of DayByDay and must not be deleted."
+                        )
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                    }
+
                     // The one line pointing at the way out — `design.md` § *What the shell draws*: the
                     // secondary grey, not the red the causes above take, so the way out does not read as a
                     // third thing wrong.
@@ -1037,7 +1195,12 @@ struct ContentView: View {
         case .calendarUnreadable, .ticksUnreadable, .ticksWrittenByALaterVersion:
             birthdaysFaulty = true
         }
-        return recordFaulty || rosterFaulty || oneOffsFaulty || birthdaysFaulty
+        let happeningsFaulty: Bool
+        switch screen.happeningState {
+        case .kept: happeningsFaulty = false
+        case .notKept, .writtenByALaterVersion: happeningsFaulty = true
+        }
+        return recordFaulty || rosterFaulty || oneOffsFaulty || birthdaysFaulty || happeningsFaulty
             || screen.saysACopyCanBeRestored
     }
 
@@ -1511,6 +1674,15 @@ struct ContentView: View {
                     } header: {
                         Text(oneOffGroup.heading)
                             .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
+                    }
+                }
+                // The happenings that came on this day, one card with no heading after every group:
+                // each its name and the times it came, in the Kit's words, with no tap.
+                if !dayView.happeningRows.isEmpty {
+                    Section {
+                        ForEach(Array(dayView.happeningRows.enumerated()), id: \.offset) { _, row in
+                            Text("\(row.name) · \(row.timesInWords)")
+                        }
                     }
                 }
                 // The one line where the rows would be, drawn exactly when every group above is
@@ -2049,33 +2221,69 @@ struct ContentView: View {
     /// over rows doesn't repeat the same problem at a smaller size.
     @ViewBuilder
     private var oneOffBar: some View {
-        if screen.dayView.oneOffGroup != nil {
-            VStack(alignment: .leading, spacing: 4) {
-                TextField("New one-off", text: oneOffEntryTextBinding)
-                    .focused($oneOffFocus, equals: .entry)
-                    .onSubmit {
-                        // The same path the checkmark calls (`commitFocusedOneOffField()`'s own
-                        // doc comment) — a refused add re-asserts `.entry` and keeps the keyboard
-                        // up, a kept or blank one drops focus, identically for Return and the
-                        // checkmark. `forDeparture` stays `false`: Return is not a departure.
-                        commitFocusedOneOffField()
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(Color(.tertiarySystemGroupedBackground), in: .capsule)
-                    .overlay(Capsule().strokeBorder(.separator, lineWidth: 0.5))
-                    .accessibilityIdentifier("OneOffEntry")
-                if screen.nameRefusal?.row == nil, let nameRefusal = screen.nameRefusal {
-                    Text(nameRefusal.cause ?? "Not saved. Try again.")
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Color(.tertiarySystemGroupedBackground), in: .capsule)
+        let hasField = screen.dayView.oneOffGroup != nil
+        if hasField || screen.offersNotingAHappening {
+            HStack(alignment: .top, spacing: 8) {
+                if hasField {
+                    oneOffEntry
+                } else {
+                    Spacer(minLength: 0)
+                }
+                if screen.offersNotingAHappening {
+                    happeningBolt
                 }
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 8)
+        }
+    }
+
+    /// The bolt right of the one-off field: a menu of the happenings' names, in the order made,
+    /// first at the top (`.menuOrder(.fixed)`), each opening the note sheet. Drawn exactly while
+    /// `screen.offersNotingAHappening`; the capsule matches the field's.
+    private var happeningBolt: some View {
+        Menu {
+            ForEach(screen.happenings, id: \.identity) { happening in
+                Button(happening.name) {
+                    notingHappening = NotedHappening(happening: happening)
+                }
+            }
+        } label: {
+            Image(systemName: "bolt")
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(Color(.tertiarySystemGroupedBackground), in: .capsule)
+                .overlay(Capsule().strokeBorder(.separator, lineWidth: 0.5))
+        }
+        .menuOrder(.fixed)
+        .accessibilityLabel("Note a happening")
+        .accessibilityIdentifier("NoteHappening")
+    }
+
+    private var oneOffEntry: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            TextField("New one-off", text: oneOffEntryTextBinding)
+                .focused($oneOffFocus, equals: .entry)
+                .onSubmit {
+                    // The same path the checkmark calls (`commitFocusedOneOffField()`'s own
+                    // doc comment) — a refused add re-asserts `.entry` and keeps the keyboard
+                    // up, a kept or blank one drops focus, identically for Return and the
+                    // checkmark. `forDeparture` stays `false`: Return is not a departure.
+                    commitFocusedOneOffField()
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(Color(.tertiarySystemGroupedBackground), in: .capsule)
+                .overlay(Capsule().strokeBorder(.separator, lineWidth: 0.5))
+                .accessibilityIdentifier("OneOffEntry")
+            if screen.nameRefusal?.row == nil, let nameRefusal = screen.nameRefusal {
+                Text(nameRefusal.cause ?? "Not saved. Try again.")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color(.tertiarySystemGroupedBackground), in: .capsule)
+            }
         }
     }
 

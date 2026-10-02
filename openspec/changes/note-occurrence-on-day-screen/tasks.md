@@ -52,9 +52,9 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 5. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 5.1 `ContentView` draws the bolt, its menu, the note sheet, the happening card and the two store-card lines exactly as `design.md` § *The shell* and § *What the shell draws* say, handing `momentNow()` to `startingTime` and `note`
-- [ ] 5.2 `everySourceOfTheListWasRead` and the "Nothing is due on this day." condition are unchanged and read no happening state
-- [ ] 5.3 `git diff --stat origin/main... -- src/DayByDay/` lists `ContentView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
+- [x] 5.1 `ContentView` draws the bolt, its menu, the note sheet, the happening card and the two store-card lines exactly as `design.md` § *The shell* and § *What the shell draws* say, handing `momentNow()` to `startingTime` and `note`
+- [x] 5.2 `everySourceOfTheListWasRead` and the "Nothing is due on this day." condition are unchanged and read no happening state
+- [x] 5.3 `git diff --stat origin/main... -- src/DayByDay/` lists `ContentView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 6. The records
 
