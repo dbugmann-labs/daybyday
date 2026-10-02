@@ -25,6 +25,10 @@ public final class CommitmentsScreen {
     /// birthday store of its own to draw from, on the same footing as `oneOffPlace`.
     /// `design.md` § *The seam*.
     private let birthdayPlace: URL
+    /// The place this screen keeps its happenings at — a store of its own, opened beside
+    /// `readPlaces` and in no copy until #380. `design.md` § *No copy, and no other place*.
+    private let happeningPlace: URL
+    private var happeningStore: HappeningStore?
     private var rosterStore: RosterStore?
     private var recordStore: RecordStore?
 
@@ -49,12 +53,15 @@ public final class CommitmentsScreen {
         keepingRecordAt recordPlace: URL = DayScreen.recordPlace,
         keepingOneOffsAt oneOffPlace: URL = DayScreen.oneOffPlace,
         keepingBirthdayTicksAt birthdayPlace: URL? = nil,
+        keepingHappeningsAt happeningPlace: URL? = nil,
         copyingTo copyPlace: CopyPlace? = nil
     ) {
         self.place = place
         self.recordPlace = recordPlace
         self.oneOffPlace = oneOffPlace
         self.birthdayPlace = birthdayPlace ?? DayScreen.birthdayPlace(besideRecordAt: recordPlace)
+        self.happeningPlace =
+            happeningPlace ?? DayScreen.happeningPlace(besideRecordAt: recordPlace)
         self.dayToKeepFrom = today
         self.copyPlace = copyPlace
 
@@ -67,6 +74,105 @@ public final class CommitmentsScreen {
         self.recordsBelongToNoCommitment = opened.recordsBelongToNoCommitment
         self.storesNotRead = opened.storesNotRead
         refreshLists(from: opened.rosterStore)
+        readHappenings()
+    }
+
+    /// The happenings this screen lists, in the order held. `design.md` § *The seam*.
+    public private(set) var happenings: [Happening] = []
+
+    /// Whether this screen is keeping its happenings, apart from `rosterState`: the happening
+    /// place is read beside `readPlaces` and its state never reaches the roster's.
+    public private(set) var happeningState: RosterState = .kept
+
+    /// What this screen tells about the last happening made or renamed through it, held apart
+    /// from `refusedChange` and `sheetRefusal`. `design.md` § *The refusals are the screen's
+    /// existing `Refusal`, held in a third value*.
+    public private(set) var happeningRefusal: Refusal?
+
+    /// Opens the happening place afresh and lists what it holds, or lists none and says why.
+    private func readHappenings() {
+        do {
+            let store = try HappeningStore(at: happeningPlace)
+            happeningStore = store
+            happeningState = .kept
+            happenings = store.happenings.all
+        } catch {
+            happeningStore = nil
+            if case HappeningStoreError.laterForm = error {
+                happeningState = .writtenByALaterVersion
+            } else {
+                happeningState = .notKept
+            }
+            happenings = []
+        }
+    }
+
+    /// Makes a happening from `name`, the blank space around it trimmed first, and lists it last.
+    /// Writes nothing at any place but the happening place and no copy — a happening is in no copy
+    /// until #380, so `keptAChange()` is never called here.
+    @discardableResult
+    public func makeHappening(named name: String) -> Refusal? {
+        guard let store = happeningStore else {
+            return refuseHappening(.notKept)
+        }
+        let trimmed = Blank.trimmed(name)
+        guard let happening = Happening(name: trimmed) else {
+            return refuseHappening(.namesNothing)
+        }
+        if let listed = store.happenings.holding(name: trimmed) {
+            return refuseHappening(.nameAlreadyInUse(listed.name))
+        }
+        guard (try? store.add(happening)) == true else {
+            return refuseHappening(.notKept)
+        }
+
+        happenings = store.happenings.all
+        happeningRefusal = nil
+        return nil
+    }
+
+    private func refuseHappening(_ refusal: Refusal) -> Refusal {
+        happeningRefusal = refusal
+        return refusal
+    }
+
+    /// Renames `happening` to `name`, the blank space around it trimmed first, keeping its
+    /// identity and its place in the list. Like `makeHappening`, writes no copy.
+    @discardableResult
+    public func rename(_ happening: Happening, to name: String) -> Refusal? {
+        guard let store = happeningStore,
+            let listed = happenings.first(where: { $0 == happening })
+        else {
+            return nil
+        }
+
+        let trimmed = Blank.trimmed(name)
+        guard !trimmed.isEmpty else {
+            return refuseHappening(.namesNothing)
+        }
+        guard trimmed != listed.name else {
+            return nil
+        }
+        if let holder = store.happenings.holding(name: trimmed), holder != listed {
+            return refuseHappening(.nameAlreadyInUse(holder.name))
+        }
+        guard (try? store.rename(listed, to: trimmed)) == true else {
+            return refuseHappening(.notKept)
+        }
+
+        happenings = store.happenings.all
+        happeningRefusal = nil
+        return nil
+    }
+
+    /// The happening sheet's name field has been edited: ends `happeningRefusal`.
+    public func happeningNameEdited() {
+        happeningRefusal = nil
+    }
+
+    /// The happening sheet has been closed: ends `happeningRefusal`.
+    public func happeningSheetClosed() {
+        happeningRefusal = nil
     }
 
     /// What reading the places produces: a restore in progress undone first, then a save in
@@ -1908,6 +2014,7 @@ public final class CommitmentsScreen {
         awaitingDeletion = nil
         nameTypedBack = ""
         refusedCopyPlace = nil
+        happeningRefusal = nil
 
         let opened = Self.readPlaces(
             place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace,
@@ -1918,5 +2025,6 @@ public final class CommitmentsScreen {
         recordsBelongToNoCommitment = opened.recordsBelongToNoCommitment
         storesNotRead = opened.storesNotRead
         refreshLists(from: opened.rosterStore)
+        readHappenings()
     }
 }
