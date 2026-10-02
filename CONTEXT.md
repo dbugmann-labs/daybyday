@@ -1778,6 +1778,12 @@ owner asked for the time of day an eye migraine came. Nothing else changes — a
 the edge of the app, and the rule engine still speaks calendar dates alone, since nothing that is due
 ever holds one.
 
+**Time of day** — an hour of a day and a minute of that hour, with no date: what a person sets on the
+sheet that notes an **occurrence**, and what an occurrence holds beside its **calendar date** where
+it holds a time at all. A **moment** is a date with a time of day; a time of day alone is not one,
+and none is formed from an hour outside the twenty-four or a minute outside the sixty. Agreed
+2026-10-02 while writing the delta of `note-occurrence-on-day-screen` (#376).
+
 **Copy place** — the one folder a person picked, once, for the app to write its **copy** at on its
 own. It is chosen by the person and never named by the app, because it has to be a place that
 outlives the phone, and no such place is the app's to name. While there is none, the app copies only
@@ -2040,6 +2046,11 @@ order they were made, and nothing another store holds. It is the fifth store, at
 and it is in no **copy** until `carry-happenings-in-a-copy` (#380). Agreed 2026-10-02 while writing
 the delta of `add-happening` (#375).
 
+**Amended 2026-10-02**, while writing the delta of `note-occurrence-on-day-screen` (#376). It also
+keeps every **occurrence**, keyed to its happening's identity, in the order noted, in a second form;
+a store in the first form is read as holding none, and a build that knows only the first refuses the
+second as written by a later version rather than dropping what it cannot read.
+
 **One-off entry** — the line a **day view**'s One-offs group always ends with, where a person types a
 new one-off's name in place, as in Apple Reminders; the toolbar's `+` brings it into focus. It is
 deliberately not a **one-off**, which is what `one-off` holds — this is the place one is made, in the
@@ -2085,6 +2096,14 @@ nothing else" above is what a person gives and sees. A rename keeps it, and with
 place and its occurrences. Two happenings may not share a name, judged as the roster judges a
 commitment's, and they stand in the order they were made, newest last. ADR-1065.
 
+**Amended 2026-10-02**, at the Story grill of `note-occurrence-on-day-screen` (#376). A **day view**
+does not draw the happenings as a group: "they don't sit anywhere really". A button on the day screen
+opens the list of happenings, and one is picked there to note an occurrence on the day shown; the
+button is drawn only where one can be noted — on today or a past day, while at least one happening
+exists and the happenings can be read. What came that day is drawn as a row of its own only on a day
+something came, its times inline, and it is not due, so a day it alone is drawn on still says
+nothing is due.
+
 **Occurrence** — one time a **happening** came: a **moment**, or a **calendar date** alone where its
 time is left blank, and an optional note. A day may hold several occurrences of one happening, each counted
 on its own, which makes it the first thing the app keeps that is not one per day. An occurrence is
@@ -2093,6 +2112,14 @@ starts at the current one. Its time and its note can be changed, and it can be *
 moving it to another day is taking it back and noting it there. A happening's look-back says its
 occurrences newest first, each with its day, its time and its note, and counts them per calendar
 month, a month with none included. Agreed 2026-10-02 with **happening**.
+
+**Happening row** — a **day view**'s row for one **happening** on a date it came: its name and the
+times its occurrences there came, "Kopfweh · 09:10, 18:40, no time" — each time on the twenty-four-
+hour clock, earliest first, then "no time" for each occurrence that holds none, every occurrence said
+once however many are alike. It says no note, it is not due, and a happening that did not come on a
+date has no row there; the rows stand in the order the happenings were made, together in one card
+with no heading at the foot of the day. Agreed 2026-10-02 at the grill of
+`note-occurrence-on-day-screen` (#376), and named while its delta was written.
 
 **Calendar date** — a year, a month of that year and a day of that month: the argument every
 due-ness question is asked about. It carries no clock, no time zone and no locale, and a
