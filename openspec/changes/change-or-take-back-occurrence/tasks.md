@@ -58,18 +58,18 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 - [x] 7.1 `openspec validate change-or-take-back-occurrence --strict` exits 0, and `pnpm run checks` is clean
 - [x] 7.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with fifteen more tests than a run on `origin/main` reports, both read off runs
 - [x] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
-- [ ] 7.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.9. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/happening/spec.md` gains this delta's three requirements and seven scenarios, `openspec/specs/day-screen/spec.md` its four requirements and eight scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
+- [x] 7.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.9. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/happening/spec.md` gains this delta's three requirements and seven scenarios, `openspec/specs/day-screen/spec.md` its four requirements and eight scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 
 A fresh install; "Kopfweh" made on the commitments screen; the day screen moved one day back, so no time is bounded at now.
 
-- [ ] W.1 One day back, Kopfweh noted at 09:10 with the note "Hinter dem Auge", a line break and "links", and at 18:40 with none — the row reads "Kopfweh · 09:10, 18:40".
-- [ ] W.2 The row tapped — the popover under it listing 09:10 with "Hinter dem Auge" and "links" beneath, then 18:40 alone, the day still in view.
-- [ ] W.3 09:10 tapped — the sheet titled Kopfweh, "Time" at 09:10 with its clear button, the note filled in, a red *Take back* at its foot, the keyboard down.
-- [ ] W.4 The time changed to 20:15 and saved — the day with no popover, the row reading "Kopfweh · 18:40, 20:15".
-- [ ] W.5 The row tapped, 18:40 opened, *Take back* tapped — "Take back this occurrence?" with a red *Take back* and *Cancel*.
-- [ ] W.6 Taken back — the day, the row reading "Kopfweh · 20:15".
-- [ ] W.7 The row tapped again — the sheet opened directly on 20:15 with its note, no popover.
-- [ ] W.8 *Take back* tapped and confirmed — the day with no Kopfweh row.
-- [ ] W.9 **The handover** — W.1–W.8, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.1 One day back, Kopfweh noted at 09:10 with the note "Hinter dem Auge", a line break and "links", and at 18:40 with none — the row reads "Kopfweh · 09:10, 18:40".
+- [x] W.2 The row tapped — the popover under it listing 09:10 with "Hinter dem Auge" and "links" beneath, then 18:40 alone, the day still in view.
+- [x] W.3 09:10 tapped — the sheet titled Kopfweh, "Time" at 09:10 with its clear button, the note filled in, a red *Take back* at its foot, the keyboard down.
+- [x] W.4 The time changed to 20:15 and saved — the day with no popover, the row reading "Kopfweh · 18:40, 20:15".
+- [x] W.5 The row tapped, 18:40 opened, *Take back* tapped — "Take back this occurrence?" with a red *Take back* and *Cancel*.
+- [x] W.6 Taken back — the day, the row reading "Kopfweh · 20:15".
+- [x] W.7 The row tapped again — the sheet opened directly on 20:15 with its note, no popover.
+- [x] W.8 *Take back* tapped and confirmed — the day with no Kopfweh row.
+- [x] W.9 **The handover** — W.1–W.8, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
