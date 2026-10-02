@@ -9,11 +9,6 @@ public struct Happenings: Hashable, Sendable {
         occurrences = []
     }
 
-    init(all: [Happening], occurrences: [Occurrence]) {
-        self.all = all
-        self.occurrences = occurrences
-    }
-
     /// Holds `occurrence` last, however many alike are held, and `false` without changing
     /// anything where the happening it is of is not held.
     public mutating func note(_ occurrence: Occurrence) -> Bool {

@@ -89,7 +89,9 @@ func aDayScreenListsTheHappeningsBesideItsRecordPlaceInTheOrderTheyWereMade() th
     let before = try Data(contentsOf: beside)
 
     let screen = DayScreen(
-        startingFrom: [], asOf: friday, keepingRecordAt: places.record, keepingRosterAt: places.roster)
+        startingFrom: [], asOf: friday, keepingRecordAt: places.record, keepingRosterAt: places.roster,
+        keepingOneOffsAt: places.roster.deletingLastPathComponent().appendingPathComponent(
+            "one-offs.json"))
 
     #expect(screen.happenings.map(\.name) == ["Augenmigräne", "Kopfweh"])
     #expect(screen.happeningState == .kept)
@@ -97,7 +99,9 @@ func aDayScreenListsTheHappeningsBesideItsRecordPlaceInTheOrderTheyWereMade() th
 
     let other = freshRosterAndRecordPlaces()
     let bare = DayScreen(
-        startingFrom: [], asOf: friday, keepingRecordAt: other.record, keepingRosterAt: other.roster)
+        startingFrom: [], asOf: friday, keepingRecordAt: other.record, keepingRosterAt: other.roster,
+        keepingOneOffsAt: other.roster.deletingLastPathComponent().appendingPathComponent(
+            "one-offs.json"))
     #expect(bare.happenings.isEmpty)
     #expect(bare.happeningState == .kept)
     #expect(
@@ -113,6 +117,8 @@ func aDayScreenReturnedToOrShownAgainReadsItsHappeningPlaceAfresh() throws {
     let places = freshRosterAndRecordPlaces()
     let screen = DayScreen(
         startingFrom: [], asOf: friday, keepingRecordAt: places.record, keepingRosterAt: places.roster,
+        keepingOneOffsAt: places.roster.deletingLastPathComponent().appendingPathComponent(
+            "one-offs.json"),
         keepingHappeningsAt: place)
     #expect(screen.happenings.isEmpty)
 
@@ -373,7 +379,11 @@ func aDayViewHoldsRowsOnlyForTheHappeningsThatCameInTheOrderTheyWereMade() throw
         ])
     #expect(screen.previousDayView?.happeningRows.isEmpty == true)
     show(saturday, on: screen)
-    #expect(screen.previousDayView?.happeningRows.count == 2)
+    #expect(
+        screen.previousDayView?.happeningRows == [
+            .init(name: "Augenmigräne", timesInWords: "no time"),
+            .init(name: "Kopfweh", timesInWords: "09:10"),
+        ])
 
     let places = freshRosterAndRecordPlaces()
     let commitments = CommitmentsScreen(
@@ -404,6 +414,8 @@ func aDayScreenThatCannotReadItsHappeningPlaceListsNoneAndLeavesThePlaceAsItWas(
 
     let screen = DayScreen(
         startingFrom: [], asOf: friday, keepingRecordAt: places.record, keepingRosterAt: places.roster,
+        keepingOneOffsAt: places.roster.deletingLastPathComponent().appendingPathComponent(
+            "one-offs.json"),
         keepingHappeningsAt: place)
 
     #expect(screen.happenings.isEmpty)

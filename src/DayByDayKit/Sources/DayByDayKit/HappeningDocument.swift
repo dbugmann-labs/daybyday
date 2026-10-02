@@ -26,9 +26,11 @@ struct HappeningDocument: Codable {
         }
     }
 
-    /// Re-forms the happenings through `Happening` and `Happenings.add`, so every rule the value
-    /// has applies to what comes off the disk: `nil` where an identity is not one, a name says
-    /// nothing, two share a name or two share an identity.
+    /// Re-forms the happenings through `Happening` and `Happenings.add`, and the occurrences through
+    /// `Occurrence` and `Happenings.note`, so every rule the values have applies to what comes off
+    /// the disk: `nil` where an identity is not one, a name says nothing, two happenings share a
+    /// name or an identity, or an occurrence is missing, has a bad identity, day or time (one of
+    /// hour and minute alone, or out of range), or is of a happening not held.
     func formHappenings() -> Happenings? {
         var formed = Happenings()
         for record in happenings {

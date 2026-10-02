@@ -83,4 +83,4 @@ A fresh install; "Augenmigräne", "Kopfweh" and "Schlecht geschlafen" made on th
 - [x] W.7 `happenings.json` replaced by bytes that are not a store, the app shown again — the store card's line "The happenings could not be read." and no bolt.
 - [ ] W.8 phone: on today, clear the sheet's time, set one with the time picker, clear it again, then Save — the row says "no time" for it.
 - [ ] W.9 phone: type a note of two lines with the keyboard up — both lines and the Save button stay in view.
-- [x] W.10 **The handover** — W.1–W.7, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.10 **The handover** — W.1–W.7, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. https://github.com/dbugmann-labs/daybyday/pull/382#issuecomment-5956647626
