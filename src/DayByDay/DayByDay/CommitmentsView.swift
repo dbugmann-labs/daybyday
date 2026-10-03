@@ -481,7 +481,11 @@ struct CommitmentsView: View {
                         NavigationLink {
                             HappeningLookBackView(screen: screen, happening: happening)
                         } label: {
-                            Text(happening.name)
+                            if screen.isStopped(happening) {
+                                commitmentLine(Text(happening.name), rhythmInWords: "Stopped")
+                            } else {
+                                Text(happening.name)
+                            }
                         }
                         .swipeActions(edge: .leading) {
                             Button {
@@ -491,6 +495,33 @@ struct CommitmentsView: View {
                             }
                             .tint(.accentColor)
                             .accessibilityLabel("Edit")
+                        }
+                        .swipeActions(edge: .trailing) {
+                            if screen.isStopped(happening) {
+                                Button {
+                                    screen.resume(happening)
+                                    listRevision += 1
+                                } label: {
+                                    Image(systemName: "play.circle")
+                                }
+                                .tint(.accentColor)
+                                .accessibilityLabel("Resume")
+                            } else {
+                                Button {
+                                    screen.askToStop(happening)
+                                } label: {
+                                    Image(systemName: "stop.circle")
+                                }
+                                .tint(.orange)
+                                .accessibilityLabel("Stop")
+                            }
+                            Button(role: .destructive) {
+                                screen.askToDelete(happening)
+                            } label: {
+                                Image(systemName: "trash")
+                            }
+                            .tint(.red)
+                            .accessibilityLabel("Delete")
                         }
                     }
                     Button("New happening") {
@@ -505,6 +536,10 @@ struct CommitmentsView: View {
                 }
             } header: {
                 Text("Happenings")
+            } footer: {
+                if happeningSheetTarget == nil, let refusal = screen.happeningRefusal {
+                    happeningRefusalText(refusal)
+                }
             }
         }
         // Apple documents `.default` and `.compact` but publishes no point value for either.
@@ -557,6 +592,72 @@ struct CommitmentsView: View {
             }
             Button("Cancel", role: .cancel) {
                 screen.cancelStopKeeping()
+            }
+        }
+        .alert(
+            "Stop noting this happening?",
+            isPresented: Binding(
+                get: { screen.happeningAwaitingStop != nil },
+                set: { isPresented in
+                    if !isPresented && screen.happeningAwaitingStop != nil {
+                        screen.cancelStoppingHappening()
+                    }
+                }
+            ),
+            presenting: screen.happeningAwaitingStop
+        ) { happening in
+            Button("Stop noting \(happening.name)", role: .destructive) {
+                screen.confirmStoppingHappening()
+                listRevision += 1
+            }
+            Button("Cancel", role: .cancel) {
+                screen.cancelStoppingHappening()
+            }
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { screen.happeningAwaitingDeletion != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        screen.cancelDeletingHappening()
+                    }
+                }
+            ),
+            onDismiss: { listRevision += 1 }
+        ) {
+            if let happening = screen.happeningAwaitingDeletion {
+                NavigationStack {
+                    Form {
+                        Section {
+                            TextField(
+                                "Name",
+                                text: Binding(
+                                    get: { screen.happeningNameTypedBack },
+                                    set: { screen.happeningNameTypedBack = $0 }
+                                ))
+                        } header: {
+                            Text("Type \"\(happening.name)\" to delete it for good.")
+                        } footer: {
+                            if let inWords = screen.happeningDeletionInWords {
+                                Text(inWords)
+                            }
+                        }
+                    }
+                    .navigationTitle("Delete \(happening.name)")
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                screen.cancelDeletingHappening()
+                            }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Delete", role: .destructive) {
+                                screen.confirmDeletingHappening()
+                            }
+                            .disabled(!screen.happeningNameTypedBackMatches)
+                        }
+                    }
+                }
             }
         }
         .sheet(
