@@ -57,8 +57,8 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 - [x] 7.1 `openspec validate change-or-take-back-occurrence --strict` exits 0, and `pnpm run checks` is clean
 - [x] 7.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with fifteen more tests than a run on `origin/main` reports, both read off runs
-- [ ] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
-- [ ] 7.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.9. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/happening/spec.md` gains this delta's three requirements and seven scenarios, `openspec/specs/day-screen/spec.md` its four requirements and eight scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
+- [x] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
+- [x] 7.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.9. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/happening/spec.md` gains this delta's three requirements and seven scenarios, `openspec/specs/day-screen/spec.md` its four requirements and eight scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 
