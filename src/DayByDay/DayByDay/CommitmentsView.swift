@@ -478,16 +478,20 @@ struct CommitmentsView: View {
                         Text("No happenings yet.")
                     }
                     ForEach(screen.happenings, id: \.identity) { happening in
-                        Text(happening.name)
-                            .swipeActions(edge: .leading) {
-                                Button {
-                                    happeningSheetTarget = .renaming(happening)
-                                } label: {
-                                    Image(systemName: "pencil")
-                                }
-                                .tint(.accentColor)
-                                .accessibilityLabel("Edit")
+                        NavigationLink {
+                            HappeningLookBackView(screen: screen, happening: happening)
+                        } label: {
+                            Text(happening.name)
+                        }
+                        .swipeActions(edge: .leading) {
+                            Button {
+                                happeningSheetTarget = .renaming(happening)
+                            } label: {
+                                Image(systemName: "pencil")
                             }
+                            .tint(.accentColor)
+                            .accessibilityLabel("Edit")
+                        }
                     }
                     Button("New happening") {
                         happeningSheetTarget = .making

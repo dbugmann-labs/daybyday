@@ -98,4 +98,10 @@ enum LookBackWords {
     static func notes(_ count: Int) -> String {
         "\(number(Decimal(count))) \(count == 1 ? "note" : "notes")"
     }
+
+    /// A count of occurrences as its number, a single space and "times" — "6 times" — except
+    /// "1 time" for exactly one.
+    static func times(_ count: Int) -> String {
+        "\(number(Decimal(count))) \(count == 1 ? "time" : "times")"
+    }
 }
