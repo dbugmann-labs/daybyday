@@ -183,6 +183,7 @@ func aChangeOrATakeBackTheHappeningStoreCannotKeepIsRefusedAndNotHeld() throws {
         try store.takeBack(held)
     }
     #expect(store.happenings.occurrences == [held])
+    try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
 
     let notHeld = Occurrence(of: kopfweh, on: friday, at: time(11, 11), saying: nil)
     let changed = try store.change(notHeld, to: time(12, 0), saying: nil)

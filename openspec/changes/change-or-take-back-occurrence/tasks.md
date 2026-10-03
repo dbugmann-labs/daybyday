@@ -38,7 +38,7 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 - [x] 4.4 a change to the time and note an occurrence holds asks for no change — catches the write attempted before the no-change check
 - [x] 4.5 changing or taking back an occurrence writes no copy, leaves the other places as they were and ends a notice — catches `keptAChange()` copied from the one-offs
 - [x] 4.6 an occurrence taken back through a day screen is gone from the place and from the row — catches every alike occurrence taken back
-- [x] 4.7 a change to a time later than now is refused as not yet come — catches `>=` where `>` is meant, or the bound read against the day shown
+- [x] 4.7 a change to a time later than now is refused as not yet come — catches `>=` where `>` is meant, or the bound read against the day shown rather than the occurrence's own — a Saturday occurrence changed while Friday is shown is still refused
 - [x] 4.8 a change or a take-back the happening place cannot take is refused as not kept — catches a day view re-formed before the write
 
 ## 5. The shell (ADR-1019: no rule the Kit does not state)
@@ -68,7 +68,7 @@ A fresh install; "Kopfweh" made on the commitments screen; the day screen moved 
 - [x] W.2 The row tapped — the popover under it listing 09:10 with "Hinter dem Auge" and "links" beneath, then 18:40 alone, the day still in view.
 - [x] W.3 09:10 tapped — the sheet titled Kopfweh, "Time" at 09:10 with its clear button, the note filled in, a red *Take back* at its foot, the keyboard down.
 - [x] W.4 The time changed to 20:15 and saved — the day with no popover, the row reading "Kopfweh · 18:40, 20:15".
-- [x] W.5 The row tapped, 18:40 opened, *Take back* tapped — "Take back this occurrence?" with a red *Take back* and *Cancel*.
+- [x] W.5 The row tapped, 18:40 opened, *Take back* tapped — "Take back this occurrence?" in a bubble anchored to the red *Take back*, with a red *Take back*; no *Cancel* button.
 - [x] W.6 Taken back — the day, the row reading "Kopfweh · 20:15".
 - [x] W.7 The row tapped again — the sheet opened directly on 20:15 with its note, no popover.
 - [x] W.8 *Take back* tapped and confirmed — the day with no Kopfweh row.

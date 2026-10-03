@@ -196,11 +196,10 @@ private struct TotalAmountField: UIViewRepresentable {
 
 private final class FocusOnAppearTextField: UITextField {
     private var askedForFocus = false
-    var asksForFocus = true
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
-        if window != nil, asksForFocus, !askedForFocus {
+        if window != nil, !askedForFocus {
             askedForFocus = true
             becomeFirstResponder()
         }
@@ -353,6 +352,7 @@ private struct NoteHappeningSheet: View {
                             titleVisibility: .visible
                         ) {
                             Button("Take back", role: .destructive) {
+                                refusal = nil
                                 takeBackRefused = takeBack?() != nil
                                 if !takeBackRefused {
                                     dismiss()
@@ -2007,12 +2007,10 @@ struct ContentView: View {
             }
             .frame(minWidth: 220)
             .presentationCompactAdaptation(.popover)
-        }
-        .onChange(of: choosingHappeningRow) { _, now in
-            if now == nil, let pending = pendingOccurrence {
-                pendingOccurrence = nil
-                Task { @MainActor in
-                    try? await Task.sleep(for: .milliseconds(300))
+            // The sheet opens once the popover has gone, never over it.
+            .onDisappear {
+                if let pending = pendingOccurrence {
+                    pendingOccurrence = nil
                     changingOccurrence = pending
                 }
             }

@@ -612,15 +612,3 @@ extension Decimal {
         return rounded == self
     }
 }
-
-extension Happenings {
-    /// The occurrences of `happening` on `day` in a row's order: those with a time first, earliest
-    /// first, then those with none, each run in the order noted.
-    func occurrences(of happening: Happening, on day: CalendarDate) -> [Occurrence] {
-        let came = occurrences.filter { $0.happening == happening.identity && $0.day == day }
-        let timed = came.filter { $0.time != nil }.enumerated().sorted {
-            ($0.element.time!, $0.offset) < ($1.element.time!, $1.offset)
-        }.map(\.element)
-        return timed + came.filter { $0.time == nil }
-    }
-}

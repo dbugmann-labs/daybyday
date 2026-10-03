@@ -290,7 +290,7 @@ func anOccurrenceTakenBackThroughADayScreenIsGoneFromThePlaceAndFromTheRow() thr
 
     #expect(screen.dayView.happeningRows.map(\.name) == ["Kopfweh"])
     #expect(screen.dayView.happeningRows.map(\.timesInWords) == ["09:10, 18:40"])
-    #expect(try HappeningStore(at: place).happenings.occurrences == [at1840, at0910].reversed())
+    #expect(try HappeningStore(at: place).happenings.occurrences == [at0910, at1840])
 
     #expect(screen.takeBack(at0910) == nil)
     #expect(screen.takeBack(at1840) == nil)
@@ -328,6 +328,9 @@ func aChangeToATimeLaterThanNowIsRefusedAsNotYetCome() throws {
     #expect(screen.change(past, to: time(23, 59), saying: "", asOf: now) == nil)
 
     show(saturday, on: screen)
+    #expect(screen.change(ahead, to: nil, saying: "x", asOf: now) == .notYetCome)
+
+    show(friday, on: screen)
     #expect(screen.change(ahead, to: nil, saying: "x", asOf: now) == .notYetCome)
 }
 

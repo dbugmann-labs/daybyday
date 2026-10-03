@@ -86,3 +86,15 @@ public struct Happenings: Hashable, Sendable {
         }
     }
 }
+
+extension Happenings {
+    /// The occurrences of `happening` on `day` in a row's order: those with a time first, earliest
+    /// first, then those with none, each run in the order noted.
+    func occurrences(of happening: Happening, on day: CalendarDate) -> [Occurrence] {
+        let came = occurrences.filter { $0.happening == happening.identity && $0.day == day }
+        let timed = came.enumerated().compactMap { offset, occurrence in
+            occurrence.time.map { (time: $0, offset: offset, occurrence: occurrence) }
+        }.sorted { ($0.time, $0.offset) < ($1.time, $1.offset) }.map(\.occurrence)
+        return timed + came.filter { $0.time == nil }
+    }
+}
