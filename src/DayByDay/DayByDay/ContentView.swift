@@ -1982,7 +1982,7 @@ struct ContentView: View {
                 occurrenceList(of: row)
                 ScrollView { occurrenceList(of: row) }
             }
-            .frame(minWidth: 220)
+            .frame(minWidth: 240)
             .presentationCompactAdaptation(.popover)
             // The sheet opens once the popover has gone, never over it.
             .onDisappear {
@@ -2018,7 +2018,7 @@ struct ContentView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, 20)
                     .padding(.vertical, 10)
                     .fixedSize(horizontal: false, vertical: true)
                     .contentShape(Rectangle())
@@ -2026,6 +2026,9 @@ struct ContentView: View {
                 .buttonStyle(.plain)
             }
         }
+        // The popover's corners are the system's and round (about 32pt on iOS 26; a
+        // `.presentationCornerRadius` does not reach a popover), so the rows keep well clear of them.
+        .padding(.vertical, 10)
     }
 
     /// One birthday row's content and the tap that acts on it — `design.md` § *The shell*: "A
