@@ -61,7 +61,7 @@ beside the happening tests already there.
 
 ## 6. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 6.1 `CommitmentsView` draws the swipes, the "- Stopped" marker, the alert, the delete sheet and the refusal footer exactly as `design.md` § *The shell* and § *What the shell draws* say
+- [x] 6.1 `CommitmentsView` draws the swipes, the "- Stopped" marker, the alert, the delete sheet and the refusal footer exactly as `design.md` § *The shell* and § *What the shell draws* say
 - [ ] 6.2 `git diff --stat origin/main... -- src/DayByDay/` lists `CommitmentsView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 7. The records
