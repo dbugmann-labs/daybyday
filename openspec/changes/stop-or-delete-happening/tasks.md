@@ -19,7 +19,7 @@ beside the happening tests already there.
 - [x] 2.1 The `Happenings`, `HappeningStore` and `CommitmentsScreen` members exist with the signatures in `design.md` § *The seam*, and 3.1 is red before any of them does more than compile
 - [x] 2.2 `Happenings` holds the stops beside `all`, its `==` and `hash` take them in, and `Happening` keeps exactly its two stored properties
 - [x] 2.3 `HappeningDocument.currentVersion` is 3, `formHappenings()` applies stops after occurrences, and every carried `HappeningStoreTests` test passes unedited
-- [ ] 2.4 `DayScreen.happenings` holds the happenings not stopped, `occurrences(of:)` resolves against every happening held, and every carried `DayScreenHappeningTests` and `DayScreenOccurrenceChangeTests` test passes unedited
+- [x] 2.4 `DayScreen.happenings` holds the happenings not stopped, `occurrences(of:)` resolves against every happening held, and every carried `DayScreenHappeningTests` and `DayScreenOccurrenceChangeTests` test passes unedited
 - [x] 2.5 Every ask of a commitment's or a happening's stop or deletion clears the other three slots and both names typed back, and none of the new `CommitmentsScreen` members calls `keptAChange()`
 
 ## 3. The nine scenarios of `happening` at the value and the store — one test each
@@ -54,10 +54,10 @@ beside the happening tests already there.
 
 ## 5. The four scenarios of `day-screen` — one test each
 
-- [ ] 5.1 a stopped happening's row is still drawn on the days it came, and its occurrences are changed and taken back — catches `occurrences(of:)` left on the listed happenings
-- [ ] 5.2 noting a stopped happening through a day screen is refused as not kept — catches `note` guarded on the store alone
-- [ ] 5.3 a happening deleted through a commitments screen has no row on the days it came — catches orphaned occurrences drawn
-- [ ] 5.4 a day screen lists no stopped happening, and lists one resumed in its place — catches a resumed happening appended last
+- [x] 5.1 a stopped happening's row is still drawn on the days it came, and its occurrences are changed and taken back — catches `occurrences(of:)` left on the listed happenings
+- [x] 5.2 noting a stopped happening through a day screen is refused as not kept — catches `note` guarded on the store alone
+- [x] 5.3 a happening deleted through a commitments screen has no row on the days it came — catches orphaned occurrences drawn
+- [x] 5.4 a day screen lists no stopped happening, and lists one resumed in its place — catches a resumed happening appended last
 
 ## 6. The shell (ADR-1019: no rule the Kit does not state)
 

@@ -200,7 +200,7 @@ public final class DayScreen {
         let openedHappenings = Self.openHappenings(at: self.happeningPlace)
         self.happeningStore = openedHappenings.store
         self.happeningState = openedHappenings.state
-        self.happenings = openedHappenings.store?.happenings.all ?? []
+        self.happenings = Self.notStopped(openedHappenings.store)
 
         // `calendar` and `birthdaySwitch` here are the parameters above, not `self.calendar` and
         // `self.birthdaySwitch`: `self` is not yet fully initialized (`dayView` is being assigned
@@ -239,7 +239,16 @@ public final class DayScreen {
         let opened = Self.openHappenings(at: happeningPlace)
         happeningStore = opened.store
         happeningState = opened.state
-        happenings = opened.store?.happenings.all ?? []
+        happenings = Self.notStopped(opened.store)
+    }
+
+    /// The happenings `store` holds that are not stopped, in the order held: those a day screen
+    /// lists and offers noting. A stopped one still has its rows, read from every happening held.
+    private static func notStopped(_ store: HappeningStore?) -> [Happening] {
+        guard let held = store?.happenings else {
+            return []
+        }
+        return held.all.filter { !held.isStopped($0) }
     }
 
     /// What the happening store holds as it stands, or nothing where the screen is not keeping it.
@@ -705,7 +714,7 @@ public final class DayScreen {
     /// Anything but `.kept` means this screen holds no One-offs group on any day.
     public private(set) var oneOffState: OneOffState
 
-    /// The happenings this screen lists, in the order they were made.
+    /// The happenings this screen lists, in the order they were made: those not stopped.
     public private(set) var happenings: [Happening] = []
 
     /// Whether this screen is keeping its happenings: anything but `.kept` lists none and offers
@@ -760,7 +769,7 @@ public final class DayScreen {
 
     /// The occurrences, on the day shown, of the happening `row` names, in the row's order.
     public func occurrences(of row: DayView.HappeningRow) -> [Occurrence] {
-        guard let happening = happenings.first(where: { $0.name == row.name }) else {
+        guard let happening = heldHappenings.all.first(where: { $0.name == row.name }) else {
             return []
         }
         return heldHappenings.occurrences(of: happening, on: shownDay)
