@@ -332,6 +332,12 @@ func aChangeToATimeLaterThanNowIsRefusedAsNotYetCome() throws {
 
     show(friday, on: screen)
     #expect(screen.change(ahead, to: nil, saying: "x", asOf: now) == .notYetCome)
+    let pastLate = Occurrence(of: kopfweh, on: wednesday, at: time(23, 59), saying: nil)
+    #expect(screen.change(pastLate, to: time(23, 58), saying: "", asOf: now) == nil)
+
+    show(wednesday, on: screen)
+    let heldNow = Occurrence(of: kopfweh, on: friday, at: time(18, 52), saying: nil)
+    #expect(screen.change(heldNow, to: time(18, 53), saying: "", asOf: now) == .notYetCome)
 }
 
 @MainActor
