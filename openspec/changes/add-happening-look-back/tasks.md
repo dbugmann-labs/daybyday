@@ -54,9 +54,10 @@ test goes in `src/DayByDayKit/Tests/DayByDayKitTests/CommitmentsScreenHappeningL
 
 ## The walk
 
-A fresh install; "Kopfweh" and "Schlecht geschlafen" made on the commitments screen. On the day screen, Kopfweh noted on a day two calendar months back at 07:15; then on today, once at the current time with a three-line note, and once with its time cleared. Nothing is noted in the month between.
+A fresh install; "Kopfweh" and "Schlecht geschlafen" made on the commitments screen, and a daily tick commitment "Lesen" made there and ticked on today. On the day screen, Kopfweh noted on a day two calendar months back at 07:15; then on today, once at the current time with a three-line note, and once with its time cleared. Nothing is noted in the month between.
 
 - [ ] W.1 The commitments screen — the Happenings section listing "Kopfweh" and "Schlecht geschlafen", each row with a grey chevron.
 - [ ] W.2 Kopfweh tapped — the large title "Kopfweh"; the head card "Since" and the day two months back; "Months" with this month "2 times", last month "0 times", the month before "1 time"; "3 times"; today's timed card with its note folded to two lines, today's "no time" card, then the 07:15 card.
 - [ ] W.3 Back, Schlecht geschlafen tapped — the large title "Schlecht geschlafen" and "Nothing noted yet." alone, no head card and no months.
-- [ ] W.4 **The handover** — W.1–W.3, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [ ] W.4 Back, Lesen tapped — a tick commitment's look-back drawn as on `main`: its head card with "Kept from" and its "Months" table, as `main` draws them. This shows the head card and Months table the happening page shares are unchanged for a commitment.
+- [ ] W.5 **The handover** — W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
