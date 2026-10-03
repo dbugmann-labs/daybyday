@@ -377,18 +377,12 @@ public struct DayView: Hashable, Sendable {
     func withHappenings(_ happenings: Happenings) -> DayView {
         var formed = self
         formed.happeningRows = happenings.all.compactMap { happening in
-            let came = happenings.occurrences.filter {
-                $0.happening == happening.identity && $0.day == date
-            }
+            let came = happenings.occurrences(of: happening, on: date)
             guard !came.isEmpty else {
                 return nil
             }
-            let timed = came.compactMap(\.time).sorted().map {
-                String(format: "%02d:%02d", $0.hour, $0.minute)
-            }
-            let untimed = Array(repeating: "no time", count: came.count - timed.count)
             return HappeningRow(
-                name: happening.name, timesInWords: (timed + untimed).joined(separator: ", "))
+                name: happening.name, timesInWords: came.map(\.timeInWords).joined(separator: ", "))
         }
         return formed
     }

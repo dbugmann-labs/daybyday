@@ -101,9 +101,12 @@ private func date(from calendarDate: CalendarDate) -> Date {
 /// the text still goes back to the presenter as typed, through the binding.
 private struct NoteEditorField: UIViewRepresentable {
     @Binding var text: String
+    /// `false` where the field is not the point of the sheet it sits in: it opens with the keyboard down.
+    var focusesOnAppear = true
 
     func makeUIView(context: Context) -> UITextView {
         let view = FocusOnAppearTextView()
+        view.asksForFocus = focusesOnAppear
         view.delegate = context.coordinator
         view.backgroundColor = .clear
         view.font = .preferredFont(forTextStyle: .body)
@@ -134,10 +137,11 @@ private struct NoteEditorField: UIViewRepresentable {
 
 private final class FocusOnAppearTextView: UITextView {
     private var askedForFocus = false
+    var asksForFocus = true
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
-        if window != nil, !askedForFocus {
+        if window != nil, asksForFocus, !askedForFocus {
             askedForFocus = true
             becomeFirstResponder()
         }
@@ -214,6 +218,13 @@ private struct NotedHappening: Identifiable {
     var id: Happening.Identity { happening.identity }
 }
 
+/// The occurrence a change sheet is open for, so `.sheet(item:)` can drive it.
+private struct ChangedOccurrence: Identifiable {
+    let id = UUID()
+    let name: String
+    let occurrence: Occurrence
+}
+
 /// `calendarDate`'s day with the hour and minute of `time`, as the instant a SwiftUI `DatePicker`
 /// needs — the reverse of `timeOfDay(from:)`, and edge code like `date(from:)` above (ADR-1004).
 private func date(at time: TimeOfDay) -> Date {
@@ -236,23 +247,46 @@ private func timeOfDay(from date: Date) -> TimeOfDay? {
 /// keeps the sheet open over its red line until the next Save or until it closes. ADR-1019;
 /// `openspec/changes/note-occurrence-on-day-screen/design.md` § *The shell*.
 private struct NoteHappeningSheet: View {
-    let happening: Happening
+    let title: String
     let boundedAtNow: Bool
+    let focusesNote: Bool
     let save: (TimeOfDay?, String) -> DayScreen.OccurrenceRefusal?
+    /// Present where the sheet is open on an occurrence already noted: *Take back* at its foot.
+    let takeBack: (() -> DayScreen.OccurrenceRefusal?)?
 
     @Environment(\.dismiss) private var dismiss
     @State private var time: Date?
-    @State private var noteText = ""
+    @State private var noteText: String
     @State private var refusal: DayScreen.OccurrenceRefusal?
+    @State private var confirmingTakeBack = false
+    @State private var takeBackRefused = false
 
     init(
         happening: Happening, startingTime: TimeOfDay?,
         save: @escaping (TimeOfDay?, String) -> DayScreen.OccurrenceRefusal?
     ) {
-        self.happening = happening
+        self.title = happening.name
         self.boundedAtNow = startingTime != nil
+        self.focusesNote = true
         self.save = save
+        self.takeBack = nil
         _time = State(initialValue: startingTime.map(date(at:)))
+        _noteText = State(initialValue: "")
+    }
+
+    /// Open on `occurrence`, its time and note filled in, bounded at now where `boundedAtNow`.
+    init(
+        changing occurrence: Occurrence, named name: String, boundedAtNow: Bool,
+        save: @escaping (TimeOfDay?, String) -> DayScreen.OccurrenceRefusal?,
+        takeBack: @escaping () -> DayScreen.OccurrenceRefusal?
+    ) {
+        self.title = name
+        self.boundedAtNow = boundedAtNow
+        self.focusesNote = false
+        self.save = save
+        self.takeBack = takeBack
+        _time = State(initialValue: occurrence.time.map(date(at:)))
+        _noteText = State(initialValue: occurrence.note ?? "")
     }
 
     var body: some View {
@@ -299,11 +333,40 @@ private struct NoteHappeningSheet: View {
                     .background(
                         Color(.secondarySystemGroupedBackground),
                         in: RoundedRectangle(cornerRadius: 12))
-                    NoteEditorField(text: $noteText)
+                    NoteEditorField(text: $noteText, focusesOnAppear: focusesNote)
                         .padding(8)
                         .background(
                             Color(.secondarySystemGroupedBackground),
                             in: RoundedRectangle(cornerRadius: 12))
+                    if takeBack != nil {
+                        Button("Take back", role: .destructive) {
+                            confirmingTakeBack = true
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(12)
+                        .background(
+                            Color(.secondarySystemGroupedBackground),
+                            in: RoundedRectangle(cornerRadius: 12))
+                        .confirmationDialog(
+                            "Take back this occurrence?", isPresented: $confirmingTakeBack,
+                            titleVisibility: .visible
+                        ) {
+                            Button("Take back", role: .destructive) {
+                                refusal = nil
+                                takeBackRefused = takeBack?() != nil
+                                if !takeBackRefused {
+                                    dismiss()
+                                }
+                            }
+                            Button("Cancel", role: .cancel) {}
+                        }
+                    }
+                    if takeBackRefused {
+                        Text("Not taken back. Try again.")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                     if let refusal {
                         Text(
                             refusal == .notYetCome
@@ -316,7 +379,7 @@ private struct NoteHappeningSheet: View {
                 }
                 .padding()
             }
-            .navigationTitle(happening.name)
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -324,6 +387,7 @@ private struct NoteHappeningSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
+                        takeBackRefused = false
                         refusal = save(time.flatMap(timeOfDay(from:)), noteText)
                         if refusal == nil {
                             dismiss()
@@ -380,6 +444,11 @@ struct ContentView: View {
     @State private var choosingRow: DayView.Row?
     @State private var enteringNoteRow: DayView.Row?
     @State private var notingHappening: NotedHappening?
+    // A happening row tapped with several occurrences on the day shown opens a popover of them;
+    // one tapped in it is held here until the popover has gone, then opens the change sheet.
+    @State private var choosingHappeningRow: DayView.HappeningRow?
+    @State private var pendingOccurrence: ChangedOccurrence?
+    @State private var changingOccurrence: ChangedOccurrence?
     @State private var enteringNoteText = ""
     @State private var enteringTotalRow: DayView.Row?
     @State private var enteringTotalText = ""
@@ -690,6 +759,29 @@ struct ContentView: View {
                     keeping { refusal = screen.note(noted.happening, at: time, saying: note, asOf: now) }
                     return refusal
                 }
+            }
+            // An occurrence is changed or taken back in the noting sheet filled in. `DayScreen` judges
+            // both; this draws them. `design.md` § *The shell*.
+            .sheet(item: $changingOccurrence) { changed in
+                NoteHappeningSheet(
+                    changing: changed.occurrence, named: changed.name,
+                    boundedAtNow: momentNow().flatMap { screen.startingTime(asOf: $0) } != nil,
+                    save: { time, note in
+                        guard let now = momentNow() else {
+                            return .notKept
+                        }
+                        var refusal: DayScreen.OccurrenceRefusal?
+                        keeping {
+                            refusal = screen.change(
+                                changed.occurrence, to: time, saying: note, asOf: now)
+                        }
+                        return refusal
+                    },
+                    takeBack: {
+                        var refusal: DayScreen.OccurrenceRefusal?
+                        keeping { refusal = screen.takeBack(changed.occurrence) }
+                        return refusal
+                    })
             }
             // A total takes an amount in a half-height sheet over the dimmed day: the row's name
             // with `soFarOfTarget` under it, the amount field focused as it opens so the keyboard is up, the row's usual
@@ -1681,7 +1773,7 @@ struct ContentView: View {
                 if !dayView.happeningRows.isEmpty {
                     Section {
                         ForEach(Array(dayView.happeningRows.enumerated()), id: \.offset) { _, row in
-                            Text("\(row.name) · \(row.timesInWords)")
+                            happeningRowView(row)
                         }
                     }
                 }
@@ -1850,6 +1942,78 @@ struct ContentView: View {
             // amounts.
             label
                 .opacity(0.5)
+        }
+    }
+
+    /// A happening row: its name and times in the Kit's words. A tap opens the change sheet on
+    /// the one occurrence the day has, or a popover of them under the row where it has several;
+    /// the Kit answers which, in the row's order. `change-or-take-back-occurrence/design.md`
+    /// § *The shell*.
+    @ViewBuilder
+    private func happeningRowView(_ row: DayView.HappeningRow) -> some View {
+        Button {
+            let occurrences = screen.occurrences(of: row)
+            if occurrences.count == 1 {
+                changingOccurrence = ChangedOccurrence(name: row.name, occurrence: occurrences[0])
+            } else if !occurrences.isEmpty {
+                choosingHappeningRow = row
+            }
+        } label: {
+            Text("\(row.name) · \(row.timesInWords)")
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .popover(
+            isPresented: Binding(
+                get: { choosingHappeningRow == row },
+                set: { isPresented in
+                    if !isPresented {
+                        choosingHappeningRow = nil
+                    }
+                }
+            ),
+            arrowEdge: .top
+        ) {
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(Array(screen.occurrences(of: row).enumerated()), id: \.offset) { _, occurrence in
+                    Button {
+                        pendingOccurrence = ChangedOccurrence(name: row.name, occurrence: occurrence)
+                        choosingHappeningRow = nil
+                    } label: {
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(occurrence.timeInWords)
+                                if let note = occurrence.note {
+                                    Text(note)
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(3)
+                                        .multilineTextAlignment(.leading)
+                                }
+                            }
+                            Spacer(minLength: 12)
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .frame(minWidth: 220)
+            .presentationCompactAdaptation(.popover)
+            // The sheet opens once the popover has gone, never over it.
+            .onDisappear {
+                if let pending = pendingOccurrence {
+                    pendingOccurrence = nil
+                    changingOccurrence = pending
+                }
+            }
         }
     }
 
