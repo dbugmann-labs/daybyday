@@ -165,19 +165,140 @@ public final class CommitmentsScreen {
         return nil
     }
 
-    public func isStopped(_ happening: Happening) -> Bool { false }
+    /// Whether `happening` is one this screen lists and is stopped.
+    public func isStopped(_ happening: Happening) -> Bool {
+        happeningStore?.happenings.isStopped(happening) ?? false
+    }
+
+    /// The happening a stop has been asked for and not yet confirmed or cancelled.
     public private(set) var happeningAwaitingStop: Happening?
-    public func askToStop(_ happening: Happening) {}
-    public func cancelStoppingHappening() {}
-    @discardableResult public func confirmStoppingHappening() -> Refusal? { nil }
-    @discardableResult public func resume(_ happening: Happening) -> Refusal? { nil }
+
+    /// Puts `happening` up for a stop, replacing whatever was awaiting a stop or a deletion, a
+    /// commitment's included. Does nothing where this screen does not list it or it is stopped.
+    public func askToStop(_ happening: Happening) {
+        guard happenings.contains(happening), !isStopped(happening) else {
+            return
+        }
+        awaitNothing()
+        happeningAwaitingStop = happening
+    }
+
+    /// Leaves nothing awaiting a stop and changes nothing else.
+    public func cancelStoppingHappening() {
+        happeningAwaitingStop = nil
+    }
+
+    /// Leaves nothing awaiting a stop or a deletion, of a commitment or a happening, and nothing
+    /// typed back to delete either: a screen awaits one confirmation of any kind.
+    private func awaitNothing() {
+        awaitingConfirmation = nil
+        awaitingDeletion = nil
+        nameTypedBack = ""
+        happeningAwaitingStop = nil
+        happeningAwaitingDeletion = nil
+        happeningNameTypedBack = ""
+    }
+
+    /// Stops whatever is awaiting a stop, kept at the happening place before the list says so.
+    /// Answers `nil` and does nothing when nothing is awaiting a stop. Writes no copy — a happening
+    /// is in no copy until #380, so `keptAChange()` is never called here.
+    @discardableResult public func confirmStoppingHappening() -> Refusal? {
+        guard let happening = happeningAwaitingStop else {
+            return nil
+        }
+        happeningAwaitingStop = nil
+
+        guard let store = happeningStore, (try? store.stop(happening)) == true else {
+            return refuseHappening(.notKept)
+        }
+
+        happenings = store.happenings.all
+        happeningRefusal = nil
+        return nil
+    }
+    /// Resumes `happening`, without confirmation, kept at the happening place before the list says
+    /// so. Does nothing and says nothing where this screen does not list it or it is not stopped.
+    @discardableResult public func resume(_ happening: Happening) -> Refusal? {
+        guard let store = happeningStore, happenings.contains(happening),
+            store.happenings.isStopped(happening)
+        else {
+            return nil
+        }
+        guard (try? store.resume(happening)) == true else {
+            return refuseHappening(.notKept)
+        }
+
+        happenings = store.happenings.all
+        happeningRefusal = nil
+        return nil
+    }
+    /// The happening a deletion has been asked for and not yet confirmed or cancelled.
     public private(set) var happeningAwaitingDeletion: Happening?
+
+    /// What has been typed back to confirm deleting `happeningAwaitingDeletion`, held apart from
+    /// `nameTypedBack` so a commitment's match never reads a happening's name.
     public var happeningNameTypedBack: String = ""
-    public var happeningNameTypedBackMatches: Bool { false }
-    public var happeningDeletionInWords: String? { nil }
-    public func askToDelete(_ happening: Happening) {}
-    public func cancelDeletingHappening() {}
-    @discardableResult public func confirmDeletingHappening() -> Refusal? { nil }
+
+    /// Whether `happeningNameTypedBack` is the name of the happening awaiting deletion, once
+    /// surrounding blank space is trimmed from both; `false` when none is awaiting.
+    public var happeningNameTypedBackMatches: Bool {
+        guard let happeningAwaitingDeletion else {
+            return false
+        }
+        return happeningNameTypedBack.trimmingCharacters(in: .whitespacesAndNewlines)
+            == happeningAwaitingDeletion.name.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// What goes with the happening awaiting deletion, in words and digits; `nil` where none is
+    /// awaiting. This one counts, so it is the Kit's.
+    public var happeningDeletionInWords: String? {
+        guard let happeningAwaitingDeletion, let store = happeningStore else {
+            return nil
+        }
+        let count = store.happenings.occurrences.filter {
+            $0.happening == happeningAwaitingDeletion.identity
+        }.count
+        switch count {
+        case 0: return "It has no occurrences."
+        case 1: return "Its 1 occurrence goes with it."
+        default: return "Its \(count) occurrences go with it."
+        }
+    }
+
+    /// Puts `happening` up for deletion, replacing whatever was awaiting a stop or a deletion, a
+    /// commitment's included. Does nothing where this screen does not list it.
+    public func askToDelete(_ happening: Happening) {
+        guard happenings.contains(happening) else {
+            return
+        }
+        awaitNothing()
+        happeningAwaitingDeletion = happening
+    }
+
+    /// Leaves nothing awaiting deletion and nothing typed back, and changes nothing else.
+    public func cancelDeletingHappening() {
+        happeningAwaitingDeletion = nil
+        happeningNameTypedBack = ""
+    }
+
+    /// Deletes whatever is awaiting deletion, and every occurrence of it, kept at the happening
+    /// place before the list says so. Answers `nil` and does nothing where nothing is awaiting
+    /// deletion or what has been typed back does not match. Writes no copy.
+    @discardableResult public func confirmDeletingHappening() -> Refusal? {
+        guard let happening = happeningAwaitingDeletion, happeningNameTypedBackMatches else {
+            return nil
+        }
+        happeningAwaitingDeletion = nil
+        happeningNameTypedBack = ""
+
+        guard let store = happeningStore, (try? store.delete(happening)) == true else {
+            return refuseHappening(.notKept)
+        }
+
+        happenings = store.happenings.all
+        happeningRefusal = nil
+        return nil
+    }
 
     /// The happening sheet's name field has been edited: ends `happeningRefusal`.
     public func happeningNameEdited() {
@@ -1370,9 +1491,8 @@ public final class CommitmentsScreen {
         guard kept.contains(commitment) else {
             return
         }
+        awaitNothing()
         awaitingConfirmation = commitment
-        awaitingDeletion = nil
-        nameTypedBack = ""
     }
 
     /// Leaves nothing awaiting confirmation and changes nothing else.
@@ -1434,9 +1554,8 @@ public final class CommitmentsScreen {
         guard kept.contains(commitment) || stopped.contains(commitment) else {
             return
         }
+        awaitNothing()
         awaitingDeletion = commitment
-        nameTypedBack = ""
-        awaitingConfirmation = nil
     }
 
     /// Leaves nothing awaiting deletion and nothing typed back, and changes nothing else.
@@ -2084,6 +2203,8 @@ public final class CommitmentsScreen {
         sheetRefusal = nil
         awaitingDeletion = nil
         nameTypedBack = ""
+        happeningAwaitingDeletion = nil
+        happeningNameTypedBack = ""
         refusedCopyPlace = nil
         happeningRefusal = nil
 

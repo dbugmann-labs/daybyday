@@ -20,7 +20,7 @@ beside the happening tests already there.
 - [x] 2.2 `Happenings` holds the stops beside `all`, its `==` and `hash` take them in, and `Happening` keeps exactly its two stored properties
 - [x] 2.3 `HappeningDocument.currentVersion` is 3, `formHappenings()` applies stops after occurrences, and every carried `HappeningStoreTests` test passes unedited
 - [ ] 2.4 `DayScreen.happenings` holds the happenings not stopped, `occurrences(of:)` resolves against every happening held, and every carried `DayScreenHappeningTests` and `DayScreenOccurrenceChangeTests` test passes unedited
-- [ ] 2.5 Every ask of a commitment's or a happening's stop or deletion clears the other three slots and both names typed back, and none of the new `CommitmentsScreen` members calls `keptAChange()`
+- [x] 2.5 Every ask of a commitment's or a happening's stop or deletion clears the other three slots and both names typed back, and none of the new `CommitmentsScreen` members calls `keptAChange()`
 
 ## 3. The nine scenarios of `happening` at the value and the store — one test each
 
@@ -36,21 +36,21 @@ beside the happening tests already there.
 
 ## 4. The fifteen scenarios of `happening` at the commitments screen — one test each
 
-- [ ] 4.1 asking a commitments screen to stop a happening changes nothing until it is confirmed — catches a stop written on the ask
-- [ ] 4.2 a happening stopped through a commitments screen is still listed in its place and said to be stopped — catches a stopped happening dropped from `happenings`
-- [ ] 4.3 a happening resumed through a commitments screen asks for no confirmation and is said to be stopped no longer — catches a resume routed through the stop slot
-- [ ] 4.4 asking to stop a stopped happening, or to resume one not stopped, does nothing and says nothing — catches a store refusal relayed as `.notKept`
-- [ ] 4.5 a happening stop or resume the happening place cannot take is refused as not kept — catches the refusal left out of `happeningRefusal`
-- [ ] 4.6 asking a commitments screen to delete a happening changes nothing until it is confirmed — catches a typed-back name surviving a second ask
-- [ ] 4.7 a name typed back to delete a happening matches only when it is the happening's name — catches a case-insensitive match
-- [ ] 4.8 a happening deleted through a commitments screen is listed no longer, and its occurrences are gone — catches the list not re-read after the write
-- [ ] 4.9 a commitments screen says how many occurrences go with the happening awaiting deletion — catches "Its 1 occurrences" or every happening's occurrences counted
-- [ ] 4.10 a happening deletion confirmed on a name that does not match, or with nothing awaiting, changes nothing — catches the slot cleared before the match is checked
-- [ ] 4.11 a happening deletion the happening place cannot take is refused as not kept — catches the slot left awaiting after a refusal
-- [ ] 4.12 asking about a happening leaves no commitment awaiting a stop or a deletion, and the reverse — catches one shared `nameTypedBack`
-- [ ] 4.13 a commitments screen opened has no happening awaiting a stop or a deletion — catches a slot formed from the store
-- [ ] 4.14 stopping, resuming and deleting a happening writes no copy and leaves the other places as they were — catches `keptAChange()` copied from the commitment's deletion
-- [ ] 4.15 what a commitments screen tells about a happening ends when a stop, a resume or a deletion is kept — catches the ask itself ending the refusal
+- [x] 4.1 asking a commitments screen to stop a happening changes nothing until it is confirmed — catches a stop written on the ask
+- [x] 4.2 a happening stopped through a commitments screen is still listed in its place and said to be stopped — catches a stopped happening dropped from `happenings`
+- [x] 4.3 a happening resumed through a commitments screen asks for no confirmation and is said to be stopped no longer — catches a resume routed through the stop slot
+- [x] 4.4 asking to stop a stopped happening, or to resume one not stopped, does nothing and says nothing — catches a store refusal relayed as `.notKept`
+- [x] 4.5 a happening stop or resume the happening place cannot take is refused as not kept — catches the refusal left out of `happeningRefusal`
+- [x] 4.6 asking a commitments screen to delete a happening changes nothing until it is confirmed — catches a typed-back name surviving a second ask
+- [x] 4.7 a name typed back to delete a happening matches only when it is the happening's name — catches a case-insensitive match
+- [x] 4.8 a happening deleted through a commitments screen is listed no longer, and its occurrences are gone — catches the list not re-read after the write
+- [x] 4.9 a commitments screen says how many occurrences go with the happening awaiting deletion — catches "Its 1 occurrences" or every happening's occurrences counted
+- [x] 4.10 a happening deletion confirmed on a name that does not match, or with nothing awaiting, changes nothing — catches the slot cleared before the match is checked
+- [x] 4.11 a happening deletion the happening place cannot take is refused as not kept — catches the slot left awaiting after a refusal
+- [x] 4.12 asking about a happening leaves no commitment awaiting a stop or a deletion, and the reverse — catches one shared `nameTypedBack`
+- [x] 4.13 a commitments screen opened has no happening awaiting a stop or a deletion — catches a slot formed from the store
+- [x] 4.14 stopping, resuming and deleting a happening writes no copy and leaves the other places as they were — catches `keptAChange()` copied from the commitment's deletion
+- [x] 4.15 what a commitments screen tells about a happening ends when a stop, a resume or a deletion is kept — catches the ask itself ending the refusal
 
 ## 5. The four scenarios of `day-screen` — one test each
 
