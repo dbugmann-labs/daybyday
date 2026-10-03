@@ -62,19 +62,19 @@ beside the happening tests already there.
 ## 6. The shell (ADR-1019: no rule the Kit does not state)
 
 - [x] 6.1 `CommitmentsView` draws the swipes, the "- Stopped" marker, the alert, the delete sheet and the refusal footer exactly as `design.md` § *The shell* and § *What the shell draws* say
-- [ ] 6.2 `git diff --stat origin/main... -- src/DayByDay/` lists `CommitmentsView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
+- [x] 6.2 `git diff --stat origin/main... -- src/DayByDay/` lists `CommitmentsView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 7. The records
 
 **The `CONTEXT.md` entry is written by this Story's proposal commit, not by the implementation.**
 
-- [ ] 7.1 Confirm `CONTEXT.md` § *Happening* and its 2026-10-03 amendment describe what shipped; a sentence that turns out wrong is a stop and a G4 question
-- [ ] 7.2 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
+- [x] 7.1 Confirm `CONTEXT.md` § *Happening* and its 2026-10-03 amendment describe what shipped; a sentence that turns out wrong is a stop and a G4 question
+- [x] 7.2 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
 
 ## 8. The gates and the archive handover
 
-- [ ] 8.1 `openspec validate stop-or-delete-happening --strict` exits 0, and `pnpm run checks` is clean
-- [ ] 8.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with twenty-eight more tests than a run on `origin/main` reports, both read off runs
+- [x] 8.1 `openspec validate stop-or-delete-happening --strict` exits 0, and `pnpm run checks` is clean
+- [x] 8.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with twenty-eight more tests than a run on `origin/main` reports, both read off runs
 - [ ] 8.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 8.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.7. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/happening/spec.md` gains six requirements and twenty-two scenarios and three of its requirements change, gaining two scenarios between them; `openspec/specs/day-screen/spec.md` gains one requirement and three scenarios and two of its requirements change, gaining one; no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
@@ -82,10 +82,10 @@ beside the happening tests already there.
 
 A fresh install; "Augenmigräne" and then "Kopfweh" made on the commitments screen; the day screen moved one day back and "Kopfweh" noted there at 09:10.
 
-- [ ] W.1 The commitments screen, "Kopfweh" swiped and Stop tapped — "Stop noting this happening?" with a red "Stop noting Kopfweh" and "Cancel".
-- [ ] W.2 The stop confirmed — the Happenings card reading "Augenmigräne", "Kopfweh - Stopped", then "New happening".
-- [ ] W.3 The day screen on today, the bolt's menu open — "Augenmigräne" alone in it.
-- [ ] W.4 The day screen one day back — the row "Kopfweh · 09:10" still drawn.
-- [ ] W.5 The commitments screen, "Kopfweh" swiped, Delete tapped and "Kopfweh" typed back — the sheet titled "Delete Kopfweh", "Its 1 occurrence goes with it." under the field, Delete enabled.
-- [ ] W.6 The deletion confirmed, the day screen one day back — no Kopfweh row.
-- [ ] W.7 **The handover** — W.1–W.6, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.1 The commitments screen, "Kopfweh" swiped and Stop tapped — "Stop noting this happening?" with a red "Stop noting Kopfweh" and "Cancel".
+- [x] W.2 The stop confirmed — the Happenings card reading "Augenmigräne", "Kopfweh - Stopped", then "New happening".
+- [x] W.3 The day screen on today, the bolt's menu open — "Augenmigräne" alone in it.
+- [x] W.4 The day screen one day back — the row "Kopfweh · 09:10" still drawn.
+- [x] W.5 The commitments screen, "Kopfweh" swiped, Delete tapped and "Kopfweh" typed back — the sheet titled "Delete Kopfweh", "Its 1 occurrence goes with it." under the field, Delete enabled.
+- [x] W.6 The deletion confirmed, the day screen one day back — no Kopfweh row.
+- [x] W.7 **The handover** — W.1–W.6, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
