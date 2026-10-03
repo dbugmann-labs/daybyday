@@ -260,7 +260,7 @@ func aHappeningStoreInAnEarlierFormIsReadAsHoldingNoHappeningStopped() throws {
 
     #expect(kopfweh.name == "Kopfweh")
     #expect(!opened.happenings.isStopped(kopfweh))
-    #expect(opened.happenings.occurrences.count == 1)
+    #expect(opened.happenings.occurrences == [Occurrence(of: kopfweh, on: friday, at: nil, saying: nil)])
     #expect(try Data(contentsOf: place) == secondForm)
 
     let firstPlace = try placeHolding(firstForm)
@@ -272,7 +272,9 @@ func aHappeningStoreInAnEarlierFormIsReadAsHoldingNoHappeningStopped() throws {
     try opened.stop(kopfweh)
     let again = try HappeningStore(at: place)
     #expect(again.happenings.isStopped(try #require(again.happenings.all.first)))
-    #expect(again.happenings.occurrences.count == 1)
+    #expect(
+        again.happenings.occurrences
+            == [Occurrence(of: kopfweh, on: friday, at: nil, saying: nil)])
 }
 
 private func placeHolding(_ bytes: Data) throws -> URL {

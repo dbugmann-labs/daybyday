@@ -88,4 +88,4 @@ A fresh install; "Augenmigräne" and then "Kopfweh" made on the commitments scre
 - [x] W.4 The day screen one day back — the row "Kopfweh · 09:10" still drawn.
 - [x] W.5 The commitments screen, "Kopfweh" swiped, Delete tapped and "Kopfweh" typed back — the sheet titled "Delete Kopfweh", "Its 1 occurrence goes with it." under the field, Delete enabled.
 - [x] W.6 The deletion confirmed, the day screen one day back — no Kopfweh row.
-- [x] W.7 **The handover** — W.1–W.6, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.7 **The handover** — W.1–W.6, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL: https://github.com/dbugmann-labs/daybyday/pull/385#issuecomment-5969799162

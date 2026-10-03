@@ -110,7 +110,8 @@ func aHappeningStoppedThroughACommitmentsScreenIsStillListedInItsPlaceAndSaidToB
     #expect(commitments.happenings.filter(commitments.isStopped).map(\.name) == ["Kopfweh"])
     let reopened = try HappeningStore(at: place)
     #expect(reopened.happenings.isStopped(made[1]))
-    #expect(reopened.happenings.occurrences.count == 1)
+    #expect(reopened.happenings.occurrences
+            == [Occurrence(of: made[1], on: date(2026, 10, 2), at: time(18, 40), saying: nil)])
     let lookBack = try #require(commitments.lookBack(at: made[1]))
     #expect(lookBack.occurrences.map(\.dayInWords) == ["2 October 2026"])
     #expect(lookBack.occurrences.map(\.timeInWords) == ["18:40"])
