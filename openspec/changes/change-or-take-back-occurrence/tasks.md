@@ -72,4 +72,4 @@ A fresh install; "Kopfweh" made on the commitments screen; the day screen moved 
 - [x] W.6 Taken back — the day, the row reading "Kopfweh · 20:15".
 - [x] W.7 The row tapped again — the sheet opened directly on 20:15 with its note, no popover.
 - [x] W.8 *Take back* tapped and confirmed — the day with no Kopfweh row.
-- [x] W.9 **The handover** — W.1–W.8, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.9 **The handover** — W.1–W.8, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. Posted: https://github.com/dbugmann-labs/daybyday/pull/383#issuecomment-5966823091
