@@ -1946,7 +1946,7 @@ struct ContentView: View {
     }
 
     /// A happening row: its name and times in the Kit's words. A tap opens the change sheet on
-    /// the one occurrence the day has, or a popover of them under the row where it has several;
+    /// the one occurrence the day has, or a popover of them beside the row where it has several;
     /// the Kit answers which, in the row's order. `change-or-take-back-occurrence/design.md`
     /// § *The shell*.
     @ViewBuilder
@@ -1965,6 +1965,9 @@ struct ContentView: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        // No `arrowEdge`: happening rows sit at the foot of the day, where a popover forced under
+        // the row had almost no room and squashed its list. Left `nil`, the system opens it on
+        // whichever side of the row has the space. A list that still does not fit scrolls.
         .popover(
             isPresented: Binding(
                 get: { choosingHappeningRow == row },
@@ -1973,37 +1976,11 @@ struct ContentView: View {
                         choosingHappeningRow = nil
                     }
                 }
-            ),
-            arrowEdge: .top
+            )
         ) {
-            VStack(alignment: .leading, spacing: 0) {
-                ForEach(Array(screen.occurrences(of: row).enumerated()), id: \.offset) { _, occurrence in
-                    Button {
-                        pendingOccurrence = ChangedOccurrence(name: row.name, occurrence: occurrence)
-                        choosingHappeningRow = nil
-                    } label: {
-                        HStack(alignment: .top) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(occurrence.timeInWords)
-                                if let note = occurrence.note {
-                                    Text(note)
-                                        .font(.footnote)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(3)
-                                        .multilineTextAlignment(.leading)
-                                }
-                            }
-                            Spacer(minLength: 12)
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                }
+            ViewThatFits(in: .vertical) {
+                occurrenceList(of: row)
+                ScrollView { occurrenceList(of: row) }
             }
             .frame(minWidth: 220)
             .presentationCompactAdaptation(.popover)
@@ -2013,6 +1990,40 @@ struct ContentView: View {
                     pendingOccurrence = nil
                     changingOccurrence = pending
                 }
+            }
+        }
+    }
+
+    /// The occurrences in a happening row's popover, one button each: time, note under it, chevron.
+    private func occurrenceList(of row: DayView.HappeningRow) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(screen.occurrences(of: row).enumerated()), id: \.offset) { _, occurrence in
+                Button {
+                    pendingOccurrence = ChangedOccurrence(name: row.name, occurrence: occurrence)
+                    choosingHappeningRow = nil
+                } label: {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(occurrence.timeInWords)
+                            if let note = occurrence.note {
+                                Text(note)
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(3)
+                                    .multilineTextAlignment(.leading)
+                            }
+                        }
+                        Spacer(minLength: 12)
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
         }
     }
