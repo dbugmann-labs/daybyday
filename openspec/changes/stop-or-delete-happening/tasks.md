@@ -12,27 +12,27 @@ beside the happening tests already there.
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's twenty-eight new scenarios uncovered and no other
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's twenty-eight new scenarios uncovered and no other
 
 ## 2. The seam
 
-- [ ] 2.1 The `Happenings`, `HappeningStore` and `CommitmentsScreen` members exist with the signatures in `design.md` § *The seam*, and 3.1 is red before any of them does more than compile
-- [ ] 2.2 `Happenings` holds the stops beside `all`, its `==` and `hash` take them in, and `Happening` keeps exactly its two stored properties
-- [ ] 2.3 `HappeningDocument.currentVersion` is 3, `formHappenings()` applies stops after occurrences, and every carried `HappeningStoreTests` test passes unedited
+- [x] 2.1 The `Happenings`, `HappeningStore` and `CommitmentsScreen` members exist with the signatures in `design.md` § *The seam*, and 3.1 is red before any of them does more than compile
+- [x] 2.2 `Happenings` holds the stops beside `all`, its `==` and `hash` take them in, and `Happening` keeps exactly its two stored properties
+- [x] 2.3 `HappeningDocument.currentVersion` is 3, `formHappenings()` applies stops after occurrences, and every carried `HappeningStoreTests` test passes unedited
 - [ ] 2.4 `DayScreen.happenings` holds the happenings not stopped, `occurrences(of:)` resolves against every happening held, and every carried `DayScreenHappeningTests` and `DayScreenOccurrenceChangeTests` test passes unedited
 - [ ] 2.5 Every ask of a commitment's or a happening's stop or deletion clears the other three slots and both names typed back, and none of the new `CommitmentsScreen` members calls `keptAChange()`
 
 ## 3. The nine scenarios of `happening` at the value and the store — one test each
 
-- [ ] 3.1 a happening stopped keeps its name, its place and its occurrences, and resumed is stopped no longer — catches a stop that removes the happening from `all`
-- [ ] 3.2 a stopped happening takes no occurrence noted, and its occurrences are still changed and taken back — catches `change`/`takeBack` guarded on the stop too
-- [ ] 3.3 a stopped happening's name refuses another's, and a stopped happening renamed stays stopped — catches `holding(name:)` filtering out the stopped
-- [ ] 3.4 stopping a stopped happening, resuming one not stopped, or either of one not held is refused and changes nothing — catches an idempotent stop answered as kept
-- [ ] 3.5 a happening deleted takes every occurrence of it and leaves the rest in their order — catches occurrences left orphaned in the value
-- [ ] 3.6 deleting a happening not held is refused and changes nothing — catches a delete matched on name rather than identity
-- [ ] 3.7 a happening store opened again holds the happenings as stopped, resumed and deleted — catches stops applied before occurrences on reading
-- [ ] 3.8 a stop, a resume or a deletion the happening store cannot keep is refused and not held — catches the held value replaced before the write
-- [ ] 3.9 a happening store in an earlier form is read as holding no happening stopped — catches form 2 refused, or rewritten on opening
+- [x] 3.1 a happening stopped keeps its name, its place and its occurrences, and resumed is stopped no longer — catches a stop that removes the happening from `all`
+- [x] 3.2 a stopped happening takes no occurrence noted, and its occurrences are still changed and taken back — catches `change`/`takeBack` guarded on the stop too
+- [x] 3.3 a stopped happening's name refuses another's, and a stopped happening renamed stays stopped — catches `holding(name:)` filtering out the stopped
+- [x] 3.4 stopping a stopped happening, resuming one not stopped, or either of one not held is refused and changes nothing — catches an idempotent stop answered as kept
+- [x] 3.5 a happening deleted takes every occurrence of it and leaves the rest in their order — catches occurrences left orphaned in the value
+- [x] 3.6 deleting a happening not held is refused and changes nothing — catches a delete matched on name rather than identity
+- [x] 3.7 a happening store opened again holds the happenings as stopped, resumed and deleted — catches stops applied before occurrences on reading
+- [x] 3.8 a stop, a resume or a deletion the happening store cannot keep is refused and not held — catches the held value replaced before the write
+- [x] 3.9 a happening store in an earlier form is read as holding no happening stopped — catches form 2 refused, or rewritten on opening
 
 ## 4. The fifteen scenarios of `happening` at the commitments screen — one test each
 

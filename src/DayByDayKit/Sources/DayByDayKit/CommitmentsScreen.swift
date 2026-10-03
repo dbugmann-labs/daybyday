@@ -165,6 +165,20 @@ public final class CommitmentsScreen {
         return nil
     }
 
+    public func isStopped(_ happening: Happening) -> Bool { false }
+    public private(set) var happeningAwaitingStop: Happening?
+    public func askToStop(_ happening: Happening) {}
+    public func cancelStoppingHappening() {}
+    @discardableResult public func confirmStoppingHappening() -> Refusal? { nil }
+    @discardableResult public func resume(_ happening: Happening) -> Refusal? { nil }
+    public private(set) var happeningAwaitingDeletion: Happening?
+    public var happeningNameTypedBack: String = ""
+    public var happeningNameTypedBackMatches: Bool { false }
+    public var happeningDeletionInWords: String? { nil }
+    public func askToDelete(_ happening: Happening) {}
+    public func cancelDeletingHappening() {}
+    @discardableResult public func confirmDeletingHappening() -> Refusal? { nil }
+
     /// The happening sheet's name field has been edited: ends `happeningRefusal`.
     public func happeningNameEdited() {
         happeningRefusal = nil

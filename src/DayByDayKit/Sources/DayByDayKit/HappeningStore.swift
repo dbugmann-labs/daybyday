@@ -110,6 +110,48 @@ public final class HappeningStore {
         return true
     }
 
+    /// Kept at `place` before this returns. `false`, without throwing and without writing, where
+    /// `Happenings.stop` refuses.
+    @discardableResult
+    public func stop(_ happening: Happening) throws -> Bool {
+        var next = happenings
+        guard next.stop(happening) else {
+            return false
+        }
+        try write(next)
+
+        happenings = next
+        return true
+    }
+
+    /// Kept at `place` before this returns. `false`, without throwing and without writing, where
+    /// `Happenings.resume` refuses.
+    @discardableResult
+    public func resume(_ happening: Happening) throws -> Bool {
+        var next = happenings
+        guard next.resume(happening) else {
+            return false
+        }
+        try write(next)
+
+        happenings = next
+        return true
+    }
+
+    /// Kept at `place` before this returns. `false`, without throwing and without writing, where
+    /// `Happenings.delete` refuses.
+    @discardableResult
+    public func delete(_ happening: Happening) throws -> Bool {
+        var next = happenings
+        guard next.delete(happening) else {
+            return false
+        }
+        try write(next)
+
+        happenings = next
+        return true
+    }
+
     /// Writes `next` as the whole document, `.sortedKeys` so a keyed container's keys do not
     /// follow Foundation's per-process hash order, on top of `Happenings`' own order.
     private func write(_ next: Happenings) throws {
