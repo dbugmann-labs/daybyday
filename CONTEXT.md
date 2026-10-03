@@ -2376,6 +2376,16 @@ and never out of the due days, the owner's call against the recommendation that 
 already says it. A page with no note yet draws its head, no count, and says "No note yet." Opening a
 note enters nothing: a note is still changed only in its row on the day screen.
 
+**Amended 2026-10-03**, at the grill of `add-happening-look-back` (#378). A look-back is answered for
+a **happening** as well as a commitment. It is reached by tapping the happening's row on the
+commitments screen. Its head says the happening's name and "since" the day of its earliest
+**occurrence**; there is no rhythm or kept-from day to say. It gives one **count** across everything,
+"14 times", and counts per calendar month, newest first, from the month of the earliest occurrence
+through the current one, a month with none included. It lists the occurrences newest first, latest
+time first within a day and those with no time after them, with each note folded as a note page
+folds it. A happening with nothing noted says its name and "Nothing noted yet.", with no months and
+no count.
+
 **Graph** — what a number commitment's **look-back** draws: one unbroken trace through its
 **points**, a point for each day that holds a number, over a dates axis running from the day it is
 **kept from** through today or through the day it was **kept until**. The days between two points

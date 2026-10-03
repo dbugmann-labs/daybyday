@@ -2005,6 +2005,63 @@ public final class CommitmentsScreen {
             today: dayToKeepFrom, history: recordStore.history)
     }
 
+    /// A month line for each calendar month from the earliest of `newestFirst` through `today`'s
+    /// month, or through the latest occurrence's where that is later; newest first, a month holding
+    /// none said "0 times". None where there is no occurrence.
+    private static func months(
+        of newestFirst: [Occurrence], through today: CalendarDate
+    ) -> [HappeningLookBack.Month] {
+        guard let earliest = newestFirst.last, let latest = newestFirst.first else {
+            return []
+        }
+        func index(_ date: CalendarDate) -> Int { date.year * 12 + date.month - 1 }
+        let end = max(index(today), index(latest.day))
+        var counts: [Int: Int] = [:]
+        for occurrence in newestFirst {
+            counts[index(occurrence.day), default: 0] += 1
+        }
+        return stride(from: end, through: index(earliest.day), by: -1).map { month in
+            .init(
+                inWords: LookBackWords.month(year: month / 12, month: month % 12 + 1),
+                countInWords: LookBackWords.times(counts[month, default: 0]))
+        }
+    }
+
+    /// The look-back at `happening` — one happening seen on its own. `nil` where `happening` is not
+    /// one this screen lists, or where this screen cannot read its happening place. It reads the
+    /// store the screen already holds and writes nothing.
+    public func lookBack(at happening: Happening) -> HappeningLookBack? {
+        guard let store = happeningStore,
+            let listed = happenings.first(where: { $0 == happening })
+        else {
+            return nil
+        }
+        let came = store.happenings.occurrences.filter { $0.happening == listed.identity }
+        // Newest day first; within a day the latest time first, those with none after them; of
+        // two alike, the later noted first. `design.md` § *Ties within a day*.
+        let newestFirst = came.enumerated().sorted { lhs, rhs in
+            let (a, b) = (lhs.element, rhs.element)
+            if a.day != b.day {
+                return b.day.days(until: a.day) > 0
+            }
+            if a.time != b.time {
+                guard let aTime = a.time else { return false }
+                guard let bTime = b.time else { return true }
+                return aTime > bTime
+            }
+            return lhs.offset > rhs.offset
+        }.map(\.element)
+        let said = newestFirst.map {
+            HappeningLookBack.SaidOccurrence(
+                dayInWords: LookBackWords.day($0.day), timeInWords: $0.timeInWords, note: $0.note)
+        }
+        return HappeningLookBack(
+            name: listed.name,
+            sinceInWords: newestFirst.last.map { LookBackWords.day($0.day) },
+            countInWords: newestFirst.isEmpty ? nil : LookBackWords.times(newestFirst.count),
+            months: Self.months(of: newestFirst, through: dayToKeepFrom), occurrences: said)
+    }
+
     /// The app has been shown on `today`: the day this screen holds is replaced and the roster is
     /// read again.
     public func shown(asOf today: CalendarDate) {

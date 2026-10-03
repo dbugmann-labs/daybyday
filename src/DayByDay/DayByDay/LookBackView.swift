@@ -178,18 +178,7 @@ struct LookBackView: View {
 
     @ViewBuilder
     private func dateRow(label: String, value: String, valueFont: Font = .body) -> some View {
-        HStack {
-            Text(label)
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(.secondary)
-                .textCase(.uppercase)
-            Spacer()
-            Text(value)
-                .font(valueFont)
-                .multilineTextAlignment(.trailing)
-        }
-        .padding(.vertical, 6)
+        LookBackDateRow(label: label, value: value, valueFont: valueFont)
     }
 
     @ViewBuilder
@@ -234,16 +223,7 @@ struct LookBackView: View {
     private func lookBackLine(_ line: LookBack.Line) -> some View {
         switch line {
         case .month(let inWords, let fraction), .week(let inWords, let fraction):
-            GridRow {
-                Text(inWords)
-                Text(fraction)
-                    .monospacedDigit()
-                    .gridColumnAlignment(.trailing)
-            }
-            GridRow {
-                Divider()
-                    .gridCellColumns(2)
-            }
+            LookBackGridLine(label: inWords, value: fraction)
         }
     }
 
@@ -963,6 +943,177 @@ struct LookBackView: View {
             kept.append(candidate)
         }
         return kept
+    }
+}
+
+/// A label-and-value row of the head card: label left, value right. Shared by a commitment's page
+/// and a happening's, so the two cards draw alike.
+private struct LookBackDateRow: View {
+    let label: String
+    let value: String
+    var valueFont: Font = .body
+
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+            Spacer()
+            Text(value)
+                .font(valueFont)
+                .multilineTextAlignment(.trailing)
+        }
+        .padding(.vertical, 6)
+    }
+}
+
+/// One line of the table under "Months" or "Weeks": its label, its value right-aligned in
+/// monospaced digits, and the divider under it. Two `GridRow`s, so it belongs in a `Grid`.
+private struct LookBackGridLine: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        GridRow {
+            Text(label)
+            Text(value)
+                .monospacedDigit()
+                .gridColumnAlignment(.trailing)
+        }
+        GridRow {
+            Divider()
+                .gridCellColumns(2)
+        }
+    }
+}
+
+/// One happening seen on its own. Reached by a `NavigationLink` on `CommitmentsView`'s happening
+/// row. Draws `HappeningLookBack` as it is said and decides nothing: the large title is the name,
+/// the head card holds "Since", then "Months", the count and one card per occurrence. Where the
+/// look-back says no occurrence, the page is the title and "Nothing noted yet." alone.
+/// `openspec/changes/add-happening-look-back/design.md` § *What the shell draws*.
+struct HappeningLookBackView: View {
+    let screen: CommitmentsScreen
+    let happening: Happening
+
+    @State private var openOccurrences: Set<Int> = []
+    @State private var isCutByIndex: [Int: Bool] = [:]
+
+    var body: some View {
+        let lookBack = screen.lookBack(at: happening)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                if let lookBack {
+                    if lookBack.occurrences.isEmpty {
+                        Text("Nothing noted yet.")
+                    } else {
+                        if let since = lookBack.sinceInWords {
+                            VStack(alignment: .leading, spacing: 0) {
+                                LookBackDateRow(label: "Since", value: since)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 6)
+                            .background(
+                                Color(.secondarySystemGroupedBackground),
+                                in: RoundedRectangle(cornerRadius: 12))
+                        }
+                        Text("Months")
+                            .font(.headline)
+                            .padding(.horizontal)
+                        Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 6) {
+                            ForEach(Array(lookBack.months.enumerated()), id: \.offset) { _, month in
+                                LookBackGridLine(label: month.inWords, value: month.countInWords)
+                            }
+                        }
+                        .padding(.horizontal)
+                        if let count = lookBack.countInWords {
+                            Text(count)
+                                .font(.headline)
+                                .padding(.horizontal)
+                        }
+                        LazyVStack(alignment: .leading, spacing: 12) {
+                            ForEach(Array(lookBack.occurrences.enumerated()), id: \.offset) {
+                                index, occurrence in
+                                occurrenceCard(occurrence, index: index)
+                            }
+                        }
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding([.horizontal, .bottom])
+        }
+        .background(Color(.systemGroupedBackground))
+        .navigationTitle(lookBack?.name ?? "")
+        .navigationBarTitleDisplayMode(.large)
+    }
+
+    /// One occurrence's card, the head card's fill and radius: its day and its time, and its note
+    /// beneath folded to two lines. Only a note measured as cut is a `Button`, and the whole card
+    /// toggles it, as a note commitment's page does.
+    @ViewBuilder
+    private func occurrenceCard(_ occurrence: HappeningLookBack.SaidOccurrence, index: Int)
+        -> some View
+    {
+        let isOpen = openOccurrences.contains(index)
+        let isCut = isCutByIndex[index] ?? false
+        let content = cardContent(occurrence, isOpen: isOpen)
+            .background(
+                FoldMeasurer(text: occurrence.note ?? "") { measuredIsCut in
+                    if isCutByIndex[index] != measuredIsCut {
+                        isCutByIndex[index] = measuredIsCut
+                    }
+                }
+            )
+
+        Group {
+            if isCut {
+                Button {
+                    withAnimation {
+                        if isOpen {
+                            openOccurrences.remove(index)
+                        } else {
+                            openOccurrences.insert(index)
+                        }
+                    }
+                } label: {
+                    content
+                        .padding()
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            } else {
+                content
+                    .padding()
+            }
+        }
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    @ViewBuilder
+    private func cardContent(_ occurrence: HappeningLookBack.SaidOccurrence, isOpen: Bool)
+        -> some View
+    {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(occurrence.dayInWords)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                Spacer()
+                Text(occurrence.timeInWords)
+                    .font(.caption)
+                    .monospacedDigit()
+            }
+            if let note = occurrence.note {
+                Text(note)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(isOpen ? nil : 2)
+                    .truncationMode(.tail)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
