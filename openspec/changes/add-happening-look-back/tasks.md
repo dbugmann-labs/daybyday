@@ -50,14 +50,14 @@ test goes in `src/DayByDayKit/Tests/DayByDayKitTests/CommitmentsScreenHappeningL
 - [x] 6.1 `openspec validate add-happening-look-back --strict` exits 0, and `pnpm run checks` is clean
 - [x] 6.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with twelve more tests than a run on `origin/main` reports, both read off runs
 - [ ] 6.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
-- [ ] 6.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.4. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/happening/spec.md` gains this delta's five requirements and twelve scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
+- [x] 6.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.4. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/happening/spec.md` gains this delta's five requirements and twelve scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 
 A fresh install; "Kopfweh" and "Schlecht geschlafen" made on the commitments screen, and a daily tick commitment "Lesen" made there and ticked on today. On the day screen, Kopfweh noted on a day two calendar months back at 07:15; then on today, once at the current time with a three-line note, and once with its time cleared. Nothing is noted in the month between.
 
-- [ ] W.1 The commitments screen — the Happenings section listing "Kopfweh" and "Schlecht geschlafen", each row with a grey chevron.
-- [ ] W.2 Kopfweh tapped — the large title "Kopfweh"; the head card "Since" and the day two months back; "Months" with this month "2 times", last month "0 times", the month before "1 time"; "3 times"; today's timed card with its note folded to two lines, today's "no time" card, then the 07:15 card.
-- [ ] W.3 Back, Schlecht geschlafen tapped — the large title "Schlecht geschlafen" and "Nothing noted yet." alone, no head card and no months.
-- [ ] W.4 Back, Lesen tapped — a tick commitment's look-back drawn as on `main`: its head card with "Kept from" and its "Months" table, as `main` draws them. This shows the head card and Months table the happening page shares are unchanged for a commitment.
-- [ ] W.5 **The handover** — W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.1 The commitments screen — the Happenings section listing "Kopfweh" and "Schlecht geschlafen", each row with a grey chevron.
+- [x] W.2 Kopfweh tapped — the large title "Kopfweh"; the head card "Since" and the day two months back; "Months" with this month "2 times", last month "0 times", the month before "1 time"; "3 times"; today's timed card with its note folded to two lines, today's "no time" card, then the 07:15 card.
+- [x] W.3 Back, Schlecht geschlafen tapped — the large title "Schlecht geschlafen" and "Nothing noted yet." alone, no head card and no months.
+- [x] W.4 Back, Lesen tapped — a tick commitment's look-back drawn as on `main`: its head card with "Kept from" and its "Months" table, as `main` draws them. This shows the head card and Months table the happening page shares are unchanged for a commitment.
+- [x] W.5 **The handover** — W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
