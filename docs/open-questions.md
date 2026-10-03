@@ -191,6 +191,16 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
+- **Stopping, resuming or deleting a happening sends the commitments list back to the top.** A
+  stopped happening is read from the happening store, which the commitments screen does not watch,
+  and a stop or a resume leaves its list of happenings equal to the one before, so nothing redraws
+  the row; the shell rebuilds the whole list through `listRevision` instead, and the scroll
+  position goes with it. Measured on an iOS 26.5 simulator at #379's G7 on 2026-10-03: with the
+  list at its foot, confirming a stop leaves the top of the list on screen and the Happenings card
+  below it. The fix is making the stopped state something the screen watches, so the shell drops
+  the rebuild; the happening rename sheet on `main` rebuilds the same way and was not measured.
+  The owner shipped #379 with it on 2026-10-03, to be fixed for both together in a Story of its
+  own.
 - **Nothing tests that two usual amounts' names sort with blank space at either end disregarded.**
   `commitment`'s *A total declares at most five usual amounts, no two alike, answered smallest
   first* orders names on one amount ignoring case and blank space at either end, but no scenario

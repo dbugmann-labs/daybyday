@@ -5,10 +5,14 @@ import Foundation
 /// independent of how `Happening` is laid out in Swift. The array is in the order `Happenings`
 /// holds them, and is never sorted. `openspec/changes/add-happening/design.md` § *Migration*.
 struct HappeningDocument: Codable {
-    static let currentVersion = 2
+    static let currentVersion = 3
 
     /// The form that added `occurrences`; a form before it carries none and reads as holding none.
     static let occurrencesIntroducedInVersion = 2
+
+    /// The form that added `stopped`; a form before it carries none and reads as holding none
+    /// stopped.
+    static let stoppedIntroducedInVersion = 3
 
     var version: Int
     var happenings: [HappeningRecord]
@@ -17,7 +21,9 @@ struct HappeningDocument: Codable {
     init(_ happenings: Happenings) {
         version = Self.currentVersion
         self.happenings = happenings.all.map {
-            HappeningRecord(identity: $0.identity.uuidString, name: $0.name)
+            HappeningRecord(
+                identity: $0.identity.uuidString, name: $0.name,
+                stopped: happenings.isStopped($0) ? true : nil)
         }
         occurrences = happenings.occurrences.map {
             OccurrenceRecord(
@@ -73,6 +79,17 @@ struct HappeningDocument: Codable {
                 return nil
             }
         }
+        // A stopped happening takes no occurrence, so a stop is applied once they are all in.
+        if version >= Self.stoppedIntroducedInVersion {
+            for record in happenings where record.stopped == true {
+                guard let identity = Happening.Identity(record.identity),
+                    let held = formed.all.first(where: { $0.identity == identity }),
+                    formed.stop(held)
+                else {
+                    return nil
+                }
+            }
+        }
         return formed
     }
 }
@@ -85,6 +102,8 @@ struct HappeningDocumentEnvelope: Decodable {
 struct HappeningRecord: Codable {
     var identity: String
     var name: String
+    /// Present, and `true`, where the happening is stopped; absent otherwise.
+    var stopped: Bool?
 }
 
 /// One occurrence as the file keeps it: `hour`, `minute` and `note` are absent where there is none.

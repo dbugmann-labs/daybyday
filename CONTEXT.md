@@ -2104,6 +2104,15 @@ exists and the happenings can be read. What came that day is drawn as a row of i
 something came, its times inline, and it is not due, so a day it alone is drawn on still says
 nothing is due.
 
+**Amended 2026-10-03**, at the Story grill of `stop-or-delete-happening` (#379). A **stopped**
+happening is no longer offered for noting on any day, past ones included — a stop has no day, and
+backfilling is resuming, noting and stopping again. Everything else about it stands: its
+**happening rows** still draw on the days it came and still open its occurrences to be changed or
+taken back, its look-back is still reached, it can still be renamed, and its name still refuses a
+second happening's. Stopping is confirmed, as a commitment's stop is; **resuming** is one tap and
+returns it to its place in the order made. **Deleting** is confirmed by typing its name back, as a
+commitment's deletion is, and the sheet says how many occurrences go with it.
+
 **Occurrence** — one time a **happening** came: a **moment**, or a **calendar date** alone where its
 time is left blank, and an optional note. A day may hold several occurrences of one happening, each counted
 on its own, which makes it the first thing the app keeps that is not one per day. An occurrence is
