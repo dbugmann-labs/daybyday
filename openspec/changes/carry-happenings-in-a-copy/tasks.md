@@ -66,13 +66,13 @@ exception: each renames a carried test, and is green before and after.
 
 ## 10. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 10.1 `SettingsView.swift` says the happenings' lines and the restore sheet's count as `design.md` § *The shell's words* gives them, words verbatim, laid out as § *What the shell draws*
-- [ ] 10.2 The app target builds for the simulator, and `ContentView.swift` and `CommitmentsView.swift` are unchanged
+- [x] 10.1 `SettingsView.swift` says the happenings' lines and the restore sheet's count as `design.md` § *The shell's words* gives them, words verbatim, laid out as § *What the shell draws*
+- [x] 10.2 The app target builds for the simulator, and `ContentView.swift` and `CommitmentsView.swift` are unchanged
 
 ## 11. The records
 
-- [ ] 11.1 Confirm `CONTEXT.md` § *Happening place*, *Happening store*, *Copy*, *Restore* and *Take-out* still describe what shipped; a sentence that turns out wrong is a stop and a G4 question, never an edit
-- [ ] 11.2 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
+- [x] 11.1 Confirm `CONTEXT.md` § *Happening place*, *Happening store*, *Copy*, *Restore* and *Take-out* still describe what shipped; a sentence that turns out wrong is a stop and a G4 question, never an edit
+- [x] 11.2 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
 
 ## The walk
 
