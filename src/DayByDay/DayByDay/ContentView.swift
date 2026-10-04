@@ -1768,13 +1768,19 @@ struct ContentView: View {
                             .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
                     }
                 }
-                // The happenings that came on this day, one card with no heading after every group:
-                // each its name and the times it came, in the Kit's words, with no tap.
+                // The happenings that came on this day, one card headed Happenings after every
+                // group: each its name and the times it came, in the Kit's words, with no tap. The
+                // heading is the owner's reversal of the note-occurrence layout round, which drew
+                // the card with none; it shows exactly when the card does, since `happeningRows`
+                // is empty on a day no happening came.
                 if !dayView.happeningRows.isEmpty {
                     Section {
                         ForEach(Array(dayView.happeningRows.enumerated()), id: \.offset) { _, row in
                             happeningRowView(row)
                         }
+                    } header: {
+                        Text("Happenings")
+                            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
                     }
                 }
                 // The one line where the rows would be, drawn exactly when every group above is
