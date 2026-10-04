@@ -1716,6 +1716,12 @@ commitments screen that cannot read it lists no happening and says why, naming a
 later version as the others do; it makes and renames none, leaves what is there untouched, and keeps
 its commitments as ever. Agreed 2026-10-02 while writing the delta of `add-happening` (#375).
 
+**Amended 2026-10-04**, while writing the delta of `carry-happenings-in-a-copy` (#380). A **restore**
+writes it too, whole or not at all, and a torn restore is undone there with the other four. The
+**copy place** reads it where the screens keep it, beside the **record place**. It is named last of
+the five wherever stores are named, and read on its own merits where a torn save or restore cannot
+be undone. A **day screen** that cannot read it says that a copy can be restored.
+
 **Copy** — one file holding what the **record store**, the **roster store** and the one-off store
 hold at one moment, written for a person to keep somewhere the phone is not: their own files,
 another device, a folder they chose. It is the whole of a history and never part of one — a record
@@ -2050,6 +2056,12 @@ the delta of `add-happening` (#375).
 keeps every **occurrence**, keyed to its happening's identity, in the order noted, in a second form;
 a store in the first form is read as holding none, and a build that knows only the first refuses the
 second as written by a later version rather than dropping what it cannot read.
+
+**Amended 2026-10-04**, at the grill of `carry-happenings-in-a-copy` (#380). A **copy** now holds the
+happenings and their occurrences, and is refused whole where the **happening place** cannot be read,
+as for the other four; a **restore** puts them back and counts them, and a copy made before copies
+held them restores as holding none. Every change a person keeps to a happening or an occurrence
+writes a copy at the **copy place**, and a **take-out** carries the happening place's file.
 
 **One-off entry** — the line a **day view**'s One-offs group always ends with, where a person types a
 new one-off's name in place, as in Apple Reminders; the toolbar's `+` brings it into focus. It is
