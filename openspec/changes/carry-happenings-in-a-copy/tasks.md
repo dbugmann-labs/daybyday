@@ -76,15 +76,15 @@ exception: each renames a carried test, and is green before and after.
 
 ## The walk
 
-- [ ] W.1 Settings' restore sheet for a copy made holding "Kopfweh" and "Augenmigräne", "Augenmigräne" stopped, after "Kopfweh" was deleted — *The copy* ends *1 happening(s), has stopped 1*, *Your phone* ends *0 happening(s), has stopped 1*.
-- [ ] W.2 The commitments screen opened right after that restore is confirmed — its happening list holds "Kopfweh" and "Augenmigräne", "Augenmigräne" said to be stopped.
-- [ ] W.3 The day screen with `happenings.json` replaced by a run of bytes — *The happenings could not be read.* with *A copy can be restored from Settings* under it.
-- [ ] W.4 Settings in that state — *Take out the files*, its caption saying *Your happenings could not be read.*
-- [ ] W.5 **The handover** — W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.1 Settings' restore sheet for a copy made holding "Kopfweh" and "Augenmigräne", "Augenmigräne" stopped, after "Kopfweh" was deleted — *The copy* ends *1 happening(s), has stopped 1*, *Your phone* ends *0 happening(s), has stopped 1*.
+- [x] W.2 The commitments screen opened right after that restore is confirmed — its happening list holds "Kopfweh" and "Augenmigräne", "Augenmigräne" said to be stopped.
+- [x] W.3 The day screen with `happenings.json` replaced by a run of bytes — *The happenings could not be read.* with *A copy can be restored from Settings* under it.
+- [x] W.4 Settings in that state — *Take out the files*, its caption saying *Your happenings could not be read.*
+- [x] W.5 **The handover** — W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
 
 ## 12. Gates and the archive handover
 
-- [ ] 12.1 `openspec validate carry-happenings-in-a-copy --strict` exits 0, and `pnpm run checks` is clean
-- [ ] 12.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
+- [x] 12.1 `openspec validate carry-happenings-in-a-copy --strict` exits 0, and `pnpm run checks` is clean
+- [x] 12.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
 - [ ] 12.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 12.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.5. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `openspec/specs/restore/spec.md` gained seven requirements, renamed one, and holds its five MODIFIED ones whole; that `openspec/specs/happening/spec.md` lost one requirement and gained it back under its new name; that `openspec/specs/day-screen/spec.md` did the same for two and changed two more; and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
