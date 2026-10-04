@@ -720,7 +720,7 @@ public final class DayScreen {
     public private(set) var happenings: [Happening] = []
 
     /// Whether this screen is keeping its happenings: anything but `.kept` lists none and offers
-    /// no noting. Apart from `rosterState`, and not read by `saysACopyCanBeRestored`.
+    /// no noting. Apart from `rosterState`, and read by `saysACopyCanBeRestored` only for `.notKept`.
     public private(set) var happeningState: RosterState = .kept
 
     /// Whether this screen offers noting an occurrence of a happening on the day it shows.

@@ -321,7 +321,7 @@ public final class CommitmentsScreen {
     /// stop* (ADR-1056) and `openspec/specs/commitment/spec.md` § *Reading the places undoes a
     /// torn save as it was* — then the roster, the record and the one-offs opened, and any
     /// orphaned record carried back to its one possible source before this screen says whether any
-    /// remain. Shared by `init`, `shown(asOf:)` and `confirmRestoring`, which all read all four
+    /// remain. Shared by `init`, `shown(asOf:)` and `confirmRestoring`, which all read all five
     /// places afresh. Runs through `CopyPlace.readStores`, the one place the cause per store is
     /// told apart, so the offer, a refused copy and the copy place's own stop all read off the
     /// same answer — `design.md` § *One reading of the three places, carrying the cause*. Where
@@ -501,7 +501,7 @@ public final class CommitmentsScreen {
         }
     }
 
-    /// Which of the four places cannot be read, and which of the two things is so — `design.md`
+    /// Which of the five places cannot be read, and which of the two things is so — `design.md`
     /// § *One reading of the three places, carrying the cause*: the one answer the offer, a
     /// refused copy and the copy place's own stop all read off.
     public struct StoreNotRead: Hashable, Sendable {
@@ -521,7 +521,7 @@ public final class CommitmentsScreen {
 
     /// A restore asked for and not yet confirmed, cancelled or replaced by another ask: the
     /// moment the copy was made, what it and the phone each keep, have stopped and hold as
-    /// one-offs, and which of the phone's four places, if any, could not be read.
+    /// one-offs, and which of the phone's five places, if any, could not be read.
     /// `openspec/changes/restore-from-a-copy/design.md` § *The seam*.
     public struct AwaitingRestore: Hashable, Sendable {
         public let moment: Moment

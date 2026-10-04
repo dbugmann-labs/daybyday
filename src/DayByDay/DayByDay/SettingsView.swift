@@ -109,8 +109,9 @@ private func takeOutRefusalText(_ store: Copy.Store?) -> some View {
 
 /// The words a person reads for one side of a restore's counts — a copy's own, or the phone's —
 /// naming what each of `unreadable`'s stores says in place of the count it would otherwise give:
-/// the roster's kept and stopped counts together, the one-offs' count on its own, and the record
-/// named on its own though it gives no count at all. `design.md` § *The shell*: "a line of counts
+/// the roster's kept and stopped counts together, the one-offs' count on its own, the happenings'
+/// two counts together, and the record and the birthday ticks named on their own though they give
+/// no count at all. `design.md` § *The shell*: "a line of counts
 /// for each side (a store that cannot be read is said in place of its counts)."
 @ViewBuilder
 private func restoreCountsText(

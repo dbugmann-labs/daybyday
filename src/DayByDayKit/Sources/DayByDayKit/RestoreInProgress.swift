@@ -1,7 +1,7 @@
 import Foundation
 
 /// The state a restore keeps beside the record place before it writes anything, and undoes if it
-/// stops before it is whole — mirroring `SaveInProgress`'s own place, but spanning all four
+/// stops before it is whole — mirroring `SaveInProgress`'s own place, but spanning all five
 /// places rather than two. `openspec/changes/restore-from-a-copy/design.md` § *Whole or nothing,
 /// across a stop* (ADR-1056): "Before it writes anything, a restore keeps a restore in progress
 /// beside the record place, in one atomic file. It holds the bytes that stood at the three places
@@ -16,18 +16,18 @@ struct RestoreInProgress: Codable {
     let saveInProgress: Data?
     /// The birthday place's own snapshot — `nil` where this restore in progress was written
     /// before restores wrote the birthday place at all (an older-form file), told apart from a
-    /// snapshot of a birthday place that held nothing (`BirthdaySnapshot(bytes: nil)`).
+    /// snapshot of a birthday place that held nothing (`PlaceSnapshot(bytes: nil)`).
     /// `design.md` § *Migration*.
-    let birthdayTicks: BirthdaySnapshot?
+    let birthdayTicks: PlaceSnapshot?
     /// The happening place's own snapshot — `nil` where this restore in progress was written
     /// before restores wrote the happening place at all, told apart from a snapshot of a place
     /// that held nothing. `design.md` § *Migration*.
-    var happenings: BirthdaySnapshot?
+    var happenings: PlaceSnapshot?
 
     /// Wraps a place's bytes, or that nothing stood there, so the outer `Data?` on
-    /// `birthdayTicks` can carry a third meaning — "this restore in progress predates the
-    /// birthday place" — without colliding with "the birthday place held nothing".
-    struct BirthdaySnapshot: Codable {
+    /// `birthdayTicks` and `happenings` can carry a third meaning — "this restore in progress
+    /// predates that place" — without colliding with "that place held nothing".
+    struct PlaceSnapshot: Codable {
         let bytes: Data?
     }
 
@@ -59,11 +59,11 @@ struct RestoreInProgress: Codable {
         try bytes.write(to: place, options: .atomic)
     }
 
-    /// Restores `copy` at `recordPlace`, `rosterPlace`, `oneOffPlace` and `birthdayPlace`, whole
+    /// Restores `copy` at `recordPlace`, `rosterPlace`, `oneOffPlace`, `birthdayPlace` and `happeningPlace`, whole
     /// or nothing: keeps a restore in progress beside `recordPlace` holding what stood at the
-    /// four places and at a save in progress, takes the save in progress away, writes the four
+    /// five places and at a save in progress, takes the save in progress away, writes the five
     /// places in the forms they write now, and takes the restore in progress away. Throws where
-    /// any write fails; the four places and the save in progress are then put back as they were,
+    /// any write fails; the five places and the save in progress are then put back as they were,
     /// and the restore in progress taken away — unless that itself fails, in which case the
     /// restore in progress stands, for `undoTornRestore` to put right when the places are next
     /// opened.
@@ -87,8 +87,8 @@ struct RestoreInProgress: Codable {
         let snapshot = RestoreInProgress(
             record: bytes(at: recordPlace), roster: bytes(at: rosterPlace),
             oneOffs: bytes(at: oneOffPlace), saveInProgress: bytes(at: saveInProgressPlace),
-            birthdayTicks: BirthdaySnapshot(bytes: bytes(at: birthdayPlace)),
-            happenings: BirthdaySnapshot(bytes: bytes(at: happeningPlace)))
+            birthdayTicks: PlaceSnapshot(bytes: bytes(at: birthdayPlace)),
+            happenings: PlaceSnapshot(bytes: bytes(at: happeningPlace)))
 
         do {
             let encoder = JSONEncoder()

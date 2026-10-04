@@ -619,14 +619,18 @@ func aCommitmentsScreenThatRestoredACopyListsTheCopysHappeningsAndNoHappeningIsA
     #expect(stopPrepared.screen.confirmRestoring() == nil)
     #expect(stopPrepared.screen.happeningAwaitingStop == nil)
 
-    // The same where what stood at the happening place could not be read at the restore.
+    // The same where what stood at the happening place could not be read when the screen was
+    // opened, and is read again by the restore.
     let unreadablePlaces = Places()
     let unreadablePrepared = try preparedScreen(at: unreadablePlaces)
     try write(notAHappeningStore, to: unreadablePlaces.happenings)
-    #expect(unreadablePrepared.screen.askToRestore(from: unreadablePrepared.file) == nil)
-    #expect(unreadablePrepared.screen.confirmRestoring() == nil)
-    #expect(unreadablePrepared.screen.happenings.map(\.name) == ["Augenmigräne", "Kopfweh"])
-    #expect(unreadablePrepared.screen.happeningState == .kept)
+    let unreadableScreen = unreadablePlaces.commitmentsScreen()
+    #expect(unreadableScreen.happeningState == .notKept)
+    #expect(unreadableScreen.happenings.isEmpty)
+    #expect(unreadableScreen.askToRestore(from: unreadablePrepared.file) == nil)
+    #expect(unreadableScreen.confirmRestoring() == nil)
+    #expect(unreadableScreen.happenings.map(\.name) == ["Augenmigräne", "Kopfweh"])
+    #expect(unreadableScreen.happeningState == .kept)
 }
 
 /// A path that cannot be written: `name` beneath an ordinary file, so any write through it fails.
