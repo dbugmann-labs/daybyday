@@ -80,7 +80,7 @@ exception: each renames a carried test, and is green before and after.
 - [x] W.2 The commitments screen opened right after that restore is confirmed — its happening list holds "Kopfweh" and "Augenmigräne", "Augenmigräne" said to be stopped.
 - [x] W.3 The day screen with `happenings.json` replaced by a run of bytes — *The happenings could not be read.* with *A copy can be restored from Settings* under it.
 - [x] W.4 Settings in that state — *Take out the files*, its caption saying *Your happenings could not be read.*
-- [x] W.5 **The handover** — W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.5 **The handover** — W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL: https://github.com/dbugmann-labs/daybyday/pull/389#issuecomment-5981717895
 
 ## 12. Gates and the archive handover
 
