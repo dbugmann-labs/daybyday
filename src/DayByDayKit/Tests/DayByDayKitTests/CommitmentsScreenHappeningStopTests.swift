@@ -409,9 +409,9 @@ func aCommitmentsScreenOpenedHasNoHappeningAwaitingAStopOrADeletion() throws {
 
 @MainActor
 @Test(
-    "stopping, resuming and deleting a happening writes no copy and leaves the other places as they were"
+    "stopping, resuming and deleting a happening leaves the other places as they were"
 )
-func stoppingResumingAndDeletingAHappeningWritesNoCopyAndLeavesTheOtherPlacesAsTheyWere() throws {
+func stoppingResumingAndDeletingAHappeningLeavesTheOtherPlacesAsTheyWere() throws {
     let directory = freshDirectory()
     let rosterPlace = directory.appendingPathComponent("roster.json")
     let recordPlace = directory.appendingPathComponent("record.json")
@@ -435,7 +435,6 @@ func stoppingResumingAndDeletingAHappeningWritesNoCopyAndLeavesTheOtherPlacesAsT
         keepingHappeningsAt: happeningPlace, copyingTo: copyPlace)
     commitments.givenAsCopyPlace(freshDirectory())
     let rosterBytes = try Data(contentsOf: rosterPlace)
-    #expect(copyPlace.lastCopy == Moment(on: saturday, hour: 14, minute: 32)!)
 
     commitments.askToStop(kopfweh)
     let stopped = commitments.confirmStoppingHappening()
@@ -446,7 +445,6 @@ func stoppingResumingAndDeletingAHappeningWritesNoCopyAndLeavesTheOtherPlacesAsT
 
     #expect(stopped == nil && resumed == nil && deleted == nil)
     #expect(commitments.happenings.isEmpty)
-    #expect(copyPlace.lastCopy == Moment(on: saturday, hour: 14, minute: 32)!)
     #expect(try Data(contentsOf: rosterPlace) == rosterBytes)
     #expect(!FileManager.default.fileExists(atPath: recordPlace.path))
     #expect(!FileManager.default.fileExists(atPath: oneOffPlace.path))

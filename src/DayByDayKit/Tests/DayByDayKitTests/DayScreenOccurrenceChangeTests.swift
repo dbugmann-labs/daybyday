@@ -201,8 +201,8 @@ private func laterMinuteEachTime(from first: Moment) -> @Sendable () -> Moment? 
 }
 
 @MainActor
-@Test("changing or taking back an occurrence writes no copy, leaves the other places as they were and ends a notice")
-func changingOrTakingBackAnOccurrenceWritesNoCopyLeavesTheOtherPlacesAsTheyWereAndEndsANotice() throws {
+@Test("changing or taking back an occurrence leaves the other places as they were and ends a notice")
+func changingOrTakingBackAnOccurrenceLeavesTheOtherPlacesAsTheyWereAndEndsANotice() throws {
     let directory = freshDirectory()
     let rosterPlace = directory.appendingPathComponent("roster.json")
     let recordPlace = directory.appendingPathComponent("record.json")
@@ -233,7 +233,6 @@ func changingOrTakingBackAnOccurrenceWritesNoCopyLeavesTheOtherPlacesAsTheyWereA
     let now = moment(friday, 14, 40)
     screen.note(kopfweh, at: time(14, 0), saying: "", asOf: now)
     screen.note(kopfweh, at: time(14, 5), saying: "", asOf: now)
-    #expect(copyPlace.lastCopy == moment(friday, 14, 32))
 
     let changed = screen.change(
         Occurrence(of: kopfweh, on: friday, at: time(14, 0), saying: nil), to: time(14, 10),
@@ -242,7 +241,6 @@ func changingOrTakingBackAnOccurrenceWritesNoCopyLeavesTheOtherPlacesAsTheyWereA
 
     #expect(changed == nil)
     #expect(takenBack == nil)
-    #expect(copyPlace.lastCopy == moment(friday, 14, 32))
     #expect(try Data(contentsOf: rosterPlace) == rosterBytes)
     #expect(!FileManager.default.fileExists(atPath: recordPlace.path))
     #expect(!FileManager.default.fileExists(atPath: oneOffPlace.path))

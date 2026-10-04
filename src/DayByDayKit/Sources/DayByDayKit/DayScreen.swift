@@ -138,7 +138,7 @@ public final class DayScreen {
 
     /// The place a screen given no happening place of its own keeps its happenings at: one file,
     /// `happenings.json`, beside `recordPlace`, on the footing of `birthdayPlace(besideRecordAt:)`.
-    static func happeningPlace(besideRecordAt recordPlace: URL) -> URL {
+    nonisolated static func happeningPlace(besideRecordAt recordPlace: URL) -> URL {
         recordPlace.deletingLastPathComponent().appendingPathComponent("happenings.json")
     }
 
@@ -185,7 +185,8 @@ public final class DayScreen {
 
         let read = Self.readRecordAndRoster(
             recordAt: recordPlace, rosterAt: rosterPlace, oneOffAt: oneOffPlace,
-            birthdayTicksAt: self.birthdayPlace, takingOnIfEmpty: dayOne)
+            birthdayTicksAt: self.birthdayPlace,
+            happeningsAt: self.happeningPlace, takingOnIfEmpty: dayOne)
         self.recordStore = read.recordStore
         self.recordState = read.recordState
         self.rosterState = read.rosterState
@@ -286,7 +287,8 @@ public final class DayScreen {
     /// so they are still opened in that branch.
     private static func readRecordAndRoster(
         recordAt recordPlace: URL, rosterAt rosterPlace: URL, oneOffAt oneOffPlace: URL,
-        birthdayTicksAt birthdayPlace: URL, takingOnIfEmpty dayOne: [Commitment]
+        birthdayTicksAt birthdayPlace: URL, happeningsAt happeningPlace: URL,
+        takingOnIfEmpty dayOne: [Commitment]
     ) -> (
         recordStore: RecordStore?, recordState: RecordState, roster: Roster, rosterState: RosterState,
         oneOffStore: OneOffStore?, oneOffState: OneOffState
@@ -298,7 +300,7 @@ public final class DayScreen {
         guard
             RestoreInProgress.undoTornRestore(
                 recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace,
-                birthdayTicksAt: birthdayPlace)
+                birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace)
         else {
             return (nil, .unreadable, Roster(), .notKept, nil, .unreadable)
         }
@@ -718,7 +720,7 @@ public final class DayScreen {
     public private(set) var happenings: [Happening] = []
 
     /// Whether this screen is keeping its happenings: anything but `.kept` lists none and offers
-    /// no noting. Apart from `rosterState`, and not read by `saysACopyCanBeRestored`.
+    /// no noting. Apart from `rosterState`, and read by `saysACopyCanBeRestored` only for `.notKept`.
     public private(set) var happeningState: RosterState = .kept
 
     /// Whether this screen offers noting an occurrence of a happening on the day it shows.
@@ -764,6 +766,7 @@ public final class DayScreen {
 
         notice = nil
         dayView = dayView.withHappenings(happeningStore.happenings)
+        copyPlace?.keptAChange()
         return nil
     }
 
@@ -803,6 +806,7 @@ public final class DayScreen {
 
         notice = nil
         dayView = dayView.withHappenings(happeningStore.happenings)
+        copyPlace?.keptAChange()
         return nil
     }
 
@@ -815,6 +819,7 @@ public final class DayScreen {
 
         notice = nil
         dayView = dayView.withHappenings(happeningStore.happenings)
+        copyPlace?.keptAChange()
         return nil
     }
 
@@ -825,16 +830,16 @@ public final class DayScreen {
 
     /// Whether this screen says a copy can be restored, and where (Settings): exactly while it could not
     /// read its record, could not read its one-offs, is not keeping its roster for a reason
-    /// that is not a later version of DayByDay, or its birthday ticks could not be read —
-    /// `.notKept` already bundles a roster that could not be read with one that could not be
-    /// written. `false` where every store it is not keeping was written by a later version, where
-    /// birthdays are off or the calendar cannot be read, and where it is keeping all three and its
-    /// birthday ticks read fine. Reads no clock and no place; changes nothing.
+    /// that is not a later version of DayByDay, its birthday ticks could not be read, or its
+    /// happenings could not be read — `.notKept` already bundles a roster that could not be read
+    /// with one that could not be written. `false` where every store it is not keeping was written
+    /// by a later version, where birthdays are off or the calendar cannot be read, and where it is
+    /// keeping all three and its birthday ticks and happenings read fine. Reads no clock and no place; changes nothing.
     /// `openspec/specs/restore/spec.md` § *A day screen that is not keeping a store says a copy
     /// can be restored and where*.
     public var saysACopyCanBeRestored: Bool {
         recordState == .unreadable || oneOffState == .unreadable || rosterState == .notKept
-            || birthdayState == .ticksUnreadable
+            || birthdayState == .ticksUnreadable || happeningState == .notKept
     }
 
     /// What a person is told on a row, and nothing else: which row, and the cause where there is
@@ -1633,7 +1638,8 @@ public final class DayScreen {
 
         let read = Self.readRecordAndRoster(
             recordAt: recordPlace, rosterAt: rosterPlace, oneOffAt: oneOffPlace,
-            birthdayTicksAt: birthdayPlace, takingOnIfEmpty: commitments)
+            birthdayTicksAt: birthdayPlace,
+            happeningsAt: happeningPlace, takingOnIfEmpty: commitments)
         self.recordStore = read.recordStore
         self.recordState = read.recordState
         self.rosterState = read.rosterState
@@ -1666,12 +1672,14 @@ public final class DayScreen {
     /// from a commitments screen that has restored no copy, or from none at all, this is
     /// returned to exactly as being returned to always was.
     public func returnedTo(from commitmentsScreen: CommitmentsScreen? = nil) {
-        readHappenings()
         if commitmentsScreen?.hasRestoredACopy == true {
             returnedToAfterARestore()
         } else {
             returnedToOrdinarily()
         }
+        // Read after a torn restore has been undone, never before: what stood at the happening
+        // place is then what the restore found there.
+        readHappenings()
         dayView = dayView.withHappenings(heldHappenings)
     }
 
@@ -1696,7 +1704,7 @@ public final class DayScreen {
         guard
             RestoreInProgress.undoTornRestore(
                 recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace,
-                birthdayTicksAt: birthdayPlace)
+                birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace)
         else {
             self.rosterState = .notKept
             self.roster = Roster()
@@ -1799,7 +1807,7 @@ public final class DayScreen {
         guard
             RestoreInProgress.undoTornRestore(
                 recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace,
-                birthdayTicksAt: birthdayPlace)
+                birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace)
         else {
             return
         }

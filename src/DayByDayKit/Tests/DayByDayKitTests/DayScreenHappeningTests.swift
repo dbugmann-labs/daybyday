@@ -243,8 +243,8 @@ func anOccurrenceNotedWithNoTimeHoldsItsDayAloneOnAPastDayAndOnToday() throws {
 }
 
 @MainActor
-@Test("noting an occurrence writes no copy, leaves the other places as they were and ends a notice")
-func notingAnOccurrenceWritesNoCopyLeavesTheOtherPlacesAsTheyWereAndEndsANotice() throws {
+@Test("noting an occurrence leaves the other places as they were and ends a notice")
+func notingAnOccurrenceLeavesTheOtherPlacesAsTheyWereAndEndsANotice() throws {
     let directory = freshDirectory()
     let rosterPlace = directory.appendingPathComponent("roster.json")
     let recordPlace = directory.appendingPathComponent("record.json")
@@ -272,12 +272,10 @@ func notingAnOccurrenceWritesNoCopyLeavesTheOtherPlacesAsTheyWereAndEndsANotice(
         keepingHappeningsAt: happeningPlace, copyingTo: copyPlace)
     copyPlace.set(to: freshDirectory())
     let rosterBytes = try Data(contentsOf: rosterPlace)
-    #expect(copyPlace.lastCopy == moment(friday, 14, 32))
 
     let refusal = screen.note(kopfweh, at: time(14, 0), saying: "", asOf: moment(friday, 14, 40))
 
     #expect(refusal == nil)
-    #expect(copyPlace.lastCopy == moment(friday, 14, 32))
     #expect(try Data(contentsOf: rosterPlace) == rosterBytes)
     #expect(!FileManager.default.fileExists(atPath: recordPlace.path))
     #expect(!FileManager.default.fileExists(atPath: oneOffPlace.path))
@@ -426,7 +424,6 @@ func aDayScreenThatCannotReadItsHappeningPlaceListsNoneAndLeavesThePlaceAsItWas(
     #expect(screen.recordState == .kept)
     #expect(screen.rosterState == .kept)
     #expect(screen.oneOffState == .kept)
-    #expect(!screen.saysACopyCanBeRestored)
     #expect(try Data(contentsOf: place) == bytes)
 }
 

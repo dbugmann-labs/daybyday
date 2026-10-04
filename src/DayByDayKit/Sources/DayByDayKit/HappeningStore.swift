@@ -27,12 +27,21 @@ public final class HappeningStore {
             throw HappeningStoreError.notAStore(at: place)
         }
         guard let document = try? JSONDecoder().decode(HappeningDocument.self, from: data),
-            let happenings = document.formHappenings()
+            let happenings = Self.formed(from: document)
         else {
             throw HappeningStoreError.notAStore(at: place)
         }
 
         self.happenings = happenings
+    }
+
+    /// Forms the happenings `document` holds — `nil` where they fail to form. The one place
+    /// `init(at:)` and a copy's reading both read a decoded document into this store's own shape.
+    static func formed(from document: HappeningDocument) -> Happenings? {
+        guard document.version >= 1 else {
+            return nil
+        }
+        return document.formHappenings()
     }
 
     /// Exactly what is kept at `place`.
