@@ -29,6 +29,7 @@ public final class CopyPlace {
     private let rosterPlace: URL
     private let oneOffPlace: URL
     private let birthdayPlace: URL
+    private let happeningPlace: URL
     private let momentNow: @Sendable () -> Moment?
 
     /// The folder this copy place is kept at, and enough to find it again across the app being
@@ -85,6 +86,7 @@ public final class CopyPlace {
         keepingRosterAt rosterPlace: URL = DayScreen.rosterPlace,
         keepingOneOffsAt oneOffPlace: URL = DayScreen.oneOffPlace,
         keepingBirthdayTicksAt birthdayPlace: URL? = nil,
+        keepingHappeningsAt happeningPlace: URL? = nil,
         asking momentNow: @escaping @Sendable () -> Moment?
     ) {
         self.statePlace = place
@@ -92,6 +94,8 @@ public final class CopyPlace {
         self.rosterPlace = rosterPlace
         self.oneOffPlace = oneOffPlace
         self.birthdayPlace = birthdayPlace ?? DayScreen.birthdayPlace(besideRecordAt: recordPlace)
+        self.happeningPlace =
+            happeningPlace ?? DayScreen.happeningPlace(besideRecordAt: recordPlace)
         self.momentNow = momentNow
 
         let read = Self.readState(at: place)
@@ -219,13 +223,14 @@ public final class CopyPlace {
     /// that cannot be read at all outranks a roster merely written by a later version, exactly as
     /// `openspec/specs/restore/spec.md` § *A copy that cannot be made leaves nothing behind* asks.
     static func form(
-        recordAt: URL, rosterAt: URL, oneOffsAt: URL, birthdayTicksAt: URL, asOf moment: Moment
+        recordAt: URL, rosterAt: URL, oneOffsAt: URL, birthdayTicksAt: URL, happeningsAt: URL,
+        asOf moment: Moment
     ) -> (result: Result<Copy, CommitmentsScreen.Refusal>, notRead: [CommitmentsScreen.StoreNotRead]) {
         let read = readStores(
             recordAt: recordAt, rosterAt: rosterAt, oneOffsAt: oneOffsAt,
-            birthdayTicksAt: birthdayTicksAt)
+            birthdayTicksAt: birthdayTicksAt, happeningsAt: happeningsAt)
         guard let record = read.record, let roster = read.roster, let oneOffs = read.oneOffs,
-            let birthdayTicks = read.birthdayTicks
+            let birthdayTicks = read.birthdayTicks, let happenings = read.happenings
         else {
             let refusal: CommitmentsScreen.Refusal =
                 read.notRead.first?.cause == .writtenByALaterVersion
@@ -236,7 +241,8 @@ public final class CopyPlace {
             .success(
                 Copy(
                     moment: moment, history: record.history, roster: roster.roster,
-                    oneOffs: oneOffs.oneOffs, birthdayTicks: birthdayTicks.ticks)),
+                    oneOffs: oneOffs.oneOffs, birthdayTicks: birthdayTicks.ticks,
+                    happenings: happenings.happenings)),
             []
         )
     }
@@ -251,6 +257,7 @@ public final class CopyPlace {
         let roster: RosterStore?
         let oneOffs: OneOffStore?
         let birthdayTicks: BirthdayStore?
+        let happenings: HappeningStore?
         /// Which of the four could not be read, and why, in the fixed order record, roster,
         /// one-offs, birthday ticks. `design.md` § *One reading of the three places, carrying the
         /// cause*.
@@ -318,6 +325,20 @@ public final class CopyPlace {
         }
     }
 
+    /// Opens the happenings at `place`, telling `.laterForm` apart from every other reason
+    /// `HappeningStore` can refuse to open — mirrors `DayScreen`'s own `openHappenings(at:)`.
+    private static func openHappeningsTellingLaterVersionApart(
+        at place: URL
+    ) -> (store: HappeningStore?, cause: CommitmentsScreen.StoreNotRead.Cause?) {
+        do {
+            return (try HappeningStore(at: place), nil)
+        } catch HappeningStoreError.laterForm {
+            return (nil, .writtenByALaterVersion)
+        } catch {
+            return (nil, .couldNotBeRead)
+        }
+    }
+
     /// Opens the record, the roster, the one-off store and the birthday ticks at `recordAt`,
     /// `rosterAt`, `oneOffsAt` and `birthdayTicksAt`, undoing a restore in progress and then a
     /// save in progress first, so a torn restore and a torn save are both undone before either
@@ -330,15 +351,16 @@ public final class CopyPlace {
     /// `design.md` § *The birthday ticks are read beside the three, never behind an undo*.
     static func readStores(
         recordAt recordPlace: URL, rosterAt rosterPlace: URL, oneOffsAt oneOffPlace: URL,
-        birthdayTicksAt birthdayPlace: URL
+        birthdayTicksAt birthdayPlace: URL, happeningsAt happeningPlace: URL
     ) -> StoresRead {
         // The restore-in-progress undo runs — and, where it stands, puts the birthday place back
         // — before the birthday ticks are opened, so what is read is what stands there once any
         // torn restore has been resolved, never the bytes a torn restore left mid-write.
         let restoreUndone = RestoreInProgress.undoTornRestore(
             recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace,
-            birthdayTicksAt: birthdayPlace)
+            birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace)
         let birthdayTicks = openBirthdayTicksTellingLaterVersionApart(at: birthdayPlace)
+        let happenings = openHappeningsTellingLaterVersionApart(at: happeningPlace)
 
         guard
             restoreUndone,
@@ -350,9 +372,12 @@ public final class CopyPlace {
             if let cause = birthdayTicks.cause {
                 notRead.append(CommitmentsScreen.StoreNotRead(store: .birthdayTicks, cause: cause))
             }
+            if let cause = happenings.cause {
+                notRead.append(CommitmentsScreen.StoreNotRead(store: .happenings, cause: cause))
+            }
             return StoresRead(
                 record: nil, roster: nil, oneOffs: nil, birthdayTicks: birthdayTicks.store,
-                notRead: notRead)
+                happenings: happenings.store, notRead: notRead)
         }
 
         let record = openRecordTellingLaterVersionApart(at: recordPlace)
@@ -372,10 +397,14 @@ public final class CopyPlace {
         if let cause = birthdayTicks.cause {
             notRead.append(CommitmentsScreen.StoreNotRead(store: .birthdayTicks, cause: cause))
         }
+        if let cause = happenings.cause {
+            notRead.append(CommitmentsScreen.StoreNotRead(store: .happenings, cause: cause))
+        }
 
         return StoresRead(
             record: record.store, roster: roster.store, oneOffs: oneOffs.store,
-            birthdayTicks: birthdayTicks.store, notRead: notRead)
+            birthdayTicks: birthdayTicks.store,
+            happenings: happenings.store, notRead: notRead)
     }
 
     /// Writes `copy` into `directory` under `fileName`, creating the directory first where it
@@ -421,7 +450,7 @@ public final class CopyPlace {
     private func writeCopy(into url: URL, asOf moment: Moment) {
         let formed = Self.form(
             recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace,
-            birthdayTicksAt: birthdayPlace, asOf: moment)
+            birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace, asOf: moment)
         switch formed.result {
         case .failure:
             let first = formed.notRead.first
@@ -497,6 +526,7 @@ public final class CopyPlace {
                 case .roster: store = "roster"
                 case .oneOffs: store = "oneOffs"
                 case .birthdayTicks: store = "birthdayTicks"
+                case .happenings: store = "happenings"
                 }
             case .storeWrittenByALaterVersion(let which):
                 reason = "storeWrittenByALaterVersion"
@@ -505,6 +535,7 @@ public final class CopyPlace {
                 case .roster: store = "roster"
                 case .oneOffs: store = "oneOffs"
                 case .birthdayTicks: store = "birthdayTicks"
+                case .happenings: store = "happenings"
                 }
             }
         }
@@ -524,6 +555,7 @@ public final class CopyPlace {
                 case "roster": which = .roster
                 case "oneOffs": which = .oneOffs
                 case "birthdayTicks": which = .birthdayTicks
+                case "happenings": which = .happenings
                 default: which = .record
                 }
                 return Stopped(stop: .storeCouldNotBeRead(which), since: moment)
@@ -533,6 +565,7 @@ public final class CopyPlace {
                 case "roster": which = .roster
                 case "oneOffs": which = .oneOffs
                 case "birthdayTicks": which = .birthdayTicks
+                case "happenings": which = .happenings
                 default: which = .record
                 }
                 return Stopped(stop: .storeWrittenByALaterVersion(which), since: moment)

@@ -19,8 +19,12 @@ struct RestoreInProgress: Codable {
     /// snapshot of a birthday place that held nothing (`BirthdaySnapshot(bytes: nil)`).
     /// `design.md` § *Migration*.
     let birthdayTicks: BirthdaySnapshot?
+    /// The happening place's own snapshot — `nil` where this restore in progress was written
+    /// before restores wrote the happening place at all, told apart from a snapshot of a place
+    /// that held nothing. `design.md` § *Migration*.
+    var happenings: BirthdaySnapshot?
 
-    /// Wraps the birthday place's bytes, or that nothing stood there, so the outer `Data?` on
+    /// Wraps a place's bytes, or that nothing stood there, so the outer `Data?` on
     /// `birthdayTicks` can carry a third meaning — "this restore in progress predates the
     /// birthday place" — without colliding with "the birthday place held nothing".
     struct BirthdaySnapshot: Codable {
@@ -64,23 +68,27 @@ struct RestoreInProgress: Codable {
     /// restore in progress stands, for `undoTornRestore` to put right when the places are next
     /// opened.
     ///
-    /// `stoppingAfter` a number of the four writes — record first, then roster, then one-offs,
-    /// then the birthday ticks — stops after that many have happened, leaving the restore in
-    /// progress standing and attempting no rollback: the test seam for a restore stopped before
-    /// it was whole, on the same footing `SaveInProgress.keep` is for a save torn mid-change.
-    /// `stoppingAfter: 4` stops with all four written, the restore in progress still standing —
+    /// `stoppingAfter` a number of the five writes — record first, then roster, then one-offs,
+    /// then the birthday ticks, then the happenings — stops after that many have happened, leaving
+    /// the restore in progress standing and attempting no rollback: the test seam for a restore
+    /// stopped before it was whole, on the same footing `SaveInProgress.keep` is for a save torn mid-change.
+    /// `stoppingAfter: 5` stops with all five written, the restore in progress still standing —
     /// the crash lands between the last write and the file being taken away.
     static func restore(
         _ copy: Copy, recordAt recordPlace: URL, rosterAt rosterPlace: URL,
-        oneOffsAt oneOffPlace: URL, birthdayTicksAt birthdayPlace: URL, stoppingAfter writes: Int? = nil
+        oneOffsAt oneOffPlace: URL, birthdayTicksAt birthdayPlace: URL,
+        happeningsAt happeningPlace: URL? = nil, stoppingAfter writes: Int? = nil
     ) throws {
+        let happeningPlace =
+            happeningPlace ?? DayScreen.happeningPlace(besideRecordAt: recordPlace)
         let saveInProgressPlace = SaveInProgress.place(besideRecordAt: recordPlace)
         let restoreInProgressPlace = Self.place(besideRecordAt: recordPlace)
 
         let snapshot = RestoreInProgress(
             record: bytes(at: recordPlace), roster: bytes(at: rosterPlace),
             oneOffs: bytes(at: oneOffPlace), saveInProgress: bytes(at: saveInProgressPlace),
-            birthdayTicks: BirthdaySnapshot(bytes: bytes(at: birthdayPlace)))
+            birthdayTicks: BirthdaySnapshot(bytes: bytes(at: birthdayPlace)),
+            happenings: BirthdaySnapshot(bytes: bytes(at: happeningPlace)))
 
         do {
             let encoder = JSONEncoder()
@@ -114,6 +122,9 @@ struct RestoreInProgress: Codable {
             try Self.put(try encoder.encode(document.birthdayTicks), at: birthdayPlace)
 
             guard writes != 4 else { return }
+            try Self.put(try encoder.encode(document.happenings), at: happeningPlace)
+
+            guard writes != 5 else { return }
             try Self.put(nil, at: restoreInProgressPlace)
         } catch {
             do {
@@ -122,6 +133,7 @@ struct RestoreInProgress: Codable {
                 try Self.put(snapshot.oneOffs, at: oneOffPlace)
                 try Self.put(snapshot.saveInProgress, at: saveInProgressPlace)
                 try Self.put(snapshot.birthdayTicks?.bytes, at: birthdayPlace)
+                try Self.put(snapshot.happenings?.bytes, at: happeningPlace)
                 try Self.put(nil, at: restoreInProgressPlace)
             } catch {
                 // The restore in progress stands; `undoTornRestore` puts it right when the
@@ -142,8 +154,10 @@ struct RestoreInProgress: Codable {
     /// stands. `design.md` § *Migration*.
     static func undoTornRestore(
         recordAt recordPlace: URL, rosterAt rosterPlace: URL, oneOffsAt oneOffPlace: URL,
-        birthdayTicksAt birthdayPlace: URL
+        birthdayTicksAt birthdayPlace: URL, happeningsAt happeningPlace: URL? = nil
     ) -> Bool {
+        let happeningPlace =
+            happeningPlace ?? DayScreen.happeningPlace(besideRecordAt: recordPlace)
         let place = Self.place(besideRecordAt: recordPlace)
 
         guard FileManager.default.fileExists(atPath: place.path) else {
@@ -166,6 +180,9 @@ struct RestoreInProgress: Codable {
                 snapshot.saveInProgress, at: SaveInProgress.place(besideRecordAt: recordPlace))
             if let birthdaySnapshot = snapshot.birthdayTicks {
                 try Self.put(birthdaySnapshot.bytes, at: birthdayPlace)
+            }
+            if let happeningSnapshot = snapshot.happenings {
+                try Self.put(happeningSnapshot.bytes, at: happeningPlace)
             }
             try Self.put(nil, at: place)
         } catch {

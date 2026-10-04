@@ -26,7 +26,7 @@ public final class CommitmentsScreen {
     /// `design.md` § *The seam*.
     private let birthdayPlace: URL
     /// The place this screen keeps its happenings at — a store of its own, opened beside
-    /// `readPlaces` and in no copy until #380. `design.md` § *No copy, and no other place*.
+    /// `readPlaces`, and the fifth place a copy holds.
     private let happeningPlace: URL
     private var happeningStore: HappeningStore?
     private var rosterStore: RosterStore?
@@ -67,7 +67,7 @@ public final class CommitmentsScreen {
 
         let opened = Self.readPlaces(
             place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace,
-            birthdayPlace: self.birthdayPlace)
+            birthdayPlace: self.birthdayPlace, happeningPlace: self.happeningPlace)
         self.rosterStore = opened.rosterStore
         self.rosterState = opened.rosterState
         self.recordStore = opened.recordStore
@@ -108,8 +108,8 @@ public final class CommitmentsScreen {
     }
 
     /// Makes a happening from `name`, the blank space around it trimmed first, and lists it last.
-    /// Writes nothing at any place but the happening place and no copy — a happening is in no copy
-    /// until #380, so `keptAChange()` is never called here.
+    /// Writes nothing at any place but the happening place, and a copy at the copy place once it
+    /// is kept.
     @discardableResult
     public func makeHappening(named name: String) -> Refusal? {
         guard let store = happeningStore else {
@@ -128,6 +128,7 @@ public final class CommitmentsScreen {
 
         happenings = store.happenings.all
         happeningRefusal = nil
+        copyPlace?.keptAChange()
         return nil
     }
 
@@ -137,7 +138,8 @@ public final class CommitmentsScreen {
     }
 
     /// Renames `happening` to `name`, the blank space around it trimmed first, keeping its
-    /// identity and its place in the list. Like `makeHappening`, writes no copy.
+    /// identity and its place in the list. Like `makeHappening`, writes a copy once it is kept, and
+    /// none where it asks for no change.
     @discardableResult
     public func rename(_ happening: Happening, to name: String) -> Refusal? {
         guard let store = happeningStore,
@@ -162,6 +164,7 @@ public final class CommitmentsScreen {
 
         happenings = store.happenings.all
         happeningRefusal = nil
+        copyPlace?.keptAChange()
         return nil
     }
 
@@ -200,8 +203,8 @@ public final class CommitmentsScreen {
     }
 
     /// Stops whatever is awaiting a stop, kept at the happening place before the list says so.
-    /// Answers `nil` and does nothing when nothing is awaiting a stop. Writes no copy — a happening
-    /// is in no copy until #380, so `keptAChange()` is never called here.
+    /// Answers `nil` and does nothing when nothing is awaiting a stop. Writes a copy once it is
+    /// kept.
     @discardableResult public func confirmStoppingHappening() -> Refusal? {
         guard let happening = happeningAwaitingStop else {
             return nil
@@ -214,6 +217,7 @@ public final class CommitmentsScreen {
 
         happenings = store.happenings.all
         happeningRefusal = nil
+        copyPlace?.keptAChange()
         return nil
     }
     /// Resumes `happening`, without confirmation, kept at the happening place before the list says
@@ -230,6 +234,7 @@ public final class CommitmentsScreen {
 
         happenings = store.happenings.all
         happeningRefusal = nil
+        copyPlace?.keptAChange()
         return nil
     }
     /// The happening a deletion has been asked for and not yet confirmed or cancelled.
@@ -283,7 +288,7 @@ public final class CommitmentsScreen {
 
     /// Deletes whatever is awaiting deletion, and every occurrence of it, kept at the happening
     /// place before the list says so. Answers `nil` and does nothing where nothing is awaiting
-    /// deletion or what has been typed back does not match. Writes no copy.
+    /// deletion or what has been typed back does not match. Writes a copy once it is kept.
     @discardableResult public func confirmDeletingHappening() -> Refusal? {
         guard let happening = happeningAwaitingDeletion, happeningNameTypedBackMatches else {
             return nil
@@ -297,6 +302,7 @@ public final class CommitmentsScreen {
 
         happenings = store.happenings.all
         happeningRefusal = nil
+        copyPlace?.keptAChange()
         return nil
     }
 
@@ -324,14 +330,14 @@ public final class CommitmentsScreen {
     /// real — `openspec/changes/save-change-whole/design.md` § *A torn save that cannot be undone
     /// reuses two existing states*.
     private static func readPlaces(
-        place: URL, recordPlace: URL, oneOffPlace: URL, birthdayPlace: URL
+        place: URL, recordPlace: URL, oneOffPlace: URL, birthdayPlace: URL, happeningPlace: URL
     ) -> (
         rosterStore: RosterStore?, rosterState: RosterState, recordStore: RecordStore?,
         recordsBelongToNoCommitment: Bool, storesNotRead: [StoreNotRead]
     ) {
         let read = CopyPlace.readStores(
             recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace,
-            birthdayTicksAt: birthdayPlace)
+            birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace)
 
         let rosterState: RosterState
         switch read.notRead.first(where: { $0.store == .roster })?.cause {
@@ -368,10 +374,11 @@ public final class CommitmentsScreen {
                 let recordNotRead = read.notRead.filter { $0.store == .record }
                 let oneOffsNotRead = read.notRead.filter { $0.store == .oneOffs }
                 let birthdayTicksNotRead = read.notRead.filter { $0.store == .birthdayTicks }
+                let happeningsNotRead = read.notRead.filter { $0.store == .happenings }
                 return (
                     nil, .notKept, nil, false,
                     recordNotRead + [StoreNotRead(store: .roster, cause: .couldNotBeRead)]
-                        + oneOffsNotRead + birthdayTicksNotRead)
+                        + oneOffsNotRead + birthdayTicksNotRead + happeningsNotRead)
             }
         }
 
@@ -477,6 +484,21 @@ public final class CommitmentsScreen {
         public let kept: Int?
         public let stopped: Int?
         public let oneOffs: Int?
+        /// The happenings held that are not stopped, and, apart from them, those that are — `nil`
+        /// for both where the happening place cannot be read. No occurrence is counted.
+        public let happenings: Int?
+        public let stoppedHappenings: Int?
+
+        init(
+            kept: Int?, stopped: Int?, oneOffs: Int?, happenings: Int? = 0,
+            stoppedHappenings: Int? = 0
+        ) {
+            self.kept = kept
+            self.stopped = stopped
+            self.oneOffs = oneOffs
+            self.happenings = happenings
+            self.stoppedHappenings = stoppedHappenings
+        }
     }
 
     /// Which of the four places cannot be read, and which of the two things is so — `design.md`
@@ -1816,7 +1838,7 @@ public final class CommitmentsScreen {
     ) -> Result<URL, Refusal> {
         let formed = CopyPlace.form(
             recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace,
-            birthdayTicksAt: birthdayPlace, asOf: moment)
+            birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace, asOf: moment)
         switch formed.result {
         case .failure(let refusal):
             refusedChange = .makingACopy(formed.notRead.first?.store, refusal)
@@ -1851,16 +1873,17 @@ public final class CommitmentsScreen {
         let namedAs: Copy.Store?
     }
 
-    /// The six files a take-out reaches for, in the fixed order this screen answers a take-out in:
-    /// the record, the roster, the one-offs, the birthday ticks, a save in progress and a restore
-    /// in progress, the last two each named as the record. `openspec/specs/restore/spec.md` § *A
-    /// take-out is the files at the four places exactly as they lie*.
+    /// The seven files a take-out reaches for, in the fixed order this screen answers a take-out
+    /// in: the record, the roster, the one-offs, the birthday ticks, the happenings, a save in
+    /// progress and a restore in progress, the last two each named as the record. `openspec/specs/restore/spec.md` § *A
+    /// take-out is the files at the five places exactly as they lie*.
     private var takeOutCandidates: [TakeOutCandidate] {
         [
             TakeOutCandidate(source: recordPlace, namedAs: .record),
             TakeOutCandidate(source: place, namedAs: .roster),
             TakeOutCandidate(source: oneOffPlace, namedAs: .oneOffs),
             TakeOutCandidate(source: birthdayPlace, namedAs: .birthdayTicks),
+            TakeOutCandidate(source: happeningPlace, namedAs: .happenings),
             TakeOutCandidate(
                 source: Self.saveInProgressPlace(besideRecordAt: recordPlace), namedAs: .record),
             TakeOutCandidate(
@@ -1933,10 +1956,18 @@ public final class CommitmentsScreen {
     /// two lists, a removed commitment in neither; *one-offs* counts all (settled 12)." A
     /// removed commitment is counted as neither kept nor stopped, matching
     /// `stopped(in:)` and `Roster.commitments` above.
-    private static func counts(roster: Roster, oneOffs: OneOffs) -> Counts {
-        Counts(
+    private static func counts(roster: Roster, oneOffs: OneOffs, happenings: Happenings) -> Counts {
+        let (notStopped, stopped) = Self.happeningCounts(happenings)
+        return Counts(
             kept: roster.commitments.count, stopped: Self.stopped(in: roster).count,
-            oneOffs: oneOffs.entries.count)
+            oneOffs: oneOffs.entries.count, happenings: notStopped, stoppedHappenings: stopped)
+    }
+
+    /// How many of `happenings` are not stopped and, apart from them, how many are. An occurrence
+    /// is counted in neither.
+    private static func happeningCounts(_ happenings: Happenings) -> (Int, Int) {
+        let stopped = happenings.all.filter { happenings.isStopped($0) }.count
+        return (happenings.all.count - stopped, stopped)
     }
 
     /// Reads `file` whole and, where it reads as a copy, holds a restore awaiting confirmation
@@ -1979,14 +2010,17 @@ public final class CommitmentsScreen {
     private func formAwaitingRestore(for copy: Copy) -> AwaitingRestore {
         let phoneRead = CopyPlace.readStores(
             recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace,
-            birthdayTicksAt: birthdayPlace)
+            birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace)
         let phoneCounts = Counts(
             kept: phoneRead.roster.map { $0.roster.commitments.count },
             stopped: phoneRead.roster.map { Self.stopped(in: $0.roster).count },
-            oneOffs: phoneRead.oneOffs.map { $0.oneOffs.entries.count })
+            oneOffs: phoneRead.oneOffs.map { $0.oneOffs.entries.count },
+            happenings: phoneRead.happenings.map { Self.happeningCounts($0.happenings).0 },
+            stoppedHappenings: phoneRead.happenings.map { Self.happeningCounts($0.happenings).1 })
 
         return AwaitingRestore(
-            moment: copy.moment, copy: Self.counts(roster: copy.roster, oneOffs: copy.oneOffs),
+            moment: copy.moment, copy: Self.counts(
+                roster: copy.roster, oneOffs: copy.oneOffs, happenings: copy.happenings),
             phone: phoneCounts, unreadable: phoneRead.unreadable)
     }
 
@@ -2080,7 +2114,7 @@ public final class CommitmentsScreen {
         do {
             try RestoreInProgress.restore(
                 copy, recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace,
-                birthdayTicksAt: birthdayPlace)
+                birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace)
         } catch {
             refusedChange = .restoring(.notKept)
             copyRestored = nil
@@ -2089,18 +2123,22 @@ public final class CommitmentsScreen {
 
         let opened = Self.readPlaces(
             place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace,
-            birthdayPlace: birthdayPlace)
+            birthdayPlace: birthdayPlace, happeningPlace: happeningPlace)
         rosterStore = opened.rosterStore
         rosterState = opened.rosterState
         recordStore = opened.recordStore
         recordsBelongToNoCommitment = opened.recordsBelongToNoCommitment
         storesNotRead = opened.storesNotRead
         refreshLists(from: opened.rosterStore)
+        readHappenings()
 
         refusedChange = nil
         awaitingConfirmation = nil
         awaitingDeletion = nil
         nameTypedBack = ""
+        happeningAwaitingStop = nil
+        happeningAwaitingDeletion = nil
+        happeningNameTypedBack = ""
         copyRestored = copy.moment
         hasRestoredACopy = true
 
@@ -2210,7 +2248,7 @@ public final class CommitmentsScreen {
 
         let opened = Self.readPlaces(
             place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace,
-            birthdayPlace: birthdayPlace)
+            birthdayPlace: birthdayPlace, happeningPlace: happeningPlace)
         rosterStore = opened.rosterStore
         rosterState = opened.rosterState
         recordStore = opened.recordStore

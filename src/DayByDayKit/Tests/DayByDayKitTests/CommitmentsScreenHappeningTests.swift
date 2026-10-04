@@ -176,8 +176,8 @@ private func laterMinuteEachTime(from first: Moment) -> @Sendable () -> Moment? 
 }
 
 @MainActor
-@Test("making and renaming a happening writes no copy and leaves the other places as they were")
-func makingAndRenamingAHappeningWritesNoCopyAndLeavesTheOtherPlacesAsTheyWere() throws {
+@Test("making and renaming a happening leaves the other places as they were")
+func makingAndRenamingAHappeningLeavesTheOtherPlacesAsTheyWere() throws {
     let directory = freshDirectory()
     let rosterPlace = directory.appendingPathComponent("roster.json")
     let recordPlace = directory.appendingPathComponent("record.json")
@@ -201,7 +201,6 @@ func makingAndRenamingAHappeningWritesNoCopyAndLeavesTheOtherPlacesAsTheyWere() 
         keepingHappeningsAt: happeningPlace, copyingTo: copyPlace)
     screen.givenAsCopyPlace(freshDirectory())
     let rosterBytes = try Data(contentsOf: rosterPlace)
-    #expect(copyPlace.lastCopy == Moment(on: monday, hour: 14, minute: 32)!)
 
     let made = screen.makeHappening(named: "Kopfweh")
     let kopfweh = try #require(screen.happenings.first)
@@ -210,7 +209,6 @@ func makingAndRenamingAHappeningWritesNoCopyAndLeavesTheOtherPlacesAsTheyWere() 
     #expect(made == nil)
     #expect(renamed == nil)
     #expect(screen.happenings.map(\.name) == ["Spannungskopfweh"])
-    #expect(copyPlace.lastCopy == Moment(on: monday, hour: 14, minute: 32)!)
     #expect(try Data(contentsOf: rosterPlace) == rosterBytes)
     #expect(!FileManager.default.fileExists(atPath: recordPlace.path))
     #expect(!FileManager.default.fileExists(atPath: oneOffPlace.path))

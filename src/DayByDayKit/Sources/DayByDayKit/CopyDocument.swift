@@ -11,7 +11,7 @@ struct CopyDocument: Codable {
     /// moves on its own schedule, so a later Story can version the copy without touching a store.
     /// 2 as of this Story: a copy now nests the birthday ticks beside the other three.
     /// `design.md` § *The copy's form moves to 2, and form 1 holds no ticks*.
-    static let currentVersion = 2
+    static let currentVersion = 3
 
     var version: Int
     var moment: MomentRecord
@@ -21,6 +21,9 @@ struct CopyDocument: Codable {
     /// `nil` where this document was read at form 1, before a copy held birthday ticks at all —
     /// told apart from a form-2 document whose ticks fail to form, which is a damaged copy.
     var birthdayTicks: BirthdayDocument?
+    /// `nil` where this document was read below form 3, before a copy held happenings at all —
+    /// told apart from a form-3 document whose happenings fail to form, which is a damaged copy.
+    var happenings: HappeningDocument?
 
     /// Builds the document that exactly represents `copy`, each of the four stores written in
     /// the form that store writes now.
@@ -35,6 +38,7 @@ struct CopyDocument: Codable {
         roster = RosterDocument(copy.roster)
         oneOffs = OneOffDocument(copy.oneOffs)
         birthdayTicks = BirthdayDocument(copy.birthdayTicks)
+        happenings = HappeningDocument(copy.happenings)
     }
 
     /// Re-forms `moment`, and the record, the roster, the one-offs and the birthday ticks this
@@ -69,6 +73,16 @@ struct CopyDocument: Codable {
             formedBirthdayTicks = BirthdayTicks()
         }
 
+        let formedHappenings: Happenings
+        if version >= 3 {
+            guard let happenings, let formed = HappeningStore.formed(from: happenings) else {
+                return nil
+            }
+            formedHappenings = formed
+        } else {
+            formedHappenings = Happenings()
+        }
+
         var formedHistory = History()
         for tick in ticks {
             formedHistory.add(tick)
@@ -85,7 +99,8 @@ struct CopyDocument: Codable {
 
         return Copy(
             moment: formedMoment, history: formedHistory, roster: formedRoster,
-            oneOffs: formedOneOffs, birthdayTicks: formedBirthdayTicks)
+            oneOffs: formedOneOffs, birthdayTicks: formedBirthdayTicks,
+            happenings: formedHappenings)
     }
 
     /// Reads `data` as a copy — `openspec/changes/restore-from-a-copy/design.md` § *Reading a
@@ -134,6 +149,12 @@ struct CopyDocument: Codable {
             return .failure(.copyFromALaterVersion)
         }
 
+        if let happeningsVersion = storeEnvelopes?.happenings?.version,
+            happeningsVersion > HappeningDocument.currentVersion
+        {
+            return .failure(.copyFromALaterVersion)
+        }
+
         guard let document = try? JSONDecoder().decode(CopyDocument.self, from: data),
             let formedRecord = RecordStore.formed(from: document.record),
             let formedRoster = RosterStore.formed(from: document.roster),
@@ -157,6 +178,20 @@ struct CopyDocument: Codable {
             formedBirthdayTicks = BirthdayTicks()
         }
 
+        // Below form 3 a copy holds no happenings; at form 3 or later a missing or unformable
+        // one is damaged.
+        let formedHappenings: Happenings
+        if envelope.version >= 3 {
+            guard let happenings = document.happenings,
+                let formed = HappeningStore.formed(from: happenings)
+            else {
+                return .failure(.damagedCopy)
+            }
+            formedHappenings = formed
+        } else {
+            formedHappenings = Happenings()
+        }
+
         // A commitment the nested roster held removed, in a form written before a commitment
         // could be deleted, is read as deleted — its records go with it, exactly as they would
         // reading that roster at its own place. `design.md` § *Migration*.
@@ -166,7 +201,8 @@ struct CopyDocument: Codable {
         return .success(
             Copy(
                 moment: moment, history: history, roster: formedRoster.roster,
-                oneOffs: formedOneOffs, birthdayTicks: formedBirthdayTicks))
+                oneOffs: formedOneOffs, birthdayTicks: formedBirthdayTicks,
+                happenings: formedHappenings))
     }
 
     /// The four nested stores' own envelopes, each read independently — a store whose object is
@@ -177,9 +213,10 @@ struct CopyDocument: Codable {
         var roster: RosterDocumentEnvelope?
         var oneOffs: OneOffDocumentEnvelope?
         var birthdayTicks: BirthdayDocumentEnvelope?
+        var happenings: HappeningDocumentEnvelope?
 
         private enum CodingKeys: String, CodingKey {
-            case record, roster, oneOffs, birthdayTicks
+            case record, roster, oneOffs, birthdayTicks, happenings
         }
 
         init(from decoder: Decoder) throws {
@@ -189,6 +226,8 @@ struct CopyDocument: Codable {
             oneOffs = try? container.decode(OneOffDocumentEnvelope.self, forKey: .oneOffs)
             birthdayTicks = try? container.decode(
                 BirthdayDocumentEnvelope.self, forKey: .birthdayTicks)
+            happenings = try? container.decode(
+                HappeningDocumentEnvelope.self, forKey: .happenings)
         }
     }
 }

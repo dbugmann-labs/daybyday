@@ -8,61 +8,61 @@ exception: each renames a carried test, and is green before and after.
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they are exactly the twenty-five titles boxed in §§ 3–8. Any other uncovered title is a stop.
-- [ ] 1.2 New tests go in a new `src/DayByDayKit/Tests/DayByDayKitTests/HappeningCopyTests.swift`; every place is a fresh directory, and a happening place a test does not name is left to the default beside its record place.
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they are exactly the twenty-five titles boxed in §§ 3–8. Any other uncovered title is a stop.
+- [x] 1.2 New tests go in a new `src/DayByDayKit/Tests/DayByDayKitTests/HappeningCopyTests.swift`; every place is a fresh directory, and a happening place a test does not name is left to the default beside its record place.
 
 ## 2. The seam
 
-- [ ] 2.1 The members in `design.md` § *The seam* exist with those signatures, and 3.1 is red before `Copy` holds any happening
-- [ ] 2.2 `CopyDocument.currentVersion` is 3, and every hand-built form-1 and form-2 fixture in the carried tests still reads
-- [ ] 2.3 `HappeningStore.init(at:)` and `CopyDocument.read` refuse through the one `HappeningStore.formed(from:)`
+- [x] 2.1 The members in `design.md` § *The seam* exist with those signatures, and 3.1 is red before `Copy` holds any happening
+- [x] 2.2 `CopyDocument.currentVersion` is 3, and every hand-built form-1 and form-2 fixture in the carried tests still reads
+- [x] 2.3 `HappeningStore.init(at:)` and `CopyDocument.read` refuse through the one `HappeningStore.formed(from:)`
 
 ## 3. `restore`: a copy's happenings
 
-- [ ] 3.1 a copy holds the happenings and occurrences the happening place holds, and none where nothing has been kept there — catches a copy that drops stopped happenings
-- [ ] 3.2 a copy is refused whole where the happenings cannot be read, naming them only where the other four stores read — catches the happenings named before the birthday ticks
-- [ ] 3.3 a change kept where the happenings cannot be read is kept, and the stop names the happenings — catches the stop naming the record by default
-- [ ] 3.4 a copy place given no happening place copies the happenings a commitments screen given none keeps — catches a copy place defaulting to the real file
+- [x] 3.1 a copy holds the happenings and occurrences the happening place holds, and none where nothing has been kept there — catches a copy that drops stopped happenings
+- [x] 3.2 a copy is refused whole where the happenings cannot be read, naming them only where the other four stores read — catches the happenings named before the birthday ticks
+- [x] 3.3 a change kept where the happenings cannot be read is kept, and the stop names the happenings — catches the stop naming the record by default
+- [x] 3.4 a copy place given no happening place copies the happenings a commitments screen given none keeps — catches a copy place defaulting to the real file
 
 ## 4. `restore`: reading a copy
 
-- [ ] 4.1 a copy made before copies held happenings is read as holding none, and restoring it leaves the happening place holding none — catches a form-2 copy read as damaged
-- [ ] 4.2 a copy whose happenings do not fit together is refused as a damaged copy, and one whose happenings are of a later form as a copy from a later version — catches the happenings left out of the envelope pre-check
+- [x] 4.1 a copy made before copies held happenings is read as holding none, and restoring it leaves the happening place holding none — catches a form-2 copy read as damaged
+- [x] 4.2 a copy whose happenings do not fit together is refused as a damaged copy, and one whose happenings are of a later form as a copy from a later version — catches the happenings left out of the envelope pre-check
 
 ## 5. `restore`: a restore
 
-- [ ] 5.1 a commitments screen asked to restore says how many happenings the copy and the phone hold and have stopped, and counts no occurrence — catches stopped happenings counted twice
-- [ ] 5.2 a commitments screen asked to restore where the happening place cannot be read says the happenings cannot be read in place of their counts
-- [ ] 5.3 a restore confirmed makes the happening place hold the copy's happenings, and the happenings there are gone — catches a merge
-- [ ] 5.4 a commitments screen that restored a copy lists the copy's happenings, and no happening is awaiting a stop or a deletion — catches a stale happening list
-- [ ] 5.5 a restore refused where the happening place cannot be written leaves the five places as they were — catches a rollback of four
-- [ ] 5.6 a restore stopped before it was whole is undone at the happening place when the places are next opened — catches `returnedTo` reading before the undo
+- [x] 5.1 a commitments screen asked to restore says how many happenings the copy and the phone hold and have stopped, and counts no occurrence — catches stopped happenings counted twice
+- [x] 5.2 a commitments screen asked to restore where the happening place cannot be read says the happenings cannot be read in place of their counts
+- [x] 5.3 a restore confirmed makes the happening place hold the copy's happenings, and the happenings there are gone — catches a merge
+- [x] 5.4 a commitments screen that restored a copy lists the copy's happenings, and no happening is awaiting a stop or a deletion — catches a stale happening list
+- [x] 5.5 a restore refused where the happening place cannot be written leaves the five places as they were — catches a rollback of four
+- [x] 5.6 a restore stopped before it was whole is undone at the happening place when the places are next opened — catches `returnedTo` reading before the undo
 
 ## 6. `restore`: a happening change's copy
 
-- [ ] 6.1 a happening made, renamed, stopped, resumed and deleted through a commitments screen each write a copy at the copy place
-- [ ] 6.2 an occurrence noted, changed and taken back on a day screen each write a copy at the copy place
-- [ ] 6.3 a happening change refused, or one that asks for no change, writes no copy at the copy place — catches `keptAChange()` before a guard
-- [ ] 6.4 an occurrence noted where the copy place cannot be written is kept and is not refused
+- [x] 6.1 a happening made, renamed, stopped, resumed and deleted through a commitments screen each write a copy at the copy place
+- [x] 6.2 an occurrence noted, changed and taken back on a day screen each write a copy at the copy place
+- [x] 6.3 a happening change refused, or one that asks for no change, writes no copy at the copy place — catches `keptAChange()` before a guard
+- [x] 6.4 an occurrence noted where the copy place cannot be written is kept and is not refused
 
 ## 7. `restore`: the take-out and the day screen's restore line
 
-- [ ] 7.1 a take-out hands out the file at the happening place byte-for-byte under the name it lies under
-- [ ] 7.2 a commitments screen offers a take-out over happenings that cannot be read, naming them after the birthday ticks — catches `Copy.Store.allCases` in the undo guard
-- [ ] 7.3 a commitments screen asked for a take-out answers the happenings' file after the birthday ticks' and before a save in progress
-- [ ] 7.4 a take-out refused over the happening place names the happenings and hands out none of the others
-- [ ] 7.5 a day screen that cannot read its happenings says a copy can be restored, and says nothing of it where they were written by a later version — and, in the same commit, `DayScreenHappeningTests.swift`'s carried test for *a day screen that cannot read its happening place lists none and leaves the place as it was* drops its `!saysACopyCanBeRestored` assertion and nothing else
+- [x] 7.1 a take-out hands out the file at the happening place byte-for-byte under the name it lies under
+- [x] 7.2 a commitments screen offers a take-out over happenings that cannot be read, naming them after the birthday ticks — catches `Copy.Store.allCases` in the undo guard
+- [x] 7.3 a commitments screen asked for a take-out answers the happenings' file after the birthday ticks' and before a save in progress
+- [x] 7.4 a take-out refused over the happening place names the happenings and hands out none of the others
+- [x] 7.5 a day screen that cannot read its happenings says a copy can be restored, and says nothing of it where they were written by a later version — and, in the same commit, `DayScreenHappeningTests.swift`'s carried test for *a day screen that cannot read its happening place lists none and leaves the place as it was* drops its `!saysACopyCanBeRestored` assertion and nothing else
 
 ## 8. The retitled scenarios (a rename, not a red-green cycle)
 
-- [ ] 8.1 making and renaming a happening leaves the other places as they were — `CommitmentsScreenHappeningTests.swift`'s test renamed to it, its two `lastCopy` assertions dropped
-- [ ] 8.2 stopping, resuming and deleting a happening leaves the other places as they were — `CommitmentsScreenHappeningStopTests.swift`'s test likewise
-- [ ] 8.3 noting an occurrence leaves the other places as they were and ends a notice — `DayScreenHappeningTests.swift`'s test likewise
-- [ ] 8.4 changing or taking back an occurrence leaves the other places as they were and ends a notice — `DayScreenOccurrenceChangeTests.swift`'s test likewise
+- [x] 8.1 making and renaming a happening leaves the other places as they were — `CommitmentsScreenHappeningTests.swift`'s test renamed to it, its two `lastCopy` assertions dropped
+- [x] 8.2 stopping, resuming and deleting a happening leaves the other places as they were — `CommitmentsScreenHappeningStopTests.swift`'s test likewise
+- [x] 8.3 noting an occurrence leaves the other places as they were and ends a notice — `DayScreenHappeningTests.swift`'s test likewise
+- [x] 8.4 changing or taking back an occurrence leaves the other places as they were and ends a notice — `DayScreenOccurrenceChangeTests.swift`'s test likewise
 
 ## 9. The carried scenarios
 
-- [ ] 9.1 Every scenario the five MODIFIED `restore` requirements, the two MODIFIED and two re-added `day-screen` requirements and the re-added `happening` requirement carry passes with its test unedited, and so does every other test in the suite, but these seven places: the four tests § 8 renames, the one assertion 7.5 drops, and the `laterFormBytes` helpers in `CopyTests.swift` and `TakeOutTests.swift`, which each gain the `case .happenings:` arm the enum now needs
+- [x] 9.1 Every scenario the five MODIFIED `restore` requirements, the two MODIFIED and two re-added `day-screen` requirements and the re-added `happening` requirement carry passes with its test unedited, and so does every other test in the suite, but these seven places: the four tests § 8 renames, the one assertion 7.5 drops, and the `laterFormBytes` helpers in `CopyTests.swift` and `TakeOutTests.swift`, which each gain the `case .happenings:` arm the enum now needs
 
 ## 10. The shell (ADR-1019: no rule the Kit does not state)
 
