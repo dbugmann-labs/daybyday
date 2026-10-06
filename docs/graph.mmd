@@ -118,6 +118,10 @@ flowchart TD
   I378["Story 378 — add-happening-look-back"]
   I379["Story 379 — stop-or-delete-happening"]
   I380["Story 380 — carry-happenings-in-a-copy"]
+  I391["Story 391 — mark-a-quota-without-slack"]
+  I392["Story 392 — shift-a-due-day"]
+  I393["Story 393 — shift-an-interval-day"]
+  I394["Story 394 — retire-interval-restart"]
 
   I1 --> I26
   I1 --> I27
@@ -153,6 +157,9 @@ flowchart TD
   I26 --> I306
   I26 --> I309
   I26 --> I365
+  I26 --> I392
+  I26 --> I393
+  I26 --> I394
   I26 --> I42
   I263 --> I264
   I264 --> I266
@@ -175,6 +182,7 @@ flowchart TD
   I27 --> I325
   I27 --> I346
   I27 --> I347
+  I27 --> I391
   I27 --> I70
   I27 --> I71
   I27 --> I72
@@ -226,8 +234,8 @@ flowchart TD
   class I9 story,done
   class I10 story,done
   class I11 story,done
-  class I26 feature,settled
-  class I27 feature,settled
+  class I26 feature
+  class I27 feature
   class I42 story,done
   class I53 feature,done
   class I55 story,done
@@ -326,3 +334,7 @@ flowchart TD
   class I378 story,done
   class I379 story,done
   class I380 story,done
+  class I391 story
+  class I392 story
+  class I393 story
+  class I394 story
