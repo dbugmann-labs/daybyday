@@ -33,5 +33,5 @@ None.
 - `src/DayByDayKit/Sources/DayByDayKit/DayScreen.swift` — the member answering the mark.
 - `src/DayByDayKit/Sources/DayByDayKit/DayView.swift` — the row's own reading of its slack,
   package-internal.
-- `src/DayByDayKit/Tests/DayByDayKitTests/` — one new test file for the ten scenarios.
+- `src/DayByDayKit/Tests/DayByDayKitTests/` — one new test file for the eleven scenarios.
 - `src/DayByDay/DayByDay/ContentView.swift` and `CommitmentLine.swift` — the glyph after the words.

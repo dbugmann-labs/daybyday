@@ -59,6 +59,14 @@ screen holds and nothing at any of its places.
 - **AND** once that row is ticked again, the row the day screen then holds says "1/5x a week" and
   the day screen answers "Needed today" for it
 
+#### Scenario: a lost week ticked on today carries no mark though its standing owes every day left
+
+- **WHEN** a day screen is opened as of Thursday 8 October 2026, at a place where nothing has been
+  kept, of a commitment named "Yuno" on a weekly quota of 5 times a week, kept from 1 January 2026,
+  and its one row is ticked
+- **THEN** the row the day screen then holds says "1/5x a week" and says it is kept
+- **AND** the day screen answers no mark for it
+
 #### Scenario: a weekly-quota total row is marked while its day falls short of its target
 
 - **WHEN** a day screen is opened as of Thursday 8 October 2026, at a record place holding an

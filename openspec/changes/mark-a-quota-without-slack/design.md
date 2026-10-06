@@ -110,6 +110,10 @@ None — nothing persisted changes.
 - **The next likeliest tests "owes at least the days left"**, marking a lost week. → A scenario of
   a lost week, and a seven-times week one day after a miss.
 - **A partial total reads as "something done today".** → A scenario of a total short of target.
+- **The `isKept` guard looks redundant and is not.** A tick on today counts in the standing while
+  today still counts among the days left, so a lost week ticked on today reads as no slack (0/5x on
+  a Thursday becomes 1/5x, owing 4 with 4 left). A marked row ticked never shows it — its tick
+  leaves a day to spare. → A scenario of a lost week ticked on today.
 - **The walk runs on the simulator's own day.** → Its fixtures are shaped to that weekday, and it
   is not run on a Monday, when no week can be lost and yesterday is last week (`tasks.md`).
 
