@@ -54,8 +54,8 @@ its week owes exactly the days left, today included (on a Thursday, 5x with Mond
 on 7x, nothing ticked this week.
 
 - [x] W.1 Today, light — "Yuno"'s row unticked, the glyph after its count in the same run of text, nothing in its trailing slot.
-- [ ] W.2 W.1's state in dark — the glyph in the dark label colour, not grey and not green.
+- [ ] W.2 phone: W.1's state with the phone in dark — the glyph in the dark label colour, not grey and not green. A `phone:` line since the walk, which found this machine's simulator drawing the app light however dark was asked (`docs/open-questions.md`); the owner's call, 2026-10-06.
 - [x] W.3 "Yuno" ticked on today — its count one higher, name struck through, the green checkmark, no glyph.
 - [x] W.4 The tick taken back, then the screen paged back a day — "Yuno"'s row on yesterday saying its standing, no glyph.
 - [x] W.5 Back on today — "Gym" saying "0/7x a week" with no glyph, and "Yuno" above it marked again.
-- [ ] W.6 **The handover** — W.1–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [ ] W.6 **The handover** — W.1 and W.3–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
