@@ -286,6 +286,33 @@ to Wants the same day, 2026-09-30, unfixed, by the owner's choice.*
 - **Open** — counted as of the row's own date, like standing is, so a back-filled day says what that
   day could still reach?
 
+### B-077 — keep my place in the commitments list when I stop, resume or delete a happening
+*Captured 2026-10-06, from the twenty-fifth grooming sweep. The wording is the sweep's; the owner
+confirmed it as a gap rather than saying it unprompted.*
+
+> "The owner shipped #379 with it on 2026-10-03, to be fixed for both together in a Story of its
+> own." — `docs/open-questions.md` § *Known gaps*, *Stopping, resuming or deleting a happening sends
+> the commitments list back to the top*
+
+- **Trigger** — at the foot of the commitments list, confirming a stop on a happening: the list
+  jumps to its top and the Happenings card is off screen, so the row just stopped is no longer in
+  view. Measured on an iOS 26.5 simulator at #379's G7.
+- **Touches** — `happening` and the commitments screen's shell. A stopped happening is read from the
+  happening store, which the commitments screen does not watch, so the shell rebuilds the whole list
+  through `listRevision` (`CommitmentsView.swift`) and the scroll position goes with it. The known
+  gap names the cure — make the stopped state something the screen watches, so the rebuild can go —
+  and says the happening rename sheet rebuilds the same way, unmeasured. "Both together" is the
+  stop-resume-delete path and the rename. It sits beside B-066 as a screen that redraws wrongly
+  rather than one that says something wrong, but on another screen and for another cause.
+- **Principle** — tested against *an iPhone, in your hand*: **passes.** A confirmation that throws
+  you to the top of a list takes your place away at the moment you were looking at the row, and you
+  scroll back to see whether it worked.
+- **Open** — a chore on the shell under ADR-1019, or a Story? The known gap says "a Story of its
+  own"; if the cure changes what the commitments screen's seam exposes, it is one, and if it only
+  stops a rebuild in the view, it is a chore.
+- **Open** — does the rename sheet lose the place too? It was not measured at #379, and "both
+  together" assumes it does.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
