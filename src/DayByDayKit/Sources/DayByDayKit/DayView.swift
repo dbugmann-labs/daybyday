@@ -116,6 +116,17 @@ public struct DayView: Hashable, Sendable {
             return commitment.schedule.inWords(given: weekStanding.kept, owing: weekStanding.owed)
         }
 
+        /// Whether this row is a weekly-quota row of `today`, not kept, whose week owes exactly
+        /// as many days as are left in it, its own date through the Sunday, both counted. Reads
+        /// only the row's own date, `isKept` and standing — the numbers `rhythmInWords` says.
+        func hasNoSlack(on today: CalendarDate) -> Bool {
+            guard let weekStanding, date == today, !isKept else {
+                return false
+            }
+            let daysLeft = 7 - WeekQuota.monday(of: date).days(until: date)
+            return weekStanding.owed - weekStanding.kept == daysLeft
+        }
+
         /// The tick this row makes, or `nil` when the row's date is later than `today`.
         public func tick(asOf today: CalendarDate) -> Tick? {
             guard today.days(until: date) <= 0 else {

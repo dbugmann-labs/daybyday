@@ -1054,6 +1054,13 @@ public final class DayScreen {
         copyPlace?.keptAChange()
     }
 
+    /// The mark "Needed today" for `row`, or `nil`: answered for a row of the today this screen
+    /// was last handed that is on a weekly quota, not kept, and whose week owes exactly as many
+    /// days as are left in it. Changes nothing the screen holds.
+    public func mark(on row: DayView.Row) -> String? {
+        row.hasNoSlack(on: today) ? "Needed today" : nil
+    }
+
     /// Makes the tick `row` offers, or takes it back where `row` says its commitment is kept, and
     /// keeps the change before `dayView` says so. Does nothing when `row` is not one this screen's
     /// day view holds, or when this screen is not keeping a record. Throws when the change could

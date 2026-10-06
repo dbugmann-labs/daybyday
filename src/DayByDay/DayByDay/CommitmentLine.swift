@@ -18,9 +18,21 @@ import SwiftUI
 /// `name` arrives as a `Text` rather than a `String` because the day screen dims the name of a
 /// commitment already kept and the commitments screen does not, and that is the caller's choice
 /// to make.
-func commitmentLine(_ name: Text, rhythmInWords: String) -> Text {
+///
+/// `mark` is the words `DayScreen.mark(on:)` says for a row with no slack, or `nil` for a row with
+/// none. Where given, a caption-size glyph follows the rhythm inside the same `Text`, so it wraps
+/// with the words, in the label colour, and is read aloud as `mark` — the words are the Kit's and
+/// nothing here composes them. The symbol is a build-time value, `design.md` § *The shell*.
+func commitmentLine(_ name: Text, rhythmInWords: String, mark: String? = nil) -> Text {
     let rhythm = Text(verbatim: "- " + rhythmInWords)
         .font(.caption)
         .foregroundStyle(.secondary)
-    return Text("\(name) \(rhythm)")
+    guard let mark else {
+        return Text("\(name) \(rhythm)")
+    }
+    let glyph = Text(Image(systemName: "exclamationmark.circle"))
+        .font(.caption)
+        .foregroundStyle(Color.primary)
+        .accessibilityLabel(mark)
+    return Text("\(name) \(rhythm) \(glyph)")
 }
