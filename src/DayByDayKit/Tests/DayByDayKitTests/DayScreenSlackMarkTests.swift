@@ -233,3 +233,15 @@ func aDayScreenMarksByTheTodayItWasLastHandedNotByTheDayItIsShowing() throws {
     #expect(onlyRow(yuno).date == thursday8)
     #expect(yuno.mark(on: onlyRow(yuno)) == needed)
 }
+
+@MainActor
+@Test("a lost week ticked on today carries no mark though its standing owes every day left")
+func aLostWeekTickedOnTodayCarriesNoMarkThoughItsStandingOwesEveryDayLeft() throws {
+    let yuno = try screen(of: quota("Yuno", 5), asOf: thursday8)
+
+    try yuno.tick(onlyRow(yuno))
+
+    #expect(onlyRow(yuno).rhythmInWords == "1/5x a week")
+    #expect(onlyRow(yuno).isKept)
+    #expect(yuno.mark(on: onlyRow(yuno)) == nil)
+}

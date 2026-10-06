@@ -29,7 +29,7 @@ eleven go in `src/DayByDayKit/Tests/DayByDayKitTests/DayScreenSlackMarkTests.swi
 - [x] 3.8 a row on a schedule that is not a weekly quota carries no mark — catches a daily row read as owing every day
 - [x] 3.9 a day screen marks no row of the day before or the day after its today — catches the comparison made with the day shown, or `<=` today
 - [x] 3.10 a day screen marks by the today it was last handed, not by the day it is showing — catches the today taken once at `init`
-- [ ] 3.11 a lost week ticked on today carries no mark though its standing owes every day left — catches the mark read off the standing alone: `pnpm run check:scenarios` reports it uncovered first, and the test, once written, is seen red with `!isKept` deleted from `hasNoSlack(on:)` and green once the guard is restored, both read off runs; the guard is restored before the commit and `src/` is otherwise untouched
+- [x] 3.11 a lost week ticked on today carries no mark though its standing owes every day left — catches the mark read off the standing alone: `pnpm run check:scenarios` reports it uncovered first, and the test, once written, is seen red with `!isKept` deleted from `hasNoSlack(on:)` and green once the guard is restored, both read off runs; the guard is restored before the commit and `src/` is otherwise untouched
 
 ## 4. The shell (ADR-1019: no rule the Kit does not state)
 
