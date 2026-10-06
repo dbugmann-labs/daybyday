@@ -10,34 +10,34 @@ ten go in `src/DayByDayKit/Tests/DayByDayKitTests/DayScreenSlackMarkTests.swift`
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's ten scenarios uncovered and no other
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's ten scenarios uncovered and no other
 
 ## 2. The seam
 
-- [ ] 2.1 `DayScreen.mark(on:)` and `DayView.Row.hasNoSlack(on:)` exist with the signatures in `design.md` § *The seam*, and 3.1 is red before either does more than compile
-- [ ] 2.2 `hasNoSlack(on:)` reads only the row's own date, `isKept` and `weekStanding` and the today handed to it; `DayView.Row`'s stored properties, equality and public members are unchanged, by `git diff origin/main... -- src/DayByDayKit/Sources/`
+- [x] 2.1 `DayScreen.mark(on:)` and `DayView.Row.hasNoSlack(on:)` exist with the signatures in `design.md` § *The seam*, and 3.1 is red before either does more than compile
+- [x] 2.2 `hasNoSlack(on:)` reads only the row's own date, `isKept` and `weekStanding` and the today handed to it; `DayView.Row`'s stored properties, equality and public members are unchanged, by `git diff origin/main... -- src/DayByDayKit/Sources/`
 
 ## 3. The ten scenarios of `day-screen` — one test each
 
-- [ ] 3.1 a weekly-quota row on today owing every day left in its week is marked Needed today — catches the days left counted without today, or Sunday as none
-- [ ] 3.2 a weekly-quota row on today with a day to spare carries no mark — catches "owes at least one" in place of the days left
-- [ ] 3.3 a weekly-quota row on today whose week owes nothing more carries no mark — catches a negative still-owed or a 0/0 week read as no slack
-- [ ] 3.4 a weekly-quota row on today whose week can no longer be met carries no mark — catches `>=` where `==` is meant
-- [ ] 3.5 a marked row loses its mark once ticked and has it back once the tick is taken back — catches the mark read off the standing alone
-- [ ] 3.6 a weekly-quota total row is marked while its day falls short of its target — catches "the day holds something" in place of `isKept`
-- [ ] 3.7 a week owing every day it holds is marked on today until a day of it is missed — catches a seven-times or part week special-cased
-- [ ] 3.8 a row on a schedule that is not a weekly quota carries no mark — catches a daily row read as owing every day
-- [ ] 3.9 a day screen marks no row of the day before or the day after its today — catches the comparison made with the day shown, or `<=` today
-- [ ] 3.10 a day screen marks by the today it was last handed, not by the day it is showing — catches the today taken once at `init`
+- [x] 3.1 a weekly-quota row on today owing every day left in its week is marked Needed today — catches the days left counted without today, or Sunday as none
+- [x] 3.2 a weekly-quota row on today with a day to spare carries no mark — catches "owes at least one" in place of the days left
+- [x] 3.3 a weekly-quota row on today whose week owes nothing more carries no mark — catches a negative still-owed or a 0/0 week read as no slack
+- [x] 3.4 a weekly-quota row on today whose week can no longer be met carries no mark — catches `>=` where `==` is meant
+- [x] 3.5 a marked row loses its mark once ticked and has it back once the tick is taken back — catches the mark read off the standing alone
+- [x] 3.6 a weekly-quota total row is marked while its day falls short of its target — catches "the day holds something" in place of `isKept`
+- [x] 3.7 a week owing every day it holds is marked on today until a day of it is missed — catches a seven-times or part week special-cased
+- [x] 3.8 a row on a schedule that is not a weekly quota carries no mark — catches a daily row read as owing every day
+- [x] 3.9 a day screen marks no row of the day before or the day after its today — catches the comparison made with the day shown, or `<=` today
+- [x] 3.10 a day screen marks by the today it was last handed, not by the day it is showing — catches the today taken once at `init`
 
 ## 4. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 4.1 `rowView` and `commitmentLine` draw the mark exactly as `design.md` § *The shell* and § *What the shell draws* say, labelled with the string `mark(on:)` returns and composing no words of their own
-- [ ] 4.2 `git diff --stat origin/main... -- src/DayByDay/` lists `ContentView.swift` and `CommitmentLine.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
+- [x] 4.1 `rowView` and `commitmentLine` draw the mark exactly as `design.md` § *The shell* and § *What the shell draws* say, labelled with the string `mark(on:)` returns and composing no words of their own
+- [x] 4.2 `git diff --stat origin/main... -- src/DayByDay/` lists `ContentView.swift` and `CommitmentLine.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 5. The records
 
-- [ ] 5.1 `git diff --stat origin/main... -- openspec/specs/ CONTEXT.md` reports nothing (rule 2; § *Slack* landed at the Feature grill)
+- [x] 5.1 `git diff --stat origin/main... -- openspec/specs/ CONTEXT.md` reports nothing (rule 2; § *Slack* landed at the Feature grill)
 
 ## 6. The gates and the archive handover
 
