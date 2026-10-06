@@ -459,6 +459,25 @@ holding the picked day ends the day before it. Since #303 this was already what 
 the replacing; the owner chose to keep the reach rather than restore the bound. A record on any day
 the restarted count would leave not due still refuses it.
 
+**To be retired, agreed 2026-10-06** at the twenty-fifth grooming pass's Feature grill, for B-054.
+A **shift** of an every-N-days due day does what a restart was for — the count runs on from the day it
+was put on — and leaves the day it came from not due, where a restart leaves it due and unkept. The
+owner chose the shift to replace restarting outright. Restarts already made stay in the history as
+made. This entry stands until the Story that retires it is archived.
+
+**Shift** — putting one **due** day of a commitment on another day that is not due, because the
+commitment slipped: gym on Monday done on Tuesday. The day it came from stops being due and its
+**row** says where the day went, offering no tick; the day it lands on is due, and is counted due in
+a look-back in its place. It belongs to the shapes with named days — a weekday set, a day of the
+month, every N days — and never to a **weekly quota**, every day of which is already due. A weekday
+set or a day of the month is shifted to a day of the same **week** that is not one of its days, and
+the rest of its rhythm is unchanged; an every-N-days day is shifted to a day between the due days
+either side of it, and its count runs on from there, which is what replaces **restarting**. It is made
+from the row of the day being shifted, so a day already past is reached by paging back to it; a
+ticked day is refused, and a shifted day may be shifted again, to its own date included. Not a
+**move** — that word already means reordering a roster and paging a day view. Agreed 2026-10-06 at
+the twenty-fifth grooming pass's Feature grill, for B-054.
+
 **Category** — the word a person put a commitment under: *supplements*, *sport*, whatever they
 type. It is the owner's own word and never one the app names — no fixed menu holds the day-one
 week, and the same argument that makes a **commitment name** the owner's rather than the system's
@@ -2245,6 +2264,14 @@ standing counts the days of its week, through its date, that one of the commitme
 **eras** holds and a record keeps — a day kept before a stop in that week included, a **gap** day never
 — and says it against what the week owes, "1/2x a week" in a **part week**. The history's own
 standing is unchanged; the row no longer reads it.
+
+**Slack** — the days left in a **weekly quota**'s **week**, today included, beyond what the week still
+owes once its **standing** is counted. A quota with no slack cannot be met without today. A row on a
+weekly quota carries a mark when its quota has no slack, on **today**'s day screen only and only while
+today is unticked; a week that can no longer be met at all says nothing beyond its standing. The mark
+warns and never rewards, and counts nothing across weeks — the pressure side of the mechanic streaks
+run on, accepted against *nothing congratulates you* for that reason. Agreed 2026-10-06 at the
+twenty-fifth grooming pass's Feature grill, for B-073.
 
 **Rhythm** — a person's word for the schedule a commitment runs on, and the shape a **commitments
 screen** offers them to build one from: one of the four schedule shapes carrying nothing the

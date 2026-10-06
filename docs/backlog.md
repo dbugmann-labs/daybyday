@@ -71,34 +71,6 @@ shape it lacks, not the quota.
 ## Wants
 
 
-### B-039 — be reminded to record a day before it is gone
-*Captured 2026-09-08, from the sixth grooming sweep. The wording is the sweep's.*
-
-> "Be reminded to record a day before it is gone — every line of the week depends on remembering
-> to open the app."
-
-- **Trigger** — a day that ends unopened. All nine lines of the day-one week are recorded only if
-  the app is opened, and the failure the whole product is built against is *"a gap a few days old
-  that cannot be reconstructed"* (`docs/open-questions.md` § *Settled*, 2026-08-29).
-- **Touches** — unclaimed, and probably nothing that exists. No capability holds a clock: ADR-1004
-  says a commitment due "at 07:00" would be *"a notification concern, not a due-ness"* one, which
-  parks the idea without deciding it. `EPIC: Daily commitments` (#1) does not exclude it, unlike
-  graphs, restore and prefill.
-- **Principle** — tested against *nothing congratulates you*: **passes on the letter and strains on
-  the spirit.** A reminder is not a streak and celebrates nothing, but the same settled note that
-  makes this want urgent also says what disqualifies Apple Reminders on its own terms — it *"nags
-  and forgets"*. This product is the half that does not forget; whether it may also be the half
-  that nags is the question, and it is the owner's alone.
-- **Open** — is this a notification at all, or something quieter: a badge, or a day screen that
-  says the last day you recorded nothing on? The want is "do not lose a day", and a notification is
-  only the loudest of the answers to it.
-- **Open** — per commitment, or per day? "creatine daily" and "finances every 25th" ask for
-  different things: one is a time of day, the other is a date that comes round once a month and is
-  easy to miss entirely.
-- **Open** — a time of day is a thing no schedule holds. ADR-1004 bounded the rule engine to
-  calendar dates on purpose, so this is either a fifth thing beside a schedule or a property of the
-  reminder rather than of the commitment.
-
 ### B-041 — put a commitment in another group by dragging it there
 
 *Captured 2026-09-08, at the grill of `add-category-order` (#168). The wording is the grill's; the
@@ -148,34 +120,6 @@ decision it records is the owner's, twice.*
   as moving items *within and between sections*, which is exactly this want — but it is beta, it is
   not in the SDK this project builds against, and its `sources` are item ids. Worth re-reading
   before anyone hand-writes a gesture again.
-
-### B-054 — keep a weekday-set commitment on a day it is not due
-
-*Captured 2026-09-15, from the ninth grooming sweep. The wording is the sweep's; the owner confirmed
-it as a gap rather than saying it unprompted.*
-
-> "Keep a weekday-set commitment on a day it is not due — gym is Mon/Wed/Sat, and a Monday that
-> slips to Tuesday loses its tick."
-
-- **Trigger** — the gym day that moves by one because of work, weather or a sore leg. Rarely, but
-  it is the same event B-052 turned out to be for an every-N-days rhythm: a rhythm kept, late.
-- **Touches** — `record`, whose tick is *of a commitment on a calendar date it is due on, and nothing
-  else*, and `day-screen`, which draws a row only for what is due, so on the Tuesday there is no
-  row to tick. Not `schedule`, unless the answer is a one-time swap of days. The only workaround
-  today is the change sheet — change the rhythm to Tue/Wed/Sat, tick, change it back — which is
-  two supersedes and a split history, the shape B-052's kept-from move had.
-- **Principle** — tested against *five percent of seven things*: **fails** — it deepens a rhythm
-  shape that works. Captured anyway because the workaround splits a history the product exists to
-  keep whole, and because the weekly quota already exists as the shape for "three times a week, any
-  days": the grill may well answer this want by saying gym is a quota, and that is worth deciding
-  on the record rather than by nobody asking.
-- **Open** — is this a tick on a day the commitment is not due, or that week's Monday moved to
-  Tuesday? The first is a record rule; the second is a schedule exception, and the eighth pass
-  declined a late row for intervals.
-- **Open** — is the weekly quota the answer? Gym as 3× a week loses nothing but the named days, and
-  standing (#235) already says where the week stands.
-- **Open** — where does the row come from? A day view draws what is due; a Tuesday row for gym is a
-  row for something not due, which is the thing *offered* was landed to keep off the screen.
 
 ### B-066 — come back from Commitments to a day screen that is whole at once
 
@@ -265,32 +209,64 @@ to Wants the same day, 2026-09-30, unfixed, by the owner's choice.*
 - **Open** — ADR-1022 argued against this for reasons it names; the grill should read them before
   reversing it, not after.
 
-### B-073 — know when a weekly quota can no longer be met without today
-*Captured 2026-09-29.*
+### B-077 — keep my place in the commitments list when I stop, resume or delete a happening
+*Captured 2026-10-06, from the twenty-fifth grooming sweep. The wording is the sweep's; the owner
+confirmed it as a gap rather than saying it unprompted.*
 
-> "A weekly quota row says when the week can no longer be met without today"
+> "The owner shipped #379 with it on 2026-10-03, to be fixed for both together in a Story of its
+> own." — `docs/open-questions.md` § *Known gaps*, *Stopping, resuming or deleting a happening sends
+> the commitments list back to the top*
 
-- **Trigger** — a weekly quota like yuno 5× a week, late in the week, when the days left are exactly
-  the ticks still owed and skipping today means the week is lost.
-- **Touches** — `record`, whose history answers a commitment's **standing** in the week of a date,
-  and `day-screen`, whose quota row says that standing inside the rhythm words. Not B-025 said
-  again: its grill chose the kept count ("1/3x a week") over what the week still asks, the owner's
-  call against the recommendation, and this is a third thing — a signal on the one day it matters.
-- **Principle** — tested against *nothing congratulates you*: **passes on the letter.** It warns
-  rather than rewards, and says nothing about a run of weeks. It is the pressure side of the same
-  mechanic streaks are built on, though, so the grill should say so out loud.
-- **Open** — only on the day it becomes true, or on every day after it too? After today is missed
-  the week *cannot* be met at all, which is a different thing to say, or nothing.
-- **Open** — how is it said: words on the row, a mark, a colour? Colour on a row has been argued
-  once already (ADR-1045 § *Decision 8*).
-- **Open** — counted as of the row's own date, like standing is, so a back-filled day says what that
-  day could still reach?
+- **Trigger** — at the foot of the commitments list, confirming a stop on a happening: the list
+  jumps to its top and the Happenings card is off screen, so the row just stopped is no longer in
+  view. Measured on an iOS 26.5 simulator at #379's G7.
+- **Touches** — `happening` and the commitments screen's shell. A stopped happening is read from the
+  happening store, which the commitments screen does not watch, so the shell rebuilds the whole list
+  through `listRevision` (`CommitmentsView.swift`) and the scroll position goes with it. The known
+  gap names the cure — make the stopped state something the screen watches, so the rebuild can go —
+  and says the happening rename sheet rebuilds the same way, unmeasured. "Both together" is the
+  stop-resume-delete path and the rename. It sits beside B-066 as a screen that redraws wrongly
+  rather than one that says something wrong, but on another screen and for another cause.
+- **Principle** — tested against *an iPhone, in your hand*: **passes.** A confirmation that throws
+  you to the top of a list takes your place away at the moment you were looking at the row, and you
+  scroll back to see whether it worked.
+- **Open** — a chore on the shell under ADR-1019, or a Story? The known gap says "a Story of its
+  own"; if the cure changes what the commitments screen's seam exposes, it is one, and if it only
+  stops a rebuild in the view, it is a chore.
+- **Open** — does the rename sheet lose the place too? It was not measured at #379, and "both
+  together" assumes it does.
 
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-10-06 — know when a weekly quota can no longer be met without today (B-073) → a Story under
+  `FEAT: day-screen` (#27), reopened with `EPIC: Daily commitments` (#1); its Story comes at G2, and is
+  the cluster's first. A weekly quota's **slack** is the days left in its week, today included, beyond
+  what the week still owes; a row whose quota has no slack carries a mark, on today's day screen only
+  and only while today is unticked. A week that can no longer be met says nothing beyond its standing.
+  A mark rather than words or a colour — the owner's call against the recommended words; ADR-1045
+  § *Decision 8*'s two colours are untouched. Accepted as the pressure side of the streak mechanic
+  because it is about this week alone. `CONTEXT.md` gained **Slack**.
+
+- 2026-10-06 — keep a weekday-set commitment on a day it is not due (B-054) → Stories under
+  `FEAT: commitment` (#26), reopened with #1; its Stories come at G2. A **shift** puts one due day on
+  another day that is not due: a weekday set or a day of the month to a free day of the same week, an
+  every-N-days day to any day between the due days either side, its count running on from there. Made
+  from the shifted day's row; a ticked day refused; the day it came from keeps a row saying where it
+  went and stops being due; counted due where it landed; shifted again freely. The owner went against
+  the recommendation on the shape of it: a shift rather than a drop ("gym is a quota"), every shape with named
+  days rather than weekday sets alone, and — once told a restart already re-anchors an interval — the
+  shift **replacing restarting outright**, which leaves a replaced day missed where a shift does not.
+  Restarts already made stay as made. No ADR held restart; the Story that retires it owes one.
+  `CONTEXT.md` gained **Shift**; **Restarting** is marked to be retired.
+
+- 2026-10-06 — be reminded to record a day before it is gone (B-039) → **dropped.** Passed over at
+  every pass since the sixth sweep with no blocker named. Cluster H's grill answered its quiet half — a
+  row, not a notification — and what is left is whether this app may nag, which the product has kept
+  answering no: it is the half of Apple Reminders that does not forget, not the half that nags.
 
 - 2026-10-02 — note something that happened to me on the day it happens, and see how often it comes
   (B-076) → `FEAT: happening` (#372) under a new `EPIC: Happenings` (#371); its Stories come at G2.
@@ -1503,3 +1479,21 @@ found nothing.
     B-039: passed over at every pass since the sixth sweep with no blocker named — propose a drop on
     its merits next pass. B-069 waits for the week with system blue, to about 2026-10-06; B-072 a
     sitting of its own; B-041 waits on the deployment target, the owner's; B-066 waits for a cause.
+- 2026-10-06 — pass over 8 wants, the twenty-fifth, on `chore/backlog` (fast-forwarded to
+  `origin/main` at cfb2270, nothing unmerged; PR #390).
+  - **Sweep** — one silence, confirmed and captured before clustering: **B-077**, the commitments list
+    sent to its top by a happening's stop, resume or deletion, a known gap from #379's G7 the owner
+    said was owed "a Story of its own". Since the twenty-fourth pass the Happenings Epic shipped
+    (#381–#389); `happening` has create, change and retire for happenings and occurrences alike.
+    Day-one week all shipped; no issue open.
+  - **Promoted** — cluster **C**: B-073 → a Story under #27, first; B-054 → Stories under #26, the
+    **shift**, replacing restarting. Both Features and #1 reopened. Nineteen questions over six rounds
+    and four fact agents; against the recommendation on B-054's shape, its reach to every named-day
+    shape, the interval re-anchor, a shifted day moved again and B-073's mark. Round 2 asked the shapes
+    before checking that restart existed — a fact owed before the question, and the reason round 5
+    had to re-ask it. `CONTEXT.md` gained **Shift** and **Slack**. B-039 dropped, as the
+    twenty-fourth pass proposed.
+  - **Not taken** — **E**, B-077: a shell fix on the commitments screen, chore or Story by whether the
+    seam changes; the next pass's strongest. B-069 — the week with system blue ended today and the
+    owner has not said; B-072 a sitting of its own; B-041 waits on the deployment target; B-066 waits
+    for a cause.
