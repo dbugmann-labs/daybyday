@@ -58,4 +58,4 @@ on 7x, nothing ticked this week.
 - [x] W.3 "Yuno" ticked on today — its count one higher, name struck through, the green checkmark, no glyph.
 - [x] W.4 The tick taken back, then the screen paged back a day — "Yuno"'s row on yesterday saying its standing, no glyph.
 - [x] W.5 Back on today — "Gym" saying "0/7x a week" with no glyph, and "Yuno" above it marked again.
-- [ ] W.6 **The handover** — W.1 and W.3–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.6 **The handover** — W.1 and W.3–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. Posted: https://github.com/dbugmann-labs/daybyday/pull/395#issuecomment-6020605290
