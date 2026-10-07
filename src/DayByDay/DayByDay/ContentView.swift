@@ -1859,7 +1859,8 @@ struct ContentView: View {
                 Text(row.name)
                     .foregroundStyle(nameColor)
                     .strikethrough(row.isKept),
-                rhythmInWords: row.rhythmInWords
+                rhythmInWords: row.rhythmInWords,
+                mark: screen.mark(on: row)
             )
             .foregroundStyle(Color.primary)
         let label = HStack {

@@ -236,6 +236,13 @@ Things that are built, or deliberately not built, in a state someone will trip o
   `simctl` grant. The cause is undiagnosed. Until it is found, a Story whose walk needs the calendar
   on is walked on the phone. Found at #328's walk, 2026-09-24; the owner walked W.1–W.5 on the phone
   and approved at G7 without simulator pictures.
+- **The walk cannot draw the app in dark on this machine's simulator.** At #391's walk the
+  throwaway XCUITest asked for dark four ways — `XCUIDevice.shared.appearance = .dark`,
+  `xcrun simctl ui <udid> appearance dark` before the run, `-AppleInterfaceStyle Dark` at launch, and
+  a hand launch with the device set dark — and every screenshot came out light; with the device set
+  dark the Settings app came up white as well, so neither the app nor the walk script is the cause.
+  The cause is undiagnosed. Until it is found, a walk line asking for dark is a `phone:` line. Found
+  at #391's walk, 2026-10-06; the owner chose the phone line over diagnosing it there.
 - **A deletion's put-back is not checked.** When the roster refuses a deletion, the commitments
   screen puts the erased record back with `try?` and ignores a failure
   (`CommitmentsScreen.confirmDeleting`). If the put-back also fails, the commitment stays listed
