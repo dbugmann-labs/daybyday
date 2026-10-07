@@ -44,8 +44,8 @@ eleven go in `src/DayByDayKit/Tests/DayByDayKitTests/DayScreenSlackMarkTests.swi
 
 - [x] 6.1 `openspec validate mark-a-quota-without-slack --strict` exits 0, and `pnpm run checks` is clean
 - [x] 6.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with eleven more tests than a run on `origin/main` reports, both read off runs
-- [ ] 6.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
-- [ ] 6.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.6. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/day-screen/spec.md` gains this delta's two requirements and eleven scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
+- [x] 6.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
+- [x] 6.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.6. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/day-screen/spec.md` gains this delta's two requirements and eleven scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 
@@ -55,7 +55,7 @@ its week owes exactly the days left, today included (on a Thursday, 5x with Mond
 on 7x, nothing ticked this week.
 
 - [x] W.1 Today, light — "Yuno"'s row unticked, the glyph after its count in the same run of text, nothing in its trailing slot.
-- [ ] W.2 phone: W.1's state with the phone in dark — the glyph in the dark label colour, not grey and not green. A `phone:` line since the walk, which found this machine's simulator drawing the app light however dark was asked (`docs/open-questions.md`); the owner's call, 2026-10-06.
+- [x] W.2 phone: W.1's state with the phone in dark — the glyph in the dark label colour, not grey and not green. A `phone:` line since the walk, which found this machine's simulator drawing the app light however dark was asked (`docs/open-questions.md`); the owner's call, 2026-10-06.
 - [x] W.3 "Yuno" ticked on today — its count one higher, name struck through, the green checkmark, no glyph.
 - [x] W.4 The tick taken back, then the screen paged back a day — "Yuno"'s row on yesterday saying its standing, no glyph.
 - [x] W.5 Back on today — "Gym" saying "0/7x a week" with no glyph, and "Yuno" above it marked again.
