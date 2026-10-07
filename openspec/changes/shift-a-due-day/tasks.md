@@ -74,17 +74,17 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 8. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 8.1 `rowView` draws the long-press menu exactly as `design.md` § *The shell* says, attached only where `shiftDays(for:)` is non-empty, composing no words of its own
-- [ ] 8.2 `refusalText` says "Shift its day back first." for `.shiftedDayAhead`, and a refused stop draws it where a refused stop already draws
-- [ ] 8.3 `git diff --stat origin/main... -- src/DayByDay/` lists `ContentView.swift` and `CommitmentsView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
+- [x] 8.1 `rowView` draws the long-press menu exactly as `design.md` § *The shell* says, attached only where `shiftDays(for:)` is non-empty, composing no words of its own
+- [x] 8.2 `refusalText` says "Shift its day back first." for `.shiftedDayAhead`, and a refused stop draws it where a refused stop already draws
+- [x] 8.3 `git diff --stat origin/main... -- src/DayByDay/` lists `ContentView.swift` and `CommitmentsView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 9. The records
 
-- [ ] 9.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2); `CONTEXT.md` and ADR-1066 are as this folder's PR left them, and not edited since G4
+- [x] 9.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2); `CONTEXT.md` and ADR-1066 are as this folder's PR left them, and not edited since G4
 
 ## 10. The gates and the archive handover
 
-- [ ] 10.1 `openspec validate shift-a-due-day --strict` exits 0, and `pnpm run checks` is clean but for `check:budgets` warnings on the carried requirements
+- [x] 10.1 `openspec validate shift-a-due-day --strict` exits 0, and `pnpm run checks` is clean but for `check:budgets` warnings on the carried requirements
 - [ ] 10.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with 39 more tests than a run on `origin/main` reports, both read off runs
 - [ ] 10.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 10.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.6. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `commitment`, `day-screen`, `record`, `look-back` and `restore` move, gaining this delta's 39 new scenarios, and no other spec file does. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
@@ -94,9 +94,9 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 A fresh install, walked on any day but a Sunday, light only. "Gym" is made on the commitments screen
 on Monday, Wednesday and Saturday, kept from a day before this week, and nothing is ticked.
 
-- [ ] W.1 Monday's "Gym" row, paged back to where today is later, long-pressed — the menu open on "Shift to", its submenu "Tue", "Thu", "Fri", "Sun".
-- [ ] W.2 Tuesday, once Monday's row is shifted there — "Gym - from Mon", unticked, not faded.
-- [ ] W.3 Monday, paged back — "Gym - to Tue", the whole row faded.
-- [ ] W.4 Saturday's row shifted to Sunday through its own menu, then "Gym"'s change sheet asked for Tuesday and Thursday — refused, "Shift its day back first." under the rhythm field.
-- [ ] W.5 Tuesday's row shifted back to Monday, then Monday paged to — "Gym - Mon, Wed, Sat", not faded, and Tuesday holds no "Gym" row.
-- [ ] W.6 **The handover** — W.1–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.1 Monday's "Gym" row, paged back to where today is later, long-pressed — the menu open on "Shift to", its submenu "Tue", "Thu", "Fri", "Sun".
+- [x] W.2 Tuesday, once Monday's row is shifted there — "Gym - from Mon", unticked, not faded.
+- [x] W.3 Monday, paged back — "Gym - to Tue", the whole row faded.
+- [x] W.4 Saturday's row shifted to Sunday through its own menu, then "Gym"'s change sheet asked for Tuesday and Thursday — refused, "Shift its day back first." under the rhythm field.
+- [x] W.5 Tuesday's row shifted back to Monday, then Monday paged to — "Gym - Mon, Wed, Sat", not faded, and Tuesday holds no "Gym" row.
+- [x] W.6 **The handover** — W.1–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
