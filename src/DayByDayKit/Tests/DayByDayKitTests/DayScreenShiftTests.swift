@@ -364,3 +364,69 @@ func aShiftTheRosterPlaceCannotKeepIsRefusedAndToldOnItsRow() throws {
     #expect(held.rhythmInWords == "Mon, Wed, Sat")
     #expect(held.tick(asOf: monday) != nil)
 }
+
+@MainActor
+@Test("a stop confirmed on the day a shift put a due day on ends that due day unless the day holds a record of it")
+func aStopConfirmedOnTheDayAShiftPutADueDayOnEndsThatDueDayUnlessTheDayHoldsARecordOfIt() throws {
+    let places = Places()
+    try roster(of: [gym()], at: places, shifting: monday, to: tuesday)
+    let stopping = CommitmentsScreen(
+        asOf: tuesday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: places.oneOffs)
+    let gymKept = stopping.kept[0]
+
+    stopping.askToStopKeeping(gymKept)
+    let refusal = stopping.confirmStopKeeping()
+
+    #expect(refusal == nil)
+    #expect(stopping.stopped.map(\.name) == ["Gym"])
+    let after = screen(asOf: tuesday, at: places)
+    #expect(after.dayView.rows.isEmpty)
+    let before = try #require(after.previousDayView?.rows)
+    #expect(before.map(\.name) == ["Gym"])
+    #expect(before.map(\.rhythmInWords) == ["to Tue"])
+    #expect(!before[0].offersAnything(asOf: tuesday))
+
+    let recorded = Places()
+    try roster(of: [gym()], at: recorded, shifting: monday, to: tuesday)
+    let shiftedGym = try RosterStore(at: recorded.roster).roster.commitments[0]
+    try RecordStore(at: recorded.record).add(Tick(shiftedGym, on: tuesday)!)
+    let recording = CommitmentsScreen(
+        asOf: tuesday, keepingRosterAt: recorded.roster, keepingRecordAt: recorded.record,
+        keepingOneOffsAt: recorded.oneOffs)
+
+    recording.askToStopKeeping(recording.kept[0])
+    #expect(recording.confirmStopKeeping() == nil)
+
+    let reopened = try RosterStore(at: recorded.roster)
+    #expect(reopened.roster.commitments(on: tuesday).map(\.name) == ["Gym"])
+    let ticked = screen(asOf: tuesday, at: recorded)
+    #expect(ticked.dayView.rows.map(\.name) == ["Gym"])
+    #expect(ticked.dayView.rows.map(\.rhythmInWords) == ["from Mon"])
+    #expect(ticked.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("a shift with no day after the day handed refuses no change and stands through it")
+func aShiftWithNoDayAfterTheDayHandedRefusesNoChangeAndStandsThroughIt() throws {
+    let places = Places()
+    try roster(of: [gym()], at: places, shifting: monday, to: tuesday)
+    let shiftedGym = try RosterStore(at: places.roster).roster.commitments[0]
+    try RecordStore(at: places.record).add(Tick(shiftedGym, on: tuesday)!)
+    let changing = CommitmentsScreen(
+        asOf: tuesday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: places.oneOffs)
+
+    let refusal = changing.change(
+        changing.kept[0], toName: "Lifting", on: .weekdays([.wednesday, .friday]),
+        keptFrom: januaryFirst, under: nil)
+
+    #expect(refusal == nil)
+    let day = screen(asOf: tuesday, at: places)
+    #expect(day.dayView.rows.map(\.name) == ["Lifting"])
+    #expect(day.dayView.rows.map(\.rhythmInWords) == ["from Mon"])
+    #expect(day.dayView.rows[0].isKept)
+    let before = try #require(day.previousDayView?.rows)
+    #expect(before.map(\.name) == ["Lifting"])
+    #expect(before.map(\.rhythmInWords) == ["to Tue"])
+}
