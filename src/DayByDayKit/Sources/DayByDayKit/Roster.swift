@@ -10,6 +10,19 @@ public struct Roster: Hashable, Sendable {
         /// smallest first. `openspec/changes/add-usual-amounts/design.md` § *Usual amounts are the
         /// roster's*.
         let usualAmounts: [Commitment.UsualAmount]
+
+        /// Whether this era holds `date`: on or after the day it is kept from, and on or before
+        /// the day it was kept until where it has one.
+        func holds(_ date: CalendarDate) -> Bool {
+            commitment.keptFrom.days(until: date) >= 0
+                && (keptUntil.map { date.days(until: $0) >= 0 } ?? true)
+        }
+
+        /// Whether `date` is a free day of this era, given `shifts` already made of it: held by
+        /// this era, not due on its schedule and not put due by a shift.
+        func isFree(_ date: CalendarDate, shifts: [CalendarDate: CalendarDate]) -> Bool {
+            holds(date) && !commitment.schedule.isDue(on: date) && !shifts.values.contains(date)
+        }
     }
 
     var entries: [Entry]
@@ -508,8 +521,10 @@ public struct Roster: Hashable, Sendable {
         let precedingEntry = Entry(
             commitment: entries[index].commitment, keptUntil: date,
             category: entries[index].category, usualAmounts: usualAmounts)
+        // An era is formed from a commitment its maker was handed, which may be older than a
+        // shift made since: every era of a commitment carries the shifts the roster holds.
         entries[index] = Entry(
-            commitment: era, keptUntil: nil, category: Self.normalized(category),
+            commitment: Commitment(era, shifts: entries[index].commitment.shifts), keptUntil: nil, category: Self.normalized(category),
             usualAmounts: usualAmounts)
         entries.insert(precedingEntry, at: index + 1)
 
@@ -798,7 +813,8 @@ public struct Roster: Hashable, Sendable {
         }
 
         entries[index] = Entry(
-            commitment: changed, keptUntil: entries[index].keptUntil,
+            commitment: Commitment(changed, shifts: entries[index].commitment.shifts),
+            keptUntil: entries[index].keptUntil,
             category: Self.normalized(category), usualAmounts: entries[index].usualAmounts)
         return true
     }
@@ -810,7 +826,54 @@ public struct Roster: Hashable, Sendable {
     public mutating func shift(
         _ commitment: Commitment, from day: CalendarDate, to other: CalendarDate
     ) -> Bool {
-        false
+        let eras = entries.filter { $0.commitment.identity == commitment.identity }
+        guard let newest = eras.first, let holder = eras.first(where: { $0.holds(day) }) else {
+            return false
+        }
+        switch holder.commitment.schedule {
+        case .weekdays, .dayOfMonth:
+            break
+        case .everyNDays, .weeklyQuota:
+            return false
+        }
+        guard holder.commitment.isDue(on: day), Shift.couldBe(from: day, to: other) else {
+            return false
+        }
+
+        var shifts = newest.commitment.shifts
+        let cameFrom = shifts.first { $0.value == day }?.key
+        if let cameFrom {
+            shifts[cameFrom] = nil
+            guard other == cameFrom else {
+                guard holder.isFree(other, shifts: shifts) else {
+                    return false
+                }
+                shifts[cameFrom] = other
+                writeShifts(shifts, on: commitment)
+                return true
+            }
+            writeShifts(shifts, on: commitment)
+            return true
+        }
+
+        guard holder.isFree(other, shifts: shifts) else {
+            return false
+        }
+        shifts[day] = other
+        writeShifts(shifts, on: commitment)
+        return true
+    }
+
+    /// Writes `shifts` on every era of `commitment`, leaving everything else about each exactly as
+    /// it was.
+    private mutating func writeShifts(_ shifts: [CalendarDate: CalendarDate], on commitment: Commitment) {
+        for index in entries.indices
+        where entries[index].commitment.identity == commitment.identity {
+            entries[index] = Entry(
+                commitment: Commitment(entries[index].commitment, shifts: shifts),
+                keptUntil: entries[index].keptUntil, category: entries[index].category,
+                usualAmounts: entries[index].usualAmounts)
+        }
     }
 
     /// The commitments this roster had not stopped keeping on `date`, in the order it holds

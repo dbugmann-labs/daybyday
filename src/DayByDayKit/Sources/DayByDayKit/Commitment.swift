@@ -130,6 +130,13 @@ public struct Commitment: Sendable {
             return false
         }
 
+        if shifts[date] != nil {
+            return false
+        }
+        if shifts.values.contains(date) {
+            return true
+        }
+
         return schedule.isDue(on: date)
     }
 

@@ -9,43 +9,43 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 39 new scenarios uncovered and no other
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 39 new scenarios uncovered and no other
 
 ## 2. The seam and the forms
 
-- [ ] 2.1 The six new members exist with the signatures in `design.md` § *The seam*, and 3.1 is red before any does more than compile
-- [ ] 2.2 Every `Commitment` initialiser forming an era or a rename carries the shifts; `CommitmentRecord.bare` drops them
-- [ ] 2.3 The roster form is 8 and the record form 7, each judged shape-against-form at the form its part was first written at, as `design.md` § *Migration* says
-- [ ] 2.4 The form sweep, the one sanctioned edit of carried tests: the lines naming record form 7 or roster form 8 as the later form, or roster form 7 as the current one, are made to name the later or current form again and assert what they asserted before — `DayScreenTests.swift` 348, 432, 612, 995, 1205, 3433, 3610, 3624, 3627, 4295, 7786; `RecordStoreTests.swift` 261, 264; `RosterStoreTests.swift` 1980, 1983, 3270, 3303, 3366, 4254, 4303–4315, 4345; `CommitmentsScreenTests.swift` 2271 — each listed with its before and after in the PR body; any other carried edit is a stop
+- [x] 2.1 The six new members exist with the signatures in `design.md` § *The seam*, and 3.1 is red before any does more than compile
+- [x] 2.2 Every `Commitment` initialiser forming an era or a rename carries the shifts; `CommitmentRecord.bare` drops them
+- [x] 2.3 The roster form is 8 and the record form 7, each judged shape-against-form at the form its part was first written at, as `design.md` § *Migration* says
+- [x] 2.4 The form sweep, the one sanctioned edit of carried tests: the lines naming record form 7 or roster form 8 as the later form, or roster form 7 as the current one, are made to name the later or current form again and assert what they asserted before — `DayScreenTests.swift` 348, 432, 612, 995, 1205, 3433, 3610, 3624, 3627, 4295, 7786; `RecordStoreTests.swift` 261, 264; `RosterStoreTests.swift` 1980, 1983, 3270, 3303, 3366, 4254, 4303–4315, 4345; `CommitmentsScreenTests.swift` 2271 — each listed with its before and after in the PR body; any other carried edit is a stop
 
 ## 3. `commitment` — `Roster`, `RosterStore`, `CommitmentsScreen`
 
-- [ ] 3.1 a commitment is not due on the day a shift took its due day from, and is due on the day it put it on — catches `isDue` answering the schedule alone
-- [ ] 3.2 a roster shifts a weekday-set due day onto a free day and leaves the rest of its rhythm as it was — catches a shift written as a new era
-- [ ] 3.3 a roster shifts a day-of-month due day across the end of its month, inside its week — catches the month taken as the bound
-- [ ] 3.4 a roster refuses to shift a due day onto one of its own days, a day another shift put a due day on, or a day of another week — catches a landing read as free
-- [ ] 3.5 a roster refuses to shift a due day onto a day the era holding it does not hold — catches a gap or another era's day offered
-- [ ] 3.6 a roster refuses to shift a day the commitment is not due on, and an every-N-days due day — catches an origin shifted again
-- [ ] 3.7 a roster shifts a day of a commitment it has stopped, and refuses one it does not hold
-- [ ] 3.8 a day a shift put a due day on, shifted again, keeps the day it came from — catches a chain of two shifts
-- [ ] 3.9 a day a shift put a due day on, shifted to the day it came from, leaves no shift — catches a shift kept from a day to itself
-- [ ] 3.10 a rhythm change is refused while a shift has a day after the day handed — catches the landing alone checked
-- [ ] 3.11 a range or a target change is refused while a shift has a day after the day handed
-- [ ] 3.12 a move of the day kept from is refused while a shift has a day after the day handed
-- [ ] 3.13 a stop is refused while a shift has a day after the day handed — catches `confirmStopKeeping` bypassing the check
+- [x] 3.1 a commitment is not due on the day a shift took its due day from, and is due on the day it put it on — catches `isDue` answering the schedule alone
+- [x] 3.2 a roster shifts a weekday-set due day onto a free day and leaves the rest of its rhythm as it was — catches a shift written as a new era
+- [x] 3.3 a roster shifts a day-of-month due day across the end of its month, inside its week — catches the month taken as the bound
+- [x] 3.4 a roster refuses to shift a due day onto one of its own days, a day another shift put a due day on, or a day of another week — catches a landing read as free
+- [x] 3.5 a roster refuses to shift a due day onto a day the era holding it does not hold — catches a gap or another era's day offered
+- [x] 3.6 a roster refuses to shift a day the commitment is not due on, and an every-N-days due day — catches an origin shifted again
+- [x] 3.7 a roster shifts a day of a commitment it has stopped, and refuses one it does not hold
+- [x] 3.8 a day a shift put a due day on, shifted again, keeps the day it came from — catches a chain of two shifts
+- [x] 3.9 a day a shift put a due day on, shifted to the day it came from, leaves no shift — catches a shift kept from a day to itself
+- [x] 3.10 a rhythm change is refused while a shift has a day after the day handed — catches the landing alone checked
+- [x] 3.11 a range or a target change is refused while a shift has a day after the day handed
+- [x] 3.12 a move of the day kept from is refused while a shift has a day after the day handed
+- [x] 3.13 a stop is refused while a shift has a day after the day handed — catches `confirmStopKeeping` bypassing the check
 - [ ] 3.14 a stop confirmed on the day a shift put a due day on ends that due day unless the day holds a record of it — catches `>=` for `>` in the stop's check
-- [ ] 3.15 a rename and a category are not refused while a shift has a day after the day handed — catches every change refused
+- [x] 3.15 a rename and a category are not refused while a shift has a day after the day handed — catches every change refused
 - [ ] 3.16 a shift with no day after the day handed refuses no change and stands through it — catches `>=` for `>`, and an era dropping the shifts
-- [ ] 3.17 a shift kept at a roster place is held by a roster store opened afterwards at the same place
-- [ ] 3.18 a roster kept in the form before shifts is read as holding none, and its place is left as it was
-- [ ] 3.19 a roster store whose shape and declared form disagree about shifts is refused — catches shifts judged at the newest form only
-- [ ] 3.20 a roster store holding a shift no roster could hold is refused — catches eras read without agreeing
+- [x] 3.17 a shift kept at a roster place is held by a roster store opened afterwards at the same place
+- [x] 3.18 a roster kept in the form before shifts is read as holding none, and its place is left as it was
+- [x] 3.19 a roster store whose shape and declared form disagree about shifts is refused — catches shifts judged at the newest form only
+- [x] 3.20 a roster store holding a shift no roster could hold is refused — catches eras read without agreeing
 
 ## 4. `record` — `RecordStore`
 
-- [ ] 4.1 records on a day a shift put a due day on are read back after the app is closed and opened again — catches the shift dropped from the record form
-- [ ] 4.2 a store holding a record beside a shift that could not be one is refused — catches the week left unchecked
-- [ ] 4.3 a store whose shape and declared form disagree about shifts is refused
+- [x] 4.1 records on a day a shift put a due day on are read back after the app is closed and opened again — catches the shift dropped from the record form
+- [x] 4.2 a store holding a record beside a shift that could not be one is refused — catches the week left unchecked
+- [x] 4.3 a store whose shape and declared form disagree about shifts is refused
 
 ## 5. `day-screen` — `DayView` and `DayScreen`
 
