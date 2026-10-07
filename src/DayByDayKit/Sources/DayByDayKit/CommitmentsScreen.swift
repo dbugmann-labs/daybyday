@@ -729,6 +729,10 @@ public final class CommitmentsScreen {
         case usualAmountAlike(Int)
         /// The sixth usual amount typed, naming its place as above.
         case moreThanFiveUsualAmounts(Int)
+        /// A change asking for a different rhythm, day kept from, range or target, or a stop,
+        /// while a shift of the commitment has either day after the day this screen was handed.
+        /// `openspec/changes/shift-a-due-day/design.md` § *Settled 7 is read as written*.
+        case shiftedDayAhead
     }
 
     /// A field of the sheet a commitments screen draws — a define, a change or a restart form —

@@ -803,6 +803,16 @@ public struct Roster: Hashable, Sendable {
         return true
     }
 
+    /// Shifts the due day of `commitment` on `day` to `other`, writing it on every era of the
+    /// commitment, and answers `true`. Refuses, answering `false` and changing nothing, wherever
+    /// `other` is not a free day of `day`'s week. `design.md` § *The seam*.
+    @discardableResult
+    public mutating func shift(
+        _ commitment: Commitment, from day: CalendarDate, to other: CalendarDate
+    ) -> Bool {
+        false
+    }
+
     /// The commitments this roster had not stopped keeping on `date`, in the order it holds
     /// them. It applies no other rule: a commitment's own day it is kept from and its
     /// schedule are the commitment's answer, not the roster's. A deleted commitment holds no

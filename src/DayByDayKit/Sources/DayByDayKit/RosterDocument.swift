@@ -10,7 +10,7 @@ import Foundation
 struct RosterDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 7
+    static let currentVersion = 8
 
     /// The form a commitment record first carried an `identity` key at: forms at or after this
     /// one carry it on every entry's commitment, forms before it never do, on the same footing as
@@ -45,6 +45,11 @@ struct RosterDocument: Codable {
     /// every entry — an empty list where a commitment declares none — and forms before it never do.
     static let usualAmountsIntroducedInVersion = 7
 
+    /// The form `shifts` was introduced at: forms at or after this one carry the key on every
+    /// entry — an empty list where a commitment holds none — and forms before it never do, and
+    /// are read as holding none.
+    static let shiftsIntroducedInVersion = 8
+
     var version: Int
     var commitments: [RosterEntryRecord]
 
@@ -61,7 +66,10 @@ struct RosterDocument: Codable {
                 keptUntil: entry.keptUntil.map(DateRecord.init),
                 removed: nil,
                 category: entry.category,
-                usualAmounts: entry.usualAmounts.map(UsualAmountRecord.init))
+                usualAmounts: entry.usualAmounts.map(UsualAmountRecord.init),
+                shifts: entry.commitment.shifts
+                    .map { ShiftRecord(from: $0.key, to: $0.value) }
+                    .sorted { $0.from < $1.from })
         }
         emptied = roster.emptied
     }
@@ -102,11 +110,15 @@ struct RosterDocument: Codable {
         var currentRunEntries: [Roster.Entry] = []
         var currentRunIsRemoved = false
         var declaresWhatNoTotalCould = false
+        var holdsWhatNoRosterCould = false
 
         func closeCurrentRun() {
             guard let currentIdentity else { return }
             if !Self.erasAgreeOnUsualAmounts(currentRunEntries) {
                 declaresWhatNoTotalCould = true
+            }
+            if !Self.erasAgreeOnShifts(currentRunEntries) {
+                holdsWhatNoRosterCould = true
             }
             if currentRunIsRemoved {
                 erased.insert(currentIdentity)
@@ -118,7 +130,9 @@ struct RosterDocument: Codable {
         }
 
         for entry in commitments {
-            guard let commitment = entry.commitment.commitment() else {
+            guard let shifts = shifts(of: entry),
+                let commitment = entry.commitment.commitment(shifts: shifts)
+            else {
                 return nil
             }
             var isNewestOfRun = false
@@ -174,7 +188,7 @@ struct RosterDocument: Codable {
         }
         closeCurrentRun()
 
-        guard !declaresWhatNoTotalCould else {
+        guard !declaresWhatNoTotalCould, !holdsWhatNoRosterCould else {
             return nil
         }
 
@@ -182,6 +196,38 @@ struct RosterDocument: Codable {
         roster.entries = entries
         roster.emptied = (emptied ?? false) || (!commitments.isEmpty && entries.isEmpty)
         return Formed(roster: roster, erased: erased)
+    }
+
+    /// The shifts `entry` carries, each from the day it took a due day from to the day it put it
+    /// on: none in a form before `shiftsIntroducedInVersion`, and `nil` where the form carries them
+    /// and these say something no roster could hold — a shift whose two days are not two days of
+    /// one Monday-to-Sunday week, or two shifts from one day or onto one day.
+    private func shifts(of entry: RosterEntryRecord) -> [CalendarDate: CalendarDate]? {
+        guard version >= Self.shiftsIntroducedInVersion else {
+            return [:]
+        }
+        guard let records = entry.shifts else {
+            return nil
+        }
+        var formed: [CalendarDate: CalendarDate] = [:]
+        for record in records {
+            guard let from = record.from.calendarDate(), let to = record.to.calendarDate(),
+                Shift.couldBe(from: from, to: to), formed[from] == nil,
+                !formed.values.contains(to)
+            else {
+                return nil
+            }
+            formed[from] = to
+        }
+        return formed
+    }
+
+    /// Whether one commitment's eras carry the same shifts, as they carry the same name.
+    private static func erasAgreeOnShifts(_ eras: [Roster.Entry]) -> Bool {
+        guard let newest = eras.first else {
+            return true
+        }
+        return eras.allSatisfy { $0.commitment.shifts == newest.commitment.shifts }
     }
 
     /// The usual amounts `entry` declares, smallest first: none in a form before
@@ -436,14 +482,19 @@ struct RosterEntryRecord: Codable {
     var categoryKeyPresent: Bool
     var usualAmounts: [UsualAmountRecord]?
     var usualAmountsKeyPresent: Bool
+    /// Present exactly at forms at or after `RosterDocument.shiftsIntroducedInVersion`, on the
+    /// same footing as `usualAmounts` — an empty list where the commitment holds no shift — and
+    /// the same on every era of a commitment.
+    var shifts: [ShiftRecord]?
+    var shiftsKeyPresent: Bool
 
     private enum CodingKeys: String, CodingKey {
-        case commitment, keptUntil, removed, category, usualAmounts
+        case commitment, keptUntil, removed, category, usualAmounts, shifts
     }
 
     init(
         commitment: CommitmentRecord, keptUntil: DateRecord?, removed: Bool?, category: String?,
-        usualAmounts: [UsualAmountRecord]
+        usualAmounts: [UsualAmountRecord], shifts: [ShiftRecord]
     ) {
         self.commitment = commitment
         self.keptUntil = keptUntil
@@ -452,6 +503,8 @@ struct RosterEntryRecord: Codable {
         self.categoryKeyPresent = true
         self.usualAmounts = usualAmounts
         self.usualAmountsKeyPresent = true
+        self.shifts = shifts
+        self.shiftsKeyPresent = true
     }
 
     init(from decoder: Decoder) throws {
@@ -463,6 +516,8 @@ struct RosterEntryRecord: Codable {
         category = try container.decodeIfPresent(String.self, forKey: .category)
         usualAmountsKeyPresent = container.contains(.usualAmounts)
         usualAmounts = try container.decodeIfPresent([UsualAmountRecord].self, forKey: .usualAmounts)
+        shiftsKeyPresent = container.contains(.shifts)
+        shifts = try container.decodeIfPresent([ShiftRecord].self, forKey: .shifts)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -472,6 +527,7 @@ struct RosterEntryRecord: Codable {
         try container.encodeIfPresent(removed, forKey: .removed)
         try container.encode(category, forKey: .category)
         try container.encodeIfPresent(usualAmounts, forKey: .usualAmounts)
+        try container.encodeIfPresent(shifts, forKey: .shifts)
     }
 }
 

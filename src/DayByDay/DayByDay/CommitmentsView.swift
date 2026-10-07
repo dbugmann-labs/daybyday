@@ -134,6 +134,8 @@ func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
             Text("You already have that one.")
         case .moreThanFiveUsualAmounts:
             Text("Five usual amounts at most.")
+        case .shiftedDayAhead:
+            Text("Shift its day back first.")
         case .nameAlreadyInUse(let name):
             // The sheet's own wording — a define and a rename alike, `grill.md` § *Settled* 6 —
             // naming the collision and the field to fix, unlike the old foot-of-sheet caption it

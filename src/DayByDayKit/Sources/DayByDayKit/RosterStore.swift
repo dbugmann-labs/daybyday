@@ -109,6 +109,8 @@ public final class RosterStore {
                     == (document.version >= RosterDocument.identityIntroducedInVersion)
                 && $0.usualAmountsKeyPresent
                     == (document.version >= RosterDocument.usualAmountsIntroducedInVersion)
+                && $0.shiftsKeyPresent
+                    == (document.version >= RosterDocument.shiftsIntroducedInVersion)
         }
         let emptiedKeyAgrees =
             (document.emptied != nil)
@@ -350,6 +352,22 @@ public final class RosterStore {
         return true
     }
 
+    /// Kept at `place` before this returns. Answers what `Roster.shift` answers — `false`,
+    /// without throwing and without writing, when the roster refuses the shift.
+    @discardableResult
+    public func shift(_ commitment: Commitment, from day: CalendarDate, to other: CalendarDate)
+        throws -> Bool
+    {
+        var nextRoster = roster
+        guard nextRoster.shift(commitment, from: day, to: other) else {
+            return false
+        }
+        try write(nextRoster)
+
+        roster = nextRoster
+        return true
+    }
+
     /// Kept at `place` in one write, replacing the whole roster with `nextRoster`. For a caller
     /// that must apply more than one `Roster` mutation as a single act — a rename, a day-move and
     /// a new era put on, say — building the combined value first and handing it here keeps them
@@ -382,6 +400,7 @@ public final class RosterStore {
                 && a.commitment.keptFrom == b.commitment.keptFrom
                 && a.commitment.kind == b.commitment.kind && a.keptUntil == b.keptUntil
                 && a.category == b.category && a.usualAmounts == b.usualAmounts
+                && a.commitment.shifts == b.commitment.shifts
         }
     }
 }

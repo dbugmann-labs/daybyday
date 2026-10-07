@@ -1388,6 +1388,21 @@ public final class DayScreen {
         copyPlace?.keptAChange()
     }
 
+    /// A day a row's due day may be shifted to, and the words it is offered in.
+    public struct ShiftDay: Hashable, Sendable {
+        public let date: CalendarDate
+        public let words: String
+    }
+
+    /// The days `row`'s due day may be shifted to, Monday first. `design.md` § *The seam*.
+    public func shiftDays(for row: DayView.Row) -> [ShiftDay] {
+        []
+    }
+
+    /// Shifts `row`'s due day to `date`, a day `shiftDays(for:)` offers. `design.md` § *The seam*.
+    public func shift(_ row: DayView.Row, to date: CalendarDate) throws {
+    }
+
     /// The day view of `day`, drawn from `roster`, `recordStore`'s history and `oneOffStore`'s
     /// one-offs exactly as they stand now — asks none of the three again, and asks the one-offs
     /// which stand as of `today`, never as of `day`. Its Birthdays group is read off

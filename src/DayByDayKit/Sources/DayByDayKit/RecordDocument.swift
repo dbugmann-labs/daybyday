@@ -12,7 +12,7 @@ import Foundation
 struct RecordDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 6
+    static let currentVersion = 7
 
     /// The form `numbers` was introduced at: forms at or after this one carry the key, forms
     /// before it never do. Kept apart from `currentVersion` on purpose — a fourth form would move
@@ -35,6 +35,11 @@ struct RecordDocument: Codable {
     /// folded roster's records onto the identities the fold gave their commitments is a screen's
     /// job, not this store's; `design.md` § *Migration*.
     static let identityIntroducedInVersion = 6
+
+    /// The form a shift was first kept beside a record at: forms at or after this one may carry
+    /// `shiftedFrom` on a record's commitment — only beside a record on a day a shift put a due
+    /// day on — and forms before it never do. Judged against this constant, never the newest form.
+    static let shiftsIntroducedInVersion = 7
 
     var version: Int
     var ticks: [TickRecord]
@@ -74,7 +79,7 @@ struct RecordDocument: Codable {
         self.numbers = numbers
             .map {
                 NumberRecord(
-                    commitment: CommitmentRecord($0.key.commitment),
+                    commitment: CommitmentRecord($0.key.commitment, recordedOn: $0.key.date),
                     date: DateRecord($0.key.date),
                     number: $0.value)
             }
@@ -82,7 +87,7 @@ struct RecordDocument: Codable {
         self.notes = notes
             .map {
                 NoteRecord(
-                    commitment: CommitmentRecord($0.key.commitment),
+                    commitment: CommitmentRecord($0.key.commitment, recordedOn: $0.key.date),
                     date: DateRecord($0.key.date),
                     text: $0.value)
             }
@@ -90,7 +95,7 @@ struct RecordDocument: Codable {
         self.additions = additions
             .map {
                 AdditionsRecord(
-                    commitment: CommitmentRecord($0.key.commitment),
+                    commitment: CommitmentRecord($0.key.commitment, recordedOn: $0.key.date),
                     date: DateRecord($0.key.date),
                     amounts: $0.value)
             }
@@ -226,12 +231,14 @@ struct TickRecord: Codable, DatedCommitmentRecord {
     var date: DateRecord
 
     init(_ tick: Tick) {
-        commitment = CommitmentRecord(tick.commitment)
+        commitment = CommitmentRecord(tick.commitment, recordedOn: tick.date)
         date = DateRecord(tick.date)
     }
 
     func tick() -> Tick? {
-        guard let commitment = commitment.commitment(), let date = date.calendarDate() else {
+        guard let date = date.calendarDate(),
+            let commitment = commitment.commitment(recordedOn: date)
+        else {
             return nil
         }
         return Tick(commitment, on: date)
@@ -244,7 +251,9 @@ struct NumberRecord: Codable, DatedCommitmentRecord {
     var number: Decimal
 
     func formed() -> Number? {
-        guard let commitment = commitment.commitment(), let date = date.calendarDate() else {
+        guard let date = date.calendarDate(),
+            let commitment = commitment.commitment(recordedOn: date)
+        else {
             return nil
         }
         return Number(number, for: commitment, on: date)
@@ -257,7 +266,9 @@ struct NoteRecord: Codable, DatedCommitmentRecord {
     var text: String
 
     func formed() -> Note? {
-        guard let commitment = commitment.commitment(), let date = date.calendarDate() else {
+        guard let date = date.calendarDate(),
+            let commitment = commitment.commitment(recordedOn: date)
+        else {
             return nil
         }
         return Note(text, for: commitment, on: date)
@@ -276,7 +287,9 @@ struct AdditionsRecord: Codable, DatedCommitmentRecord {
     /// `Addition`, or when `amounts` is empty — a day with no additions holds no record, so an
     /// empty array is content this app never writes.
     func formed() -> [Addition]? {
-        guard let commitment = commitment.commitment(), let date = date.calendarDate() else {
+        guard let date = date.calendarDate(),
+            let commitment = commitment.commitment(recordedOn: date)
+        else {
             return nil
         }
         guard !amounts.isEmpty else {

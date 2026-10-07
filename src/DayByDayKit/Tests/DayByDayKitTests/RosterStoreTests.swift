@@ -321,10 +321,10 @@ func aRosterStoreWrittenInALaterFormThanThisAppKnowsIsRefused() throws {
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 8, "commitments": []}"#.utf8)
+    let bytes = Data(#"{"version": 9, "commitments": []}"#.utf8)
     try bytes.write(to: place)
 
-    #expect(throws: RosterStoreError.laterForm(at: place, version: 8)) {
+    #expect(throws: RosterStoreError.laterForm(at: place, version: 9)) {
         try RosterStore(at: place)
     }
     #expect(try Data(contentsOf: place) == bytes)
@@ -1977,10 +1977,10 @@ func aRosterStoreDeclaringALaterFormWhoseBodyThisAppCannotReadIsRefusedAsALaterF
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 8, "commitments": "not an array"}"#.utf8)
+    let bytes = Data(#"{"version": 9, "commitments": "not an array"}"#.utf8)
     try bytes.write(to: place)
 
-    #expect(throws: RosterStoreError.laterForm(at: place, version: 8)) {
+    #expect(throws: RosterStoreError.laterForm(at: place, version: 9)) {
         try RosterStore(at: place)
     }
     #expect(try Data(contentsOf: place) == bytes)
@@ -3267,7 +3267,7 @@ func aRosterStoreDeclaringTheFormThisAppWritesAndSayingSomethingAboutRemovalIsRe
     let bytes = Data(
         """
         {
-          "version": 7,
+          "version": 8,
           "emptied": false,
           "commitments": [
             {
@@ -3279,7 +3279,8 @@ func aRosterStoreDeclaringTheFormThisAppWritesAndSayingSomethingAboutRemovalIsRe
               },
               "removed": false,
               "category": null,
-              "usualAmounts": []
+              "usualAmounts": [],
+              "shifts": []
             }
           ]
         }
@@ -3300,7 +3301,7 @@ func aRosterStoreDeclaringTheFormThisAppWritesAndSayingNothingAboutBeingEmptiedI
     let bytes = Data(
         """
         {
-          "version": 7,
+          "version": 8,
           "commitments": [
             {
               "commitment": {
@@ -3310,7 +3311,8 @@ func aRosterStoreDeclaringTheFormThisAppWritesAndSayingNothingAboutBeingEmptiedI
                 "identity": "11111111-1111-1111-1111-111111111111"
               },
               "category": null,
-              "usualAmounts": []
+              "usualAmounts": [],
+              "shifts": []
             }
           ]
         }
@@ -3363,7 +3365,7 @@ func aRosterStoreSayingItWasEmptiedWhileHoldingACommitmentIsRefused() throws {
     let bytes = Data(
         """
         {
-          "version": 7,
+          "version": 8,
           "emptied": true,
           "commitments": [
             {
@@ -3374,7 +3376,8 @@ func aRosterStoreSayingItWasEmptiedWhileHoldingACommitmentIsRefused() throws {
                 "identity": "11111111-1111-1111-1111-111111111111"
               },
               "category": null,
-              "usualAmounts": []
+              "usualAmounts": [],
+              "shifts": []
             }
           ]
         }
@@ -4251,7 +4254,7 @@ func aRosterWrittenWithUsualAmountsIsReadBackWithThemInForm7EachAmountExactly() 
         ])
     let envelope = try JSONDecoder().decode(
         RosterDocumentEnvelope.self, from: Data(contentsOf: place))
-    #expect(envelope.version == 7)
+    #expect(envelope.version == 8)
 }
 
 /// A roster in the given form holding one commitment, whose kind and `usualAmounts` are the raw
@@ -4262,9 +4265,10 @@ private func rosterJSON(
 ) -> Data {
     let entries = (0..<eras).map { index in
         let keptUntil = index == 0 ? "" : #""keptUntil": { "year": 2026, "month": 8, "day": 30 },"#
-        let amounts = usualAmounts.map { _ in
-            #","usualAmounts": \#(index == 0 ? usualAmounts! : "[]")"#
-        } ?? ""
+        let amounts =
+            (usualAmounts.map { _ in
+                #","usualAmounts": \#(index == 0 ? usualAmounts! : "[]")"#
+            } ?? "") + (version >= 8 ? #","shifts": []"# : "")
         return """
             {
               "commitment": {
@@ -4300,19 +4304,19 @@ private func expectNotAStore(_ bytes: Data) throws {
 @Test("a roster store holding usual amounts no total could declare is refused")
 func aRosterStoreHoldingUsualAmountsNoTotalCouldDeclareIsRefused() throws {
     let twenty = #"[{ "amount": 20, "name": null }]"#
-    try expectNotAStore(rosterJSON(version: 7, kind: "", usualAmounts: twenty))
+    try expectNotAStore(rosterJSON(version: 8, kind: "", usualAmounts: twenty))
     let six = (1...6).map { #"{ "amount": \#($0 * 10), "name": null }"# }.joined(separator: ",")
-    try expectNotAStore(rosterJSON(version: 7, usualAmounts: "[\(six)]"))
+    try expectNotAStore(rosterJSON(version: 8, usualAmounts: "[\(six)]"))
     let twice = #"{ "amount": 35, "name": "Müesli" }"#
-    try expectNotAStore(rosterJSON(version: 7, usualAmounts: "[\(twice),\(twice)]"))
-    try expectNotAStore(rosterJSON(version: 7, usualAmounts: #"[{ "amount": 0, "name": null }]"#))
+    try expectNotAStore(rosterJSON(version: 8, usualAmounts: "[\(twice),\(twice)]"))
+    try expectNotAStore(rosterJSON(version: 8, usualAmounts: #"[{ "amount": 0, "name": null }]"#))
 }
 
 @Test("a roster store holding eras of one commitment declaring different usual amounts is refused")
 func aRosterStoreHoldingErasOfOneCommitmentDeclaringDifferentUsualAmountsIsRefused() throws {
     try expectNotAStore(
         rosterJSON(
-            version: 7, usualAmounts: #"[{ "amount": 35, "name": "Müesli" }]"#, eras: 2))
+            version: 8, usualAmounts: #"[{ "amount": 35, "name": "Müesli" }]"#, eras: 2))
 }
 
 @Test("a roster kept before a commitment could declare usual amounts is read with every commitment declaring none")
@@ -4342,5 +4346,5 @@ func aRosterStoreDeclaringAFormWrittenBeforeUsualAmountsAndSayingSomethingAboutT
 
 @Test("a roster store declaring the form this app writes and saying nothing about usual amounts is refused")
 func aRosterStoreDeclaringTheFormThisAppWritesAndSayingNothingAboutUsualAmountsIsRefused() throws {
-    try expectNotAStore(rosterJSON(version: 7, usualAmounts: nil))
+    try expectNotAStore(rosterJSON(version: 8, usualAmounts: nil))
 }
