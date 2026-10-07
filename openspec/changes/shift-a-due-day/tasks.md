@@ -33,9 +33,9 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 - [x] 3.11 a range or a target change is refused while a shift has a day after the day handed
 - [x] 3.12 a move of the day kept from is refused while a shift has a day after the day handed
 - [x] 3.13 a stop is refused while a shift has a day after the day handed — catches `confirmStopKeeping` bypassing the check
-- [ ] 3.14 a stop confirmed on the day a shift put a due day on ends that due day unless the day holds a record of it — catches `>=` for `>` in the stop's check
+- [x] 3.14 a stop confirmed on the day a shift put a due day on ends that due day unless the day holds a record of it — catches `>=` for `>` in the stop's check
 - [x] 3.15 a rename and a category are not refused while a shift has a day after the day handed — catches every change refused
-- [ ] 3.16 a shift with no day after the day handed refuses no change and stands through it — catches `>=` for `>`, and an era dropping the shifts
+- [x] 3.16 a shift with no day after the day handed refuses no change and stands through it — catches `>=` for `>`, and an era dropping the shifts
 - [x] 3.17 a shift kept at a roster place is held by a roster store opened afterwards at the same place
 - [x] 3.18 a roster kept in the form before shifts is read as holding none, and its place is left as it was
 - [x] 3.19 a roster store whose shape and declared form disagree about shifts is refused — catches shifts judged at the newest form only
@@ -49,28 +49,28 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 5. `day-screen` — `DayView` and `DayScreen`
 
-- [ ] 5.1 a row of a day a shift took a due day from offers nothing, whatever its kind — catches an entry offered off the date alone
-- [ ] 5.2 a group holding only a row a shift took a due day from is still drawn — catches the group dropped as having nothing due
-- [ ] 5.3 a row of a day a shift took its due day from is a different row from the one that day held before — catches the shift left out of row equality
-- [ ] 5.4 a row says where a shifted due day came from, and the row of the day it left says where it went
-- [ ] 5.5 a day screen offers a row the free days of its week, Monday first, each said as its weekday
-- [ ] 5.6 a day screen offers a row a shift put its due day on the free days of its week and the day it came from
-- [ ] 5.7 a day screen offers no day to shift a row whose day holds a record — catches `isKept` used in place of any record
-- [ ] 5.8 a day screen offers no day to shift a row where it is not keeping its record, nor a row of a day either side
-- [ ] 5.9 a row's due day shifted to a day offered is kept at the roster place, and the day view says where it went
-- [ ] 5.10 a day shifted back to the day it came from leaves both days as they were
-- [ ] 5.11 shifting a row to a day not offered changes nothing — catches `shift` trusting its caller
-- [ ] 5.12 a shift the roster place cannot keep is refused and told on its row
+- [x] 5.1 a row of a day a shift took a due day from offers nothing, whatever its kind — catches an entry offered off the date alone
+- [x] 5.2 a group holding only a row a shift took a due day from is still drawn — catches the group dropped as having nothing due
+- [x] 5.3 a row of a day a shift took its due day from is a different row from the one that day held before — catches the shift left out of row equality
+- [x] 5.4 a row says where a shifted due day came from, and the row of the day it left says where it went
+- [x] 5.5 a day screen offers a row the free days of its week, Monday first, each said as its weekday
+- [x] 5.6 a day screen offers a row a shift put its due day on the free days of its week and the day it came from
+- [x] 5.7 a day screen offers no day to shift a row whose day holds a record — catches `isKept` used in place of any record
+- [x] 5.8 a day screen offers no day to shift a row where it is not keeping its record, nor a row of a day either side
+- [x] 5.9 a row's due day shifted to a day offered is kept at the roster place, and the day view says where it went
+- [x] 5.10 a day shifted back to the day it came from leaves both days as they were
+- [x] 5.11 shifting a row to a day not offered changes nothing — catches `shift` trusting its caller
+- [x] 5.12 a shift the roster place cannot keep is refused and told on its row
 
 ## 6. `look-back`
 
-- [ ] 6.1 a weekday-set day shifted into the next month is counted due and kept there
-- [ ] 6.2 a day-of-month day shifted into the month before leaves that month owing two days and its own none
+- [x] 6.1 a weekday-set day shifted into the next month is counted due and kept there
+- [x] 6.2 a day-of-month day shifted into the month before leaves that month owing two days and its own none
 
 ## 7. `restore`
 
-- [ ] 7.1 a shift kept on a day screen writes a copy at the copy place holding that shift — catches `copyPlace?.keptAChange()` left out
-- [ ] 7.2 a shift refused, or asked of a day not offered, writes no copy at the copy place
+- [x] 7.1 a shift kept on a day screen writes a copy at the copy place holding that shift — catches `copyPlace?.keptAChange()` left out
+- [x] 7.2 a shift refused, or asked of a day not offered, writes no copy at the copy place
 
 ## 8. The shell (ADR-1019: no rule the Kit does not state)
 
