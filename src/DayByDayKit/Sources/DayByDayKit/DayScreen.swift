@@ -1396,11 +1396,48 @@ public final class DayScreen {
 
     /// The days `row`'s due day may be shifted to, Monday first. `design.md` § *The seam*.
     public func shiftDays(for row: DayView.Row) -> [ShiftDay] {
-        []
+        guard dayView.rows.contains(row), !row.holdsARecord, recordStore != nil,
+            rosterState == .kept
+        else {
+            return []
+        }
+
+        let monday = WeekQuota.monday(of: row.date)
+        return (0..<7).compactMap { offset -> ShiftDay? in
+            guard let other = monday.adding(days: offset), other != row.date else {
+                return nil
+            }
+            var asked = roster
+            guard asked.shift(row.commitment, from: row.date, to: other) else {
+                return nil
+            }
+            return ShiftDay(date: other, words: DayTitle.weekdayNames[other.weekday]!)
+        }
     }
 
     /// Shifts `row`'s due day to `date`, a day `shiftDays(for:)` offers. `design.md` § *The seam*.
     public func shift(_ row: DayView.Row, to date: CalendarDate) throws {
+        guard dayView.rows.contains(row) else {
+            return
+        }
+
+        let shifted: Bool
+        let store: RosterStore
+        do {
+            store = try RosterStore(at: rosterPlace)
+            shifted = try store.shift(row.commitment, from: row.date, to: date)
+        } catch {
+            notice = Notice(row: row)
+            throw error
+        }
+        guard shifted else {
+            return
+        }
+        notice = nil
+
+        roster = store.roster
+        dayView = dayViewOfShownDay()
+        copyPlace?.keptAChange()
     }
 
     /// The day view of `day`, drawn from `roster`, `recordStore`'s history and `oneOffStore`'s

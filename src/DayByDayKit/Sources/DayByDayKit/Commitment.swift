@@ -125,6 +125,11 @@ public struct Commitment: Sendable {
         self.shifts = shifts
     }
 
+    /// Whether a shift took a due day of this era's commitment from `date`, a day it is kept from.
+    func tookDueDay(from date: CalendarDate) -> Bool {
+        keptFrom.days(until: date) >= 0 && shifts[date] != nil
+    }
+
     public func isDue(on date: CalendarDate) -> Bool {
         guard keptFrom.days(until: date) >= 0 else {
             return false
