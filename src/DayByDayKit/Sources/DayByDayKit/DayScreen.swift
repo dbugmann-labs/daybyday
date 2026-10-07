@@ -1417,7 +1417,7 @@ public final class DayScreen {
 
     /// Shifts `row`'s due day to `date`, a day `shiftDays(for:)` offers. `design.md` § *The seam*.
     public func shift(_ row: DayView.Row, to date: CalendarDate) throws {
-        guard dayView.rows.contains(row) else {
+        guard shiftDays(for: row).contains(where: { $0.date == date }) else {
             return
         }
 

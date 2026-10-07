@@ -240,3 +240,127 @@ func aDayScreenOffersNoDayToShiftARowWhereItIsNotKeepingItsRecordNorARowOfADayEi
     let after = try #require(neighbour.nextDayView?.rows.first)
     #expect(neighbour.shiftDays(for: after).isEmpty)
 }
+
+@MainActor
+@Test("a row's due day shifted to a day offered is kept at the roster place, and the day view says where it went")
+func aRowsDueDayShiftedToADayOfferedIsKeptAtTheRosterPlaceAndTheDayViewSaysWhereItWent() throws {
+    let places = Places()
+    let day = DayScreen(
+        startingFrom: [gym()], asOf: monday, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOffs)
+
+    try day.shift(day.dayView.rows[0], to: tuesday)
+
+    #expect(day.notice == nil)
+    #expect(day.dayView.rows.map(\.name) == ["Gym"])
+    #expect(day.dayView.rows.map(\.rhythmInWords) == ["to Tue"])
+    #expect(!day.dayView.rows[0].offersAnything(asOf: monday))
+    #expect(day.nextDayView?.rows.map(\.rhythmInWords) == ["from Mon"])
+    let kept = try RosterStore(at: places.roster).roster.commitments[0]
+    #expect(kept.isDue(on: tuesday))
+    #expect(!kept.isDue(on: monday))
+}
+
+@MainActor
+@Test("a day shifted back to the day it came from leaves both days as they were")
+func aDayShiftedBackToTheDayItCameFromLeavesBothDaysAsTheyWere() throws {
+    let places = Places()
+    try roster(of: [gym()], at: places, shifting: monday, to: tuesday)
+    let day = screen(asOf: tuesday, at: places)
+
+    try day.shift(day.dayView.rows[0], to: monday)
+
+    #expect(day.notice == nil)
+    #expect(day.dayView.rows.isEmpty)
+    let before = try #require(day.previousDayView?.rows)
+    #expect(before.map(\.name) == ["Gym"])
+    #expect(before.map(\.rhythmInWords) == ["Mon, Wed, Sat"])
+    #expect(before[0].tick(asOf: tuesday) != nil)
+    let kept = try RosterStore(at: places.roster).roster.commitments[0]
+    #expect(kept.isDue(on: monday))
+    #expect(!kept.isDue(on: tuesday))
+}
+
+@MainActor
+@Test("shifting a row to a day not offered changes nothing")
+func shiftingARowToADayNotOfferedChangesNothing() throws {
+    let places = Places()
+    let day = DayScreen(
+        startingFrom: [gym()], asOf: monday, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOffs)
+    let opened = bytes(places)
+
+    try day.shift(day.dayView.rows[0], to: date(2026, 9, 2))
+
+    #expect(day.notice == nil)
+    #expect(day.dayView.rows.map(\.name) == ["Gym"])
+    #expect(day.dayView.rows.map(\.rhythmInWords) == ["Mon, Wed, Sat"])
+
+    try day.shift(day.dayView.rows[0], to: date(2026, 9, 8))
+
+    #expect(day.notice == nil)
+    #expect(day.dayView.rows.map(\.rhythmInWords) == ["Mon, Wed, Sat"])
+    #expect(bytes(places) == opened)
+
+    let others = Places()
+    let run = gym("Run", schedule: .weekdays([.tuesday, .thursday]))
+    let neighbour = DayScreen(
+        startingFrom: [run], asOf: monday, keepingRecordAt: others.record,
+        keepingRosterAt: others.roster, keepingOneOffsAt: others.oneOffs)
+    let neighbourOpened = bytes(others)
+
+    try neighbour.shift(try #require(neighbour.nextDayView?.rows.first), to: date(2026, 9, 2))
+
+    #expect(neighbour.notice == nil)
+    #expect(neighbour.dayView.rows.isEmpty)
+    #expect(neighbour.nextDayView?.rows.map(\.rhythmInWords) == ["Tue, Thu"])
+    #expect(bytes(others) == neighbourOpened)
+}
+
+// Below the seam: a row the screen offers no day, because its day holds a record, is not shifted
+// by a roster that would take it.
+@MainActor
+@Test("a row the screen offers no day is shifted nowhere, though its roster would take the shift")
+func aRowTheScreenOffersNoDayIsShiftedNowhereThoughItsRosterWouldTakeTheShift() throws {
+    let places = Places()
+    let day = DayScreen(
+        startingFrom: [gym()], asOf: monday, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOffs)
+    try day.tick(day.dayView.rows[0])
+    let ticked = bytes(places)
+
+    try day.shift(day.dayView.rows[0], to: tuesday)
+
+    #expect(day.dayView.rows.map(\.rhythmInWords) == ["Mon, Wed, Sat"])
+    #expect(day.dayView.rows[0].isKept)
+    #expect(bytes(places) == ticked)
+}
+
+@MainActor
+@Test("a shift the roster place cannot keep is refused and told on its row")
+func aShiftTheRosterPlaceCannotKeepIsRefusedAndToldOnItsRow() throws {
+    let places = Places()
+    let journaling = gym(
+        "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]))
+    let day = DayScreen(
+        startingFrom: [gym(), journaling], asOf: monday, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOffs)
+    let directory = places.roster.deletingLastPathComponent()
+    try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
+    defer {
+        try? FileManager.default.setAttributes(
+            [.posixPermissions: 0o700], ofItemAtPath: directory.path)
+    }
+    let gymRow = day.dayView.rows.first { $0.name == "Gym" }!
+
+    #expect(throws: (any Error).self) { try day.shift(gymRow, to: tuesday) }
+
+    #expect(day.notice?.row == gymRow)
+    #expect(day.notice?.row?.name == "Gym")
+    let held = day.dayView.rows.first { $0.name == "Gym" }!
+    #expect(held.rhythmInWords == "Mon, Wed, Sat")
+    #expect(held.tick(asOf: monday) != nil)
+}
