@@ -16,7 +16,8 @@ and a day of the month are anchored to the calendar, and nothing moves one due d
 - The day a shift lands on says "from Mon" in its rhythm's place; the day it left keeps a faded row
   saying "to Tue" that offers nothing.
 - A change of rhythm, day kept from, range or target, and a stop, are refused while any shift has
-  either day after today: "Shift its day back first."
+  either day after today: "Shift its day back first." A stop on a shift's landing day today drops
+  it, as a stop today drops any unkept due day.
 - A look-back counts a shifted day due where it landed, and the day it came from not at all.
 - The roster and record stores keep shifts across the app being closed; a copy carries them.
 
@@ -28,9 +29,9 @@ None.
 
 ### Modified Capabilities
 
-- `commitment`: three ADDED, two MODIFIED, two RENAMED.
-- `day-screen`: three ADDED, ten MODIFIED, two RENAMED.
-- `record`: one ADDED.
+- `commitment`: three ADDED, five MODIFIED, two RENAMED.
+- `day-screen`: three ADDED, eleven MODIFIED, two RENAMED.
+- `record`: one ADDED, three MODIFIED.
 - `look-back`: one ADDED.
 - `restore`: one ADDED.
 
@@ -39,7 +40,8 @@ None.
 - `src/DayByDayKit/Sources/DayByDayKit/` — `Commitment`, `Roster`, `RosterStore`,
   `RosterDocument`, `CommitmentCoding`, `RecordDocument`, `DayView`, `DayScreen`,
   `CommitmentsScreen`.
-- `src/DayByDayKit/Tests/DayByDayKitTests/` — new tests for the shift, beside the carried ones.
+- `src/DayByDayKit/Tests/DayByDayKitTests/` — new tests for the shift, beside the carried ones, and the carried lines
+  that fix the record or roster form as current or later.
 - `src/DayByDay/DayByDay/ContentView.swift` — the long-press menu on a commitment row.
 - `src/DayByDay/DayByDay/CommitmentsView.swift` — the refusal's words.
 - `docs/adr/1066-a-shift-is-part-of-the-commitment.md` — new.

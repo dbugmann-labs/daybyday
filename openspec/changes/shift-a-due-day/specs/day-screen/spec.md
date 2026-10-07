@@ -130,6 +130,9 @@ requires, its day view staying as it was.
 - **AND** its day view still holds one row, named "Gym", saying "Mon, Wed, Sat"
 - **AND** shifting it to Tuesday 8 September 2026, a day of the week after, changes nothing either,
   and the content at every place is byte-for-byte what it was immediately after it was opened
+- **AND** a day screen opened the same way of a commitment named "Run" on a schedule listing Tuesday
+  and Thursday, kept from 1 January 2026, changes nothing and tells nothing when the row of the day
+  view it says of the day after is shifted to Wednesday 2 September 2026
 
 #### Scenario: a shift the roster place cannot keep is refused and told on its row
 
@@ -1249,3 +1252,79 @@ kept or not and whatever it offers.
 - **AND** a commitment named "Finances" on a schedule on the 1st of the month, kept from 1 January
   2026, whose due day on Tuesday 1 September 2026 is shifted to Monday 31 August 2026, has a row
   saying "from Tue" on Monday 31 August 2026 and one saying "to Mon" on Tuesday 1 September 2026
+
+### Requirement: A day screen makes every change on the day it is showing and none on a day either side of it
+
+Every change a day screen makes SHALL be made on the day it is showing: a tick made or taken back, a
+number or a note entered or taken back, an amount added, a last addition taken back and a due day
+shifted are all changes to the day being shown, and none of them SHALL be made on the day before it
+or the day after it. A shift SHALL be the one change that reaches another day as well: the day it
+puts the due day on and, for a day a shift put a due day on, the day that shift took it from,
+wherever in the week either falls. A row that only a day either side holds SHALL change nothing:
+ticking, entering, taking back and shifting with it SHALL each leave the record's place, the roster's
+place, the screen's day view and what it says of the days either side exactly as they were — the shipped rule that a row the screen's day view does not hold
+changes nothing, read over the rows this capability says. Nothing SHALL be told on such a row, and
+what the screen is telling SHALL be left as it was.
+
+#### Scenario: ticking a row a day screen says of the day before changes nothing
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
+  1 January 2026, and the one row of the day view it says of the day before is ticked
+- **THEN** the day view it says of the day before still says the commitment is not kept on Sunday
+  30 August 2026
+- **AND** its day view is the same day view as the one it held when it was opened
+- **AND** the content at its record place is byte-for-byte what it was immediately after the screen
+  was opened
+
+#### Scenario: entering a number on a row a day screen says of the day after changes nothing
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with a range of 40 to 150, on a schedule
+  listing all seven weekdays, kept from 1 January 2026; and "72" is committed on the one row of the
+  day view it says of the day after
+- **THEN** the entry that row offers, asked again from the day view the screen then says of the day
+  after, says no number
+- **AND** its day view is the same day view as the one it held when it was opened
+- **AND** the content at its record place is byte-for-byte what it was immediately after the screen
+  was opened
+
+#### Scenario: taking back the last addition on a row a day screen says of the day before changes nothing
+
+- **WHEN** a day screen is opened as of Sunday 30 August 2026, at a place where nothing has been
+  kept, of a commitment named "Protein" of the total kind with a target of 120, on a schedule
+  listing all seven weekdays, kept from 1 January 2026; "30" is committed on the one row it holds;
+  it is moved to the day after; and the last addition is then taken back on the one row of the day
+  view it says of the day before
+- **THEN** the entry that row offers, asked again from the day view the screen then says of the day
+  before, says "30 of 120"
+- **AND** the content at its record place is byte-for-byte what it was immediately before that
+  take-back was asked for
+
+#### Scenario: a day screen tells nothing on a row of a day either side of the one it is showing
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing can be
+  written — a path beneath an existing ordinary file — of a commitment named "Journaling" on a
+  schedule listing all seven weekdays, kept from 1 January 2026, and the one row of the day view it
+  says of the day before is ticked
+- **THEN** it is telling nothing on any row
+- **AND** ticking that row is not refused with an error
+
+#### Scenario: every change asked of a row a day screen says of the day before changes nothing and leaves what it is telling
+
+- **WHEN** a record holding, on Sunday 30 August 2026, a tick for a commitment named "Gym" of the
+  tick kind, a number of 70.5 for one named "Weight" of the number kind with a range of 40 to 150, a
+  note of "Ran 8k." for one named "Journal" of the note kind and an addition of 30 for one named
+  "Protein" of the total kind with a target of 120, all four on a schedule listing all seven
+  weekdays and kept from 1 January 2026, is kept at a place; a day screen of those four
+  commitments, in that order, is opened at that place as of Monday 31 August 2026; "300" is
+  committed on its own row named "Weight"; and on the rows of the day view it then says of the day
+  before, the row named "Gym" is ticked, nothing at all and then "1.2.3" are committed on the row
+  named "Weight", "Rested." and then nothing at all on the row named "Journal", and "30" and then
+  "0" on the row named "Protein"
+- **THEN** the day view it says of the day before is the same day view as the one it said before
+  those changes were asked for
+- **AND** its day view is the same day view as the one it held before those changes were asked for
+- **AND** the content at its record place is byte-for-byte what it was immediately after the screen
+  was opened
+- **AND** it still tells, on its own row named "Weight", that the number must be between 40 and 150

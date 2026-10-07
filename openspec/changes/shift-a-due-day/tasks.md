@@ -1,7 +1,7 @@
 **Anything that fails or surprises is a stop and a report, never a workaround** (`AGENTS.md` rule 5):
 a rebase conflict in this folder or in `openspec/specs/`, a scenario that cannot be written as a test
 without changing its title, a test that passes before the code it names is written, a carried test
-that has to be edited or turns red, a crash in a carried path, or a Kit signature that has to differ
+that has to be edited or turns red but for § 2.4's form sweep, a crash in a carried path, or a Kit signature that has to differ
 from `design.md` § *The seam*.
 
 Rule 3 governs §§ 3–7: take the next unticked box, write the one test named for it — the scenario
@@ -9,14 +9,14 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 35 new scenarios uncovered and no other
-- [ ] 1.2 `design.md` § *Questions for you* is gone and its answer folded into the delta, revalidated, before any test is written
+- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 39 new scenarios uncovered and no other
 
 ## 2. The seam and the forms
 
 - [ ] 2.1 The six new members exist with the signatures in `design.md` § *The seam*, and 3.1 is red before any does more than compile
 - [ ] 2.2 Every `Commitment` initialiser forming an era or a rename carries the shifts; `CommitmentRecord.bare` drops them
 - [ ] 2.3 The roster form is 8 and the record form 7, each judged shape-against-form at the form its part was first written at, as `design.md` § *Migration* says
+- [ ] 2.4 The form sweep, the one sanctioned edit of carried tests: the lines naming record form 7 or roster form 8 as the later form, or roster form 7 as the current one, are made to name the later or current form again and assert what they asserted before — `DayScreenTests.swift` 348, 432, 612, 995, 1205, 3433, 3610, 3624, 3627, 4295, 7786; `RecordStoreTests.swift` 261, 264; `RosterStoreTests.swift` 1980, 1983, 3270, 3303, 3366, 4254, 4303–4315, 4345; `CommitmentsScreenTests.swift` 2271 — each listed with its before and after in the PR body; any other carried edit is a stop
 
 ## 3. `commitment` — `Roster`, `RosterStore`, `CommitmentsScreen`
 
@@ -33,15 +33,19 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 - [ ] 3.11 a range or a target change is refused while a shift has a day after the day handed
 - [ ] 3.12 a move of the day kept from is refused while a shift has a day after the day handed
 - [ ] 3.13 a stop is refused while a shift has a day after the day handed — catches `confirmStopKeeping` bypassing the check
-- [ ] 3.14 a rename and a category are not refused while a shift has a day after the day handed — catches every change refused
-- [ ] 3.15 a shift with no day after the day handed refuses no change and stands through it — catches `>=` for `>`, and an era dropping the shifts
-- [ ] 3.16 a shift kept at a roster place is held by a roster store opened afterwards at the same place
-- [ ] 3.17 a roster kept in the form before shifts is read as holding none, and its place is left as it was
-- [ ] 3.18 a roster store holding a shift no roster could hold is refused — catches eras read without agreeing
+- [ ] 3.14 a stop confirmed on the day a shift put a due day on ends that due day unless the day holds a record of it — catches `>=` for `>` in the stop's check
+- [ ] 3.15 a rename and a category are not refused while a shift has a day after the day handed — catches every change refused
+- [ ] 3.16 a shift with no day after the day handed refuses no change and stands through it — catches `>=` for `>`, and an era dropping the shifts
+- [ ] 3.17 a shift kept at a roster place is held by a roster store opened afterwards at the same place
+- [ ] 3.18 a roster kept in the form before shifts is read as holding none, and its place is left as it was
+- [ ] 3.19 a roster store whose shape and declared form disagree about shifts is refused — catches shifts judged at the newest form only
+- [ ] 3.20 a roster store holding a shift no roster could hold is refused — catches eras read without agreeing
 
 ## 4. `record` — `RecordStore`
 
 - [ ] 4.1 records on a day a shift put a due day on are read back after the app is closed and opened again — catches the shift dropped from the record form
+- [ ] 4.2 a store holding a record beside a shift that could not be one is refused — catches the week left unchecked
+- [ ] 4.3 a store whose shape and declared form disagree about shifts is refused
 
 ## 5. `day-screen` — `DayView` and `DayScreen`
 
@@ -76,14 +80,14 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 9. The records
 
-- [ ] 9.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2); `CONTEXT.md` and ADR-1066 are as this folder's PR left them, or edited only to fold in § 1.2's answer
+- [ ] 9.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2); `CONTEXT.md` and ADR-1066 are as this folder's PR left them, and not edited since G4
 
 ## 10. The gates and the archive handover
 
 - [ ] 10.1 `openspec validate shift-a-due-day --strict` exits 0, and `pnpm run checks` is clean but for `check:budgets` warnings on the carried requirements
-- [ ] 10.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with 35 more tests than a run on `origin/main` reports, both read off runs
+- [ ] 10.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with 39 more tests than a run on `origin/main` reports, both read off runs
 - [ ] 10.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
-- [ ] 10.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.6. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `commitment`, `day-screen`, `record`, `look-back` and `restore` move, gaining this delta's 35 scenarios, and no other spec file does. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
+- [ ] 10.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.6. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `commitment`, `day-screen`, `record`, `look-back` and `restore` move, gaining this delta's 39 new scenarios, and no other spec file does. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 

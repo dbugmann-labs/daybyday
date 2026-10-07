@@ -69,8 +69,19 @@ splits — so no shift straddles two rhythms and no landing falls in an era it w
 
 A shift whose later day is today does not refuse a change made today, and stands through it: its
 landing stays due in the new era. A stop made today ends today's due day, shifted there or not,
-exactly as it ends any due day. A stopped commitment's days shift within their own era; nothing a
-stop protects is reachable that way.
+exactly as it ends any due day: confirmed on a landing day holding no record, it keeps the
+commitment until the day before, so the day the shift came from still says "to Tue" and the day it
+went to holds nothing — settled 7's own reason, a stop taking effect from today, and a scenario
+says so. A stopped commitment's days shift within their own era; nothing a stop protects is
+reachable that way. The refusal is the commitments screen's, the one place holding a today; a
+roster still refuses a stop in exactly its two shipped cases.
+
+### Shipped text the delta falsifies is carried in full
+
+Seven shipped requirements gain a clause and are MODIFIED whole: `record`'s refusal list, its form
+list and what a store persists; `commitment`'s roster parts, its roster forms and its stop
+confirmation; `day-screen`'s day-either-side rule. *Told apart from the other seven* is not: it
+counts that requirement's own list, which already leaves out the three restart refusals.
 
 ### The screen offers, the roster judges
 
@@ -134,25 +145,15 @@ later-form check already refuses a copy an older app cannot read.
   renaming and re-rhythming over a ticked landing; `RecordStore.carryOver` force-unwraps a re-formed
   tick, so a crash there is a stop, never a guard added.
 - [A record written without its shift refuses the whole record store on the next open] → the record
-  scenario reads one back after a later shift, and one written without it is refused.
+  scenario reads one back after a later shift; one with no shift beside it is the shipped not-due case.
 - [`CommitmentRecord` is compared whole by `bare` in the fold and in record ordering] → `bare` drops
   shifts; no pre-identity form holds one.
-- [Ten carried day-screen requirements and two commitment ones gain a clause or a sentence each] →
+- [Eleven carried day-screen requirements, five commitment and three record ones gain a clause] →
   some were over the prose budget on `main`; the `check:budgets` warnings are expected.
 
 ## Open Questions
 
-`grill.md` § *Left open* is "None." Writing the delta raised one question that is the owner's,
-below; the edges answered from settled reasons are recorded under Decisions.
-
-## Questions for you
-
-1. **Moving the day kept from while a shift lies ahead.** Settled 7 refuses a rhythm, range or
-   target change and a stop while a shift has a day after today; the day kept from was not asked.
-   Refuse its move too, with the same words?
-   - *Recommended:* refuse it — one rule for every edit that decides due days, and settled 7's own
-     reason: a day kept from moved past a shift ahead would leave its landing outside the days the
-     commitment runs on, dropped without a word.
-   - *If you say no:* the commitments-screen refusal drops "a different day kept from", and its
-     scenario *a move of the day kept from is refused while a shift has a day after the day handed*
-     becomes one where the move is kept and the shift stands; nothing else in the delta moves.
+`grill.md` § *Left open* is "None." Writing the delta raised one question, now settled by the owner
+on 2026-10-07: **moving the day kept from is refused** while a shift has a day after today, as a
+shifted day ahead, saying "Shift its day back first." It is folded into the commitments-screen
+refusal and its scenario. None remain.
