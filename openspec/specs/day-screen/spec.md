@@ -836,8 +836,10 @@ same.
 A row asked as of a calendar date SHALL offer either exactly one number entry or nothing at all, and
 the entry SHALL be for its commitment on the day view's date. It SHALL offer nothing when its
 commitment's kind is not a number, and nothing when the day view's date is later than the day it is
-asked as of, whatever that day already holds. It SHALL offer the entry for its own date and any
-earlier one, however much earlier.
+asked as of, whatever that day already holds. It SHALL offer nothing where a shift took its due
+day from the day view's date, as *A day view holds a row for a day a shift took a due day from, and that row offers nothing*
+says, and SHALL otherwise offer the entry for its own date and any earlier one, however much
+earlier.
 
 A row SHALL offer at most one of a tick, a number entry, a note entry and a total entry, and never
 two; the kind its commitment declares decides which. Whether a row offers an entry SHALL NOT depend
@@ -1144,8 +1146,10 @@ exactly. Such a value SHALL keep nothing, take nothing back, and leave the day e
 A row asked as of a calendar date SHALL offer either exactly one note entry or nothing at all, and
 the entry SHALL be for its commitment on the day view's date. It SHALL offer nothing when its
 commitment's kind is not a note, and nothing when the day view's date is later than the day it is
-asked as of, whatever that day already holds. It SHALL offer the entry for its own date and any
-earlier one, however much earlier.
+asked as of, whatever that day already holds. It SHALL offer nothing where a shift took its due
+day from the day view's date, as *A day view holds a row for a day a shift took a due day from, and that row offers nothing*
+says, and SHALL otherwise offer the entry for its own date and any earlier one, however much
+earlier.
 
 A row offers at most one of a tick, a number entry, a note entry and a total entry, as the
 requirement on the number entry a row offers states. Whether a row offers an entry SHALL NOT depend
@@ -1298,8 +1302,10 @@ blank space.
 A row SHALL offer, when asked as of a calendar date, either one total entry or nothing at all, and
 that entry SHALL be the one for its commitment on the date its day view is of. The row SHALL offer
 nothing where its commitment's kind is not a total, and nothing where its day view's date is later
-than the day it is asked as of, whatever additions that day holds. Where neither holds it SHALL
-offer the entry, on its own date and on any earlier one. Whether it offers one SHALL NOT depend on
+than the day it is asked as of, whatever additions that day holds, and nothing where a shift took
+its due day from that date, as *A day view holds a row for a day a shift took a due day from, and that row offers nothing*
+says. Where none of the three holds it SHALL offer the entry, on its own date and on any earlier
+one. Whether it offers one SHALL NOT depend on
 the history. A row SHALL offer at most one entry kind, as *A row offers the number entry its
 commitment takes, and offers none for a day that has not arrived* requires. The day it is asked as
 of SHALL be given to it and MUST NOT be read from a clock.
@@ -1626,83 +1632,6 @@ it was. A take-back SHALL reach the record's place and the copy place, and nothi
 - **THEN** the content at the roster place is byte-for-byte what it was before the take-back
 - **AND** the day screen says it is keeping its roster
 
-### Requirement: A day view draws its rows in the groups it was handed, and draws no group with nothing due
-
-A day view SHALL be handed its commitments in groups — a category, or none, with its commitments —
-and SHALL hold one for each group handed with something due on its date, in the order handed, each
-holding its due commitments' rows in that order. Its rows SHALL be every row its groups hold, in the
-order drawn, and a row in a group SHALL say what one under no category says. A day view SHALL sort
-neither the groups nor within one, SHALL NOT decide where commitments under no category go, and
-SHALL NOT combine two groups under one category. A group with nothing due SHALL NOT be drawn, and
-one handed only such groups SHALL hold no groups and no rows. A day view MAY be handed no grouping,
-and SHALL then hold one group with no category, or none where none is due.
-
-#### Scenario: a day view holds one group for each group it was handed that has something due
-
-- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of
-  a group under "Supplements" holding a commitment named "Creatine" and then one named "Magnesium",
-  then a group under "Sport" holding one named "Gym", then a group with no category holding one
-  named "Journaling", all four on a schedule listing all seven weekdays and all kept from
-  1 January 2026
-- **THEN** the day view holds three groups, under "Supplements", then "Sport", then no category
-- **AND** its rows, read across its groups, are named "Creatine", "Magnesium", "Gym" and then
-  "Journaling", in that order
-
-#### Scenario: a day view draws no group whose commitments are none of them due on the date
-
-- **WHEN** a day view is formed on Tuesday 1 September 2026, from a history that has taken no tick,
-  of a group under "Money" holding a commitment named "Finances" on a schedule on the 25th of the
-  month, then a group under "Sport" holding one named "Gym" on a schedule listing all seven
-  weekdays, both kept from 1 January 2026
-- **THEN** the day view holds one group, under "Sport", holding one row named "Gym"
-- **AND** no group is drawn under "Money"
-
-#### Scenario: a day view handed only groups with nothing due holds no groups at all
-
-- **WHEN** a day view is formed on Tuesday 1 September 2026, from a history that has taken no tick,
-  of a group under "Money" holding a commitment named "Finances" on a schedule on the 25th of the
-  month, kept from 1 January 2026
-- **THEN** the day view holds no groups and no rows
-- **AND** it is the same day view as one formed on that date, from that same history, of no
-  commitments at all
-
-#### Scenario: a day view drops the commitments that are not due and keeps the group its due ones are in
-
-- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of
-  a group under "Supplements" holding a commitment named "Creatine" on a schedule listing all seven
-  weekdays and then one named "Vitamin D" on a schedule on the 25th of the month, both kept from
-  1 January 2026
-- **THEN** the day view holds one group, under "Supplements", holding one row named "Creatine"
-
-#### Scenario: a day view handed commitments with no grouping holds one group with no category
-
-- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of
-  a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, then one named
-  "Run" on a schedule listing Monday and Thursday, both kept from 1 January 2026, handed over with
-  no grouping at all
-- **THEN** the day view holds one group, with no category, holding rows named "Gym" and then "Run"
-- **AND** it is the same day view as one formed on that date, from that same history, of one group
-  with no category holding those same two commitments in that same order
-
-#### Scenario: a day view does not combine two groups under the same category
-
-- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of
-  a group under "Supplements" holding a commitment named "Creatine", then a group under "Sport"
-  holding one named "Gym", then a second group under "Supplements" holding one named "Magnesium",
-  all three on a schedule listing all seven weekdays and all kept from 1 January 2026
-- **THEN** the day view holds three groups, under "Supplements", then "Sport", then "Supplements"
-- **AND** its rows, read across its groups, are named "Creatine", "Gym" and then "Magnesium"
-
-#### Scenario: a row in a group says whether its commitment is kept, exactly as a row under no category does
-
-- **WHEN** a day view is formed on Monday 31 August 2026, of a group under "Supplements" holding a
-  commitment named "Creatine" and then one named "Magnesium", both on a schedule listing all seven
-  weekdays and both kept from 1 January 2026, from a history holding a tick for "Magnesium" on that
-  date
-- **THEN** the day view holds one group, under "Supplements", holding two rows named "Creatine" and
-  then "Magnesium"
-- **AND** only the second row says its commitment is kept
-
 ### Requirement: A row says whether it offers anything at all
 
 A row SHALL say, when asked as of a calendar date, whether it offers anything at all: it SHALL say
@@ -1957,11 +1886,13 @@ which *A move with nowhere to go leaves a day screen exactly as it was* states.
 ### Requirement: A day screen makes every change on the day it is showing and none on a day either side of it
 
 Every change a day screen makes SHALL be made on the day it is showing: a tick made or taken back, a
-number or a note entered or taken back, an amount added and a last addition taken back are all
-changes to the day being shown, and none of them SHALL be made on the day before it or the day after
-it. A row that only a day either side holds SHALL change nothing: ticking, entering and taking back
-with it SHALL each leave the record's place, the screen's day view and what it says of the days
-either side exactly as they were — the shipped rule that a row the screen's day view does not hold
+number or a note entered or taken back, an amount added, a last addition taken back and a due day
+shifted are all changes to the day being shown, and none of them SHALL be made on the day before it
+or the day after it. A shift SHALL be the one change that reaches another day as well: the day it
+puts the due day on and, for a day a shift put a due day on, the day that shift took it from,
+wherever in the week either falls. A row that only a day either side holds SHALL change nothing:
+ticking, entering, taking back and shifting with it SHALL each leave the record's place, the roster's
+place, the screen's day view and what it says of the days either side exactly as they were — the shipped rule that a row the screen's day view does not hold
 changes nothing, read over the rows this capability says. Nothing SHALL be told on such a row, and
 what the screen is telling SHALL be left as it was.
 
@@ -2033,7 +1964,8 @@ what the screen is telling SHALL be left as it was.
 A row SHALL be its commitment, its day view's date, whether that day is kept and, for a number, a
 note or a total, what that day holds, its starting number or none, for a total the usual amounts its
 commitment declares, and, only where its commitment is on a weekly quota, its standing on that date
-and what its week owes. Two rows SHALL be the same row when all of these agree, and SHALL be
+and what its week owes, and, where a shift took its due day from that date or put one on it, the
+day that due day went to or came from. Two rows SHALL be the same row when all of these agree, and SHALL be
 different when any one differs.
 
 Two rows of one commitment on one date SHALL be different rows where their days hold different
@@ -2187,6 +2119,17 @@ nothing at all.
 - **AND** once "Protein" is changed back to 35 named "Müesli" and the day screen is returned to
   again, the row it then holds is the same row as the one read first
 
+#### Scenario: a row of a day a shift took its due day from is a different row from the one that day held before
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been
+  kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026; the one row of its day view is held; and that row is then shifted to Tuesday
+  1 September 2026 through the screen
+- **THEN** the row named "Gym" its day view then holds is a different row from the one held
+- **AND** once the screen is moved to the day after, that day's "Gym" row is shifted to Monday
+  31 August 2026 and the screen is moved back, the row its day view holds is the same row as the one
+  held
+
 ### Requirement: A row gives back what a screen draws and what a tap makes
 
 A row SHALL be reachable only through the day view holding it, and SHALL give back four things: its
@@ -2198,8 +2141,11 @@ entry it offers.
 The words SHALL be `schedule`'s for the commitment's schedule, said given the row's standing and
 what its week owes on a weekly quota and plainly otherwise, and composed by no other capability.
 Both SHALL be counted as `look-back` counts a week, the standing through the row's date, whatever the
-kind and whether or not it has arrived. Every row SHALL say its rhythm, kept or not and whatever it
-offers.
+kind and whether or not it has arrived. A row of a day a shift put its due day on SHALL say instead
+"from" and the three-letter weekday name of the day that due day came from, as "from Mon", and a row
+of a day a shift took its due day from SHALL say "to" and that of the day it went to, as "to Tue",
+each in place of its rhythm and in this package's own English. Every other row SHALL say its rhythm,
+kept or not and whatever it offers.
 
 #### Scenario: a row says the rhythm its commitment runs on in words
 
@@ -2299,6 +2245,19 @@ offers.
   there from Thursday 3 September 2026; and a day screen of no commitments at all is opened at those
   places as of Thursday 3 September 2026
 - **THEN** its day view holds one row, named "Reading", saying "1/2x a week"
+
+#### Scenario: a row says where a shifted due day came from, and the row of the day it left says where it went
+
+- **WHEN** a roster place holds a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, whose due day on Monday 31 August 2026 is shifted to Tuesday
+  1 September 2026, and a day screen is opened at it as of Tuesday 1 September 2026, at a record
+  place where nothing has been kept
+- **THEN** its one row says "from Mon"
+- **AND** the row of the day view it says of the day before says "to Tue", and the row of
+  Wednesday 2 September 2026, once the screen is moved there, says "Mon, Wed, Sat"
+- **AND** a commitment named "Finances" on a schedule on the 1st of the month, kept from 1 January
+  2026, whose due day on Tuesday 1 September 2026 is shifted to Monday 31 August 2026, has a row
+  saying "from Tue" on Monday 31 August 2026 and one saying "to Mon" on Tuesday 1 September 2026
 
 ### Requirement: A day screen's reach bounds its day picker and is read again whenever its roster is
 
@@ -2549,131 +2508,16 @@ like any other, and what it says about either place SHALL be untouched by being 
 - **AND** the content at its roster place is byte-for-byte what it was before those day views were
   read
 
-### Requirement: A day view holds the commitments due on a date, each with whether it is kept
-
-A day view SHALL be formed from some commitments, a calendar date and a history, and SHALL hold one
-row for each commitment due on that date and none for one that is not. Each row SHALL carry its
-commitment's name exactly as given, and SHALL say whether the history holds that commitment kept on
-that date.
-
-Whether a commitment is due SHALL be the `commitment` capability's answer, asked of the commitment
-itself rather than of the schedule it carries; whether it is kept SHALL be the `record`
-capability's. A day view MUST NOT recompute either, MUST NOT consider a commitment's name, a clock,
-a time zone or a locale, and SHALL be formed for any supported date, arrived or not. It SHALL NOT
-count, total or rank anything. Rows SHALL come only from the commitments handed over: the history
-SHALL be asked about each of them in turn and SHALL never be enumerated. A day view with nothing
-due, or none at all, SHALL hold no rows rather than refuse.
-
-#### Scenario: a day view holds a row for each commitment due on the date
-
-- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of a
-  commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, a commitment named
-  "Run" on a schedule listing Monday and Thursday, and a commitment named "Finances" on a schedule on
-  the 25th of the month, all three kept from 1 January 2026
-- **THEN** the day view holds two rows
-- **AND** they are named "Gym" and "Run"
-
-#### Scenario: a commitment not due on the date has no row
-
-- **WHEN** a day view is formed on Tuesday 1 September 2026, from a history that has taken no tick,
-  of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
-  1 January 2026
-- **THEN** the day view holds no rows
-
-#### Scenario: a commitment ticked on the date has a row that says it is kept
-
-- **WHEN** a day view is formed on Monday 31 August 2026, of a commitment named "Gym" on a schedule
-  listing Monday, Wednesday and Saturday, kept from 1 January 2026, from a history holding a tick for
-  that commitment on that date
-- **THEN** the day view holds one row
-- **AND** that row is named "Gym" and says the commitment is kept
-
-#### Scenario: a day view of no commitments at all has no rows
-
-- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of
-  no commitments at all
-- **THEN** the day view holds no rows
-
-#### Scenario: a day view holds no rows when none of the commitments is due
-
-- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of a
-  commitment named "Finances" on a schedule on the 25th of the month, kept from 1 January 2026, and a
-  commitment named "Contact lenses" on a schedule of every 14 days starting on 25 August 2026, kept
-  from that same day
-- **THEN** the day view holds no rows
-
-#### Scenario: a commitment whose schedule is due but which is kept from a later day has no row
-
-- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of a
-  commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from Wednesday
-  2 September 2026
-- **THEN** the day view holds no rows, though the schedule is due on that date
-- **AND** a day view of the same commitment on Wednesday 2 September 2026 holds one row named "Gym"
-
-#### Scenario: a tick for a commitment the day view was not handed adds no row
-
-- **WHEN** a day view is formed on Monday 31 August 2026, of a commitment named "Gym" on a schedule
-  listing Monday, Wednesday and Saturday, kept from 1 January 2026, from a history holding a tick on
-  that date for a commitment named "Run" on a schedule listing Monday and Thursday, kept from the
-  same day
-- **THEN** the day view holds one row
-- **AND** that row is named "Gym" and says the commitment is not kept
-
-#### Scenario: a tick on another date does not make the row say it is kept
-
-- **WHEN** a day view is formed on Monday 31 August 2026, of a commitment named "Gym" on a schedule
-  listing Monday, Wednesday and Saturday, kept from 1 January 2026, from a history holding a tick for
-  that commitment on Saturday 5 September 2026
-- **THEN** the day view holds one row saying the commitment is not kept
-- **AND** a day view of the same commitment and history on Saturday 5 September 2026 holds one row
-  saying it is kept
-
-#### Scenario: two commitments with the same name and different schedules each have their own row
-
-- **WHEN** a day view is formed on Monday 31 August 2026, of a commitment named "Gym" on a schedule
-  listing Monday, Wednesday and Saturday and a commitment named "Gym" on a schedule listing Monday
-  and Thursday, both kept from 1 January 2026, from a history holding a tick on that date for the
-  first of them only
-- **THEN** the day view holds two rows, both named "Gym"
-- **AND** the first says the commitment is kept and the second says it is not
-
-#### Scenario: a commitment on a weekly quota has a row on every day of the week
-
-- **WHEN** a day view is formed on each date from Monday 31 August through Sunday 6 September 2026,
-  from a history that has taken no tick, of a commitment named "Reading" on a schedule of 3 times a
-  week, kept from 1 January 2026
-- **THEN** each of the seven day views holds one row named "Reading", saying the commitment is not
-  kept
-- **AND** when the history holds ticks for that commitment on Monday 31 August, Wednesday 2 September
-  and Saturday 5 September 2026, those three dates' rows say it is kept and the other four dates
-  still hold a row saying it is not
-
-#### Scenario: a day view is formed in the first supported year and in the last
-
-- **WHEN** a day view is formed on Monday 3 January 1583, from a history that has taken no tick, of a
-  commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from 1 January
-  1583
-- **THEN** the day view holds one row named "Gym", saying the commitment is not kept
-- **AND** a day view of the same commitment and history on Monday 27 December 9999 holds one row
-  saying the same
-
-#### Scenario: a row carries the commitment's name exactly as it was given
-
-- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of a
-  commitment named " Gym ", with a space at each end, and a commitment named with the single emoji
-  🏋️, both on a schedule listing Monday, Wednesday and Saturday and both kept from 1 January 2026
-- **THEN** the first row is named " Gym ", with both spaces
-- **AND** the second row is named with that emoji
-
 ### Requirement: A row offers the tick that keeps its commitment, and offers none for a day that has not arrived
 
 A row SHALL offer, asked as of a calendar date, exactly one tick or nothing at all: the tick of its
 commitment on its day view's date. A row asked as of its own date SHALL offer that tick, and so
 SHALL a row whose date is earlier, however much earlier. A row SHALL offer nothing where its date is
-later than the day it is asked as of, and nothing where its commitment's kind is not a tick,
-whatever day it is asked as of; such a row SHALL stay in the day view unchanged. A row SHALL refuse
-for those two reasons and no other, and SHALL offer the same tick whether or not it says the
-commitment is kept.
+later than the day it is asked as of, nothing where its commitment's kind is not a tick, whatever
+day it is asked as of, and nothing where a shift took its due day from its date, as
+*A day view holds a row for a day a shift took a due day from, and that row offers nothing* says;
+such a row SHALL stay in the day view unchanged. A row SHALL refuse for those three reasons and no
+other, and SHALL offer the same tick whether or not it says the commitment is kept.
 
 The day a row is asked as of SHALL be given to it, never read from a clock or a locale and never
 kept, so a row asked as of two different days SHALL answer each on its own. Adding the tick a row
@@ -2787,10 +2631,11 @@ NOT hold, copy or alter a history.
 ### Requirement: A day view's rows are in the order it was handed its commitments
 
 A day view's rows SHALL appear in the order its commitments were handed to it, with the ones that
-are not due on the date left out and every other one left where it was. A day view SHALL NOT impose
+have no row on the date left out and every other one left where it was. A day view SHALL NOT impose
 an order of its own: it MUST NOT sort by name, by the rhythm a commitment runs on, by the day it is
 kept from or by whether it is kept, and it MUST NOT move a row that has been ticked. A day view
-SHALL hold one row per commitment it was handed that is due and SHALL NOT combine two into one, so
+SHALL hold one row per commitment it was handed that has one on the date and SHALL NOT combine two
+into one, so
 handing the same commitment to a day view twice SHALL give two rows.
 
 #### Scenario: handing the same commitments in the opposite order reverses the rows
@@ -2833,8 +2678,8 @@ two day views holding the same rows in the same order under different groupings 
 two day views.
 
 A difference in what a day view was handed that does not reach a row SHALL make no difference to the
-day view: a commitment not due produces no row, a group none of whose commitments is due produces no
-group, and a tick for a commitment the day view was not handed is never looked up, and a one-off
+day view: a commitment not due, and no shift of which took a due day from that date, produces no row,
+a group holding no row produces no group, and a tick for a commitment the day view was not handed is never looked up, and a one-off
 standing on another day produces no one-off row, so a day view handed any of the four SHALL be the
 same day view as one that was not handed it. A day view handed no one-offs at all SHALL NOT be the
 same day view as one handed one-offs holding none. A day view SHALL be an answer given from a
@@ -5196,12 +5041,12 @@ hold SHALL change nothing, throw nothing and tell nothing, whether renamed or re
 A day screen SHALL form every day view from the commitments the roster at its roster place had not
 stopped keeping on the day shown, in the roster's groups and order. Every day view SHALL ask the
 roster again for the day then shown: when the screen is opened, moved, sent back to today, shown
-again or returned to, and when a tick is made. The roster asked SHALL be the one read when the app
+again or returned to, and when a tick is made or a shift is kept. The roster asked SHALL be the one read when the app
 was last shown or the screen last returned to, whichever happened later, with any change kept since;
 asking MUST NOT open the place. A commitment the roster stopped SHALL have a row up to and including
 the day it was kept until, and none after. A commitment taken up again after a gap SHALL have no row
 on a day of the gap, and SHALL have its rows again from the day its new era is kept from. A commitment the roster has deleted SHALL have a row on no day,
-the days it was ticked on included. A group with nothing due
+the days it was ticked on included. A group holding no row
 produces no group, as *A day view is a value and nothing else* states.
 
 #### Scenario: a day screen draws the commitments its roster keeps, in the order they were taken on
@@ -7203,3 +7048,343 @@ stand in for it, and no clock SHALL be read.
 - **THEN** its one row says "1/5x a week" and carries no mark
 - **AND** once it is shown again as of Thursday 8 October 2026, it is still showing that Thursday
   and answers "Needed today" for the row it then holds
+
+### Requirement: A day view holds the commitments due on a date and those a shift took a due day from, each with whether it is kept
+
+A day view SHALL be formed from some commitments, a calendar date and a history, and SHALL hold one
+row for each commitment due on that date, one for each a shift took a due day from on that date, as
+*A day view holds a row for a day a shift took a due day from, and that row offers nothing* says, and none for any other. Each row SHALL carry its
+commitment's name exactly as given, and SHALL say whether the history holds that commitment kept on
+that date.
+
+Whether a commitment is due SHALL be the `commitment` capability's answer, asked of the commitment
+itself rather than of the schedule it carries; whether it is kept SHALL be the `record`
+capability's. A day view MUST NOT recompute either, MUST NOT consider a commitment's name, a clock,
+a time zone or a locale, and SHALL be formed for any supported date, arrived or not. It SHALL NOT
+count, total or rank anything. Rows SHALL come only from the commitments handed over: the history
+SHALL be asked about each of them in turn and SHALL never be enumerated. A day view with no such
+commitment, or none at all, SHALL hold no rows rather than refuse.
+
+#### Scenario: a day view holds a row for each commitment due on the date
+
+- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of a
+  commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, a commitment named
+  "Run" on a schedule listing Monday and Thursday, and a commitment named "Finances" on a schedule on
+  the 25th of the month, all three kept from 1 January 2026
+- **THEN** the day view holds two rows
+- **AND** they are named "Gym" and "Run"
+
+#### Scenario: a commitment not due on the date has no row
+
+- **WHEN** a day view is formed on Tuesday 1 September 2026, from a history that has taken no tick,
+  of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026
+- **THEN** the day view holds no rows
+
+#### Scenario: a commitment ticked on the date has a row that says it is kept
+
+- **WHEN** a day view is formed on Monday 31 August 2026, of a commitment named "Gym" on a schedule
+  listing Monday, Wednesday and Saturday, kept from 1 January 2026, from a history holding a tick for
+  that commitment on that date
+- **THEN** the day view holds one row
+- **AND** that row is named "Gym" and says the commitment is kept
+
+#### Scenario: a day view of no commitments at all has no rows
+
+- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of
+  no commitments at all
+- **THEN** the day view holds no rows
+
+#### Scenario: a day view holds no rows when none of the commitments is due
+
+- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of a
+  commitment named "Finances" on a schedule on the 25th of the month, kept from 1 January 2026, and a
+  commitment named "Contact lenses" on a schedule of every 14 days starting on 25 August 2026, kept
+  from that same day
+- **THEN** the day view holds no rows
+
+#### Scenario: a commitment whose schedule is due but which is kept from a later day has no row
+
+- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of a
+  commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from Wednesday
+  2 September 2026
+- **THEN** the day view holds no rows, though the schedule is due on that date
+- **AND** a day view of the same commitment on Wednesday 2 September 2026 holds one row named "Gym"
+
+#### Scenario: a tick for a commitment the day view was not handed adds no row
+
+- **WHEN** a day view is formed on Monday 31 August 2026, of a commitment named "Gym" on a schedule
+  listing Monday, Wednesday and Saturday, kept from 1 January 2026, from a history holding a tick on
+  that date for a commitment named "Run" on a schedule listing Monday and Thursday, kept from the
+  same day
+- **THEN** the day view holds one row
+- **AND** that row is named "Gym" and says the commitment is not kept
+
+#### Scenario: a tick on another date does not make the row say it is kept
+
+- **WHEN** a day view is formed on Monday 31 August 2026, of a commitment named "Gym" on a schedule
+  listing Monday, Wednesday and Saturday, kept from 1 January 2026, from a history holding a tick for
+  that commitment on Saturday 5 September 2026
+- **THEN** the day view holds one row saying the commitment is not kept
+- **AND** a day view of the same commitment and history on Saturday 5 September 2026 holds one row
+  saying it is kept
+
+#### Scenario: two commitments with the same name and different schedules each have their own row
+
+- **WHEN** a day view is formed on Monday 31 August 2026, of a commitment named "Gym" on a schedule
+  listing Monday, Wednesday and Saturday and a commitment named "Gym" on a schedule listing Monday
+  and Thursday, both kept from 1 January 2026, from a history holding a tick on that date for the
+  first of them only
+- **THEN** the day view holds two rows, both named "Gym"
+- **AND** the first says the commitment is kept and the second says it is not
+
+#### Scenario: a commitment on a weekly quota has a row on every day of the week
+
+- **WHEN** a day view is formed on each date from Monday 31 August through Sunday 6 September 2026,
+  from a history that has taken no tick, of a commitment named "Reading" on a schedule of 3 times a
+  week, kept from 1 January 2026
+- **THEN** each of the seven day views holds one row named "Reading", saying the commitment is not
+  kept
+- **AND** when the history holds ticks for that commitment on Monday 31 August, Wednesday 2 September
+  and Saturday 5 September 2026, those three dates' rows say it is kept and the other four dates
+  still hold a row saying it is not
+
+#### Scenario: a day view is formed in the first supported year and in the last
+
+- **WHEN** a day view is formed on Monday 3 January 1583, from a history that has taken no tick, of a
+  commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from 1 January
+  1583
+- **THEN** the day view holds one row named "Gym", saying the commitment is not kept
+- **AND** a day view of the same commitment and history on Monday 27 December 9999 holds one row
+  saying the same
+
+#### Scenario: a row carries the commitment's name exactly as it was given
+
+- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of a
+  commitment named " Gym ", with a space at each end, and a commitment named with the single emoji
+  🏋️, both on a schedule listing Monday, Wednesday and Saturday and both kept from 1 January 2026
+- **THEN** the first row is named " Gym ", with both spaces
+- **AND** the second row is named with that emoji
+
+### Requirement: A day view draws its rows in the groups it was handed, and draws no group holding no row
+
+A day view SHALL be handed its commitments in groups — a category, or none, with its commitments —
+and SHALL hold one for each group handed with a row on its date, in the order handed, each
+holding its commitments' rows in that order. Its rows SHALL be every row its groups hold, in the
+order drawn, and a row in a group SHALL say what one under no category says. A day view SHALL sort
+neither the groups nor within one, SHALL NOT decide where commitments under no category go, and
+SHALL NOT combine two groups under one category. A group holding no row SHALL NOT be drawn, and
+one handed only such groups SHALL hold no groups and no rows. A day view MAY be handed no grouping,
+and SHALL then hold one group with no category, or none where it holds no row.
+
+#### Scenario: a day view holds one group for each group it was handed that has something due
+
+- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of
+  a group under "Supplements" holding a commitment named "Creatine" and then one named "Magnesium",
+  then a group under "Sport" holding one named "Gym", then a group with no category holding one
+  named "Journaling", all four on a schedule listing all seven weekdays and all kept from
+  1 January 2026
+- **THEN** the day view holds three groups, under "Supplements", then "Sport", then no category
+- **AND** its rows, read across its groups, are named "Creatine", "Magnesium", "Gym" and then
+  "Journaling", in that order
+
+#### Scenario: a day view draws no group whose commitments are none of them due on the date
+
+- **WHEN** a day view is formed on Tuesday 1 September 2026, from a history that has taken no tick,
+  of a group under "Money" holding a commitment named "Finances" on a schedule on the 25th of the
+  month, then a group under "Sport" holding one named "Gym" on a schedule listing all seven
+  weekdays, both kept from 1 January 2026
+- **THEN** the day view holds one group, under "Sport", holding one row named "Gym"
+- **AND** no group is drawn under "Money"
+
+#### Scenario: a day view handed only groups with nothing due holds no groups at all
+
+- **WHEN** a day view is formed on Tuesday 1 September 2026, from a history that has taken no tick,
+  of a group under "Money" holding a commitment named "Finances" on a schedule on the 25th of the
+  month, kept from 1 January 2026
+- **THEN** the day view holds no groups and no rows
+- **AND** it is the same day view as one formed on that date, from that same history, of no
+  commitments at all
+
+#### Scenario: a day view drops the commitments that are not due and keeps the group its due ones are in
+
+- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of
+  a group under "Supplements" holding a commitment named "Creatine" on a schedule listing all seven
+  weekdays and then one named "Vitamin D" on a schedule on the 25th of the month, both kept from
+  1 January 2026
+- **THEN** the day view holds one group, under "Supplements", holding one row named "Creatine"
+
+#### Scenario: a day view handed commitments with no grouping holds one group with no category
+
+- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of
+  a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, then one named
+  "Run" on a schedule listing Monday and Thursday, both kept from 1 January 2026, handed over with
+  no grouping at all
+- **THEN** the day view holds one group, with no category, holding rows named "Gym" and then "Run"
+- **AND** it is the same day view as one formed on that date, from that same history, of one group
+  with no category holding those same two commitments in that same order
+
+#### Scenario: a day view does not combine two groups under the same category
+
+- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of
+  a group under "Supplements" holding a commitment named "Creatine", then a group under "Sport"
+  holding one named "Gym", then a second group under "Supplements" holding one named "Magnesium",
+  all three on a schedule listing all seven weekdays and all kept from 1 January 2026
+- **THEN** the day view holds three groups, under "Supplements", then "Sport", then "Supplements"
+- **AND** its rows, read across its groups, are named "Creatine", "Gym" and then "Magnesium"
+
+#### Scenario: a row in a group says whether its commitment is kept, exactly as a row under no category does
+
+- **WHEN** a day view is formed on Monday 31 August 2026, of a group under "Supplements" holding a
+  commitment named "Creatine" and then one named "Magnesium", both on a schedule listing all seven
+  weekdays and both kept from 1 January 2026, from a history holding a tick for "Magnesium" on that
+  date
+- **THEN** the day view holds one group, under "Supplements", holding two rows named "Creatine" and
+  then "Magnesium"
+- **AND** only the second row says its commitment is kept
+
+### Requirement: A day view holds a row for a day a shift took a due day from, and that row offers nothing
+
+A day view SHALL hold a row for each commitment handed to it a shift of which took a due day from
+its date, in the place among its rows that commitment was handed in. That row SHALL say its
+commitment is not kept, and SHALL offer no tick, no number entry, no note entry, no total entry and
+no take-back, whatever its kind and whatever day it is asked as of; it SHALL say it offers nothing
+at all, and a day screen SHALL offer it no day to shift to. A group holding no row but such a row
+SHALL still be drawn, holding it.
+
+#### Scenario: a row of a day a shift took a due day from offers nothing, whatever its kind
+
+- **WHEN** a day screen is opened as of Tuesday 1 September 2026, at a record place where nothing
+  has been kept and a roster place holding, in this order and each on a schedule listing Monday,
+  Wednesday and Saturday and kept from 1 January 2026, a commitment named "Gym" of the tick kind,
+  one named "Weight" of the number kind with a range of 40 to 150, one named "Journal" of the note
+  kind and one named "Protein" of the total kind with a target of 120, the due day of each on Monday
+  31 August 2026 shifted to Tuesday 1 September 2026; and the screen is moved to the day before
+- **THEN** its day view holds four rows, named "Gym", "Weight", "Journal" and then "Protein", each
+  saying its commitment is not kept
+- **AND** asked as of Tuesday 1 September 2026, none of them offers a tick, a number entry, a note
+  entry, a total entry or a take-back, and each says it offers nothing at all
+- **AND** the day screen offers none of the four a day to shift to
+
+#### Scenario: a group holding only a row a shift took a due day from is still drawn
+
+- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no record,
+  of a group under "Sport" holding a commitment named "Gym" on a schedule listing Monday, Wednesday
+  and Saturday, kept from 1 January 2026, as a roster holds it once its due day on that date is
+  shifted to Tuesday 1 September 2026, and then a group with no category holding one named
+  "Journaling" on a schedule listing all seven weekdays, kept from 1 January 2026
+- **THEN** the day view holds two groups, under "Sport" and then under no category
+- **AND** the group under "Sport" holds one row, named "Gym", saying "to Tue"
+
+### Requirement: A day screen offers a row the free days its due day can be shifted to
+
+Asked about a row its day view holds, a day screen SHALL offer exactly the days its roster would
+shift that row's due day onto, as *A roster shifts a due day of a commitment it holds onto a free
+day of that day's week* gives them, in week order from Monday, each with its date and the
+three-letter name of its weekday, as a day view says its day. It SHALL offer none where the row's
+day holds any record — a tick, a number, a note or an addition, a total short of its target
+included — none where it is not keeping its record or its roster, and none for a row only a day
+view either side holds. Asking SHALL change nothing the screen holds and nothing at any of its
+places.
+
+#### Scenario: a day screen offers a row the free days of its week, Monday first, each said as its weekday
+
+- **WHEN** a day screen is opened as of Wednesday 2 September 2026, at places where nothing has been
+  kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, and is moved to the day before twice
+- **THEN** the day screen offers its one row, of Monday 31 August 2026, the days Tuesday 1,
+  Thursday 3, Friday 4 and Sunday 6 September 2026, in that order, said "Tue", "Thu", "Fri" and
+  "Sun"
+- **AND** once moved to Saturday 5 September 2026, a day not yet arrived, it offers that day's row
+  Tuesday 1, Thursday 3, Friday 4 and Sunday 6 September 2026 alike
+- **AND** the content at every place is byte-for-byte what it was immediately after it was opened
+
+#### Scenario: a day screen offers a row a shift put its due day on the free days of its week and the day it came from
+
+- **WHEN** a roster place holds a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, whose due day on Monday 31 August 2026 is shifted to Thursday
+  3 September 2026, and a day screen is opened at it as of Thursday 3 September 2026, at a record
+  place where nothing has been kept
+- **THEN** the day screen offers its one row the days Monday 31 August, Tuesday 1, Friday 4 and
+  Sunday 6 September 2026, in that order, said "Mon", "Tue", "Fri" and "Sun"
+
+#### Scenario: a day screen offers no day to shift a row whose day holds a record
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been
+  kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, and its one row is ticked
+- **THEN** the day screen offers the row its day view then holds no day to shift to
+- **AND** once that row is ticked again, it offers the row its day view then holds Tuesday 1,
+  Thursday 3, Friday 4 and Sunday 6 September 2026
+- **AND** a row of a commitment named "Protein" of the total kind with a target of 120, on the same
+  schedule, whose day holds an addition of 35, is offered no day, though it says its commitment is
+  not kept
+
+#### Scenario: a day screen offers no day to shift a row where it is not keeping its record, nor a row of a day either side
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a roster place where nothing has
+  been kept and a record place holding a run of bytes that is not what a record is written as, of a
+  commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from 1 January
+  2026
+- **THEN** the day screen offers its one row no day to shift to
+- **AND** a day screen opened as of Monday 31 August 2026, at places where nothing has been kept, of
+  a commitment named "Run" on a schedule listing Tuesday and Thursday, kept from 1 January 2026,
+  offers the row of the day view it says of the day after no day to shift to
+
+### Requirement: A day screen shifts a row's due day to a day it offers, and keeps the shift at its roster place before the day view says so
+
+A day screen SHALL shift the due day of a row its day view holds onto a day it offers that row,
+keeping the shift at its roster place before its day view says so, and SHALL then form its day view
+and the day views either side from its roster as it then stands. A day it does not offer that row,
+and a row its day view does not hold, SHALL change nothing, keep nothing at any place and tell
+nothing. A shift that cannot be kept at the roster place SHALL be refused with an error and told on
+its row, as *A day screen tells on the row that was tapped that its change could not be kept*
+requires, its day view staying as it was.
+
+#### Scenario: a row's due day shifted to a day offered is kept at the roster place, and the day view says where it went
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been
+  kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, and its one row is shifted to Tuesday 1 September 2026
+- **THEN** nothing is refused, and its day view holds one row, named "Gym", saying "to Tue" and
+  offering nothing
+- **AND** the day view it says of the day after holds a row named "Gym" saying "from Mon"
+- **AND** the commitment a roster store opened afterwards at that roster place keeps is due on
+  Tuesday 1 September 2026 and not on Monday 31 August 2026
+
+#### Scenario: a day shifted back to the day it came from leaves both days as they were
+
+- **WHEN** a roster place holds a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, whose due day on Monday 31 August 2026 is shifted to Tuesday
+  1 September 2026; a day screen is opened at it as of Tuesday 1 September 2026, at a record place
+  where nothing has been kept; and its one row is shifted to Monday 31 August 2026
+- **THEN** nothing is refused, and its day view holds no row
+- **AND** the day view it says of the day before holds one row, named "Gym", saying "Mon, Wed, Sat"
+  and offering its tick
+- **AND** the commitment a roster store opened afterwards at that roster place keeps is due on
+  Monday 31 August 2026 and not on Tuesday 1 September 2026
+
+#### Scenario: shifting a row to a day not offered changes nothing
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been
+  kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, and its one row is shifted to Wednesday 2 September 2026
+- **THEN** nothing is refused and nothing is told on any row
+- **AND** its day view still holds one row, named "Gym", saying "Mon, Wed, Sat"
+- **AND** shifting it to Tuesday 8 September 2026, a day of the week after, changes nothing either,
+  and the content at every place is byte-for-byte what it was immediately after it was opened
+- **AND** a day screen opened the same way of a commitment named "Run" on a schedule listing Tuesday
+  and Thursday, kept from 1 January 2026, changes nothing and tells nothing when the row of the day
+  view it says of the day after is shifted to Wednesday 2 September 2026
+
+#### Scenario: a shift the roster place cannot keep is refused and told on its row
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been
+  kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday and one
+  named "Journaling" on a schedule listing all seven weekdays, in that order and both kept from
+  1 January 2026; what is at its roster place is then made impossible to write; and the "Gym" row
+  is shifted to Tuesday 1 September 2026
+- **THEN** shifting is refused with an error
+- **AND** the day screen tells, on the "Gym" row, that the change could not be kept, and nothing on
+  the "Journaling" row
+- **AND** its day view still holds the "Gym" row saying "Mon, Wed, Sat" and offering its tick

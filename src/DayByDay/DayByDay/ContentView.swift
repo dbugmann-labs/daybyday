@@ -1830,6 +1830,27 @@ struct ContentView: View {
     /// on the day it is showing and none on a day either side of it*.
     @ViewBuilder
     private func rowView(_ row: DayView.Row) -> some View {
+        // The long-press menu rides only a row the Kit offers a shift for, and its words are the
+        // Kit's own — `shift-a-due-day/design.md` § *The shell*.
+        let days = screen.shiftDays(for: row)
+        if days.isEmpty {
+            rowContent(row)
+        } else {
+            rowContent(row)
+                .contextMenu {
+                    Menu("Shift to") {
+                        ForEach(days, id: \.self) { day in
+                            Button(day.words) {
+                                keeping { try screen.shift(row, to: day.date) }
+                            }
+                        }
+                    }
+                }
+        }
+    }
+
+    @ViewBuilder
+    private func rowContent(_ row: DayView.Row) -> some View {
         let entry = row.numberEntry(asOf: today())
         let noteEntry = row.noteEntry(asOf: today())
         let totalEntry = row.totalEntry(asOf: today())

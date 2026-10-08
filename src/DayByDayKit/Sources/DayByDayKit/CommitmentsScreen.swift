@@ -729,6 +729,10 @@ public final class CommitmentsScreen {
         case usualAmountAlike(Int)
         /// The sixth usual amount typed, naming its place as above.
         case moreThanFiveUsualAmounts(Int)
+        /// A change asking for a different rhythm, day kept from, range or target, or a stop,
+        /// while a shift of the commitment has either day after the day this screen was handed.
+        /// `openspec/changes/shift-a-due-day/design.md` § *Settled 7 is read as written*.
+        case shiftedDayAhead
     }
 
     /// A field of the sheet a commitments screen draws — a define, a change or a restart form —
@@ -1316,6 +1320,11 @@ public final class CommitmentsScreen {
             return nil
         }
 
+        if putsNewEra || keptFromChanged, hasShiftAfterDayHanded(entry.commitment) {
+            refuse(.changing(commitment, .shiftedDayAhead), on: ambiguousField)
+            return .shiftedDayAhead
+        }
+
         var nextRoster = rosterStore.roster
 
         if nameChanged {
@@ -1544,6 +1553,13 @@ public final class CommitmentsScreen {
             return .notKept
         }
 
+        if let held = rosterStore.roster.entries.first(where: { $0.commitment == commitment }),
+            hasShiftAfterDayHanded(held.commitment)
+        {
+            refusedChange = .stopping(commitment, .shiftedDayAhead)
+            return .shiftedDayAhead
+        }
+
         let holdsRecordOnDayHanded =
             recordStore?.history.datesRecorded(for: commitment).contains(dayToKeepFrom) ?? false
         let keptUntil = holdsRecordOnDayHanded ? dayToKeepFrom : Self.dayBefore(dayToKeepFrom)
@@ -1559,6 +1575,14 @@ public final class CommitmentsScreen {
         refreshLists(from: rosterStore)
         copyPlace?.keptAChange()
         return nil
+    }
+
+    /// Whether a shift of `commitment` has either of its days later than the day this screen was
+    /// handed. `design.md` § *Settled 7 is read as written*.
+    private func hasShiftAfterDayHanded(_ commitment: Commitment) -> Bool {
+        commitment.shifts.contains { from, to in
+            dayToKeepFrom.days(until: from) > 0 || dayToKeepFrom.days(until: to) > 0
+        }
     }
 
     /// The day before `date`, or `date` itself where the calendar has no day before it (1 January

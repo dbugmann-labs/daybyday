@@ -104,12 +104,46 @@ public struct DayView: Hashable, Sendable {
 
         let weekStanding: WeekStanding?
 
+        /// The shift of a due day this row's date is one end of, or `nil` where none is: the day
+        /// the row's due day came from, or the day a shift took its due day to. Part of the row,
+        /// since a commitment's equality is its identity alone and a row before and after a shift
+        /// would otherwise be equal. `design.md` § *The row stores its shift*.
+        enum Shift: Hashable, Sendable {
+            case cameFrom(CalendarDate)
+            case wentTo(CalendarDate)
+        }
+
+        let shift: Shift?
+
+        /// Whether a shift took this row's commitment's due day from this row's date: the row
+        /// offers nothing at all.
+        private var tookItsDueDay: Bool {
+            if case .wentTo = shift {
+                return true
+            }
+            return false
+        }
+
+        /// Whether this row's day holds any record of its commitment: a tick, a number, a note or a
+        /// sum above zero, a total short of its target included.
+        var holdsARecord: Bool {
+            isKept || number != nil || note != nil || total > 0
+        }
+
         public var name: String { commitment.name }
 
         /// The rhythm this row's commitment runs on, in words — given this row's standing and
         /// what its week owes on a weekly quota, and plainly otherwise. See
         /// `docs/adr/1034-a-schedule-says-its-rhythm-in-words.md`.
         public var rhythmInWords: String {
+            switch shift {
+            case .cameFrom(let day):
+                return "from \(DayTitle.weekdayNames[day.weekday]!)"
+            case .wentTo(let day):
+                return "to \(DayTitle.weekdayNames[day.weekday]!)"
+            case nil:
+                break
+            }
             guard let weekStanding else {
                 return commitment.rhythmInWords
             }
@@ -129,7 +163,7 @@ public struct DayView: Hashable, Sendable {
 
         /// The tick this row makes, or `nil` when the row's date is later than `today`.
         public func tick(asOf today: CalendarDate) -> Tick? {
-            guard today.days(until: date) <= 0 else {
+            guard !tookItsDueDay, today.days(until: date) <= 0 else {
                 return nil
             }
 
@@ -140,7 +174,7 @@ public struct DayView: Hashable, Sendable {
         /// or the row's date is later than `today`. Chosen where the commitment's range is short
         /// (`Commitment.Range.isShort`), typed otherwise — `CONTEXT.md` § *Short range*.
         public func numberEntry(asOf today: CalendarDate) -> NumberEntry? {
-            guard today.days(until: date) <= 0 else {
+            guard !tookItsDueDay, today.days(until: date) <= 0 else {
                 return nil
             }
 
@@ -181,7 +215,7 @@ public struct DayView: Hashable, Sendable {
         /// The note entry this row offers, or `nil` when its commitment's kind is not a note or
         /// the row's date is later than `today`.
         public func noteEntry(asOf today: CalendarDate) -> NoteEntry? {
-            guard today.days(until: date) <= 0 else {
+            guard !tookItsDueDay, today.days(until: date) <= 0 else {
                 return nil
             }
 
@@ -205,7 +239,7 @@ public struct DayView: Hashable, Sendable {
         /// The total entry this row offers, or `nil` when its commitment's kind is not a total
         /// or the row's date is later than `today`.
         public func totalEntry(asOf today: CalendarDate) -> TotalEntry? {
-            guard today.days(until: date) <= 0 else {
+            guard !tookItsDueDay, today.days(until: date) <= 0 else {
                 return nil
             }
 
@@ -474,7 +508,7 @@ public struct DayView: Hashable, Sendable {
     ) -> [Group] {
         groups.compactMap { group in
             let rows = group.commitments
-                .filter { $0.isDue(on: date) }
+                .filter { $0.isDue(on: date) || $0.tookDueDay(from: date) }
                 .map { commitment -> Row in
                     let weekStanding: Row.WeekStanding?
                     if case .weeklyQuota = commitment.schedule {
@@ -488,10 +522,19 @@ public struct DayView: Hashable, Sendable {
                     } else {
                         weekStanding = nil
                     }
+                    let shift: Row.Shift?
+                    let tookDueDay = commitment.tookDueDay(from: date)
+                    if tookDueDay {
+                        shift = .wentTo(commitment.shifts[date]!)
+                    } else if let from = commitment.shifts.first(where: { $0.value == date })?.key {
+                        shift = .cameFrom(from)
+                    } else {
+                        shift = nil
+                    }
                     let number = history.number(for: commitment, on: date)
                     return Row(
                         commitment: commitment, date: date,
-                        isKept: history.isKept(commitment, on: date),
+                        isKept: !tookDueDay && history.isKept(commitment, on: date),
                         number: number,
                         startingNumber: Self.startingNumber(
                             for: commitment, heldNumber: number, on: date, in: history),
@@ -500,7 +543,7 @@ public struct DayView: Hashable, Sendable {
                         usualAmounts: (roster?.usualAmounts(of: commitment) ?? []).map {
                             UsualAmount(amount: "\($0.amount)", name: $0.name)
                         },
-                        weekStanding: weekStanding)
+                        weekStanding: weekStanding, shift: shift)
                 }
             guard !rows.isEmpty else {
                 return nil

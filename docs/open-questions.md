@@ -236,6 +236,19 @@ Things that are built, or deliberately not built, in a state someone will trip o
   `simctl` grant. The cause is undiagnosed. Until it is found, a Story whose walk needs the calendar
   on is walked on the phone. Found at #328's walk, 2026-09-24; the owner walked W.1–W.5 on the phone
   and approved at G7 without simulator pictures.
+- **The Kit's tests write to this Mac's real record place.** Tests that build a `CommitmentsScreen`
+  without `keepingRecordAt` open `~/Library/Application Support/DayByDay/record.json`, not a scratch
+  place. At #392's G7 on 2026-10-08 that file declared record form 7, written by the branch's own test
+  run, so `origin/main` — which knows form 6 — read it as a later form and failed 19 checks across 11
+  delete-for-good tests in `CommitmentsScreenTests`, while CI, which has no such file, stayed green.
+  With the home directory pointed elsewhere `main` passes 1948 of 1948. It predates #392 and will hit
+  any older checkout tested on this Mac until the file is removed or the tests are given a place of
+  their own; the file was left as found, for the owner to decide.
+- **A commitment's look-back is built from the value handed in, not from the roster's own entry.**
+  `CommitmentsScreen.lookBack(at:)` forms the newest era from the commitment it is given, so a stale
+  value would ignore shifts made since. The app cannot reach it — the commitments screen is rebuilt on
+  every open and shifts are made only on the day screen — and reading `entry.commitment` instead would
+  close it. Found at #392's G7 on 2026-10-08 and left by the owner's reply.
 - **The walk cannot draw the app in dark on this machine's simulator.** At #391's walk the
   throwaway XCUITest asked for dark four ways — `XCUIDevice.shared.appearance = .dark`,
   `xcrun simctl ui <udid> appearance dark` before the run, `-AppleInterfaceStyle Dark` at launch, and

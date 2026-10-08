@@ -72,16 +72,17 @@ public final class RecordStore {
         }
 
         let identityExpected = document.version >= RecordDocument.identityIntroducedInVersion
-        return document.ticks.allSatisfy { $0.commitment.identityKeyPresent == identityExpected }
-            && (document.numbers ?? []).allSatisfy {
-                $0.commitment.identityKeyPresent == identityExpected
-            }
-            && (document.notes ?? []).allSatisfy {
-                $0.commitment.identityKeyPresent == identityExpected
-            }
-            && (document.additions ?? []).allSatisfy {
-                $0.commitment.identityKeyPresent == identityExpected
-            }
+        // A shift kept beside a record belongs to the forms since it was introduced; where it is
+        // present is a record's own business, so only a form before it is judged here.
+        let shiftsPossible = document.version >= RecordDocument.shiftsIntroducedInVersion
+        func agrees(_ commitment: CommitmentRecord) -> Bool {
+            commitment.identityKeyPresent == identityExpected
+                && (shiftsPossible || commitment.shiftedFrom == nil)
+        }
+        return document.ticks.allSatisfy { agrees($0.commitment) }
+            && (document.numbers ?? []).allSatisfy { agrees($0.commitment) }
+            && (document.notes ?? []).allSatisfy { agrees($0.commitment) }
+            && (document.additions ?? []).allSatisfy { agrees($0.commitment) }
     }
 
     /// Forms the ticks, numbers, notes and additions `document` holds — `nil` where its shape

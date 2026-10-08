@@ -16,12 +16,15 @@ an error. The store MUST NOT answer with an empty history, overwrite, move or de
 or keep the part of it that could be read: the whole SHALL be refused and what is at that place left
 unchanged. What this app cannot read as a store SHALL include content that is not a store at all, a
 store written in a form later than the one this app knows, and a store holding something that could
-not be a record: a date that names no day, a commitment on a date it is not due on, a record against
-a commitment of another kind, a number outside the range its commitment declares, a note whose text
-says nothing, an addition of an amount that is not above zero, or a day carrying no addition at all.
+not be a record: a date that names no day, a commitment on a date it is not due on — its schedule and the shift kept beside the record deciding
+which —, a record against a commitment of another kind, a number outside the range its commitment
+declares, a note whose text says nothing, an addition of an amount that is not above zero, a day
+carrying no addition at all, or a shift kept beside a record that took its due day from that
+record's own date or from a day outside that date's Monday-to-Sunday week.
 
-Every rule a record is formed by SHALL be applied again to what comes off the place, and this
-capability SHALL add no rule there and drop none: a note SHALL NOT be read back more leniently than
+Every rule a record is formed by SHALL be applied again to what comes off the place, and of a shift
+kept beside a record exactly the two its last case names; this capability SHALL add no other rule
+there and drop none: a note SHALL NOT be read back more leniently than
 it was written. Each addition SHALL be re-formed on its own, and no rule SHALL be applied across a
 day. A store holding a day whose additions sum to more than this system can keep exactly SHALL be
 read rather than refused, and that day SHALL answer whatever its additions come to. What a day's
@@ -127,6 +130,19 @@ rule of that kind SHALL be applied to what comes off the place.
   1 January 2026, on Monday 31 August 2026
 - **THEN** opening is refused with an error
 - **AND** the content at that place is byte-for-byte what it was before
+
+#### Scenario: a store holding a record beside a shift that could not be one is refused
+
+- **WHEN** a store is opened at a place holding a store in the form this app writes, whose one tick
+  is of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, on Tuesday 1 September 2026, kept beside a shift from Monday 24 August 2026 — a
+  day of the week before
+- **THEN** opening is refused with an error
+- **AND** a store at a place holding that tick kept beside a shift from Tuesday 1 September 2026
+  itself is refused the same way
+- **AND** the content at each place is byte-for-byte what it was before
+- **AND** a store at a place holding that tick kept beside a shift from Monday 31 August 2026 opens
+  without error, and answers that "Gym" was kept on Tuesday 1 September 2026
 
 ### Requirement: A number is of a number commitment on a calendar date it is due on
 
@@ -622,7 +638,8 @@ app has never written, one below the earliest, with an error saying the content 
 rather than that it is from a later form. A store SHALL read each form as the shape that form has,
 and SHALL refuse one whose shape and declared form disagree. Which shape belongs to which form SHALL
 be judged against the form each part was first written at, never the newest: numbers arrived at the
-third form, notes the fourth, additions the fifth, and a record's identity the sixth. Opening a store MUST NOT change what is at its
+third form, notes the fourth, additions the fifth, a record's identity the sixth, and a shift kept beside a record
+the seventh. Opening a store MUST NOT change what is at its
 place, which SHALL stay byte-for-byte what it was: a store SHALL write only when a change is kept.
 
 #### Scenario: reading a history kept in an earlier form changes nothing at its place
@@ -697,6 +714,16 @@ place, which SHALL stay byte-for-byte what it was: a store SHALL write only when
   record, is refused the same way
 - **AND** the error says the content is not a store rather than that it is from a later form
 - **AND** the content at each place is byte-for-byte what it was before
+
+#### Scenario: a store whose shape and declared form disagree about shifts is refused
+
+- **WHEN** a store is opened at a place holding a store written in the form used before a shift was
+  kept beside a record, whose one tick, of a commitment named "Gym" on a schedule listing Monday,
+  Wednesday and Saturday, kept from 1 January 2026, on Tuesday 1 September 2026, nonetheless has a
+  shift from Monday 31 August 2026 kept beside it
+- **THEN** opening is refused with an error
+- **AND** the error says the content is not a store rather than that it is from a later form
+- **AND** the content at that place is byte-for-byte what it was before
 
 ### Requirement: Each earlier form is read as the record it always was
 
@@ -823,10 +850,12 @@ writes, and every tick, number and note the earlier form held SHALL still be in 
 
 ### Requirement: A store persists each kind of record as exactly what it is
 
-A store SHALL persist each record as exactly what it is and nothing else: its commitment whole,
-identity and kind included, its calendar date, and the number, text or amounts it carries, in the
-order they were made. An identity SHALL be kept exactly as given and MUST NOT be reissued on a
-write, and what a record is of SHALL be that identity and that date and nothing else, so a record
+A store SHALL persist each record as exactly what it is and nothing else: its commitment whole but
+for the shifts it carries, identity and kind included, its calendar date, the number, text or
+amounts it carries, in the order they were made, and, beside a record on a day a shift put a due day
+on, the day that shift took it from and no other shift. An identity SHALL be kept exactly as given
+and MUST NOT be reissued on a write, and what a record is of SHALL be that identity and that date
+and nothing else, never the shift kept beside it, so a record
 read back is a record of the same commitment rather than of one alike to it. A record read back SHALL be the same record that was added: every schedule shape, any name,
 any supported date, numbers and amounts digit for digit, notes character for character at every
 length and in every script, blank space and line breaks included, each character in the very form
@@ -2001,3 +2030,27 @@ SHALL NOT be capped at what a quota asks for.
   added to a history
 - **THEN** it answers a standing of 3 for that commitment on Friday 31 December 9999
 - **AND** a standing of 2 on Wednesday 29 December 9999
+
+### Requirement: A store keeps a record on a day a shift put a due day on, and reads it back
+
+A store SHALL keep a record of any kind on a day a shift of its commitment put a due day on, and
+SHALL read it back, once the app is closed and opened again, as that record of that commitment on
+that day, whatever shifts the commitment has made since. It SHALL keep beside such a record the day
+that shift took its due day from, a part first written at the seventh form, and no other shift, as
+*A store persists each kind of record as exactly what it is* says, and SHALL read a history kept in
+a form before it as holding none beside any record.
+
+#### Scenario: records on a day a shift put a due day on are read back after the app is closed and opened again
+
+- **WHEN** a roster holds a commitment named "Gym" of the tick kind and one named "Protein" of the
+  total kind with a target of 120, both on a schedule listing Monday, Wednesday and Saturday and kept
+  from 1 January 2026, each with its due day on Monday 31 August 2026 shifted to Tuesday 1 September
+  2026; a tick for "Gym" and an addition of 35 for "Protein" on Tuesday 1 September 2026, each
+  formed against the commitment that roster keeps, are kept at a record place; "Gym"'s due day on
+  Wednesday 2 September 2026 is then shifted to Thursday 3 September 2026; and a store is opened
+  afterwards at that record place
+- **THEN** opening is not refused
+- **AND** its history keeps "Gym" on Tuesday 1 September 2026, and has added 35 for "Protein" on that
+  day
+- **AND** the content at that record place holds Wednesday 2 September 2026, the later shift's day,
+  nowhere

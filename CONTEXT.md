@@ -478,6 +478,20 @@ ticked day is refused, and a shifted day may be shifted again, to its own date i
 **move** — that word already means reordering a roster and paging a day view. Agreed 2026-10-06 at
 the twenty-fifth grooming pass's Feature grill, for B-054.
 
+**Amended 2026-10-07**, while writing the delta of `shift-a-due-day` (#392). A shift is part of the
+commitment, carried by every era of it alike, and the day it lands on is due whichever era holds it
+(ADR-1066). A stopped commitment's days shift as a kept one's do, within the era holding them. Any
+record on the day refuses it, a total short of its target included, and a change of rhythm, day kept
+from, range or target, and a stop, are refused while a shift has either day after today.
+
+**Free day** — a day a **shift** may put a due day on: a day of that due day's Monday-to-Sunday
+week, held by the same **era**, that the era's rhythm is not due on and that no other shift has put
+a due day on; and, for a day a shift already put there, the day it came from, but only where an era
+holding it is due on it by its rhythm, so undoing a shift never leaves its due day on neither day.
+Otherwise a gap day, a day before the day kept from and a day another era holds are never free. The
+day screen offers a row's free days, and only those. Written 2026-10-07, while writing the delta of
+`shift-a-due-day` (#392); the day it came from narrowed 2026-10-08, at its G7.
+
 **Category** — the word a person put a commitment under: *supplements*, *sport*, whatever they
 type. It is the owner's own word and never one the app names — no fixed menu holds the day-one
 week, and the same argument that makes a **commitment name** the owner's rather than the system's

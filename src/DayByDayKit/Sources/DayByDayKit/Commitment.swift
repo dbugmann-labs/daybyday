@@ -49,6 +49,13 @@ public struct Commitment: Sendable {
     let keptFrom: CalendarDate
     public let kind: Kind
 
+    /// The shifts made of this commitment's due days, each from the day a shift took a due day
+    /// from to the day it is on, written alike on every era of it. Empty where none has been made.
+    /// Equality ignores it, as it ignores every part but the identity; nothing may decide to
+    /// write, redraw or carry by comparing two commitments. `docs/adr/1066-a-shift-is-part-of-
+    /// the-commitment.md`.
+    let shifts: [CalendarDate: CalendarDate]
+
     public init?(name: String, schedule: Schedule, keptFrom: CalendarDate, kind: Kind = .tick) {
         guard !Blank.saysNothing(name) else {
             return nil
@@ -59,6 +66,7 @@ public struct Commitment: Sendable {
         self.schedule = schedule
         self.keptFrom = keptFrom
         self.kind = kind
+        self.shifts = [:]
     }
 
     /// Forms a further era of `of` — the same commitment, carrying its identity and its name,
@@ -71,13 +79,16 @@ public struct Commitment: Sendable {
         self.schedule = schedule
         self.keptFrom = keptFrom
         self.kind = kind
+        self.shifts = of.shifts
     }
 
     /// Re-forms a commitment carrying `identity` already given, rather than minting a new one —
     /// for a store reading one back exactly as it was written. Package-internal:
     /// `CommitmentRecord.commitment()` is the one caller. `design.md` § *The form on disk*.
-    init?(identity: Identity, name: String, schedule: Schedule, keptFrom: CalendarDate, kind: Kind)
-    {
+    init?(
+        identity: Identity, name: String, schedule: Schedule, keptFrom: CalendarDate, kind: Kind,
+        shifts: [CalendarDate: CalendarDate] = [:]
+    ) {
         guard !Blank.saysNothing(name) else {
             return nil
         }
@@ -87,6 +98,7 @@ public struct Commitment: Sendable {
         self.schedule = schedule
         self.keptFrom = keptFrom
         self.kind = kind
+        self.shifts = shifts
     }
 
     /// Forms `of`, renamed to `name` — the same identity, schedule, day kept from and kind.
@@ -98,11 +110,36 @@ public struct Commitment: Sendable {
         self.schedule = of.schedule
         self.keptFrom = of.keptFrom
         self.kind = of.kind
+        self.shifts = of.shifts
+    }
+
+    /// Forms `of` carrying `shifts` in place of the ones it carries — every other part as it was.
+    /// Package-internal: `Roster.shift(_:from:to:)` writes a shift on every era of an identity
+    /// through it, and a reader gives a stored commitment the shifts its document keeps.
+    init(_ of: Commitment, shifts: [CalendarDate: CalendarDate]) {
+        self.identity = of.identity
+        self.name = of.name
+        self.schedule = of.schedule
+        self.keptFrom = of.keptFrom
+        self.kind = of.kind
+        self.shifts = shifts
+    }
+
+    /// Whether a shift took a due day of this era's commitment from `date`, a day it is kept from.
+    func tookDueDay(from date: CalendarDate) -> Bool {
+        keptFrom.days(until: date) >= 0 && shifts[date] != nil
     }
 
     public func isDue(on date: CalendarDate) -> Bool {
         guard keptFrom.days(until: date) >= 0 else {
             return false
+        }
+
+        if shifts[date] != nil {
+            return false
+        }
+        if shifts.values.contains(date) {
+            return true
         }
 
         return schedule.isDue(on: date)
