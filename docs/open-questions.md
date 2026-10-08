@@ -1007,6 +1007,21 @@ Things that are built, or deliberately not built, in a state someone will trip o
   before that Story, and not its to change under its no-shell-diff box. Whether a hold should ever
   tick is undecided.
 
+- **A range or target change can drop a shift onto a kept-from day that is earlier than the
+  interval's start.** An every-N-days count runs on from a shift only where both of its days fall
+  on or after the earlier of the schedule's start date and the era's kept-from day. A commitment
+  kept from a day before its start, whose first due day is shifted back onto the day it is kept
+  from, satisfies that in its first era. A range-only change puts on a new era whose kept-from day
+  is later, so the bound becomes the start date and the landing falls before it. The count then
+  stops running on from the shift, against the range-carry requirement. Probed at #393's second G7,
+  2026-10-08: "Mood", every 4 days from 6 Aug, kept from 4 Aug, 6 Aug shifted to 4 Aug, is due
+  28 Aug, 1 Sep and 5 Sep, then due 3 and 7 Sep after a range change on 1 Sep. No screen builds the
+  state, because every screen sets an interval's start to the day it is kept from
+  (`CommitmentsScreen.swift` at the add, change and kept-from paths). The day-one Nails and Contact
+  Lenses do have that shape, but they hold records after their first due day, so a shift there is
+  refused. Accepted by the owner rather than taking a third G4. The fix is rewording the dueness
+  rule's bound.
+
 ## Settled
 
 - 2026-09-22 — **ADR-1055 says "the same name and the same kind" where the shipped chain rule said
