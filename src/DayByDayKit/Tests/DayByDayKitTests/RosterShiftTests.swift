@@ -121,8 +121,8 @@ func aRosterRefusesToShiftADueDayOntoADayTheEraHoldingItDoesNotHold() {
     #expect(shiftedBack)
 }
 
-@Test("a roster refuses to shift a day the commitment is not due on, and an every-N-days due day")
-func aRosterRefusesToShiftADayTheCommitmentIsNotDueOnAndAnEveryNDaysDueDay() {
+@Test("a roster refuses to shift a day the commitment is not due on, and a weekly-quota day")
+func aRosterRefusesToShiftADayTheCommitmentIsNotDueOnAndAWeeklyQuotaDay() {
     var roster = Roster()
     let commitment = gym()
     _ = roster.add(commitment)
@@ -135,14 +135,13 @@ func aRosterRefusesToShiftADayTheCommitmentIsNotDueOnAndAnEveryNDaysDueDay() {
     #expect(!origin)
     #expect(!notDue)
 
-    var lenses = Roster()
-    let contactLenses = Commitment(
-        name: "Contact lenses",
-        schedule: .everyNDays(DayInterval(days: 14)!, from: date(2026, 8, 25)),
-        keptFrom: date(2026, 8, 25))!
-    _ = lenses.add(contactLenses)
-    let everyN = lenses.shift(contactLenses, from: date(2026, 8, 25), to: date(2026, 8, 26))
-    #expect(!everyN)
+    var reading = Roster()
+    let weeklyQuota = Commitment(
+        name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!),
+        keptFrom: januaryFirst)!
+    _ = reading.add(weeklyQuota)
+    let quotaDay = reading.shift(weeklyQuota, from: date(2026, 8, 31), to: date(2026, 9, 1))
+    #expect(!quotaDay)
 }
 
 @Test("a roster shifts a day of a commitment it has stopped, and refuses one it does not hold")

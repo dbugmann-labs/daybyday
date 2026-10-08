@@ -230,3 +230,28 @@ func aRosterRefusesToShiftAnEveryNDaysDueDayOntoADayAnotherShiftTookADueDayFrom(
     #expect(!keeps.isDue(on: date(2026, 8, 30)))
     #expect(!keeps.isDue(on: date(2026, 9, 2)))
 }
+
+@Test("a roster shifts an every-N-days day of a commitment it has stopped only onto a day it held")
+func aRosterShiftsAnEveryNDaysDayOfACommitmentItHasStoppedOnlyOntoADayItHeld() {
+    var stopped = Roster()
+    let commitment = nails()
+    _ = stopped.add(commitment)
+    _ = stopped.retire(commitment, keptUntil: date(2026, 8, 31))
+
+    let beyond = stopped.shift(commitment, from: date(2026, 8, 30), to: date(2026, 9, 1))
+    let within = stopped.shift(commitment, from: date(2026, 8, 30), to: date(2026, 8, 31))
+
+    #expect(!beyond)
+    #expect(within)
+
+    var shiftedThenStopped = Roster()
+    _ = shiftedThenStopped.add(commitment)
+    let first = shiftedThenStopped.shift(commitment, from: date(2026, 8, 30), to: date(2026, 8, 29))
+    #expect(first)
+    _ = shiftedThenStopped.retire(commitment, keptUntil: date(2026, 8, 29))
+
+    let back = shiftedThenStopped.shift(commitment, from: date(2026, 8, 29), to: date(2026, 8, 30))
+
+    #expect(!back)
+    #expect(shiftedThenStopped.stopped[0].isDue(on: date(2026, 8, 29)))
+}

@@ -28,7 +28,7 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 - [x] 3.6 a roster refuses to shift an every-N-days due day while a later shift or a later era of it stands
 - [x] 3.7 an every-N-days day a shift put a due day on, shifted again, keeps the day it came from and that day's bounds — catches the landing's own neighbours taken as bounds
 - [x] 3.8 a roster refuses to shift an every-N-days due day onto a day another shift took a due day from
-- [ ] 3.9 a roster shifts an every-N-days day of a commitment it has stopped only onto a day it held — catches a stop read as a later change
+- [x] 3.9 a roster shifts an every-N-days day of a commitment it has stopped only onto a day it held — catches a stop read as a later change
 - [ ] 3.10 a roster refuses to shift a day the commitment is not due on, and a weekly-quota day — the carried test of the scenario it replaces is renamed to this title and its every-N-days assertion rewritten as the weekly-quota one, its before and after in the PR body
 - [ ] 3.11 an every-N-days shift across a week is held by a roster store opened afterwards — catches the week rule left on the roster store's read
 - [ ] 3.12 a range or a target change keeps an every-N-days count running from its start date — catches `Rhythm.schedule(keptFrom:)` used for every change
