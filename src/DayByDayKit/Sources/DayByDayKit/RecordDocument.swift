@@ -12,7 +12,7 @@ import Foundation
 struct RecordDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 7
+    static let currentVersion = 8
 
     /// The form `numbers` was introduced at: forms at or after this one carry the key, forms
     /// before it never do. Kept apart from `currentVersion` on purpose — a fourth form would move
@@ -40,6 +40,11 @@ struct RecordDocument: Codable {
     /// `shiftedFrom` on a record's commitment — only beside a record on a day a shift put a due
     /// day on — and forms before it never do. Judged against this constant, never the newest form.
     static let shiftsIntroducedInVersion = 7
+
+    /// The form the day a shift put a due day on was first kept beside a record on a later day of
+    /// an every-N-days count: forms at or after this one may carry `shiftedTo`, forms before it
+    /// never do. Judged against this constant, never the newest form.
+    static let shiftedToIntroducedInVersion = 8
 
     var version: Int
     var ticks: [TickRecord]

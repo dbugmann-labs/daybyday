@@ -992,6 +992,36 @@ Things that are built, or deliberately not built, in a state someone will trip o
   not its to change: that Story moves the lines to **Settings** unchanged. Found by `designer` in
   that Story's layout round, 2026-09-29. It will show in the walk's pictures.
 
+- **An every-N-days row's shift menu costs time in proportion to N, on every redraw.** The shell
+  asks `DayScreen.shiftDays(for:)` inside every row's view, not only when the row is long-pressed,
+  and for every N days that walks each day within two intervals either side of the row's day; no
+  interval has a maximum. Measured in a release build with thirty other commitments at #393's G7,
+  2026-10-08: 1.0 ms a call at N = 14, 6.5 ms at N = 90, 24.6 ms at N = 365, where the menu holds
+  644 days and one row alone outruns a 16 ms frame. The owner's longest interval is 14, so it was
+  left; the fix is asking for the days only when the menu opens, and a plain due day needs one
+  interval either side rather than two.
+
+- **A long press on a row with nothing in its menu ticks it when the finger lifts.** A row with no
+  shift to offer is a plain button, so a hold that ends on the row is a tap. Seen in #393's walk on
+  2026-10-08, where the first take of a "no menu opens" picture ticked Nails; the same on `main`
+  before that Story, and not its to change under its no-shell-diff box. Whether a hold should ever
+  tick is undecided.
+
+- **A range or target change can drop a shift onto a kept-from day that is earlier than the
+  interval's start.** An every-N-days count runs on from a shift only where both of its days fall
+  on or after the earlier of the schedule's start date and the era's kept-from day. A commitment
+  kept from a day before its start, whose first due day is shifted back onto the day it is kept
+  from, satisfies that in its first era. A range-only change puts on a new era whose kept-from day
+  is later, so the bound becomes the start date and the landing falls before it. The count then
+  stops running on from the shift, against the range-carry requirement. Probed at #393's second G7,
+  2026-10-08: "Mood", every 4 days from 6 Aug, kept from 4 Aug, 6 Aug shifted to 4 Aug, is due
+  28 Aug, 1 Sep and 5 Sep, then due 3 and 7 Sep after a range change on 1 Sep. No screen builds the
+  state, because every screen sets an interval's start to the day it is kept from
+  (`CommitmentsScreen.swift` at the add, change and kept-from paths). The day-one Nails and Contact
+  Lenses do have that shape, but they hold records after their first due day, so a shift there is
+  refused. Accepted by the owner rather than taking a third G4. The fix is rewording the dueness
+  rule's bound.
+
 ## Settled
 
 - 2026-09-22 — **ADR-1055 says "the same name and the same kind" where the shipped chain rule said

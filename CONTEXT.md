@@ -484,13 +484,19 @@ commitment, carried by every era of it alike, and the day it lands on is due whi
 record on the day refuses it, a total short of its target included, and a change of rhythm, day kept
 from, range or target, and a stop, are refused while a shift has either day after today.
 
-**Free day** — a day a **shift** may put a due day on: a day of that due day's Monday-to-Sunday
-week, held by the same **era**, that the era's rhythm is not due on and that no other shift has put
-a due day on; and, for a day a shift already put there, the day it came from, but only where an era
-holding it is due on it by its rhythm, so undoing a shift never leaves its due day on neither day.
-Otherwise a gap day, a day before the day kept from and a day another era holds are never free. The
-day screen offers a row's free days, and only those. Written 2026-10-07, while writing the delta of
-`shift-a-due-day` (#392); the day it came from narrowed 2026-10-08, at its G7.
+**Free day** — a day a **shift** may put a due day on. For a weekday set or a day of the month, a
+day of that due day's Monday-to-Sunday week, held by the same **era**, that the era's rhythm is not
+due on and that no other shift has put a due day on; and, for a day a shift already put there, the
+day it came from, but only where an era holding it is due on it by its rhythm, so undoing a shift
+never leaves its due day on neither day. Otherwise a gap day, a day before the day kept from and a
+day another era holds are never free. The day screen offers a row's free days, and only those. For
+every N days, a day after the due day before it and before the one after it, held by the same era,
+and never a day another shift took a due day from or put one on; a day a shift already put there has
+the free days of the day it came from, that day included. No every-N-days day is free while anything
+stands after the due day — a later shift, a later era, or a record on a later day — so a shift fixes
+the latest slip and undoes nothing. Written 2026-10-07, while writing the delta of `shift-a-due-day`
+(#392); the day it came from narrowed 2026-10-08, at its G7; every N days added 2026-10-08, while
+writing the delta of `shift-an-interval-day` (#393).
 
 **Category** — the word a person put a commitment under: *supplements*, *sport*, whatever they
 type. It is the owner's own word and never one the app names — no fixed menu holds the day-one

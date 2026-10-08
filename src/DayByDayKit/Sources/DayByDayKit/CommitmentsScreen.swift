@@ -1347,7 +1347,17 @@ public final class CommitmentsScreen {
             // written that day, so `keptFrom` already says it. `design.md` § *A change before a
             // future day kept from keeps that day*.
             let eraKeptFrom = dayToKeepFrom.days(until: keptFrom) > 0 ? keptFrom : dayToKeepFrom
-            let eraSchedule = rhythm.schedule(keptFrom: eraKeptFrom)!
+            // Where the rhythm asked is the interval the commitment already runs, only the range or
+            // target changes and the count runs on: the new era takes the schedule of the era it
+            // gives way to, its start date included. `design.md` § *The count carries through a
+            // range or target change*.
+            let givingWay = nextRoster.entries.first { $0.commitment.identity == onValue.identity }
+            let eraSchedule: Schedule
+            if sameRhythm, let givingWay, case .everyNDays = givingWay.commitment.schedule {
+                eraSchedule = givingWay.commitment.schedule
+            } else {
+                eraSchedule = rhythm.schedule(keptFrom: eraKeptFrom)!
+            }
             let era = Commitment(era: onValue, schedule: eraSchedule, keptFrom: eraKeptFrom, kind: newKind)!
 
             var candidateRoster = nextRoster

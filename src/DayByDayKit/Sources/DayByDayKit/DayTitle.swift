@@ -15,4 +15,9 @@ enum DayTitle {
         .saturday: "Sat",
         .sunday: "Sun",
     ]
+
+    /// A day as a shift of an every-N-days commitment names it, weekday then date, as "Thu 27 Aug".
+    static func shiftedDayInWords(_ day: CalendarDate) -> String {
+        "\(weekdayNames[day.weekday]!) \(day.day) \(LookBackWords.shortMonthNames[day.month]!)"
+    }
 }

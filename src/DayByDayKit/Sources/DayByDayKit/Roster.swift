@@ -821,7 +821,8 @@ public struct Roster: Hashable, Sendable {
 
     /// Shifts the due day of `commitment` on `day` to `other`, writing it on every era of the
     /// commitment, and answers `true`. Refuses, answering `false` and changing nothing, wherever
-    /// `other` is not a free day of `day`'s week. `design.md` § *The seam*.
+    /// `other` is not a free day of `day`: one of its week on a weekday set or a day of the month,
+    /// one between the due days either side of it on every N days. `design.md` § *The seam*.
     @discardableResult
     public mutating func shift(
         _ commitment: Commitment, from day: CalendarDate, to other: CalendarDate
@@ -832,11 +833,17 @@ public struct Roster: Hashable, Sendable {
         }
         switch holder.commitment.schedule {
         case .weekdays, .dayOfMonth:
-            break
-        case .everyNDays, .weeklyQuota:
+            guard Shift.couldBe(from: day, to: other) else {
+                return false
+            }
+        case .everyNDays(let interval, from: _):
+            return shiftEveryNDays(
+                commitment, from: day, to: other, interval: interval.days, newest: newest,
+                holder: holder)
+        case .weeklyQuota:
             return false
         }
-        guard holder.commitment.isDue(on: day), Shift.couldBe(from: day, to: other) else {
+        guard holder.commitment.isDue(on: day) else {
             return false
         }
 
@@ -865,6 +872,47 @@ public struct Roster: Hashable, Sendable {
             return false
         }
         shifts[day] = other
+        writeShifts(shifts, on: commitment)
+        return true
+    }
+
+    /// `shift(_:from:to:)` where the era holding `day` runs every N days: `other` must be a free
+    /// day between the due days either side of `day`. `design.md` § *Where each bound is judged*.
+    private mutating func shiftEveryNDays(
+        _ commitment: Commitment, from day: CalendarDate, to other: CalendarDate, interval: Int,
+        newest: Entry, holder: Entry
+    ) -> Bool {
+        guard holder.commitment.isDue(on: day), other != day, holder.holds(other) else {
+            return false
+        }
+
+        // A day a shift put a due day on is shifted as the day it came from would be without that
+        // shift: its bounds are that day's, and shifted to that day it leaves no shift.
+        var shifts = newest.commitment.shifts
+        let cameFrom = shifts.first { $0.value == day }?.key
+        let anchor = cameFrom ?? day
+        if let cameFrom {
+            shifts[cameFrom] = nil
+        }
+
+        let bar = day.days(until: anchor) > 0 ? anchor : day
+        let laterShift = shifts.contains { bar.days(until: $0.key) > 0 || bar.days(until: $0.value) > 0 }
+        let laterEra = entries.contains {
+            $0.commitment.identity == commitment.identity && bar.days(until: $0.commitment.keptFrom) > 0
+        }
+        guard !laterShift, !laterEra else {
+            return false
+        }
+
+        if other != anchor {
+            let without = Commitment(holder.commitment, shifts: shifts)
+            guard anchor.days(until: other) > -interval, anchor.days(until: other) < interval,
+                !without.isDue(on: other), shifts[other] == nil
+            else {
+                return false
+            }
+            shifts[anchor] = other
+        }
         writeShifts(shifts, on: commitment)
         return true
     }
