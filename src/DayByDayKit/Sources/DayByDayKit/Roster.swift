@@ -881,23 +881,37 @@ public struct Roster: Hashable, Sendable {
         _ commitment: Commitment, from day: CalendarDate, to other: CalendarDate, interval: Int,
         newest: Entry, holder: Entry
     ) -> Bool {
-        guard holder.commitment.isDue(on: day), other != day, holder.holds(other),
-            day.days(until: other) > -interval, day.days(until: other) < interval,
-            !holder.commitment.isDue(on: other)
-        else {
+        guard holder.commitment.isDue(on: day), other != day, holder.holds(other) else {
             return false
         }
 
+        // A day a shift put a due day on is shifted as the day it came from would be without that
+        // shift: its bounds are that day's, and shifted to that day it leaves no shift.
         var shifts = newest.commitment.shifts
-        let laterShift = shifts.contains { day.days(until: $0.key) > 0 || day.days(until: $0.value) > 0 }
+        let cameFrom = shifts.first { $0.value == day }?.key
+        let anchor = cameFrom ?? day
+        if let cameFrom {
+            shifts[cameFrom] = nil
+        }
+
+        let bar = day.days(until: anchor) > 0 ? anchor : day
+        let laterShift = shifts.contains { bar.days(until: $0.key) > 0 || bar.days(until: $0.value) > 0 }
         let laterEra = entries.contains {
-            $0.commitment.identity == commitment.identity && day.days(until: $0.commitment.keptFrom) > 0
+            $0.commitment.identity == commitment.identity && bar.days(until: $0.commitment.keptFrom) > 0
         }
         guard !laterShift, !laterEra else {
             return false
         }
 
-        shifts[day] = other
+        if other != anchor {
+            let without = Commitment(holder.commitment, shifts: shifts)
+            guard anchor.days(until: other) > -interval, anchor.days(until: other) < interval,
+                !without.isDue(on: other)
+            else {
+                return false
+            }
+            shifts[anchor] = other
+        }
         writeShifts(shifts, on: commitment)
         return true
     }
