@@ -259,6 +259,22 @@ func aRowsDueDayShiftedToADayOfferedIsKeptAtTheRosterPlaceAndTheDayViewSaysWhere
     let kept = try RosterStore(at: places.roster).roster.commitments[0]
     #expect(kept.isDue(on: tuesday))
     #expect(!kept.isDue(on: monday))
+
+    // What the screen told on another row still stands once this shift is kept.
+    let told = Places()
+    let other = DayScreen(
+        startingFrom: [gym(), gym("Run")], asOf: monday, keepingRecordAt: told.record,
+        keepingRosterAt: told.roster, keepingOneOffsAt: told.oneOffs)
+    let directory = told.roster.deletingLastPathComponent()
+    let runRow = other.dayView.rows.first { $0.name == "Run" }!
+    try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
+    #expect(throws: (any Error).self) { try other.shift(runRow, to: tuesday) }
+    try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
+    let gymRow = other.dayView.rows.first { $0.name == "Gym" }!
+
+    try other.shift(gymRow, to: tuesday)
+
+    #expect(other.notice?.row == runRow)
 }
 
 @MainActor
@@ -315,25 +331,6 @@ func shiftingARowToADayNotOfferedChangesNothing() throws {
     #expect(neighbour.dayView.rows.isEmpty)
     #expect(neighbour.nextDayView?.rows.map(\.rhythmInWords) == ["Tue, Thu"])
     #expect(bytes(others) == neighbourOpened)
-}
-
-// Below the seam: a row the screen offers no day, because its day holds a record, is not shifted
-// by a roster that would take it.
-@MainActor
-@Test("a row the screen offers no day is shifted nowhere, though its roster would take the shift")
-func aRowTheScreenOffersNoDayIsShiftedNowhereThoughItsRosterWouldTakeTheShift() throws {
-    let places = Places()
-    let day = DayScreen(
-        startingFrom: [gym()], asOf: monday, keepingRecordAt: places.record,
-        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOffs)
-    try day.tick(day.dayView.rows[0])
-    let ticked = bytes(places)
-
-    try day.shift(day.dayView.rows[0], to: tuesday)
-
-    #expect(day.dayView.rows.map(\.rhythmInWords) == ["Mon, Wed, Sat"])
-    #expect(day.dayView.rows[0].isKept)
-    #expect(bytes(places) == ticked)
 }
 
 @MainActor

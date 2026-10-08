@@ -1433,7 +1433,6 @@ public final class DayScreen {
         guard shifted else {
             return
         }
-        notice = nil
 
         roster = store.roster
         dayView = dayViewOfShownDay()

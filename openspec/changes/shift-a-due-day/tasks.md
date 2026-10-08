@@ -87,9 +87,9 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 Worked after 3.21 and before § 10, whose gates they reopen.
 
-- [ ] F.1 `notice = nil` is deleted from `DayScreen.shift(_:to:)`, after the test of 5.9 gains an assertion that what a day screen tells on another row still stands once the shift is kept, seen red with the line still there; no other line of `shift(_:to:)` changes
-- [ ] F.2 The test "a row the screen offers no day is shifted nowhere, though its roster would take the shift" is deleted from `DayScreenShiftTests.swift`: it names no scenario and attaches below the seam, and 10.2 counts one test per new scenario
-- [ ] F.3 W.6 carries the walk comment's URL, https://github.com/dbugmann-labs/daybyday/pull/396#issuecomment-6047637146; 3.21, F.1 and F.2 change no state W.1–W.5 drive to, so those pictures stand for the final build, and a fix that does change one is a stop
+- [x] F.1 `notice = nil` is deleted from `DayScreen.shift(_:to:)`, after the test of 5.9 gains an assertion that what a day screen tells on another row still stands once the shift is kept, seen red with the line still there; no other line of `shift(_:to:)` changes
+- [x] F.2 The test "a row the screen offers no day is shifted nowhere, though its roster would take the shift" is deleted from `DayScreenShiftTests.swift`: it names no scenario and attaches below the seam, and 10.2 counts one test per new scenario
+- [x] F.3 W.6 carries the walk comment's URL, https://github.com/dbugmann-labs/daybyday/pull/396#issuecomment-6047637146; 3.21, F.1 and F.2 change no state W.1–W.5 drive to, so those pictures stand for the final build, and a fix that does change one is a stop
 
 ## 10. The gates and the archive handover
 
