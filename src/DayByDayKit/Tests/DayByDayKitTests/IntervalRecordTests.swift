@@ -44,8 +44,8 @@ func recordsOnEveryNDaysDaysAShiftedCountRunsOnToAreReadBackAfterTheAppIsClosedA
 
 /// A form-8 store holding one tick of "Nails" on `recorded`, kept beside the given shift days.
 private func nailsTickJSON(
-    version: Int = 8, recorded: (month: Int, day: Int), from: (month: Int, day: Int),
-    to: (month: Int, day: Int)?
+    version: Int = 8, gym: Bool = false, recorded: (month: Int, day: Int),
+    from: (month: Int, day: Int), to: (month: Int, day: Int)?
 ) -> Data {
     func day(_ d: (month: Int, day: Int)) -> String {
         #"{ "year": 2026, "month": \#(d.month), "day": \#(d.day) }"#
@@ -58,9 +58,11 @@ private func nailsTickJSON(
           "ticks": [
             {
               "commitment": {
-                "name": "Nails",
-                "keptFrom": { "year": 2026, "month": 8, "day": 6 },
-                "schedule": { "everyNDays": 4, "from": { "year": 2026, "month": 8, "day": 6 } },
+                "name": "\(gym ? "Gym" : "Nails")",
+                "keptFrom": { "year": 2026, "month": \(gym ? 1 : 8), "day": \(gym ? 1 : 6) },
+                "schedule": \(gym
+                    ? #"{ "weekdays": ["monday", "wednesday", "saturday"] }"#
+                    : #"{ "everyNDays": 4, "from": { "year": 2026, "month": 8, "day": 6 } }"#),
                 "kind": { "tick": {} },
                 "identity": "22222222-2222-2222-2222-222222222222",
                 "shiftedFrom": \(day(from))\(landing)
@@ -90,6 +92,7 @@ private func expectNotAStore(_ bytes: Data) throws {
 func aStoreHoldingARecordBesideAnEveryNDaysShiftThatCouldNotBeOneIsRefused() throws {
     try expectNotAStore(nailsTickJSON(recorded: (9, 4), from: (8, 26), to: (8, 31)))
     try expectNotAStore(nailsTickJSON(recorded: (9, 3), from: (9, 4), to: (9, 5)))
+    try expectNotAStore(nailsTickJSON(gym: true, recorded: (9, 2), from: (8, 31), to: (9, 1)))
 
     let place = freshPlace()
     try FileManager.default.createDirectory(

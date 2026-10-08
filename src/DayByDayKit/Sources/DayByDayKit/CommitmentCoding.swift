@@ -56,7 +56,7 @@ public struct CommitmentRecord: Codable, Hashable {
         self.init(commitment)
         if let landed = commitment.shifts.first(where: { $0.value == date }) {
             shiftedFrom = DateRecord(landed.key)
-        } else if let counted = commitment.shiftItsCountRunsOn(from: date) {
+        } else if let counted = commitment.shiftItsCountRunsOn(askedAbout: date) {
             shiftedFrom = DateRecord(counted.key)
             shiftedTo = DateRecord(counted.value)
         }

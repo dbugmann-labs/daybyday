@@ -1394,7 +1394,8 @@ public final class DayScreen {
         public let words: String
     }
 
-    /// The days `row`'s due day may be shifted to, Monday first. `design.md` § *The seam*.
+    /// The days `row`'s due day may be shifted to, in date order: the free days of the row's week on a
+    /// weekday set or a day of the month, the days between its due days either side on every N days. `design.md` § *The seam*.
     public func shiftDays(for row: DayView.Row) -> [ShiftDay] {
         guard dayView.rows.contains(row), !row.holdsARecord, recordStore != nil,
             rosterState == .kept
@@ -1433,10 +1434,9 @@ public final class DayScreen {
             guard asked.shift(row.commitment, from: row.date, to: other) else {
                 return nil
             }
-            let weekday = DayTitle.weekdayNames[other.weekday]!
             let words =
                 everyNDays
-                ? "\(weekday) \(other.day) \(LookBackWords.shortMonthNames[other.month]!)" : weekday
+                ? DayTitle.shiftedDayInWords(other) : DayTitle.weekdayNames[other.weekday]!
             return ShiftDay(date: other, words: words)
         }
     }

@@ -153,11 +153,10 @@ public struct DayView: Hashable, Sendable {
         /// A day a shift names, by weekday — and on every N days by its date as well, as a day
         /// screen offers it.
         private func shiftedDayInWords(_ day: CalendarDate) -> String {
-            let weekday = DayTitle.weekdayNames[day.weekday]!
             guard case .everyNDays = commitment.schedule else {
-                return weekday
+                return DayTitle.weekdayNames[day.weekday]!
             }
-            return "\(weekday) \(day.day) \(LookBackWords.shortMonthNames[day.month]!)"
+            return DayTitle.shiftedDayInWords(day)
         }
 
         /// Whether this row is a weekly-quota row of `today`, not kept, whose week owes exactly

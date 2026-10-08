@@ -78,6 +78,54 @@ func anEveryNDaysCountRunsOnFromAShiftOnlyWhereTheShiftTookADueDayOnOrAfterItsSt
     #expect(!dueAccordingToTheRoster(on: date(2026, 9, 4)))
 }
 
+@Test("a new interval's count does not run on from a shift made before it, though the shift took its due day from the day that count starts")
+func aNewIntervalsCountDoesNotRunOnFromAShiftMadeBeforeItThoughTheShiftTookItsDueDayFromTheDayThatCountStarts() {
+    var roster = Roster()
+    let commitment = nails()
+    _ = roster.add(commitment)
+    let shifted = roster.shift(commitment, from: date(2026, 8, 30), to: date(2026, 8, 29))
+    #expect(shifted)
+    let further = Commitment(
+        era: commitment, schedule: every(5, from: date(2026, 8, 30)), keptFrom: date(2026, 8, 30),
+        kind: .tick)!
+    let put = roster.put(
+        era: further, on: commitment, keptUntil: date(2026, 8, 29), under: nil)
+    #expect(put)
+
+    func dueAccordingToTheRoster(on day: CalendarDate) -> Bool {
+        roster.commitments(on: day).contains { $0.isDue(on: day) }
+    }
+    #expect(dueAccordingToTheRoster(on: date(2026, 8, 29)))
+    #expect(!dueAccordingToTheRoster(on: date(2026, 8, 30)))
+    #expect(dueAccordingToTheRoster(on: date(2026, 9, 4)))
+    #expect(dueAccordingToTheRoster(on: date(2026, 9, 9)))
+    #expect(!dueAccordingToTheRoster(on: date(2026, 9, 3)))
+    #expect(!dueAccordingToTheRoster(on: date(2026, 9, 8)))
+
+    var gymRoster = Roster()
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]),
+        keptFrom: date(2026, 1, 1))!
+    _ = gymRoster.add(gym)
+    let gymShifted = gymRoster.shift(gym, from: date(2026, 9, 5), to: date(2026, 9, 4))
+    #expect(gymShifted)
+    let gymFurther = Commitment(
+        era: gym, schedule: every(3, from: date(2026, 9, 5)), keptFrom: date(2026, 9, 5),
+        kind: .tick)!
+    let gymPut = gymRoster.put(
+        era: gymFurther, on: gym, keptUntil: date(2026, 9, 4), under: nil)
+    #expect(gymPut)
+    func gymDue(on day: CalendarDate) -> Bool {
+        gymRoster.commitments(on: day).contains { $0.isDue(on: day) }
+    }
+    for due in [date(2026, 9, 8), date(2026, 9, 11), date(2026, 9, 14)] {
+        #expect(gymDue(on: due))
+    }
+    for notDue in [date(2026, 9, 7), date(2026, 9, 10), date(2026, 9, 13)] {
+        #expect(!gymDue(on: notDue))
+    }
+}
+
 @Test("a roster shifts an every-N-days due day onto any day between the due days either side of it, a week crossed or not")
 func aRosterShiftsAnEveryNDaysDueDayOntoAnyDayBetweenTheDueDaysEitherSideOfItAWeekCrossedOrNot() {
     let targets = [
