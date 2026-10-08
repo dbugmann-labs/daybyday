@@ -6,7 +6,7 @@ A roster SHALL shift a due day of a commitment it holds, kept or stopped, only w
 it runs on a weekday set or a day of the month, and only onto a free day, and SHALL refuse every
 other shift, changing nothing, a day the commitment is not due on and a commitment it does not hold
 among them. A free day SHALL be a day of the due day's Monday-to-Sunday week, held by that same era,
-that the era's schedule is not due on and that no shift has put a due day on; for a day a shift put
+that the era's schedule is not due on and that no shift of the commitment has put a due day on; for a day a shift put
 there, the day it came from SHALL be free too, but only where an era holding it has a schedule due
 on it. Such a day shifted again SHALL keep the day it came from, and shifted to that day SHALL leave
 no shift.
