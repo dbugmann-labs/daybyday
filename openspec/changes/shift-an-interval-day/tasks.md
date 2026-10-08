@@ -50,7 +50,7 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 6. `look-back`
 
-- [ ] 6.1 an every-N-days day shifted back into the month before moves every later due day with it — catches the weekday rule's "one fewer" applied to intervals
+- [x] 6.1 an every-N-days day shifted back into the month before moves every later due day with it — catches the weekday rule's "one fewer" applied to intervals
 
 ## 7. The records
 
