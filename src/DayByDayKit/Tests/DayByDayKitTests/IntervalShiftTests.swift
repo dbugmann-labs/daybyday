@@ -209,3 +209,24 @@ func anEveryNDaysDayAShiftPutADueDayOnShiftedAgainKeepsTheDayItCameFromAndThatDa
     #expect(!homeKeeps.isDue(on: date(2026, 8, 31)))
     #expect(!homeKeeps.isDue(on: date(2026, 9, 2)))
 }
+
+@Test("a roster refuses to shift an every-N-days due day onto a day another shift took a due day from")
+func aRosterRefusesToShiftAnEveryNDaysDueDayOntoADayAnotherShiftTookADueDayFrom() {
+    var roster = Roster()
+    let commitment = nails()
+    _ = roster.add(commitment)
+    let first = roster.shift(commitment, from: date(2026, 8, 30), to: date(2026, 8, 29))
+    #expect(first)
+
+    let onto = roster.shift(commitment, from: date(2026, 9, 2), to: date(2026, 8, 30))
+    let past = roster.shift(commitment, from: date(2026, 9, 2), to: date(2026, 8, 31))
+
+    #expect(!onto)
+    #expect(past)
+    let keeps = roster.commitments[0]
+    for due in [date(2026, 8, 29), date(2026, 8, 31), date(2026, 9, 4)] {
+        #expect(keeps.isDue(on: due))
+    }
+    #expect(!keeps.isDue(on: date(2026, 8, 30)))
+    #expect(!keeps.isDue(on: date(2026, 9, 2)))
+}

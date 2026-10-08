@@ -906,7 +906,7 @@ public struct Roster: Hashable, Sendable {
         if other != anchor {
             let without = Commitment(holder.commitment, shifts: shifts)
             guard anchor.days(until: other) > -interval, anchor.days(until: other) < interval,
-                !without.isDue(on: other)
+                !without.isDue(on: other), shifts[other] == nil
             else {
                 return false
             }
