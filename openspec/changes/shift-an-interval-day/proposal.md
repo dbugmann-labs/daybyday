@@ -30,7 +30,7 @@ None.
 
 ### Modified Capabilities
 
-- `commitment`: three ADDED, one REMOVED, three MODIFIED.
+- `commitment`: three ADDED, one REMOVED, four MODIFIED.
 - `day-screen`: three MODIFIED.
 - `record`: one ADDED, three MODIFIED.
 - `look-back`: one MODIFIED.
