@@ -19,11 +19,14 @@ store written in a form later than the one this app knows, and a store holding s
 not be a record: a date that names no day, a commitment on a date it is not due on — its schedule and the shift kept beside the record deciding
 which —, a record against a commitment of another kind, a number outside the range its commitment
 declares, a note whose text says nothing, an addition of an amount that is not above zero, a day
-carrying no addition at all, or a shift kept beside a record that took its due day from that
-record's own date or from a day outside that date's Monday-to-Sunday week.
+carrying no addition at all, or a shift kept beside a record that could not be one: of a
+commitment not every N days, one that took its due day from that record's own date or from a day
+outside that date's Monday-to-Sunday week, or put it on a day other than that date; of one every N
+days, one whose two days are one day or not fewer days apart than its interval, or that put its due
+day on a day after that date.
 
 Every rule a record is formed by SHALL be applied again to what comes off the place, and of a shift
-kept beside a record exactly the two its last case names; this capability SHALL add no other rule
+kept beside a record exactly the ones its last case names; this capability SHALL add no other rule
 there and drop none: a note SHALL NOT be read back more leniently than
 it was written. Each addition SHALL be re-formed on its own, and no rule SHALL be applied across a
 day. A store holding a day whose additions sum to more than this system can keep exactly SHALL be
@@ -57,10 +60,10 @@ rule of that kind SHALL be applied to what comes off the place.
 
 #### Scenario: a store holding a number its commitment would refuse is refused
 
-- **WHEN** a store is opened at a place holding a store in the form this app writes, whose one number
-  is 300 for a commitment named "Weight" of the number kind with a range of 40 to 150, on a schedule
-  listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday 31 August 2026 — a
-  number outside its commitment's range
+- **WHEN** a store is opened at a place holding a store in the form this app writes, whose one
+  number is 300 for a commitment named "Weight" of the number kind with a range of 40 to 150, on a
+  schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday 31 August
+  2026 — a number outside its commitment's range
 - **THEN** opening is refused with an error
 - **AND** a store at a place holding one number of 70.5 against a commitment alike in every way but
   of the tick kind is refused the same way
@@ -83,10 +86,10 @@ rule of that kind SHALL be applied to what comes off the place.
 
 #### Scenario: a store holding what could not be an addition is refused
 
-- **WHEN** a store is opened at a place holding a store in the form this app writes, whose one day of
-  additions holds an amount of 0, for a commitment named "Protein" of the total kind with a target of
-  120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday
-  31 August 2026 — an amount that is not above zero
+- **WHEN** a store is opened at a place holding a store in the form this app writes, whose one day
+  of additions holds an amount of 0, for a commitment named "Protein" of the total kind with a
+  target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on
+  Monday 31 August 2026 — an amount that is not above zero
 - **THEN** opening is refused with an error
 - **AND** a store at a place holding a day of additions holding -30 is refused the same way
 - **AND** a store at a place holding one addition of 30 against a commitment alike in every way but
@@ -99,11 +102,11 @@ rule of that kind SHALL be applied to what comes off the place.
 #### Scenario: a store holding a day whose additions sum past what can be kept exactly is read rather than refused
 
 - **WHEN** a store is opened at a place holding a store in the form this app writes, whose one day
-  holds an addition of a whole number of thirty-eight nines and then an addition of 0.5 — two amounts
-  each of which is an addition, and a day no person using this app could have made, because their
-  exact sum needs thirty-nine significant digits — for a commitment named "Protein" of the total kind
-  with a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January
-  2026, on Monday 31 August 2026
+  holds an addition of a whole number of thirty-eight nines and then an addition of 0.5 — two
+  amounts each of which is an addition, and a day no person using this app could have made, because
+  their exact sum needs thirty-nine significant digits — for a commitment named "Protein" of the
+  total kind with a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from 1
+  January 2026, on Monday 31 August 2026
 - **THEN** it opens without error
 - **AND** it answers that the commitment was kept on that date, its day's sum being far past 120
 - **AND** the content at that place is byte-for-byte what it was before
@@ -143,6 +146,23 @@ rule of that kind SHALL be applied to what comes off the place.
 - **AND** the content at each place is byte-for-byte what it was before
 - **AND** a store at a place holding that tick kept beside a shift from Monday 31 August 2026 opens
   without error, and answers that "Gym" was kept on Tuesday 1 September 2026
+
+#### Scenario: a store holding a record beside an every-N-days shift that could not be one is refused
+
+- **WHEN** a store is opened at a place holding a store in the form this app writes, whose one tick
+  is of a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August 2026,
+  kept from that day, on Friday 4 September 2026, kept beside a shift from Wednesday
+  26 August 2026 to Monday 31 August 2026 — five days apart
+- **THEN** opening is refused with an error
+- **AND** a store at a place holding a tick of "Nails" on Thursday 3 September 2026 kept beside a
+  shift from Friday 4 September to Saturday 5 September 2026 is refused the same way
+- **AND** a store at a place holding a tick of a commitment named "Gym" on a schedule listing
+  Monday, Wednesday and Saturday, kept from 1 January 2026, on Wednesday 2 September 2026, kept
+  beside a shift from Monday 31 August to Tuesday 1 September 2026, is refused the same way
+- **AND** the content at each place is byte-for-byte what it was before
+- **AND** a store at a place holding the tick of "Nails" on Friday 4 September 2026 kept beside a
+  shift from Sunday 30 August to Monday 31 August 2026 opens without error, and answers that
+  "Nails" was kept on that day
 
 ### Requirement: A number is of a number commitment on a calendar date it is due on
 
@@ -638,8 +658,8 @@ app has never written, one below the earliest, with an error saying the content 
 rather than that it is from a later form. A store SHALL read each form as the shape that form has,
 and SHALL refuse one whose shape and declared form disagree. Which shape belongs to which form SHALL
 be judged against the form each part was first written at, never the newest: numbers arrived at the
-third form, notes the fourth, additions the fifth, a record's identity the sixth, and a shift kept beside a record
-the seventh. Opening a store MUST NOT change what is at its
+third form, notes the fourth, additions the fifth, a record's identity the sixth, a shift kept beside a record
+the seventh, and the day a shift put a due day on, kept beside a record on another day, the eighth. Opening a store MUST NOT change what is at its
 place, which SHALL stay byte-for-byte what it was: a store SHALL write only when a change is kept.
 
 #### Scenario: reading a history kept in an earlier form changes nothing at its place
@@ -683,8 +703,8 @@ place, which SHALL stay byte-for-byte what it was: a store SHALL write only when
 - **WHEN** a store is opened at a place holding a store written in the form used before a day could
   hold an addition, which nonetheless holds one addition
 - **THEN** opening is refused with an error
-- **AND** a store at a place holding a store in the form this app writes, with no place for additions
-  in it at all, is refused the same way
+- **AND** a store at a place holding a store in the form this app writes, with no place for
+  additions in it at all, is refused the same way
 - **AND** a store written in the form used before a day could hold a note, holding neither notes nor
   additions, is read without error, because that form is expected to carry neither
 - **AND** the error says the content is not a store rather than that it is from a later form
@@ -693,16 +713,16 @@ place, which SHALL stay byte-for-byte what it was: a store SHALL write only when
 #### Scenario: a change that leaves a store's history as it was writes nothing at its place
 
 - **WHEN** a tick for a commitment named "Gym" of the tick kind, a number of 70.5 for a commitment
-  named "Weight" of the number kind with no range and a note holding "Ran 8k." for a commitment named
-  "Journal" of the note kind, all three on a schedule listing Monday, Wednesday and Saturday and all
-  kept from 1 January 2026, on Monday 31 August 2026, are added to a store; what is at that place is
-  then made impossible to write; and that same tick is added to the store again
+  named "Weight" of the number kind with no range and a note holding "Ran 8k." for a commitment
+  named "Journal" of the note kind, all three on a schedule listing Monday, Wednesday and Saturday
+  and all kept from 1 January 2026, on Monday 31 August 2026, are added to a store; what is at that
+  place is then made impossible to write; and that same tick is added to the store again
 - **THEN** adding it is not refused
 - **AND** adding that same number again, and that same note again, is not refused either
 - **AND** taking back a tick for "Gym" on Wednesday 2 September 2026, the number of "Weight" and the
   note of "Journal" on that date, and the last addition of a commitment named "Protein" of the total
-  kind with a target of 120 on Monday 31 August 2026 — none of which the store holds — is not refused
-  either
+  kind with a target of 120 on Monday 31 August 2026 — none of which the store holds — is not
+  refused either
 - **AND** the store's history is the same as it was before what is at that place was made impossible
   to write
 #### Scenario: a store whose shape and declared form disagree about identities is refused
@@ -721,6 +741,17 @@ place, which SHALL stay byte-for-byte what it was: a store SHALL write only when
   kept beside a record, whose one tick, of a commitment named "Gym" on a schedule listing Monday,
   Wednesday and Saturday, kept from 1 January 2026, on Tuesday 1 September 2026, nonetheless has a
   shift from Monday 31 August 2026 kept beside it
+- **THEN** opening is refused with an error
+- **AND** the error says the content is not a store rather than that it is from a later form
+- **AND** the content at that place is byte-for-byte what it was before
+
+#### Scenario: a store whose shape and declared form disagree about the day a shift put a due day on is refused
+
+- **WHEN** a store is opened at a place holding a store written in the form used before the day a
+  shift put a due day on was kept beside a record on another day, whose one tick, of a commitment
+  named "Nails" on a schedule of every 4 days starting on Thursday 6 August 2026, kept from that
+  day, on Friday 4 September 2026, nonetheless has kept beside it a shift from Sunday 30 August 2026
+  to Monday 31 August 2026, both days
 - **THEN** opening is refused with an error
 - **AND** the error says the content is not a store rather than that it is from a later form
 - **AND** the content at that place is byte-for-byte what it was before
@@ -853,7 +884,9 @@ writes, and every tick, number and note the earlier form held SHALL still be in 
 A store SHALL persist each record as exactly what it is and nothing else: its commitment whole but
 for the shifts it carries, identity and kind included, its calendar date, the number, text or
 amounts it carries, in the order they were made, and, beside a record on a day a shift put a due day
-on, the day that shift took it from and no other shift. An identity SHALL be kept exactly as given
+on, the day that shift took it from; beside a record of an every-N-days commitment on a later day
+its count runs on to from such a day, both days of that shift; and beside no record any other
+shift. An identity SHALL be kept exactly as given
 and MUST NOT be reissued on a write, and what a record is of SHALL be that identity and that date
 and nothing else, never the shift kept beside it, so a record
 read back is a record of the same commitment rather than of one alike to it. A record read back SHALL be the same record that was added: every schedule shape, any name,
@@ -879,9 +912,10 @@ persist the day's sum.
 
 #### Scenario: a commitment name is read back exactly, whatever it contains
 
-- **WHEN** a tick is added to a store for a commitment whose name is "Zürich — „langer“ Lauf 🏃" followed
-  by a line break and the word "Sonntags", on a schedule listing Monday, Wednesday and Saturday, kept
-  from 1 January 2026, on Monday 31 August 2026, and a store is opened afterwards at the same place
+- **WHEN** a tick is added to a store for a commitment whose name is "Zürich — „langer“ Lauf 🏃"
+  followed by a line break and the word "Sonntags", on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, on Monday 31 August 2026, and a store is opened afterwards at
+  the same place
 - **THEN** the later store's history answers that a commitment with exactly that name, schedule and
   kept-from day was kept on Monday 31 August 2026
 - **AND** its history is the same as a history that tick was added to
@@ -905,10 +939,10 @@ persist the day's sum.
 
 #### Scenario: a number is read back exactly as it was given, whatever its digits
 
-- **WHEN** numbers of 70.5, 0.000001, -12.75, 0 and 98765432109876543210.5 are added to a store, each
-  for a commitment of the number kind with no range named after the number it carries, all on a
-  schedule listing Monday, Wednesday and Saturday and all kept from 1 January 2026, on Monday
-  31 August 2026, and a store is opened afterwards at the same place
+- **WHEN** numbers of 70.5, 0.000001, -12.75, 0 and 98765432109876543210.5 are added to a store,
+  each for a commitment of the number kind with no range named after the number it carries, all on a
+  schedule listing Monday, Wednesday and Saturday and all kept from 1 January 2026, on Monday 31
+  August 2026, and a store is opened afterwards at the same place
 - **THEN** the later store's history answers each commitment with exactly the number it was given,
   neither rounded nor shortened
 - **AND** its history is the same as a history those same numbers were added to
@@ -941,8 +975,8 @@ persist the day's sum.
 #### Scenario: a day's additions are read back in the order they were made
 
 - **WHEN** additions of 30, then 45, then 50 for a commitment named "Protein" of the total kind with
-  a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on
-  Monday 31 August 2026 are added to a store, and a store is opened afterwards at the same place
+  a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026,
+  on Monday 31 August 2026 are added to a store, and a store is opened afterwards at the same place
 - **THEN** the later store's history is the same as a history those three additions were added to in
   that same order
 - **AND** it answers that the commitment has added 125 on that date
@@ -952,8 +986,8 @@ persist the day's sum.
 #### Scenario: two additions alike in every way on one day are both read back
 
 - **WHEN** additions of 30 and then 30 again for a commitment named "Protein" of the total kind with
-  a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on
-  Monday 31 August 2026 are added to a store, and a store is opened afterwards at the same place
+  a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026,
+  on Monday 31 August 2026 are added to a store, and a store is opened afterwards at the same place
 - **THEN** the later store's history answers that the commitment has added 60 on that date
 - **AND** taking that day's last addition back on the later store leaves it answering 30 rather than
   zero
@@ -962,8 +996,8 @@ persist the day's sum.
 
 - **WHEN** additions of 0.000001, 30, 119.95 and a whole number of thirty-eight nines are added to a
   store, each for a commitment of the total kind with a target of 120 named after the amount it
-  carries, all on a schedule listing Monday, Wednesday and Saturday and all kept from 1 January 2026,
-  on Monday 31 August 2026, and a store is opened afterwards at the same place
+  carries, all on a schedule listing Monday, Wednesday and Saturday and all kept from 1 January
+  2026, on Monday 31 August 2026, and a store is opened afterwards at the same place
 - **THEN** the later store's history answers each commitment with exactly the amount it was given,
   neither rounded nor shortened
 - **AND** its history is the same as a history those same additions were added to
@@ -2054,3 +2088,24 @@ a form before it as holding none beside any record.
   day
 - **AND** the content at that record place holds Wednesday 2 September 2026, the later shift's day,
   nowhere
+
+### Requirement: A store keeps a record on a day an every-N-days count runs on to from a shift, and reads it back
+
+A store SHALL keep a record of any kind on a day after the one a shift of an every-N-days
+commitment put a due day on, where the count running on from that day makes it due, and SHALL read
+it back, once the app is closed and opened again, as that record of that commitment on that day. It
+SHALL keep beside such a record both days of that shift, the day it put the due day on being a part
+first written at the eighth form, as *A store persists each kind of record as exactly what it is*
+says, and SHALL read a history kept in a form before it as holding no such day beside any record.
+
+#### Scenario: records on every-N-days days a shifted count runs on to are read back after the app is closed and opened again
+
+- **WHEN** a roster holds a commitment named "Nails" of the tick kind and one named "Protein" of the
+  total kind with a target of 120, both on a schedule of every 4 days starting on Thursday 6 August
+  2026 and kept from that day, each with its due day on Sunday 30 August 2026 shifted to Monday
+  31 August 2026; a tick for "Nails" on Monday 31 August and on Friday 4 September 2026, and an
+  addition of 35 for "Protein" on Friday 4 September 2026, each formed against the commitment that
+  roster keeps, are kept at a record place; and a store is opened afterwards at that record place
+- **THEN** opening is not refused
+- **AND** its history keeps "Nails" on Monday 31 August and on Friday 4 September 2026, and has
+  added 35 for "Protein" on Friday 4 September 2026

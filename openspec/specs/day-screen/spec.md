@@ -2144,7 +2144,9 @@ Both SHALL be counted as `look-back` counts a week, the standing through the row
 kind and whether or not it has arrived. A row of a day a shift put its due day on SHALL say instead
 "from" and the three-letter weekday name of the day that due day came from, as "from Mon", and a row
 of a day a shift took its due day from SHALL say "to" and that of the day it went to, as "to Tue",
-each in place of its rhythm and in this package's own English. Every other row SHALL say its rhythm,
+each in place of its rhythm and in this package's own English. Where the row's commitment runs
+every N days, each SHALL name that day as a day screen offers it, as "from Sun 30 Aug" and "to Mon
+31 Aug". Every other row SHALL say its rhythm,
 kept or not and whatever it offers.
 
 #### Scenario: a row says the rhythm its commitment runs on in words
@@ -2197,7 +2199,8 @@ kept or not and whatever it offers.
 - **WHEN** day views are formed of a commitment named "Reading" on a weekly quota of 3 times a week,
   kept from 1 January 2026, from a history holding ticks for that commitment on each day from Monday
   31 August through Thursday 3 September 2026, and each row is asked as of Saturday 5 September 2026
-- **THEN** the row on Thursday 3 September 2026 says "4/3x a week", says it is kept and offers a tick
+- **THEN** the row on Thursday 3 September 2026 says "4/3x a week", says it is kept and offers a
+  tick
 - **AND** the row on Saturday 5 September 2026 says "4/3x a week", says it is not kept and offers a
   tick
 
@@ -2216,8 +2219,8 @@ kept or not and whatever it offers.
   week and kept from 1 January 2026, of a commitment named "Weight" of the number kind from a
   history holding a number of 70.5 for it on Monday 31 August 2026, one named "Journal" of the note
   kind from a history holding a note of "Ran 8k." for it on that Monday, and one named "Protein" of
-  the total kind with a target of 120 from a history holding an addition of 120 for it on that Monday
-  and one of 30 on Tuesday 1 September 2026
+  the total kind with a target of 120 from a history holding an addition of 120 for it on that
+  Monday and one of 30 on Tuesday 1 September 2026
 - **THEN** each of the three rows says "1/3x a week"
 
 #### Scenario: a row on a schedule that is not a weekly quota says its plain words whatever its week holds
@@ -2258,6 +2261,15 @@ kept or not and whatever it offers.
 - **AND** a commitment named "Finances" on a schedule on the 1st of the month, kept from 1 January
   2026, whose due day on Tuesday 1 September 2026 is shifted to Monday 31 August 2026, has a row
   saying "from Tue" on Monday 31 August 2026 and one saying "to Mon" on Tuesday 1 September 2026
+
+#### Scenario: an every-N-days row says where its shifted due day came from, and the row of the day it left where it went, each by weekday and date
+
+- **WHEN** a roster place holds a commitment named "Nails" on a schedule of every 4 days starting on
+  Thursday 6 August 2026, kept from that day, whose due day on Sunday 30 August 2026 is shifted to
+  Monday 31 August 2026, and a day screen is opened at it as of Monday 31 August 2026, at a record
+  place where nothing has been kept
+- **THEN** its one row says "from Sun 30 Aug"
+- **AND** the row of the day view it says of the day before says "to Mon 31 Aug"
 
 ### Requirement: A day screen's reach bounds its day picker and is read again whenever its roster is
 
@@ -7279,12 +7291,12 @@ SHALL still be drawn, holding it.
 ### Requirement: A day screen offers a row the free days its due day can be shifted to
 
 Asked about a row its day view holds, a day screen SHALL offer exactly the days its roster would
-shift that row's due day onto, as *A roster shifts a due day of a commitment it holds onto a free
-day of that day's week* gives them, in week order from Monday, each with its date and the
-three-letter name of its weekday, as a day view says its day. It SHALL offer none where the row's
-day holds any record — a tick, a number, a note or an addition, a total short of its target
-included — none where it is not keeping its record or its roster, and none for a row only a day
-view either side holds. Asking SHALL change nothing the screen holds and nothing at any of its
+shift that row's due day onto, in date order, each with its date and the three-letter name of its
+weekday, as a day view says its day, and, on every N days, the day of the month and the
+three-letter month name after it, as "Thu 27 Aug". It SHALL offer none where the row's day holds
+any record — a tick, a number, a note or an addition, a total short of its target included — none
+on every N days while a later day holds one of its commitment, none where it is not keeping its
+record or its roster, and none for a row only a day view either side holds. Asking SHALL change nothing the screen holds and nothing at any of its
 places.
 
 #### Scenario: a day screen offers a row the free days of its week, Monday first, each said as its weekday
@@ -7330,6 +7342,40 @@ places.
 - **AND** a day screen opened as of Monday 31 August 2026, at places where nothing has been kept, of
   a commitment named "Run" on a schedule listing Tuesday and Thursday, kept from 1 January 2026,
   offers the row of the day view it says of the day after no day to shift to
+
+#### Scenario: a day screen offers an every-N-days row the days between its due days either side, each said with its date
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been
+  kept, of a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
+  2026, kept from that day, and is moved to the day before
+- **THEN** the day screen offers its one row, of Sunday 30 August 2026, the days Thursday 27, Friday
+  28 and Saturday 29 August, Monday 31 August, Tuesday 1 and Wednesday 2 September 2026, in that
+  order, said "Thu 27 Aug", "Fri 28 Aug", "Sat 29 Aug", "Mon 31 Aug", "Tue 1 Sep" and "Wed 2 Sep"
+- **AND** a day screen opened as of Tuesday 8 September 2026, at places where nothing has been kept,
+  of a commitment named "Contact lenses" on a schedule of every 14 days starting on Tuesday
+  25 August 2026, kept from that day, offers its one row 26 days, the first Wednesday 26 August
+  2026, said "Wed 26 Aug", and the last Monday 21 September 2026, said "Mon 21 Sep"
+
+#### Scenario: a day screen offers an every-N-days row a shift put its due day on the days of the day it came from, that day included
+
+- **WHEN** a roster place holds a commitment named "Nails" on a schedule of every 4 days starting on
+  Thursday 6 August 2026, kept from that day, whose due day on Sunday 30 August 2026 is shifted to
+  Monday 31 August 2026, and a day screen is opened at it as of Monday 31 August 2026, at a record
+  place where nothing has been kept
+- **THEN** the day screen offers its one row the days Thursday 27, Friday 28, Saturday 29 and Sunday
+  30 August, Tuesday 1 and Wednesday 2 September 2026, in that order, said "Thu 27 Aug", "Fri
+  28 Aug", "Sat 29 Aug", "Sun 30 Aug", "Tue 1 Sep" and "Wed 2 Sep"
+
+#### Scenario: a day screen offers no day to shift an every-N-days row while a later day holds a record of it
+
+- **WHEN** a day screen is opened as of Thursday 3 September 2026, at places where nothing has been
+  kept, of a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
+  2026, kept from that day, and of a commitment named "Gym" on a schedule listing Monday, Wednesday
+  and Saturday, kept from 1 January 2026; its "Nails" row is ticked; it is moved to the day before
+  and its "Gym" row is ticked; and it is moved to Sunday 30 August 2026
+- **THEN** the day screen offers its "Nails" row no day to shift to
+- **AND** once moved to Monday 31 August 2026, it offers its "Gym" row Tuesday 1, Thursday 3,
+  Friday 4 and Sunday 6 September 2026
 
 ### Requirement: A day screen shifts a row's due day to a day it offers, and keeps the shift at its roster place before the day view says so
 
@@ -7388,3 +7434,15 @@ requires, its day view staying as it was.
 - **AND** the day screen tells, on the "Gym" row, that the change could not be kept, and nothing on
   the "Journaling" row
 - **AND** its day view still holds the "Gym" row saying "Mon, Wed, Sat" and offering its tick
+
+#### Scenario: an every-N-days row shifted through a day screen runs its count on from the day it landed
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been
+  kept, of a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
+  2026, kept from that day; it is moved to the day before; and its one row is shifted to Monday 31
+  August 2026
+- **THEN** nothing is refused, and its day view holds one row, named "Nails", offering nothing
+- **AND** once the screen is moved to Thursday 3 September 2026 its day view holds no row, and once
+  moved on to Friday 4 September 2026 it holds one row, named "Nails", saying "Every 4 days"
+- **AND** the commitment a roster store opened afterwards at that roster place keeps is due on
+  Monday 31 August 2026 and not on Sunday 30 August 2026
