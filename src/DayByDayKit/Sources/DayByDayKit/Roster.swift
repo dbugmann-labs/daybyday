@@ -835,8 +835,10 @@ public struct Roster: Hashable, Sendable {
             guard Shift.couldBe(from: day, to: other) else {
                 return false
             }
-        case .everyNDays:
-            break
+        case .everyNDays(let interval, from: _):
+            return shiftEveryNDays(
+                commitment, from: day, to: other, interval: interval.days, newest: newest,
+                holder: holder)
         case .weeklyQuota:
             return false
         }
@@ -868,6 +870,25 @@ public struct Roster: Hashable, Sendable {
         guard holder.isFree(other, shifts: shifts) else {
             return false
         }
+        shifts[day] = other
+        writeShifts(shifts, on: commitment)
+        return true
+    }
+
+    /// `shift(_:from:to:)` where the era holding `day` runs every N days: `other` must be a free
+    /// day between the due days either side of `day`. `design.md` § *Where each bound is judged*.
+    private mutating func shiftEveryNDays(
+        _ commitment: Commitment, from day: CalendarDate, to other: CalendarDate, interval: Int,
+        newest: Entry, holder: Entry
+    ) -> Bool {
+        guard holder.commitment.isDue(on: day), other != day, holder.holds(other),
+            day.days(until: other) > -interval, day.days(until: other) < interval,
+            !holder.commitment.isDue(on: other)
+        else {
+            return false
+        }
+
+        var shifts = newest.commitment.shifts
         shifts[day] = other
         writeShifts(shifts, on: commitment)
         return true
