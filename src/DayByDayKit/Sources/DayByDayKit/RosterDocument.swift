@@ -117,7 +117,9 @@ struct RosterDocument: Codable {
             if !Self.erasAgreeOnUsualAmounts(currentRunEntries) {
                 declaresWhatNoTotalCould = true
             }
-            if !Self.erasAgreeOnShifts(currentRunEntries) {
+            if !Self.erasAgreeOnShifts(currentRunEntries)
+                || !Self.erasCouldHoldTheirShifts(currentRunEntries)
+            {
                 holdsWhatNoRosterCould = true
             }
             if currentRunIsRemoved {
@@ -212,7 +214,7 @@ struct RosterDocument: Codable {
         var formed: [CalendarDate: CalendarDate] = [:]
         for record in records {
             guard let from = record.from.calendarDate(), let to = record.to.calendarDate(),
-                Shift.couldBe(from: from, to: to), formed[from] == nil,
+                from != to, formed[from] == nil,
                 !formed.values.contains(to)
             else {
                 return nil
@@ -220,6 +222,18 @@ struct RosterDocument: Codable {
             formed[from] = to
         }
         return formed
+    }
+
+    /// Whether every shift one commitment's eras carry is one a roster could hold, as `Shift.couldBe
+    /// (from:to:in:)` says once the eras are gathered: whether a shift's two days may lie in two
+    /// weeks depends on the eras that hold them.
+    private static func erasCouldHoldTheirShifts(_ eras: [Roster.Entry]) -> Bool {
+        guard let newest = eras.first else {
+            return true
+        }
+        return newest.commitment.shifts.allSatisfy {
+            Shift.couldBe(from: $0.key, to: $0.value, in: eras)
+        }
     }
 
     /// Whether one commitment's eras carry the same shifts, as they carry the same name.

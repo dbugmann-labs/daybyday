@@ -255,3 +255,27 @@ func aRosterShiftsAnEveryNDaysDayOfACommitmentItHasStoppedOnlyOntoADayItHeld() {
     #expect(!back)
     #expect(shiftedThenStopped.stopped[0].isDue(on: date(2026, 8, 29)))
 }
+
+private func freshPlace() -> URL {
+    FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        .appendingPathComponent("roster.json")
+}
+
+@Test("an every-N-days shift across a week is held by a roster store opened afterwards")
+func anEveryNDaysShiftAcrossAWeekIsHeldByARosterStoreOpenedAfterwards() throws {
+    let place = freshPlace()
+    let store = try RosterStore(at: place)
+    let contactLenses = lenses()
+    try store.add(contactLenses)
+    let shifted = try store.shift(contactLenses, from: date(2026, 9, 8), to: date(2026, 9, 5))
+    #expect(shifted)
+
+    let reopened = try RosterStore(at: place)
+
+    let keeps = reopened.roster.commitments[0]
+    #expect(keeps.isDue(on: date(2026, 9, 5)))
+    #expect(keeps.isDue(on: date(2026, 9, 19)))
+    #expect(!keeps.isDue(on: date(2026, 9, 8)))
+    #expect(!keeps.isDue(on: date(2026, 9, 22)))
+}

@@ -467,4 +467,27 @@ enum Shift {
     static func couldBe(from: CalendarDate, to: CalendarDate) -> Bool {
         from != to && WeekQuota.monday(of: from) == WeekQuota.monday(of: to)
     }
+
+    /// Whether a roster holding `eras` of one commitment could hold a shift from `from` to `to`:
+    /// two different days, in one Monday-to-Sunday week unless an era holding either runs every N
+    /// days — or no era holds either, where no later change can turn the shift into a refused
+    /// store. `design.md` § *Migration*.
+    static func couldBe(from: CalendarDate, to: CalendarDate, in eras: [Roster.Entry]) -> Bool {
+        guard from != to else {
+            return false
+        }
+        guard WeekQuota.monday(of: from) != WeekQuota.monday(of: to) else {
+            return true
+        }
+        let holding = eras.filter { $0.holds(from) || $0.holds(to) }
+        guard !holding.isEmpty else {
+            return true
+        }
+        return holding.contains {
+            if case .everyNDays = $0.commitment.schedule {
+                return true
+            }
+            return false
+        }
+    }
 }
