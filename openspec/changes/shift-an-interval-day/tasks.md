@@ -78,4 +78,4 @@ day" is its latest due day on or before today.
 - [x] W.6 Nails' due day before that one, its row long-pressed — no menu opens.
 - [x] W.7 The landing's row shifted back to the due day, then the due day paged to — "Nails - Every 4 days", not faded, and the landing holds no "Nails" row.
 - [x] W.8 Contact Lenses' latest due day on or before today, its row long-pressed — the submenu of 26 days, each said with its date.
-- [x] W.9 **The handover** — W.1–W.8, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.9 **The handover** — W.1–W.8, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. https://github.com/dbugmann-labs/daybyday/pull/397#issuecomment-6059953814
