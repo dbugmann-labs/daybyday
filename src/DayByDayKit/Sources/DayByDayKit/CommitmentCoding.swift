@@ -27,9 +27,14 @@ public struct CommitmentRecord: Codable, Hashable {
     /// `RecordDocument.shiftsIntroducedInVersion`, and only beside such a record. A roster keeps
     /// its shifts on the entry instead (`RosterEntryRecord.shifts`), and `bare` leaves this out.
     var shiftedFrom: DateRecord?
+    /// The day that same shift put the due day on, kept beside a record of an every-N-days
+    /// commitment on a later day its count runs on to from that day — the record on the landing
+    /// itself needs only `shiftedFrom`. Present only at forms at or after
+    /// `RecordDocument.shiftedToIntroducedInVersion`, and `bare` leaves it out.
+    var shiftedTo: DateRecord?
 
     private enum CodingKeys: String, CodingKey {
-        case name, keptFrom, schedule, kind, identity, shiftedFrom
+        case name, keptFrom, schedule, kind, identity, shiftedFrom, shiftedTo
     }
 
     init(_ commitment: Commitment) {
@@ -40,14 +45,21 @@ public struct CommitmentRecord: Codable, Hashable {
         identity = commitment.identity.uuidString
         identityKeyPresent = true
         shiftedFrom = nil
+        shiftedTo = nil
     }
 
     /// `commitment` as a record made on `date` keeps it: whole, and beside it the day the shift
-    /// that put a due day on `date` took it from — nothing where no shift did, and no other
+    /// that put a due day on `date` took it from — nothing where no shift did — or, on a later day
+    /// of an every-N-days count that runs on from a shift, both days of that shift; no other
     /// shift. `design.md` § *Migration*.
     init(_ commitment: Commitment, recordedOn date: CalendarDate) {
         self.init(commitment)
-        shiftedFrom = commitment.shifts.first { $0.value == date }.map { DateRecord($0.key) }
+        if let landed = commitment.shifts.first(where: { $0.value == date }) {
+            shiftedFrom = DateRecord(landed.key)
+        } else if let counted = commitment.shiftItsCountRunsOn(from: date) {
+            shiftedFrom = DateRecord(counted.key)
+            shiftedTo = DateRecord(counted.value)
+        }
     }
 
     public init(from decoder: Decoder) throws {
@@ -59,6 +71,7 @@ public struct CommitmentRecord: Codable, Hashable {
         identityKeyPresent = container.contains(.identity)
         identity = try container.decodeIfPresent(String.self, forKey: .identity)
         shiftedFrom = try container.decodeIfPresent(DateRecord.self, forKey: .shiftedFrom)
+        shiftedTo = try container.decodeIfPresent(DateRecord.self, forKey: .shiftedTo)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -69,6 +82,7 @@ public struct CommitmentRecord: Codable, Hashable {
         try container.encodeIfPresent(kind, forKey: .kind)
         try container.encodeIfPresent(identity, forKey: .identity)
         try container.encodeIfPresent(shiftedFrom, forKey: .shiftedFrom)
+        try container.encodeIfPresent(shiftedTo, forKey: .shiftedTo)
     }
 
     /// `commitment`'s name, schedule, day kept from and kind alone, carrying no identity at all —
@@ -79,6 +93,7 @@ public struct CommitmentRecord: Codable, Hashable {
         record.identity = nil
         record.identityKeyPresent = false
         record.shiftedFrom = nil
+        record.shiftedTo = nil
         return record
     }
 
@@ -119,7 +134,13 @@ public struct CommitmentRecord: Codable, Hashable {
     /// rule is the commitment's own, asked again of whatever forms from it.
     func commitment(recordedOn date: CalendarDate) -> Commitment? {
         guard let shiftedFrom else {
-            return commitment()
+            return shiftedTo == nil ? commitment() : nil
+        }
+        if let shiftedTo {
+            guard let from = shiftedFrom.calendarDate(), let to = shiftedTo.calendarDate() else {
+                return nil
+            }
+            return commitment(shifts: [from: to])
         }
         guard let from = shiftedFrom.calendarDate(), Shift.couldBe(from: from, to: date) else {
             return nil

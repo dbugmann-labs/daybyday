@@ -10,7 +10,7 @@ import Foundation
 struct RosterDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 8
+    static let currentVersion = 9
 
     /// The form a commitment record first carried an `identity` key at: forms at or after this
     /// one carry it on every entry's commitment, forms before it never do, on the same footing as

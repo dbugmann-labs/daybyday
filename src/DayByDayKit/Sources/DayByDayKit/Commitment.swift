@@ -130,6 +130,19 @@ public struct Commitment: Sendable {
         keptFrom.days(until: date) >= 0 && shifts[date] != nil
     }
 
+    /// The shift an every-N-days count running on to `date` runs on from: the latest that put a
+    /// due day on a day before `date`, where it took that day from one on or after the schedule's
+    /// start date. `nil` where the schedule is not every N days or no shift qualifies.
+    func shiftItsCountRunsOn(from date: CalendarDate) -> (key: CalendarDate, value: CalendarDate)? {
+        guard case .everyNDays(_, from: let start) = schedule else {
+            return nil
+        }
+        return shifts
+            .filter { start.days(until: $0.key) >= 0 && $0.value.days(until: date) > 0 }
+            .max { $0.value.days(until: $1.value) > 0 }
+            .map { (key: $0.key, value: $0.value) }
+    }
+
     public func isDue(on date: CalendarDate) -> Bool {
         guard keptFrom.days(until: date) >= 0 else {
             return false

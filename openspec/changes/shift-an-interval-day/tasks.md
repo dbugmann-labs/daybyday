@@ -10,13 +10,13 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 22 new scenarios uncovered and no other
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 22 new scenarios uncovered and no other
 
 ## 2. The forms
 
-- [ ] 2.1 The record form is 8 and the roster form 9, each judged shape-against-form at the form its part was first written at, as `design.md` § *Migration* says
-- [ ] 2.2 `CommitmentRecord` writes and reads the day a shift put a due day on beside a record on a later day of a shifted count; `bare` drops it as it drops the rest
-- [ ] 2.3 The form sweep, the one sanctioned edit of carried tests: the lines naming record form 8 or roster form 9 as the later form, or record form 7 or roster form 8 as the current one, are made to name the later or current form again and assert what they asserted before — in `DayScreenTests.swift`, `RecordStoreTests.swift`, `RosterStoreTests.swift`, `CommitmentsScreenTests.swift`, `RecordShiftTests.swift` and `RosterShiftTests.swift` — each listed with its before and after in the PR body; any other carried edit is a stop
+- [x] 2.1 The record form is 8 and the roster form 9, each judged shape-against-form at the form its part was first written at, as `design.md` § *Migration* says
+- [x] 2.2 `CommitmentRecord` writes and reads the day a shift put a due day on beside a record on a later day of a shifted count; `bare` drops it as it drops the rest
+- [x] 2.3 The form sweep, the one sanctioned edit of carried tests: the lines naming record form 8 or roster form 9 as the later form, or record form 7 or roster form 8 as the current one, are made to name the later or current form again and assert what they asserted before — in `DayScreenTests.swift`, `RecordStoreTests.swift`, `RosterStoreTests.swift`, `CommitmentsScreenTests.swift`, `RecordShiftTests.swift` and `RosterShiftTests.swift` — each listed with its before and after in the PR body; any other carried edit is a stop
 
 ## 3. `commitment` — `Commitment`, `Roster`, `RosterStore`, `CommitmentsScreen`
 
