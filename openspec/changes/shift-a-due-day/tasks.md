@@ -81,7 +81,7 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 9. The records
 
-- [ ] 9.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2); `CONTEXT.md` and ADR-1066 are as this folder's PR left them, and not edited since G4
+- [x] 9.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2); `CONTEXT.md` and ADR-1066 are as this folder's PR left them, and not edited since G4
 
 ## The G7 fixes
 
@@ -93,8 +93,8 @@ Worked after 3.21 and before § 10, whose gates they reopen.
 
 ## 10. The gates and the archive handover
 
-- [ ] 10.1 `openspec validate shift-a-due-day --strict` exits 0, and `pnpm run checks` is clean but for `check:budgets` warnings on the carried requirements
-- [ ] 10.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with 40 more tests than a run on `origin/main` reports, both read off runs
+- [x] 10.1 `openspec validate shift-a-due-day --strict` exits 0, and `pnpm run checks` is clean but for `check:budgets` warnings on the carried requirements
+- [x] 10.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with 40 more tests than a run on `origin/main` reports, both read off runs
 - [ ] 10.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 10.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.6. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `commitment`, `day-screen`, `record`, `look-back` and `restore` move, gaining this delta's 40 new scenarios, and no other spec file does. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
