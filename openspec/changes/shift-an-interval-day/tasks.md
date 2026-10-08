@@ -66,15 +66,15 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 ## The walk
 
 A fresh install, light only, on the real date. Nothing is made: the day-one "Nails", every 4 days,
-and "Contact lenses", every 14 days, are walked as they stand, and nothing is ticked. "Nails' due
+and "Contact Lenses", every 14 days, are walked as they stand, and nothing is ticked. "Nails' due
 day" is its latest due day on or before today.
 
-- [ ] W.1 Nails' due day, paged back to where needed, its row long-pressed — "Shift to" open, its submenu the six days either side, each said as "Thu 27 Aug" is, its own day not among them.
-- [ ] W.2 The day after Nails' due day, once the row is shifted there — "Nails - from" and the due day's weekday and date, unticked, not faded.
-- [ ] W.3 The due day, paged back — "Nails - to" and the landing's weekday and date, the whole row faded.
-- [ ] W.4 Four days after the landing — a "Nails" row saying "Every 4 days".
+- [ ] W.1 Nails' due day, paged back to where needed, its row long-pressed — "Shift to" open, its submenu the three days either side, six in all, each said as "Thu 27 Aug" is, its own day not among them.
+- [ ] W.2 The day before Nails' due day, never after today, once the row is shifted there — "Nails - from" and the due day's weekday and date, unticked, not faded.
+- [ ] W.3 The due day, paged to — "Nails - to" and the landing's weekday and date, the whole row faded.
+- [ ] W.4 Four days after the landing, three after the due day — a "Nails" row saying "Every 4 days", faded where that day is after today.
 - [ ] W.5 Four days after the due day — no "Nails" row.
 - [ ] W.6 Nails' due day before that one, its row long-pressed — no menu opens.
 - [ ] W.7 The landing's row shifted back to the due day, then the due day paged to — "Nails - Every 4 days", not faded, and the landing holds no "Nails" row.
-- [ ] W.8 Contact lenses' latest due day on or before today, its row long-pressed — the submenu of 26 days, each said with its date.
+- [ ] W.8 Contact Lenses' latest due day on or before today, its row long-pressed — the submenu of 26 days, each said with its date.
 - [ ] W.9 **The handover** — W.1–W.8, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.

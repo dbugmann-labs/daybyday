@@ -436,8 +436,10 @@ has emptied SHALL NOT be the same roster as one given none.
 A roster SHALL NOT consult the present moment, the device's clock, its time zone or its locale,
 SHALL NOT be asked what day it is, and SHALL work only with dates it was handed, judging one only
 against a day it was told a commitment was kept until and, where it shifts a due day, against the
-era holding that day and that day's Monday-to-Sunday week. It MUST NOT judge a commitment's own day it
-is kept from or its schedule, and MUST NOT decide whether a commitment is due.
+commitment's eras, the days each holds and the shifts it carries, and against that day's
+Monday-to-Sunday week on a weekday set or a day of the month, or the due days either side of it on
+every N days. Shifting a due day aside, it MUST NOT judge a commitment's own day it is kept from or
+its schedule, and MUST NOT decide whether a commitment is due.
 
 A roster SHALL be a value: two holding the same eras of the same commitments in the same order,
 each commitment in the same state and under the same category and each era with the same kept-until
@@ -521,3 +523,58 @@ deleting one, moving one or putting one under a category SHALL leave every other
 - **THEN** the store reports of each of the thousand that it was added
 - **AND** the later store's roster reads back all thousand, "Commitment 1" first, "Commitment 2"
   second and "Commitment 1000" last, in the order they were given
+
+### Requirement: A commitment is not due before the day it is kept from
+
+A commitment SHALL NOT be due on any calendar date earlier than the day it is kept from, whatever
+its schedule says about that date, and the system MUST NOT answer that a commitment was due on such
+a date.
+
+The rule SHALL apply to every schedule shape alike, and SHALL be a floor rather than a phase: the
+day a commitment is kept from MAY be a day its schedule is not due on, and the floor itself MUST NOT
+shift the schedule's own start date or the phase the schedule runs on, which only a change naming a
+different day kept from, or a shift of an every-N-days due day, moves. Where the schedule is an interval of days, that interval's start date
+and this floor SHALL be separate and SHALL both apply.
+
+#### Scenario: a commitment is not due on a date before the day it is kept from
+
+- **WHEN** a commitment on a schedule listing Monday, Wednesday and Saturday, kept from Wednesday
+  2 September 2026, is asked about Monday 31 August 2026
+- **THEN** the commitment is not due on that date, though its schedule is due on it
+- **AND** the same commitment asked about Wednesday 2 September 2026 answers that it is due
+
+#### Scenario: a commitment is due on the day it is kept from when its schedule is due that day
+
+- **WHEN** a commitment on a schedule listing Monday, Wednesday and Saturday, kept from Monday
+  31 August 2026, is asked about Monday 31 August 2026
+- **THEN** the commitment is due on that date
+
+#### Scenario: a commitment is not due on the day it is kept from when its schedule is not due that day
+
+- **WHEN** a commitment on a schedule listing Monday, Wednesday and Saturday, kept from Tuesday
+  1 September 2026, is asked about Tuesday 1 September 2026
+- **THEN** the commitment is not due on that date
+- **AND** the same commitment asked about Wednesday 2 September 2026 answers that it is due
+
+#### Scenario: a commitment is due on none of the dates in the month before it is kept from
+
+- **WHEN** a commitment on a schedule on the 25th of the month, kept from 1 September 2026, is asked
+  about each date from 1 through 31 August 2026
+- **THEN** the commitment is due on none of those thirty-one dates
+- **AND** the same commitment asked about 25 September 2026 answers that it is due
+
+#### Scenario: an every-N-days occurrence before the day it is kept from is not due
+
+- **WHEN** a commitment on a schedule of every 3 days starting on 25 August 2026, kept from
+  1 September 2026, is asked about 28 August 2026
+- **THEN** the commitment is not due on that date, though the interval lands on it
+- **AND** the same commitment asked about 31 August 2026, the next landing before the floor, answers
+  that it is not due
+- **AND** the same commitment asked about 3 September 2026 answers that it is due
+
+#### Scenario: a commitment on a weekly-quota schedule is not due on a date before the day it is kept from
+
+- **WHEN** a commitment named "Reading" on a weekly quota of 3 times a week, kept from Wednesday 2
+  September 2026, is asked about Monday 31 August and Tuesday 1 September 2026
+- **THEN** the commitment is due on neither of those dates, though its schedule is due on both
+- **AND** the same commitment asked about Wednesday 2 September 2026 answers that it is due
