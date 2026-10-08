@@ -46,9 +46,11 @@ No member is new; each keeps its signature and answers more. Look-back scenarios
 ### A shift runs an interval's count on from where it landed — ADR-1066, amended
 
 The shift map stays as it is; `isDue` reads it once more on an every-N-days schedule, counting from
-the latest landing on or before the date whose origin is on or after the schedule's start date. The
-origin bound keeps a shift made under an older count out of a new interval's count (N changed), and
-lets it through a range change that carries the count. The record store writes beside a record on a
+the latest landing on or before the date whose two days are both on or after the earlier of the
+schedule's start date and the era's day kept from. A new interval starts on its era's first day and a
+change is refused while a shift has a day after it, so a shift made under an older count always has
+a day before that bound, even one whose origin is the change day; a range change carries the start
+date, so its shifts still count. The record store writes beside a record on a
 later day of that count both days of the shift it counts from, so the record re-forms alone.
 - *A shift stored as an era begun where it landed:* rejected — the origin still needs the map to say
   where it went, each shift draws an era boundary, and it reads as a later change to the next shift.

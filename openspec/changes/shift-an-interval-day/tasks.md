@@ -33,6 +33,7 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 - [x] 3.11 an every-N-days shift across a week is held by a roster store opened afterwards — catches the week rule left on the roster store's read
 - [x] 3.12 a range or a target change keeps an every-N-days count running from its start date — catches `Rhythm.schedule(keptFrom:)` used for every change
 - [x] 3.13 a range change keeps an every-N-days count running from the day a shift put a due day on
+- [ ] 3.14 a new interval's count does not run on from a shift made before it, though the shift took its due day from the day that count starts — catches the origin alone judged against the start date
 
 ## 4. `record` — `RecordStore`
 

@@ -264,7 +264,8 @@ when the schedule it carries is due on that date, and SHALL NOT be due on any ot
 that a date a shift of it took a due day from SHALL NOT be due and a date a shift of it put a due
 day on SHALL be due, whatever its schedule says of either. On an every-N-days schedule, the count
 SHALL run from the latest day on or before the date asked about that a shift put a due day on, where
-that shift took it from a day on or after the schedule's start date, in place of that start date.
+both of that shift's days are on or after the earlier of the schedule's start date and the day the
+commitment is kept from, in place of that start date.
 Beyond its shifts it SHALL add nothing and
 take nothing away: the system MUST NOT consider the commitment's name, the
 current time, the device's time zone, the locale, or whether the commitment has been ticked. The
@@ -349,6 +350,22 @@ than the system treating it as an error.
 - **THEN** the commitment it answers on Monday 31 August 2026 is due on that date
 - **AND** the ones it answers on Tuesday 1 and Sunday 6 September 2026 are due on those dates, and
   the one it answers on Friday 4 September 2026 is not
+
+#### Scenario: a new interval's count does not run on from a shift made before it, though the shift took its due day from the day that count starts
+
+- **WHEN** a roster holds a commitment named "Nails" on a schedule of every 4 days starting on
+  Thursday 6 August 2026, kept from that day, whose due day on Sunday 30 August 2026 is shifted to
+  Saturday 29 August 2026, and a further era of "Nails", on a schedule of every 5 days starting on
+  Sunday 30 August 2026, kept from that day, is then put on it
+- **THEN** the commitment it answers on Saturday 29 August 2026 is due on that date, and the one it
+  answers on Sunday 30 August 2026 is not
+- **AND** the ones it answers on Friday 4 and Wednesday 9 September 2026 are due on those dates, and
+  the ones it answers on Thursday 3 and Tuesday 8 September 2026 are not
+- **AND** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, whose due day on Saturday 5 September 2026 is shifted to
+  Friday 4 September 2026, and given a further era on a schedule of every 3 days starting on Saturday
+  5 September 2026, kept from that day, answers due on Tuesday 8, Friday 11 and Monday 14 September
+  2026 and not on Monday 7, Thursday 10 or Sunday 13 September 2026
 
 ### Requirement: A roster store keeps every shift at its place, and refuses a shift no roster could hold
 
