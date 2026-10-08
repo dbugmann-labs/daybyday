@@ -33,9 +33,10 @@ would make the record store unreadable the next time the app opened.
 shift took a due day from is not due, a date it put one on is due, and every other date answers
 its schedule — an every-N-days schedule counting from the latest day on or before the date that a
 shift of one of its own due days put a due day on, in place of its start date. A shift counts as one
-of its own where the day it took the due day from is on or after that start date, so a shift made
-under an older interval never reaches a new one, and one made before a range or target change,
-which keeps the count, still does. Every era of a commitment carries the same shifts, as it carries the same name, so
+of its own where both of its days are on or after the earlier of that start date and the day the era
+is kept from, so a shift made under an older interval never reaches a new one, even one whose origin
+is the day of the change, and one made before a range or target change, which keeps the count,
+still does. Every era of a commitment carries the same shifts, as it carries the same name, so
 the answer does not depend on which era is asked or on an era beginning between a shift's two days.
 Identity stays the whole of equality: two values of one commitment differing only in shifts are the
 same commitment.
