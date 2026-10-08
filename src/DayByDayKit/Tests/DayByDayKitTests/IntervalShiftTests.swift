@@ -1,0 +1,56 @@
+import Foundation
+import Testing
+@testable import DayByDayKit
+
+private func date(_ year: Int, _ month: Int, _ day: Int) -> CalendarDate {
+    CalendarDate(year: year, month: month, day: day)!
+}
+
+private func every(_ days: Int, from start: CalendarDate) -> Schedule {
+    .everyNDays(DayInterval(days: days)!, from: start)
+}
+
+private let august6 = date(2026, 8, 6)
+
+private func nails(keptFrom: CalendarDate = august6) -> Commitment {
+    Commitment(name: "Nails", schedule: every(4, from: august6), keptFrom: keptFrom)!
+}
+
+private func lenses() -> Commitment {
+    Commitment(
+        name: "Contact lenses", schedule: every(14, from: date(2026, 8, 25)),
+        keptFrom: date(2026, 8, 25))!
+}
+
+/// The dates from `first` through `last` that `commitment` is due on.
+private func dueDays(_ commitment: Commitment, from first: CalendarDate, through last: CalendarDate)
+    -> [CalendarDate]
+{
+    (0...first.days(until: last)).map { first.adding(days: $0)! }.filter { commitment.isDue(on: $0) }
+}
+
+@Test("an every-N-days commitment is due counting on from the day a shift put its due day on")
+func anEveryNDaysCommitmentIsDueCountingOnFromTheDayAShiftPutItsDueDayOn() {
+    var roster = Roster()
+    let commitment = nails()
+    _ = roster.add(commitment)
+    let shifted = roster.shift(commitment, from: date(2026, 8, 30), to: date(2026, 8, 31))
+    #expect(shifted)
+
+    let keeps = roster.commitments[0]
+    #expect(
+        dueDays(keeps, from: date(2026, 8, 26), through: date(2026, 9, 8)) == [
+            date(2026, 8, 26), date(2026, 8, 31), date(2026, 9, 4), date(2026, 9, 8),
+        ])
+
+    var lensRoster = Roster()
+    let contactLenses = lenses()
+    _ = lensRoster.add(contactLenses)
+    let lensShifted = lensRoster.shift(contactLenses, from: date(2026, 9, 8), to: date(2026, 9, 5))
+    #expect(lensShifted)
+    let lensKeeps = lensRoster.commitments[0]
+    #expect(lensKeeps.isDue(on: date(2026, 9, 5)))
+    #expect(lensKeeps.isDue(on: date(2026, 9, 19)))
+    #expect(!lensKeeps.isDue(on: date(2026, 9, 8)))
+    #expect(!lensKeeps.isDue(on: date(2026, 9, 22)))
+}

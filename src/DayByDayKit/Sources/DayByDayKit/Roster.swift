@@ -832,11 +832,15 @@ public struct Roster: Hashable, Sendable {
         }
         switch holder.commitment.schedule {
         case .weekdays, .dayOfMonth:
+            guard Shift.couldBe(from: day, to: other) else {
+                return false
+            }
+        case .everyNDays:
             break
-        case .everyNDays, .weeklyQuota:
+        case .weeklyQuota:
             return false
         }
-        guard holder.commitment.isDue(on: day), Shift.couldBe(from: day, to: other) else {
+        guard holder.commitment.isDue(on: day) else {
             return false
         }
 

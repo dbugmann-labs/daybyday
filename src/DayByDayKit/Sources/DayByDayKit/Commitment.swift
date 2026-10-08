@@ -155,6 +155,12 @@ public struct Commitment: Sendable {
             return true
         }
 
+        if case .everyNDays(let interval, from: _) = schedule,
+            let counted = shiftItsCountRunsOn(from: date)
+        {
+            return counted.value.days(until: date) % interval.days == 0
+        }
+
         return schedule.isDue(on: date)
     }
 
