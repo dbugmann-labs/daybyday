@@ -3,13 +3,13 @@
 ### Requirement: A roster shifts a due day of a commitment it holds onto a free day of that day's week
 
 A roster SHALL shift a due day of a commitment it holds, kept or stopped, only where the era holding
-it runs on a weekday set or a day of the month, and only onto a free day of it, and SHALL refuse
-every other shift, changing nothing, a day the commitment is not due on and a commitment it does not
-hold among them. A free day SHALL be a day of the due day's Monday-to-Sunday week, held by that same
-era, that the era's schedule is not due on and that no shift of the commitment has put a due day on;
-for a day a shift put there, the day that shift took it from SHALL be free as well. A day a shift
-put there and shifted again SHALL keep the day it came from, and shifted to that day SHALL leave no
-shift.
+it runs on a weekday set or a day of the month, and only onto a free day, and SHALL refuse every
+other shift, changing nothing, a day the commitment is not due on and a commitment it does not hold
+among them. A free day SHALL be a day of the due day's Monday-to-Sunday week, held by that same era,
+that the era's schedule is not due on and that no shift has put a due day on; for a day a shift put
+there, the day it came from SHALL be free too, but only where an era holding it has a schedule due
+on it. Such a day shifted again SHALL keep the day it came from, and shifted to that day SHALL leave
+no shift.
 
 #### Scenario: a roster shifts a weekday-set due day onto a free day and leaves the rest of its rhythm as it was
 
@@ -96,17 +96,32 @@ shift.
   on Tuesday 1 September 2026
 - **AND** the content at the first place is byte-for-byte the content at the second
 
+#### Scenario: a roster refuses to shift a due day back to the day it came from once no era is due on that day
+
+- **WHEN** a roster holds a commitment named "Run" on a schedule listing Tuesday and Thursday, kept
+  from 1 January 2026, whose due day on Tuesday 1 September 2026 is shifted to Monday 31 August
+  2026, and which is then stopped as of the day it was kept until, Monday 31 August 2026; and it is
+  asked to shift Monday 31 August 2026 to Tuesday 1 September 2026
+- **THEN** the roster refuses it, and the commitment it holds is still due on Monday 31 August 2026
+- **AND** a roster holding "Run" shifted the same way, not stopped but given a further era on a
+  schedule listing Wednesday and Friday, kept from Tuesday 1 September 2026, refuses the same shift
+  and is still due on Monday 31 August 2026
+- **AND** a roster holding "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, whose due day on Monday 31 August 2026 is shifted to Tuesday 1 September 2026 and
+  which is then given a further era on a schedule listing Wednesday and Friday, kept from Tuesday
+  1 September 2026, shifts Tuesday 1 September 2026 to Monday 31 August 2026, leaving it due on
+  Monday 31 August 2026 and not on Tuesday 1 September 2026
+
 ### Requirement: A commitments screen refuses a change deciding due days, and a stop, while a shift has a day after the day it was handed
 
 A commitments screen SHALL refuse, as **a shifted day ahead**, a change asking for a different
 rhythm, day kept from, range or target, and a stop, wherever a shift of the commitment has either
 day later than the day the screen was handed; a shift with both days on or before it SHALL refuse
 neither. It SHALL be told apart from every other refusal, keep nothing at either place, and be about
-the field *A commitments screen says whether a refusal about a rhythm, a day kept from, a range or a
-target is about one of them or the whole change* gives a day already recorded on. A change to the
-name, the category or the usual amounts alone SHALL NOT be refused for a shift, and a change kept
-SHALL leave every shift as it was. The refusal SHALL be the screen's alone: a roster SHALL stop, or
-change an era of, a commitment whatever its shifts.
+the field a recorded-day refusal of the same change is about. A change to the name, the category or
+the usual amounts alone SHALL NOT be refused for a shift, and a change kept SHALL leave every shift
+as it was. The refusal SHALL be the screen's alone: a roster SHALL stop, or change an era of, a
+commitment whatever its shifts.
 
 #### Scenario: a rhythm change is refused while a shift has a day after the day handed
 

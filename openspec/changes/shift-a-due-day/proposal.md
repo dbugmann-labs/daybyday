@@ -10,7 +10,8 @@ and a day of the month are anchored to the calendar, and nothing moves one due d
 - A roster shifts one due day of a weekday-set or day-of-month commitment onto a free day of its
   Monday-to-Sunday week, a day of the next or last month included; the rest of its rhythm stands.
 - The day it came from stops being due; the day it lands on is due, for every kind of record.
-- A shifted day shifts again keeping where it came from, and shifted to that day leaves no shift.
+- A shifted day shifts again keeping where it came from, and shifted to that day leaves no shift;
+  it goes back only where that day would be due again.
 - A day holding any record is not shifted, nor a weekly-quota or every-N-days day.
 - A day screen offers a row's free days, Monday first, said "Tue", "Thu"; a long press opens them.
 - The day a shift lands on says "from Mon" in its rhythm's place; the day it left keeps a faded row

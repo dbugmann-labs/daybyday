@@ -25,9 +25,10 @@ fb25f8b:
 `DayScreen`, `CommitmentsScreen` and a look-back, and the shell drawing option A.
 
 **Non-Goals:** every N days (#393) and retiring restart (#394); any mark of a shift in a look-back
-or on the week strip; ending what a day screen tells when a shift is kept, which the shipped
-lifetime rule does not list — the row such a notice names is never in view after a kept shift;
-condensing the carried MODIFIED requirements, an editorial Story's (ADR-1047).
+or on the week strip; ending what a day screen tells when a shift is kept: a shift reaches the
+roster place alone, and the shipped lifetime rule says a change reaching none of the record, one-off
+and birthday places ends nothing, so a notice on another row stands through it; condensing the
+carried MODIFIED requirements, an editorial Story's (ADR-1047).
 
 ## Decisions
 
@@ -65,16 +66,23 @@ splits — so no shift straddles two rhythms and no landing falls in an era it w
 - *Any running day, judged by the era holding it:* rejected — a landing could fall in an
   every-N-days era, whose shift is #393's and runs its count on.
 
+The day a shift came from is the one exception: free only where an era holding it is due on it by
+its schedule (G7 finding 2). The owner's "only where an era holds it" closes a stop made on that day,
+not a rhythm change, whose new era holds the day without being due there.
+- *Read literally:* rejected — the rhythm-change half of the finding stays live.
+- *Held by the landing's era:* rejected — it refuses a harmless undo across a change on the landing.
+
 ### Settled 7 is read as written: an end on today refuses nothing
 
 A shift whose later day is today does not refuse a change made today, and stands through it: its
 landing stays due in the new era. A stop made today ends today's due day, shifted there or not,
 exactly as it ends any due day: confirmed on a landing day holding no record, it keeps the
 commitment until the day before, so the day the shift came from still says "to Tue" and the day it
-went to holds nothing — settled 7's own reason, a stop taking effect from today, and a scenario
-says so. A stopped commitment's days shift within their own era; nothing a stop protects is
-reachable that way. The refusal is the commitments screen's, the one place holding a today; a
-roster still refuses a stop in exactly its two shipped cases.
+went to holds nothing — settled 7's own reason, a stop taking effect from today, and a scenario says
+so. A stopped commitment's days shift within their own era, and a shift is undone onto the day it
+came from only where that day would be due again, so no stop or change made on it lets a due day
+vanish. The refusal is the commitments screen's, the one place holding a today; a roster still
+refuses a stop in exactly its two shipped cases.
 
 ### Shipped text the delta falsifies is carried in full
 
