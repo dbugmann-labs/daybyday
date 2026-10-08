@@ -349,3 +349,28 @@ func aRangeOrATargetChangeKeepsAnEveryNDaysCountRunningFromItsStartDate() throws
     let intervalEras = try RosterStore(at: intervalPlaces.roster).roster.eras(of: otherMood)
     #expect(intervalEras[0].schedule == every(5, from: date(2026, 8, 31)))
 }
+
+@MainActor
+@Test("a range change keeps an every-N-days count running from the day a shift put a due day on")
+func aRangeChangeKeepsAnEveryNDaysCountRunningFromTheDayAShiftPutADueDayOn() throws {
+    let places = freshPlaces()
+    let commitment = mood()
+    let store = try RosterStore(at: places.roster)
+    try store.add(commitment)
+    let shifted = try store.shift(commitment, from: date(2026, 8, 30), to: date(2026, 8, 31))
+    #expect(shifted)
+    let screen = CommitmentsScreen(
+        asOf: date(2026, 9, 1), keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.change(
+        commitment, toName: "Mood", on: .everyNDays(4), keptFrom: august6, under: nil,
+        lowest: "1", highest: "5")
+
+    #expect(refusal == nil)
+    let reopened = try RosterStore(at: places.roster).roster
+    func dueAccordingToTheRoster(on day: CalendarDate) -> Bool {
+        reopened.commitments(on: day).contains { $0.isDue(on: day) }
+    }
+    #expect(dueAccordingToTheRoster(on: date(2026, 9, 4)))
+    #expect(!dueAccordingToTheRoster(on: date(2026, 9, 3)))
+}
