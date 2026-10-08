@@ -24,7 +24,7 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 - [x] 3.2 an every-N-days count runs on from a shift only where the shift took a due day on or after its start date — catches an older count's shift carried into a new interval
 - [x] 3.3 a roster shifts an every-N-days due day onto any day between the due days either side of it, a week crossed or not — catches the week rule left on intervals
 - [x] 3.4 a roster refuses to shift an every-N-days due day onto a due day either side of it, a day beyond them, or itself
-- [ ] 3.5 an era's first every-N-days due day is shifted back no further than the day that era is kept from — catches the previous due day taken as the bound
+- [x] 3.5 an era's first every-N-days due day is shifted back no further than the day that era is kept from — catches the previous due day taken as the bound
 - [ ] 3.6 a roster refuses to shift an every-N-days due day while a later shift or a later era of it stands
 - [ ] 3.7 an every-N-days day a shift put a due day on, shifted again, keeps the day it came from and that day's bounds — catches the landing's own neighbours taken as bounds
 - [ ] 3.8 a roster refuses to shift an every-N-days due day onto a day another shift took a due day from

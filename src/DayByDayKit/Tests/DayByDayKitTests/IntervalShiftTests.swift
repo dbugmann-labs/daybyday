@@ -124,3 +124,36 @@ func aRosterRefusesToShiftAnEveryNDaysDueDayOntoADueDayEitherSideOfItADayBeyondT
     #expect(keeps.isDue(on: date(2026, 8, 30)))
     #expect(keeps.isDue(on: date(2026, 9, 3)))
 }
+
+@Test("an era's first every-N-days due day is shifted back no further than the day that era is kept from")
+func anErasFirstEveryNDaysDueDayIsShiftedBackNoFurtherThanTheDayThatEraIsKeptFrom() {
+    var roster = Roster()
+    let commitment = nails(keptFrom: date(2026, 8, 4))
+    _ = roster.add(commitment)
+
+    let tooFar = roster.shift(commitment, from: august6, to: date(2026, 8, 3))
+    let bound = roster.shift(commitment, from: august6, to: date(2026, 8, 4))
+
+    #expect(!tooFar)
+    #expect(bound)
+    let keeps = roster.commitments[0]
+    #expect(keeps.isDue(on: date(2026, 8, 4)))
+    #expect(keeps.isDue(on: date(2026, 8, 8)))
+    #expect(!keeps.isDue(on: august6))
+    #expect(!keeps.isDue(on: date(2026, 8, 10)))
+
+    var moods = Roster()
+    let mood = Commitment(
+        name: "Mood", schedule: every(4, from: august6), keptFrom: august6,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)!))!
+    let narrower = Commitment(
+        era: mood, schedule: every(4, from: august6), keptFrom: date(2026, 9, 1),
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 5)!))!
+    _ = moods.add(mood)
+    _ = moods.put(era: narrower, on: mood, keptUntil: date(2026, 8, 31), under: nil)
+
+    let before = moods.shift(mood, from: date(2026, 9, 3), to: date(2026, 8, 31))
+    let after = moods.shift(mood, from: date(2026, 9, 3), to: date(2026, 9, 1))
+    #expect(!before)
+    #expect(after)
+}
