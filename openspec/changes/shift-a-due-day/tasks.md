@@ -40,7 +40,7 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 - [x] 3.18 a roster kept in the form before shifts is read as holding none, and its place is left as it was
 - [x] 3.19 a roster store whose shape and declared form disagree about shifts is refused — catches shifts judged at the newest form only
 - [x] 3.20 a roster store holding a shift no roster could hold is refused — catches eras read without agreeing
-- [ ] 3.21 a roster refuses to shift a due day back to the day it came from once no era is due on that day — catches the day a shift came from taken as free wherever it falls; `pnpm run check:scenarios` reports it alone uncovered before its test is written, and that test is seen red on the code as G7 found it
+- [x] 3.21 a roster refuses to shift a due day back to the day it came from once no era is due on that day — catches the day a shift came from taken as free wherever it falls; `pnpm run check:scenarios` reports it alone uncovered before its test is written, and that test is seen red on the code as G7 found it
 
 ## 4. `record` — `RecordStore`
 

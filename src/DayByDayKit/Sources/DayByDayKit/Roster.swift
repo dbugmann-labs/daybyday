@@ -852,6 +852,11 @@ public struct Roster: Hashable, Sendable {
                 writeShifts(shifts, on: commitment)
                 return true
             }
+            // The day it came from is free only where an era holding it is due on it by its schedule.
+            guard eras.contains(where: { $0.holds(cameFrom) && $0.commitment.schedule.isDue(on: cameFrom) })
+            else {
+                return false
+            }
             writeShifts(shifts, on: commitment)
             return true
         }

@@ -214,6 +214,46 @@ func aDayAShiftPutADueDayOnShiftedToTheDayItCameFromLeavesNoShift() throws {
     #expect(try Data(contentsOf: first) == Data(contentsOf: second))
 }
 
+@Test("a roster refuses to shift a due day back to the day it came from once no era is due on that day")
+func aRosterRefusesToShiftADueDayBackToTheDayItCameFromOnceNoEraIsDueOnThatDay() {
+    let monday = date(2026, 8, 31)
+    let tuesday = date(2026, 9, 1)
+    let run = Commitment(
+        name: "Run", schedule: .weekdays([.tuesday, .thursday]), keptFrom: januaryFirst)!
+
+    var stopped = Roster()
+    _ = stopped.add(run)
+    _ = stopped.shift(run, from: tuesday, to: monday)
+    _ = stopped.retire(kept(stopped), keptUntil: monday)
+    let stoppedBack = stopped.shift(run, from: monday, to: tuesday)
+    #expect(!stoppedBack)
+    #expect(stopped.commitments(on: monday).contains { $0.isDue(on: monday) })
+
+    var changed = Roster()
+    _ = changed.add(run)
+    _ = changed.shift(run, from: tuesday, to: monday)
+    let further = Commitment(
+        era: kept(changed), schedule: .weekdays([.wednesday, .friday]), keptFrom: tuesday,
+        kind: .tick)!
+    _ = changed.put(era: further, on: kept(changed), keptUntil: monday, under: nil)
+    let changedBack = changed.shift(run, from: monday, to: tuesday)
+    #expect(!changedBack)
+    #expect(changed.commitments(on: monday).contains { $0.isDue(on: monday) })
+
+    var gymRoster = Roster()
+    let commitment = gym()
+    _ = gymRoster.add(commitment)
+    _ = gymRoster.shift(commitment, from: monday, to: tuesday)
+    let gymFurther = Commitment(
+        era: kept(gymRoster), schedule: .weekdays([.wednesday, .friday]), keptFrom: tuesday,
+        kind: .tick)!
+    _ = gymRoster.put(era: gymFurther, on: kept(gymRoster), keptUntil: monday, under: nil)
+    let gymBack = gymRoster.shift(commitment, from: tuesday, to: monday)
+    #expect(gymBack)
+    #expect(gymRoster.commitments(on: monday).contains { $0.isDue(on: monday) })
+    #expect(!gymRoster.commitments(on: tuesday).contains { $0.isDue(on: tuesday) })
+}
+
 @Test("a shift kept at a roster place is held by a roster store opened afterwards at the same place")
 func aShiftKeptAtARosterPlaceIsHeldByARosterStoreOpenedAfterwardsAtTheSamePlace() throws {
     let place = freshPlace()
