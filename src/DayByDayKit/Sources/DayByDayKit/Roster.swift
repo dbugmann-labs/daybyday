@@ -889,6 +889,14 @@ public struct Roster: Hashable, Sendable {
         }
 
         var shifts = newest.commitment.shifts
+        let laterShift = shifts.contains { day.days(until: $0.key) > 0 || day.days(until: $0.value) > 0 }
+        let laterEra = entries.contains {
+            $0.commitment.identity == commitment.identity && day.days(until: $0.commitment.keptFrom) > 0
+        }
+        guard !laterShift, !laterEra else {
+            return false
+        }
+
         shifts[day] = other
         writeShifts(shifts, on: commitment)
         return true

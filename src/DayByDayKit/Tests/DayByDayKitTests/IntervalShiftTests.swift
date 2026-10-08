@@ -157,3 +157,27 @@ func anErasFirstEveryNDaysDueDayIsShiftedBackNoFurtherThanTheDayThatEraIsKeptFro
     #expect(!before)
     #expect(after)
 }
+
+@Test("a roster refuses to shift an every-N-days due day while a later shift or a later era of it stands")
+func aRosterRefusesToShiftAnEveryNDaysDueDayWhileALaterShiftOrALaterEraOfItStands() {
+    var shifted = Roster()
+    let commitment = nails()
+    _ = shifted.add(commitment)
+    let later = shifted.shift(commitment, from: date(2026, 9, 3), to: date(2026, 9, 4))
+    #expect(later)
+
+    let refused = shifted.shift(commitment, from: date(2026, 8, 30), to: date(2026, 8, 31))
+
+    #expect(!refused)
+    #expect(shifted.commitments[0].isDue(on: date(2026, 8, 30)))
+
+    var eras = Roster()
+    _ = eras.add(commitment)
+    let further = Commitment(
+        era: commitment, schedule: every(5, from: date(2026, 9, 1)), keptFrom: date(2026, 9, 1),
+        kind: .tick)!
+    _ = eras.put(era: further, on: commitment, keptUntil: date(2026, 8, 31), under: nil)
+
+    let refusedAcrossEras = eras.shift(commitment, from: date(2026, 8, 30), to: date(2026, 8, 31))
+    #expect(!refusedAcrossEras)
+}
