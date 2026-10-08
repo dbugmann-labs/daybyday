@@ -54,3 +54,26 @@ func anEveryNDaysCommitmentIsDueCountingOnFromTheDayAShiftPutItsDueDayOn() {
     #expect(!lensKeeps.isDue(on: date(2026, 9, 8)))
     #expect(!lensKeeps.isDue(on: date(2026, 9, 22)))
 }
+
+@Test("an every-N-days count runs on from a shift only where the shift took a due day on or after its start date")
+func anEveryNDaysCountRunsOnFromAShiftOnlyWhereTheShiftTookADueDayOnOrAfterItsStartDate() {
+    var roster = Roster()
+    let commitment = nails()
+    _ = roster.add(commitment)
+    let shifted = roster.shift(commitment, from: date(2026, 8, 30), to: date(2026, 8, 31))
+    #expect(shifted)
+    let further = Commitment(
+        era: commitment, schedule: every(5, from: date(2026, 9, 1)), keptFrom: date(2026, 9, 1),
+        kind: .tick)!
+    let put = roster.put(
+        era: further, on: commitment, keptUntil: date(2026, 8, 31), under: nil)
+    #expect(put)
+
+    func dueAccordingToTheRoster(on day: CalendarDate) -> Bool {
+        roster.commitments(on: day).contains { $0.isDue(on: day) }
+    }
+    #expect(dueAccordingToTheRoster(on: date(2026, 8, 31)))
+    #expect(dueAccordingToTheRoster(on: date(2026, 9, 1)))
+    #expect(dueAccordingToTheRoster(on: date(2026, 9, 6)))
+    #expect(!dueAccordingToTheRoster(on: date(2026, 9, 4)))
+}

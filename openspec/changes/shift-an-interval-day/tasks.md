@@ -21,7 +21,7 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 ## 3. `commitment` — `Commitment`, `Roster`, `RosterStore`, `CommitmentsScreen`
 
 - [x] 3.1 an every-N-days commitment is due counting on from the day a shift put its due day on — catches the landing alone made due
-- [ ] 3.2 an every-N-days count runs on from a shift only where the shift took a due day on or after its start date — catches an older count's shift carried into a new interval
+- [x] 3.2 an every-N-days count runs on from a shift only where the shift took a due day on or after its start date — catches an older count's shift carried into a new interval
 - [ ] 3.3 a roster shifts an every-N-days due day onto any day between the due days either side of it, a week crossed or not — catches the week rule left on intervals
 - [ ] 3.4 a roster refuses to shift an every-N-days due day onto a due day either side of it, a day beyond them, or itself
 - [ ] 3.5 an era's first every-N-days due day is shifted back no further than the day that era is kept from — catches the previous due day taken as the bound
