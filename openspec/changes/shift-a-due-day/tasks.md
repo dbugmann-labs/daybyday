@@ -108,4 +108,4 @@ on Monday, Wednesday and Saturday, kept from a day before this week, and nothing
 - [x] W.3 Monday, paged back — "Gym - to Tue", the whole row faded.
 - [x] W.4 Saturday's row shifted to Sunday through its own menu, then "Gym"'s change sheet asked for Tuesday and Thursday — refused, "Shift its day back first." under the rhythm field.
 - [x] W.5 Tuesday's row shifted back to Monday, then Monday paged to — "Gym - Mon, Wed, Sat", not faded, and Tuesday holds no "Gym" row.
-- [x] W.6 **The handover** — W.1–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.6 **The handover** — W.1–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. Posted: https://github.com/dbugmann-labs/daybyday/pull/396#issuecomment-6047637146
