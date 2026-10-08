@@ -279,3 +279,73 @@ func anEveryNDaysShiftAcrossAWeekIsHeldByARosterStoreOpenedAfterwards() throws {
     #expect(!keeps.isDue(on: date(2026, 9, 8)))
     #expect(!keeps.isDue(on: date(2026, 9, 22)))
 }
+
+private func freshPlaces() -> (roster: URL, record: URL) {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    return (
+        directory.appendingPathComponent("roster.json"),
+        directory.appendingPathComponent("record.json")
+    )
+}
+
+private func mood(_ highest: Decimal = 10) -> Commitment {
+    Commitment(
+        name: "Mood", schedule: every(4, from: august6), keptFrom: august6,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: highest)))!
+}
+
+@MainActor
+@Test("a range or a target change keeps an every-N-days count running from its start date")
+func aRangeOrATargetChangeKeepsAnEveryNDaysCountRunningFromItsStartDate() throws {
+    let places = freshPlaces()
+    let commitment = mood()
+    try RosterStore(at: places.roster).add(commitment)
+    let screen = CommitmentsScreen(
+        asOf: date(2026, 8, 31), keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.change(
+        commitment, toName: "Mood", on: .everyNDays(4), keptFrom: august6, under: nil,
+        lowest: "1", highest: "5")
+
+    #expect(refusal == nil)
+    let reopened = try RosterStore(at: places.roster).roster
+    let eras = reopened.eras(of: commitment)
+    #expect(eras.count == 2)
+    #expect(eras[0].kind == .number(range: Commitment.Range(lowest: 1, highest: 5)))
+    #expect(eras[0].schedule == every(4, from: august6))
+    #expect(eras[0].keptFrom == date(2026, 8, 31))
+    func dueAccordingToTheRoster(on day: CalendarDate) -> Bool {
+        reopened.commitments(on: day).contains { $0.isDue(on: day) }
+    }
+    #expect(dueAccordingToTheRoster(on: date(2026, 9, 3)))
+    #expect(!dueAccordingToTheRoster(on: date(2026, 8, 31)))
+    #expect(!dueAccordingToTheRoster(on: date(2026, 9, 4)))
+
+    let totalPlaces = freshPlaces()
+    let protein = Commitment(
+        name: "Protein", schedule: every(4, from: august6), keptFrom: august6,
+        kind: .total(target: Commitment.Target(120)!))!
+    try RosterStore(at: totalPlaces.roster).add(protein)
+    let totalScreen = CommitmentsScreen(
+        asOf: date(2026, 8, 31), keepingRosterAt: totalPlaces.roster,
+        keepingRecordAt: totalPlaces.record)
+    _ = totalScreen.change(
+        protein, toName: "Protein", on: .everyNDays(4), keptFrom: august6, under: nil,
+        target: "150")
+    let proteinEras = try RosterStore(at: totalPlaces.roster).roster.eras(of: protein)
+    #expect(proteinEras.count == 2)
+    #expect(proteinEras[0].schedule == every(4, from: august6))
+
+    let intervalPlaces = freshPlaces()
+    let otherMood = mood()
+    try RosterStore(at: intervalPlaces.roster).add(otherMood)
+    let intervalScreen = CommitmentsScreen(
+        asOf: date(2026, 8, 31), keepingRosterAt: intervalPlaces.roster,
+        keepingRecordAt: intervalPlaces.record)
+    _ = intervalScreen.change(
+        otherMood, toName: "Mood", on: .everyNDays(5), keptFrom: august6, under: nil,
+        lowest: "1", highest: "5")
+    let intervalEras = try RosterStore(at: intervalPlaces.roster).roster.eras(of: otherMood)
+    #expect(intervalEras[0].schedule == every(5, from: date(2026, 8, 31)))
+}
