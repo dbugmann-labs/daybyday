@@ -138,9 +138,9 @@ public struct DayView: Hashable, Sendable {
         public var rhythmInWords: String {
             switch shift {
             case .cameFrom(let day):
-                return "from \(DayTitle.weekdayNames[day.weekday]!)"
+                return "from \(shiftedDayInWords(day))"
             case .wentTo(let day):
-                return "to \(DayTitle.weekdayNames[day.weekday]!)"
+                return "to \(shiftedDayInWords(day))"
             case nil:
                 break
             }
@@ -148,6 +148,16 @@ public struct DayView: Hashable, Sendable {
                 return commitment.rhythmInWords
             }
             return commitment.schedule.inWords(given: weekStanding.kept, owing: weekStanding.owed)
+        }
+
+        /// A day a shift names, by weekday — and on every N days by its date as well, as a day
+        /// screen offers it.
+        private func shiftedDayInWords(_ day: CalendarDate) -> String {
+            let weekday = DayTitle.weekdayNames[day.weekday]!
+            guard case .everyNDays = commitment.schedule else {
+                return weekday
+            }
+            return "\(weekday) \(day.day) \(LookBackWords.shortMonthNames[day.month]!)"
         }
 
         /// Whether this row is a weekly-quota row of `today`, not kept, whose week owes exactly

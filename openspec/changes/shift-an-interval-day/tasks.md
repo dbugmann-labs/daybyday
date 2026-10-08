@@ -36,17 +36,17 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 4. `record` — `RecordStore`
 
-- [ ] 4.1 records on every-N-days days a shifted count runs on to are read back after the app is closed and opened again — catches only a landing's shift written beside a record
-- [ ] 4.2 a store holding a record beside an every-N-days shift that could not be one is refused — catches `isDue` taken as the whole check
-- [ ] 4.3 a store whose shape and declared form disagree about the day a shift put a due day on is refused
+- [x] 4.1 records on every-N-days days a shifted count runs on to are read back after the app is closed and opened again — catches only a landing's shift written beside a record
+- [x] 4.2 a store holding a record beside an every-N-days shift that could not be one is refused — catches `isDue` taken as the whole check
+- [x] 4.3 a store whose shape and declared form disagree about the day a shift put a due day on is refused
 
 ## 5. `day-screen` — `DayView` and `DayScreen`
 
-- [ ] 5.1 a day screen offers an every-N-days row the days between its due days either side, each said with its date — catches the seven days of the week walked
-- [ ] 5.2 a day screen offers an every-N-days row a shift put its due day on the days of the day it came from, that day included
-- [ ] 5.3 a day screen offers no day to shift an every-N-days row while a later day holds a record of it — catches the rule applied to every shape
-- [ ] 5.4 an every-N-days row shifted through a day screen runs its count on from the day it landed
-- [ ] 5.5 an every-N-days row says where its shifted due day came from, and the row of the day it left where it went, each by weekday and date
+- [x] 5.1 a day screen offers an every-N-days row the days between its due days either side, each said with its date — catches the seven days of the week walked
+- [x] 5.2 a day screen offers an every-N-days row a shift put its due day on the days of the day it came from, that day included
+- [x] 5.3 a day screen offers no day to shift an every-N-days row while a later day holds a record of it — catches the rule applied to every shape
+- [x] 5.4 an every-N-days row shifted through a day screen runs its count on from the day it landed
+- [x] 5.5 an every-N-days row says where its shifted due day came from, and the row of the day it left where it went, each by weekday and date
 
 ## 6. `look-back`
 

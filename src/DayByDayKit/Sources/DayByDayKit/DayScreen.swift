@@ -1402,16 +1402,42 @@ public final class DayScreen {
             return []
         }
 
-        let monday = WeekQuota.monday(of: row.date)
-        return (0..<7).compactMap { offset -> ShiftDay? in
-            guard let other = monday.adding(days: offset), other != row.date else {
+        let candidates: [CalendarDate]
+        let everyNDays: Bool
+        if case .everyNDays(let interval, from: _) = row.commitment.schedule {
+            // Every N days keeps the count running from a shift, so one made under a record of a
+            // later day would move what that record stands on.
+            guard
+                !(recordStore?.history.datesRecorded(for: row.commitment) ?? []).contains(where: {
+                    row.date.days(until: $0) > 0
+                })
+            else {
+                return []
+            }
+            // A landing is shifted inside the bounds of the day it came from, so a candidate can
+            // lie up to two intervals from the row's own day; the roster judges every one.
+            candidates = (-2 * interval.days...2 * interval.days).compactMap {
+                row.date.adding(days: $0)
+            }
+            everyNDays = true
+        } else {
+            let monday = WeekQuota.monday(of: row.date)
+            candidates = (0..<7).compactMap { monday.adding(days: $0) }
+            everyNDays = false
+        }
+        return candidates.compactMap { other -> ShiftDay? in
+            guard other != row.date else {
                 return nil
             }
             var asked = roster
             guard asked.shift(row.commitment, from: row.date, to: other) else {
                 return nil
             }
-            return ShiftDay(date: other, words: DayTitle.weekdayNames[other.weekday]!)
+            let weekday = DayTitle.weekdayNames[other.weekday]!
+            let words =
+                everyNDays
+                ? "\(weekday) \(other.day) \(LookBackWords.shortMonthNames[other.month]!)" : weekday
+            return ShiftDay(date: other, words: words)
         }
     }
 
