@@ -136,13 +136,26 @@ public struct CommitmentRecord: Codable, Hashable {
         guard let shiftedFrom else {
             return shiftedTo == nil ? commitment() : nil
         }
-        if let shiftedTo {
-            guard let from = shiftedFrom.calendarDate(), let to = shiftedTo.calendarDate() else {
+        guard let from = shiftedFrom.calendarDate() else {
+            return nil
+        }
+        if case .everyNDays(let interval, from: _)? = schedule.schedule() {
+            let landing: CalendarDate
+            if let shiftedTo {
+                guard let to = shiftedTo.calendarDate() else {
+                    return nil
+                }
+                landing = to
+            } else {
+                landing = date
+            }
+            let apart = abs(from.days(until: landing))
+            guard apart > 0, apart < interval.days, landing.days(until: date) >= 0 else {
                 return nil
             }
-            return commitment(shifts: [from: to])
+            return commitment(shifts: [from: landing])
         }
-        guard let from = shiftedFrom.calendarDate(), Shift.couldBe(from: from, to: date) else {
+        guard shiftedTo == nil, Shift.couldBe(from: from, to: date) else {
             return nil
         }
         return commitment(shifts: [from: date])

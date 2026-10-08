@@ -75,9 +75,11 @@ public final class RecordStore {
         // A shift kept beside a record belongs to the forms since it was introduced; where it is
         // present is a record's own business, so only a form before it is judged here.
         let shiftsPossible = document.version >= RecordDocument.shiftsIntroducedInVersion
+        let shiftedToPossible = document.version >= RecordDocument.shiftedToIntroducedInVersion
         func agrees(_ commitment: CommitmentRecord) -> Bool {
             commitment.identityKeyPresent == identityExpected
                 && (shiftsPossible || commitment.shiftedFrom == nil)
+                && (shiftedToPossible || commitment.shiftedTo == nil)
         }
         return document.ticks.allSatisfy { agrees($0.commitment) }
             && (document.numbers ?? []).allSatisfy { agrees($0.commitment) }
