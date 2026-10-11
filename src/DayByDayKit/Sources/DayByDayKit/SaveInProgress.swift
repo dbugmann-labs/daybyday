@@ -5,7 +5,8 @@ import Foundation
 /// place is written and taken away once the roster place is, so a save killed or refused between
 /// the two leaves a durable trace of what it was doing. See `openspec/specs/commitment/spec.md`
 /// §§ *A change that carries records leaves a save in progress until its roster place is
-/// written* and *Reading the places undoes a torn save as it was*, and this change's `design.md`
+/// written* and *Reading the places undoes a torn save as it was, before anything is drawn from
+/// them*, and this change's `design.md`
 /// § *The save in progress lives beside the record place, not at a place of its own* and §
 /// *A save finished is told by the roster, not by the file*.
 struct SaveInProgress: Equatable, Codable {

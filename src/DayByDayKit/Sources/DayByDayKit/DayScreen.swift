@@ -260,9 +260,10 @@ public final class DayScreen {
     /// What reading the record, the roster and the one-off places produces: a restore in
     /// progress undone first, then a save in progress — `openspec/changes/restore-from-a-copy
     /// /design.md` § *Whole or nothing, across a stop* (ADR-1056) and `openspec/specs/commitment
-    /// /spec.md` § *Reading the places undoes a torn save as it was* — then the roster opened,
-    /// taking on `dayOne` where it holds nothing, the record opened, any orphaned record carried
-    /// back to its one possible source, and the one-offs opened. Shared by `init` and
+    /// /spec.md` § *Reading the places undoes a torn save as it was, before anything is drawn from
+    /// them* — then the roster opened, taking on `dayOne` where it holds nothing, the record
+    /// opened, any orphaned record carried back to its one possible source, and the one-offs
+    /// opened. Shared by `init` and
     /// `shown(asOf:)`, which always read all three; `returnedTo()` undoes a restore in progress
     /// the same way this does, before either of its own two paths, but does not share this
     /// function for what follows — `returnedToAfterARestore()` then reopens all three

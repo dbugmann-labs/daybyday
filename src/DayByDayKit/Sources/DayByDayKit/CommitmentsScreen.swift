@@ -319,8 +319,9 @@ public final class CommitmentsScreen {
     /// What reading the places produces: a restore in progress undone first, then a save in
     /// progress — `openspec/changes/restore-from-a-copy/design.md` § *Whole or nothing, across a
     /// stop* (ADR-1056) and `openspec/specs/commitment/spec.md` § *Reading the places undoes a
-    /// torn save as it was* — then the roster, the record and the one-offs opened, and any
-    /// orphaned record carried back to its one possible source before this screen says whether any
+    /// torn save as it was, before anything is drawn from them* — then the roster, the record and
+    /// the one-offs opened, and any orphaned record carried back to its one possible source
+    /// before this screen says whether any
     /// remain. Shared by `init`, `shown(asOf:)` and `confirmRestoring`, which all read all five
     /// places afresh. Runs through `CopyPlace.readStores`, the one place the cause per store is
     /// told apart, so the offer, a refused copy and the copy place's own stop all read off the
@@ -723,7 +724,7 @@ public final class CommitmentsScreen {
         case shiftedDayAhead
     }
 
-    /// A field of the sheet a commitments screen draws — a define, or a change form —
+    /// A field of the sheet a commitments screen draws — a definition or a change —
     /// that a refusal can be about. One control in one row whichever rhythm is chosen, so `.rhythm`
     /// covers the chips, the wheel, the interval row and the quota stepper alike: the refusal
     /// carried beside the field already says which of them is at fault. `design.md` § *One rhythm
@@ -757,8 +758,8 @@ public final class CommitmentsScreen {
     /// The sheet's `field` has been edited. Ends `sheetRefusal` where it is about `field`, and
     /// leaves it standing otherwise — including where it is about the whole change, which no edit
     /// can reach. `openspec/specs/commitment/spec.md` § *What a commitments screen tells on its
-    /// sheet lasts until that field is edited, the next ask, the sheet closing or the app being
-    /// shown again*.
+    /// sheet lasts until that field is edited, the next definition or change, the sheet closing or
+    /// the app being shown again*.
     public func sheetFieldEdited(_ field: SheetField) {
         if sheetRefusal?.field == field {
             sheetRefusal = nil
@@ -771,9 +772,9 @@ public final class CommitmentsScreen {
     }
 
     /// Sets `refusedChange` and `sheetRefusal` together — the one place every refusal in
-    /// `define` and `change` set both, so a refusal cannot set one without the
-    /// other. `refusal` was once hand-paired beside `change` at every call site — the two lines
-    /// set at some sites and not others, so a call could compile with `sheetRefusal` naming a
+    /// `define` and `change` sets both, so a refusal cannot set one without the other. `refusal`
+    /// was once hand-paired beside `change` at every call site — the two lines set at some sites
+    /// and not others, so a call could compile with `sheetRefusal` naming a
     /// different refusal than `refusedChange` did. Reading it back out of `change` instead makes
     /// that mismatch unwritable.
     private func refuse(_ change: RefusedChange, on field: SheetField?) {
@@ -1197,12 +1198,12 @@ public final class CommitmentsScreen {
     /// reads them; `nil` for a range or a target is the one `commitment` already carries,
     /// `design.md` § *Three more strings, and `nil` is the value it already carries*. No record
     /// moves and nothing is written at the record place by any of them. See
-    /// `openspec/changes/collapse-a-same-day-rhythm-change/specs/commitment/spec.md` §§ *A
+    /// `openspec/changes/collapse-a-same-day-rhythm-change/specs/commitment/spec.md` § *A
     /// commitments screen changes a commitment by renaming it, moving the day it is kept from, or
-    /// putting a new era on it* and *A commitments screen keeps no era a change leaves
-    /// holding no day, and a change back leaves the commitment as it was*, and
-    /// `openspec/specs/commitment/spec.md` § *A commitments screen refuses a change it cannot make,
-    /// tells each refusal apart, and changes nothing it has deleted*.
+    /// putting a new era on it*, and `openspec/specs/commitment/spec.md` §§ *A commitments screen
+    /// keeps no era a change leaves holding no day, and a change back leaves the commitment as it
+    /// was* and *A commitments screen refuses a change it cannot make, tells each refusal apart,
+    /// and changes nothing it has deleted*.
     public func change(
         _ commitment: Commitment, toName name: String, on rhythm: Rhythm, keptFrom: CalendarDate,
         under category: String?, lowest: String? = nil, highest: String? = nil, target: String? = nil,
