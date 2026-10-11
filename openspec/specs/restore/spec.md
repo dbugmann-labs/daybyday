@@ -1480,7 +1480,7 @@ Where a copy place is set, the app SHALL write a copy there after every change a
 record place, the roster place or the one-off place, as of the moment its clock answers once that
 change is kept: a tick made or taken back on a commitment or on a one-off; a number, a note or a
 total entered or taken back; the last addition taken back; a one-off added, renamed or removed; a
-commitment defined, changed, restarted, stopped, deleted, taken up again, moved, or moved as a
+commitment defined, changed, stopped, deleted, taken up again, moved, or moved as a
 group; and a restore confirmed. One change SHALL write exactly one copy however many places it
 reached, a deletion that erased records at the record place and wrote the roster place included, and that copy SHALL hold the three places as they stand once the change is kept. A call
 that keeps nothing anywhere SHALL write no copy and SHALL leave the last copy as it was.
