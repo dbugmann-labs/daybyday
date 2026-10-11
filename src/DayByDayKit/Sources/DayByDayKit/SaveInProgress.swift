@@ -1,6 +1,6 @@
 import Foundation
 
-/// A change or a restart that carries records notes, beside the record place, which commitment
+/// A change that carries records notes, beside the record place, which commitment
 /// its records are being carried from and which they are being carried to — kept before either
 /// place is written and taken away once the roster place is, so a save killed or refused between
 /// the two leaves a durable trace of what it was doing. See `openspec/specs/commitment/spec.md`

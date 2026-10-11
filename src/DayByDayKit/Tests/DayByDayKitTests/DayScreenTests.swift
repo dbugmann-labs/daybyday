@@ -9388,8 +9388,8 @@ func everyChangeAskedOfARowADayScreenSaysOfTheDayBeforeChangesNothingAndLeavesWh
 }
 
 @MainActor
-@Test("a restart torn between its two places is undone when a day screen is opened")
-func aRestartTornBetweenItsTwoPlacesIsUndoneWhenADayScreenIsOpened() throws {
+@Test("a torn save is undone when a day screen is opened")
+func aTornSaveIsUndoneWhenADayScreenIsOpened() throws {
     let (place, rosterPlace) = freshPlaces()
     let august1st = CalendarDate(year: 2026, month: 8, day: 1)!
     let august2nd = CalendarDate(year: 2026, month: 8, day: 2)!
@@ -9398,16 +9398,16 @@ func aRestartTornBetweenItsTwoPlacesIsUndoneWhenADayScreenIsOpened() throws {
     let nails = Commitment(
         name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
         keptFrom: august1st)!
-    let restartedNails = Commitment(
+    let changedNails = Commitment(
         name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august2nd),
         keptFrom: august2nd)!
 
     let rosterStore = try RosterStore(at: rosterPlace)
     try rosterStore.add(nails)
     let recordStore = try RecordStore(at: place)
-    try recordStore.add(Tick(restartedNails, on: august6th)!)
-    try recordStore.add(Tick(restartedNails, on: august10th)!)
-    try SaveInProgress(carriedFrom: nails, to: restartedNails).keep(
+    try recordStore.add(Tick(changedNails, on: august6th)!)
+    try recordStore.add(Tick(changedNails, on: august10th)!)
+    try SaveInProgress(carriedFrom: nails, to: changedNails).keep(
         at: SaveInProgress.place(besideRecordAt: place))
 
     let screen = DayScreen(
@@ -9420,8 +9420,8 @@ func aRestartTornBetweenItsTwoPlacesIsUndoneWhenADayScreenIsOpened() throws {
     let laterRecordStore = try RecordStore(at: place)
     #expect(laterRecordStore.history.isKept(nails, on: august6th))
     #expect(laterRecordStore.history.isKept(nails, on: august10th))
-    #expect(!laterRecordStore.history.isKept(restartedNails, on: august6th))
-    #expect(!laterRecordStore.history.isKept(restartedNails, on: august10th))
+    #expect(!laterRecordStore.history.isKept(changedNails, on: august6th))
+    #expect(!laterRecordStore.history.isKept(changedNails, on: august10th))
     #expect(
         !FileManager.default.fileExists(atPath: SaveInProgress.place(besideRecordAt: place).path))
 }

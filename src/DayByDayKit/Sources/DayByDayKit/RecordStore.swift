@@ -316,20 +316,6 @@ public final class RecordStore {
         }
     }
 
-    /// Carries the records held of `commitment` made on or after `day` over to `changed`, kept
-    /// at `place` before this returns; every record made before `day` stays under `commitment`.
-    /// Package-internal, the dated counterpart of `carryOver(_:to:)` a restart needs. See
-    /// `openspec/specs/commitment/spec.md` § *A commitments screen restarts an interval
-    /// commitment it keeps, from a day it is given*.
-    @discardableResult
-    func carryOver(_ commitment: Commitment, to changed: Commitment, onOrAfter day: CalendarDate)
-        throws -> Bool
-    {
-        try carryOver(commitment, to: changed, matching: { day.days(until: $0) >= 0 }) { nextHistory in
-            nextHistory.carryOver(commitment, to: changed, onOrAfter: day)
-        }
-    }
-
     /// Carries every record of `orphan` back to `source`, kept at `place` before this returns —
     /// refuses only where a record would land on a day `source` already holds a record on,
     /// `design.md` § *Carrying back refuses only on a shared day*. Package-internal:
@@ -342,8 +328,8 @@ public final class RecordStore {
         }
     }
 
-    /// The act both `carryOver` overloads perform: ask `historyCarryOver` to carry `history`
-    /// itself over first — the one place either overload's own refusal rules are judged — then,
+    /// The act `carryOver` and `carryBack` perform: ask `historyCarryOver` to carry `history`
+    /// itself over first — the one place each one's own refusal rules are judged — then,
     /// only where that changed anything, move the matching entries in this store's own mirrored
     /// dictionaries the same way and write them. `matches` must pick out exactly the dated
     /// records `historyCarryOver` moved, so the two never disagree on which records this call

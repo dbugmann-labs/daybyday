@@ -619,20 +619,16 @@ public final class CommitmentsScreen {
         /// rather than the one it would have produced —
         /// `openspec/changes/add-commitment-editing/design.md` § *The two new refusals*.
         case changing(Commitment, Refusal)
-        /// A restart asked for and refused, held against the commitment it was asked about — the
-        /// eighth kind of refused change. `openspec/changes/add-interval-restart/design.md` §
-        /// *The seam*.
-        case restarting(Commitment, Refusal)
-        /// A copy asked for and refused — the ninth kind of refused change. Names which of the
+        /// A copy asked for and refused — the eighth kind of refused change. Names which of the
         /// three stores could not be read, or `nil` where the copy could not be written instead.
         /// `openspec/changes/make-a-copy/design.md` § *The refusal is the screen's existing one,
         /// with one new cause*.
         case makingACopy(Copy.Store?, Refusal)
-        /// A restore asked for or confirmed and refused — the tenth kind of refused change. Names
+        /// A restore asked for or confirmed and refused — the ninth kind of refused change. Names
         /// neither a commitment nor a store: a refused restore is refused whole.
         /// `openspec/changes/restore-from-a-copy/design.md` § *The seam*.
         case restoring(Refusal)
-        /// A take-out asked for and refused — the eleventh kind of refused change. Names which
+        /// A take-out asked for and refused — the tenth kind of refused change. Names which
         /// store could not be taken out — a save in progress or a restore in progress named as the
         /// record, the place it stands beside — or `nil` where the directory it was to be written
         /// into could not be written instead. `design.md` § *A refused take-out reuses the refused
@@ -652,7 +648,6 @@ public final class CommitmentsScreen {
             case .moving(_, let refusal): return refusal
             case .movingGroup(_, let refusal): return refusal
             case .changing(_, let refusal): return refusal
-            case .restarting(_, let refusal): return refusal
             case .makingACopy(_, let refusal): return refusal
             case .restoring(let refusal): return refusal
             case .takingOut(_, let refusal): return refusal
@@ -690,13 +685,6 @@ public final class CommitmentsScreen {
         case rangeIsNotARange
         /// A target that is not a number, not above zero, or blank.
         case targetIsNotATarget
-        /// A restart asked from a date later than the day this screen was handed.
-        case restartDayIsAfterToday
-        /// A restart asked from a date earlier than the day the commitment is kept from.
-        case restartDayIsBeforeKeptFrom
-        /// A restart asked from a date the commitment is already due on — restarting there would
-        /// change nothing.
-        case alreadyDueOnRestartDay
         /// A store that could not be read while forming a copy — which one is named on the
         /// `RefusedChange` this leaves, not here, so the value answered to the caller stays the
         /// same whichever store it was. `openspec/changes/make-a-copy/design.md` § *The refusal
@@ -735,13 +723,13 @@ public final class CommitmentsScreen {
         case shiftedDayAhead
     }
 
-    /// A field of the sheet a commitments screen draws — a define, a change or a restart form —
+    /// A field of the sheet a commitments screen draws — a define, or a change form —
     /// that a refusal can be about. One control in one row whichever rhythm is chosen, so `.rhythm`
     /// covers the chips, the wheel, the interval row and the quota stepper alike: the refusal
     /// carried beside the field already says which of them is at fault. `design.md` § *One rhythm
     /// field, and the foot is no field at all*.
     public enum SheetField: Equatable, Sendable {
-        case name, rhythm, keptFrom, range, target, restartDay
+        case name, rhythm, keptFrom, range, target
         /// The whole card of usual amounts: a row added or taken away is an edit of it.
         case usualAmounts
     }
@@ -783,7 +771,7 @@ public final class CommitmentsScreen {
     }
 
     /// Sets `refusedChange` and `sheetRefusal` together — the one place every refusal in
-    /// `define`, `change` and `restart` sets both, so a refusal cannot set one without the
+    /// `define` and `change` set both, so a refusal cannot set one without the
     /// other. `refusal` was once hand-paired beside `change` at every call site — the two lines
     /// set at some sites and not others, so a call could compile with `sheetRefusal` naming a
     /// different refusal than `refusedChange` did. Reading it back out of `change` instead makes
@@ -817,10 +805,6 @@ public final class CommitmentsScreen {
         /// carries. Shown, and not one of the four a change is asked with: a kind is set when a
         /// commitment is defined and never changes. `design.md` § *The seam*.
         public let kind: Commitment.Kind
-        /// Whether this commitment can be restarted: `true` where its roster is keeping it and
-        /// its schedule is an interval of days, `false` otherwise.
-        /// `openspec/changes/add-interval-restart/design.md` § *The seam*.
-        public let canRestart: Bool
         /// The usual amounts this commitment declares, smallest first — none for a kind that is
         /// not a total.
         public let usualAmounts: [Commitment.UsualAmount]
@@ -1068,17 +1052,7 @@ public final class CommitmentsScreen {
             name: newest.name, rhythm: Rhythm(newest.schedule), keptFrom: keptFrom,
             category: entry.category, canChangeMoreThanNameAndCategory: entry.keptUntil == nil,
             kind: newest.kind,
-            canRestart: entry.keptUntil == nil && Self.isIntervalSchedule(newest.schedule),
             usualAmounts: entry.usualAmounts)
-    }
-
-    /// Whether `schedule` is an interval of days — the one rhythm a restart applies to.
-    /// `openspec/changes/add-interval-restart/design.md` § *The seam*.
-    private static func isIntervalSchedule(_ schedule: Schedule) -> Bool {
-        if case .everyNDays = schedule {
-            return true
-        }
-        return false
     }
 
     /// `category`, or nothing where `category` holds nothing but blank space — the same
@@ -1225,7 +1199,7 @@ public final class CommitmentsScreen {
     /// moves and nothing is written at the record place by any of them. See
     /// `openspec/changes/collapse-a-same-day-rhythm-change/specs/commitment/spec.md` §§ *A
     /// commitments screen changes a commitment by renaming it, moving the day it is kept from, or
-    /// putting a new era on it* and *A commitments screen keeps no era a change or a restart leaves
+    /// putting a new era on it* and *A commitments screen keeps no era a change leaves
     /// holding no day, and a change back leaves the commitment as it was*, and
     /// `openspec/specs/commitment/spec.md` § *A commitments screen refuses a change it cannot make,
     /// tells each refusal apart, and changes nothing it has deleted*.
@@ -1424,97 +1398,6 @@ public final class CommitmentsScreen {
             _ = try rosterStore.replace(with: nextRoster)
         } catch {
             refuse(.changing(commitment, .notKept), on: nil)
-            return .notKept
-        }
-
-        endedByAChangeOrByBeingShown()
-        sheetRefusal = nil
-        refreshLists(from: rosterStore)
-        copyPlace?.keptAChange()
-        return nil
-    }
-
-    /// Restarts `commitment`'s count from `day`: puts a new era on it as of the day before `day`
-    /// — an era alike in name, interval and kind whose schedule starts on `day` and which is kept
-    /// from `day` — under the category `commitment` is under. `day` may reach behind any later
-    /// era back to the day `commitment` is kept from, and the mend `Roster.put` runs replaces
-    /// every era begun after `day`, keeping the era `day` falls within until the day before.
-    /// Moves no record and writes nothing at the record place: every record already made stays a
-    /// record of that commitment, on the day it was made for, whichever era now holds that day.
-    /// See `openspec/changes/collapse-a-same-day-rhythm-change/specs/commitment/spec.md` §§ *A
-    /// commitments screen keeps no era a change or a restart leaves holding no day, and a change
-    /// back leaves the commitment as it was* and *A commitments screen refuses a restart it
-    /// cannot make, and tells each refusal apart*.
-    ///
-    /// Does nothing and says nothing when `commitment` cannot be restarted: not on `kept`, or not
-    /// on an interval schedule. Otherwise refuses, in order: a day later than `dayToKeepFrom`; a
-    /// day earlier than `commitment`'s own `keptFrom`; a day `commitment`'s newest era is already
-    /// due on — asked of `commitment` itself, the newest era, whatever era `day` reaches behind;
-    /// a day already recorded on that the restart would leave not due; and a place that could not
-    /// be written.
-    @discardableResult public func restart(_ commitment: Commitment, from day: CalendarDate) -> Refusal? {
-        // `kept.contains(commitment)` already guarantees `rosterStore` is not `nil` and holds an
-        // `entry` for `commitment`: `rosterStore` is assigned only in `init` and `shown(asOf:)`,
-        // each immediately followed by `refreshLists(from:)` on that same store, which is the one
-        // place `kept` is ever set — straight off `rosterStore.roster.groups` — so the two never
-        // drift apart. Binding both here, beside the interval schedule check, costs no refusal an
-        // unreachable guard further down would ever have produced.
-        guard kept.contains(commitment), case .everyNDays(let interval, from: _) = commitment.schedule,
-            let rosterStore,
-            let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment })
-        else {
-            return nil
-        }
-
-        let currentKeptFrom = rosterStore.roster.keptFrom(of: commitment) ?? commitment.keptFrom
-
-        guard day.days(until: dayToKeepFrom) >= 0 else {
-            refuse(.restarting(commitment, .restartDayIsAfterToday), on: .restartDay)
-            return .restartDayIsAfterToday
-        }
-
-        guard currentKeptFrom.days(until: day) >= 0 else {
-            refuse(.restarting(commitment, .restartDayIsBeforeKeptFrom), on: .restartDay)
-            return .restartDayIsBeforeKeptFrom
-        }
-
-        guard !commitment.isDue(on: day) else {
-            refuse(.restarting(commitment, .alreadyDueOnRestartDay), on: .restartDay)
-            return .alreadyDueOnRestartDay
-        }
-
-        let restartedSchedule = Schedule.everyNDays(interval, from: day)
-        let restarted = Commitment(
-            era: commitment, schedule: restartedSchedule, keptFrom: day, kind: commitment.kind)!
-
-        // One put, whatever day it reaches back to — `Roster.put`'s own mend cuts every era it
-        // reaches behind to the day before, newest first, and drops any that then holds no day,
-        // the newest never among them. A restart exactly on the day the commitment is kept from
-        // leaves the era it would otherwise give way to holding no day, and the mend drops it,
-        // so the restarted era stands alone; the mend never joins it with an older era, because a
-        // restart's own new start date never leaves one alike in schedule. `design.md` § *Alike
-        // is the schedule at the roster, the rhythm at the screen*.
-        var nextRoster = rosterStore.roster
-        guard
-            nextRoster.put(
-                era: restarted, on: commitment, keptUntil: Self.dayBefore(day), under: entry.category)
-        else {
-            refuse(.restarting(commitment, .notKept), on: nil)
-            return .notKept
-        }
-
-        if let recordStore,
-            let refusal = Self.refusalLeavingARecordedDayNotDue(
-                for: commitment, in: nextRoster, history: recordStore.history)
-        {
-            refuse(.restarting(commitment, refusal), on: .restartDay)
-            return refusal
-        }
-
-        do {
-            _ = try rosterStore.replace(with: nextRoster)
-        } catch {
-            refuse(.restarting(commitment, .notKept), on: nil)
             return .notKept
         }
 

@@ -12,24 +12,24 @@ reverted, and named in the PR body.
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports 67 of this change's 70 scenarios covered, the three uncovered being 3.1's, 3.2's and 3.3's
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` reports 67 of this change's 70 scenarios covered, the three uncovered being 3.1's, 3.2's and 3.3's
 
 ## 2. Restart taken out — `CommitmentsScreen`, `History`, `RecordStore`, the shell
 
-- [ ] 2.1 The members `design.md` § *The seam* lists as removed are deleted, with every line only they reach; the doc comments in `CommitmentsScreen`, `DayScreen` and `SaveInProgress` that cite a renamed or removed heading cite the new heading or go
-- [ ] 2.2 The fifteen tests in `CommitmentsScreenTests.swift` whose scenarios this delta removes are deleted, each listed by title in the PR body; no other test is deleted
-- [ ] 2.3 *what a commitments screen tells on its sheet stands when another field is edited* no longer tells a restart day field edited and asserts what it asserted before — the one sanctioned edit of a carried test, its before and after in the PR body
-- [ ] 2.4 `CommitmentsView` draws no *Restart* section and holds no restart state, bounds or words, and the app target builds
+- [x] 2.1 The members `design.md` § *The seam* lists as removed are deleted, with every line only they reach; the doc comments in `CommitmentsScreen`, `DayScreen` and `SaveInProgress` that cite a renamed or removed heading cite the new heading or go
+- [x] 2.2 The fifteen tests in `CommitmentsScreenTests.swift` whose scenarios this delta removes are deleted, each listed by title in the PR body; no other test is deleted
+- [x] 2.3 *what a commitments screen tells on its sheet stands when another field is edited* no longer tells a restart day field edited and asserts what it asserted before — the one sanctioned edit of a carried test, its before and after in the PR body
+- [x] 2.4 `CommitmentsView` draws no *Restart* section and holds no restart state, bounds or words, and the app target builds
 
 ## 3. `commitment` — `CommitmentsScreen`, `RosterStore`, `DayScreen`
 
-- [ ] 3.1 a torn save is undone when a day screen is opened — the carried test renamed to this title, its body unchanged, its before and after in the PR body
-- [ ] 3.2 a refused change replaces what a refused definition told on a commitments screen's sheet — mutation: a refused change leaves the sheet refusal it found standing
-- [ ] 3.3 neighbouring every-N-days eras of one interval counting from different days are read back as two — mutation: the mend compares an every-N-days schedule without its start date
+- [x] 3.1 a torn save is undone when a day screen is opened — the carried test renamed to this title, its body unchanged, its before and after in the PR body
+- [x] 3.2 a refused change replaces what a refused definition told on a commitments screen's sheet — mutation: a refused change leaves the sheet refusal it found standing
+- [x] 3.3 neighbouring every-N-days eras of one interval counting from different days are read back as two — mutation: the mend compares an every-N-days schedule without its start date
 
 ## 4. The records
 
-- [ ] 4.1 `grep -rni "restart" src/DayByDayKit src/DayByDay` prints nothing; `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2); `CONTEXT.md` and ADR-1067 are as this folder's PR left them, and not edited since G4
+- [x] 4.1 `grep -rni "restart" src/DayByDayKit src/DayByDay` prints nothing; `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2); `CONTEXT.md` and ADR-1067 are as this folder's PR left them, and not edited since G4
 
 ## 5. The gates and the archive handover
 

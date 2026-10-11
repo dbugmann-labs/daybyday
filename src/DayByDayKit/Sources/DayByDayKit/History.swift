@@ -280,21 +280,8 @@ public struct History: Hashable, Sendable {
         carryOver(commitment, to: changed, matching: { _ in true })
     }
 
-    /// Carries the records held of `commitment` made on or after `day` over to `changed`, on the
-    /// same date each was made for; every record made before `day` stays under `commitment`.
-    /// Package-internal: a restart needs this before it carries part of a history over, to tell
-    /// this cause apart from carrying it whole. `openspec/changes/add-interval-restart/design.md`
-    /// § *Carrying part of a history is package-internal*.
-    mutating func carryOver(_ commitment: Commitment, to changed: Commitment, onOrAfter day: CalendarDate)
-        -> Bool
-    {
-        carryOver(commitment, to: changed, matching: { day.days(until: $0) >= 0 })
-    }
-
-    /// The act both `carryOver` overloads perform, differing only in which dated records
-    /// `matches` lets through: every one, for the whole-history overload, or only those on or
-    /// after a day, for the restart's dated one. Refuses wherever `changed` holds any record at
-    /// all — the wider of the two refusals `move(_:to:matching:)` is shared behind, `design.md`
+    /// The act `carryOver` performs, for the dated records `matches` lets through. Refuses
+    /// wherever `changed` holds any record at all — the wider of the two refusals `move(_:to:matching:)` is shared behind, `design.md`
     /// § *Carrying back refuses only on a shared day*.
     private mutating func carryOver(
         _ commitment: Commitment, to changed: Commitment, matching matches: (CalendarDate) -> Bool
