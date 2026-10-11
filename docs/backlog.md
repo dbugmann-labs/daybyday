@@ -264,6 +264,52 @@ confirmed it as a gap rather than saying it unprompted.*
 - **Open** — a deleted contact takes its ticked row with it, by the owner's call. Does it take its
   ideas too, and does an idea, once given, get crossed off or deleted?
 
+### B-079 — say that I chose not to do something today, and why
+*Captured 2026-10-11.*
+
+> "record that a due commitment was deliberately not done today (including why), distinct from not
+> recorded"
+
+- **Trigger** — evening, on the day screen, looking at a due row that was skipped on purpose — too
+  sore for the gym, a rest day taken — and that would otherwise read the same as one forgotten.
+- **Touches** — `record`, and `look-back` for how such a day is counted. **Record** in `CONTEXT.md`
+  is "the durable fact that … the commitment was kept", one per commitment per day, so a record
+  saying it was *not* kept is a new kind of fact, not a fifth kind beside tick, number, note and
+  total. The *why* resembles a **note**, which is short text.
+- **Principle** — tested against *nothing congratulates you*: **passes.** It adds no praise; it
+  takes away the mark of a miss from a day that was a choice — and a broken run, read as failure, is
+  what the owner left other apps over.
+- **Open** — does the day still count as not kept, with a reason beside it, or as not owed? Not owed
+  is close to the *drop* the B-054 grill offered and the owner turned down in favour of a **shift**
+  ("gym is a quota"), on 2026-10-06; this want may be that drop coming back.
+- **Open** — the why: a sentence typed in the row, or one of a few reasons chosen? Is it required?
+- **Open** — what it means for a **weekly quota**, every day of which is due and none of which is
+  owed on its own.
+
+### B-080 — tell the app ahead of time which days I am away, so they owe nothing
+*Captured 2026-10-11.*
+
+> "declare days away ahead of time so nothing is due on them and nothing reads as missed (e.g.
+> holidays)"
+
+- **Trigger** — before a holiday, with the dates known; the days away should then pass without a
+  row asking for anything and come back with no misses in the look-back.
+- **Touches** — `commitment`, and `look-back`. The nearest thing today is a **gap**: a stop then a
+  resume, whose days "owe nothing and have no row", and "pausing is a stop followed by a resume"
+  (`CONTEXT.md` § *Gap*). But a stop is made on the day and a resume is "never a day picked", one
+  commitment at a time, so nothing can be said in advance or for all of them at once.
+- **Principle** — tested against *entered where you stand*: **passes.** Saying the dates of a
+  holiday is done once, ahead, and is not a daily visit, so it may live away from the day screen
+  without breaking the rule.
+- **Open** — every commitment, or chosen ones? The gym may stop on holiday while the contact lenses
+  go on.
+- **Open** — is this a gap planned in advance, or a new thing? A planned gap would split eras and
+  restart an every-N-days count when it ends, which a holiday may not mean.
+- **Open** — a week partly away against a **weekly quota**: does the quota shrink, or is the week
+  written off? And do one-offs and birthdays on those days still show?
+- **Open** — can days away be said after the fact too, for a sick week? If so it meets B-079 at a
+  single day, and the two may be one want at grooming.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
