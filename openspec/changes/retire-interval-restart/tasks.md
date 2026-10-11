@@ -33,15 +33,15 @@ reverted, and named in the PR body.
 
 ## 5. The gates and the archive handover
 
-- [ ] 5.1 `openspec validate retire-interval-restart --strict` exits 0, and `pnpm run checks` is clean but for `check:budgets` warnings on the two carried requirements `design.md` § *Risks* names
-- [ ] 5.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with 13 fewer tests than a run on `origin/main` reports, both read off runs
+- [x] 5.1 `openspec validate retire-interval-restart --strict` exits 0, and `pnpm run checks` is clean but for `check:budgets` warnings on the two carried requirements `design.md` § *Risks* names
+- [x] 5.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with 13 fewer tests than a run on `origin/main` reports, both read off runs
 - [ ] 5.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
-- [ ] 5.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.2. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `commitment` and `restore` move, and no other spec file does. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
+- [x] 5.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked and the walk comment's URL is in W.2. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `commitment` and `restore` move, and no other spec file does. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 
 A fresh install, light only, on the real date. Nothing is made: the day-one "Nails", every 4 days,
 is walked as it stands.
 
-- [ ] W.1 The commitments screen, "Nails" opened by its Edit swipe and its sheet scrolled to the foot — "Every 4 day(s)" and "Kept from" the last rows of the form, no "Restart" section and no "Restart from" picker below them.
-- [ ] W.2 **The handover** — W.1, taken on the final build, is posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.1 The commitments screen, "Nails" opened by its Edit swipe and its sheet scrolled to the foot — "Every 4 day(s)" and "Kept from" the last rows of the form, no "Restart" section and no "Restart from" picker below them.
+- [x] W.2 **The handover** — W.1, taken on the final build, is posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
