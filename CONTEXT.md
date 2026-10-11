@@ -687,6 +687,13 @@ nothing. Every kind can be declined except a **weekly quota**'s, which owes no s
 is **offered** wherever a tick is. Agreed 2026-10-11 at the twenty-sixth grooming pass's Feature
 grill, for B-079.
 
+**Amended 2026-10-11**, while writing the delta of `decline-a-due-day` (#400). "Never both" runs one
+way only: a decline is refused on a day holding any other record, a total's additions short of its
+target included, and any other record made on a declined day replaces the decline, an addition short
+of the target too. A decline is a record wherever one is asked of a day — it refuses a **shift**,
+keeps a stopped commitment until its day, and is carried over and deleted with the rest — and its
+reason is said on the row at rest. ADR-1068.
+
 **History** — every tick there is, across all commitments and all days, held together so that
 one question can be asked of it: was this commitment *kept* on this date? It answers from the ticks
 it holds and from nothing else — a commitment it has never seen is simply not kept, and a day the
