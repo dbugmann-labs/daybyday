@@ -236,11 +236,56 @@ confirmed it as a gap rather than saying it unprompted.*
 - **Open** — does the rename sheet lose the place too? It was not measured at #379, and "both
   together" assumes it does.
 
+### B-078 — keep a list of present ideas for each person whose birthday I see
+*Captured 2026-10-11.*
+
+> "I would like to be able to have a list of birthday present ideas for the contact where I have a
+> birthday stored (the ones where I already see the birthday in the app)"
+
+- **Trigger** — any day of the year, when an idea for someone comes up and would otherwise be
+  forgotten; and again before their birthday, when it is time to buy.
+- **Touches** — `birthday`. Who is meant is exactly who the birthday rows already show: everyone the
+  phone's birthday calendars hand, chosen nowhere in the app (the 2026-09-24 Decided line). It
+  would be the first thing the app keeps against a contact besides a tick, and the first typed text
+  in that capability — the tick store is keyed to the contact's identifier and the day
+  (`add-birthday`'s `grill.md` § *Settled* 4).
+- **Principle** — tested against *entered where you stand*: **passes, but it is the line to watch.**
+  An idea is not a daily entry, so the principle does not rule out a place outside the day screen —
+  and it needs one, because a birthday row is on the day screen only on its own day, and the
+  commitments screen holds the switch but lists nobody.
+- **Open** — where is the list reached the other 364 days? There is no screen today that lists the
+  people who have birthdays, and adding one is most of this want.
+- **Open** — seeing the ideas on the birthday itself is too late to buy anything. Does this want
+  pull in seeing a birthday coming, which the Feature grill kept off the table by making a birthday
+  a row on its day and never a notification?
+- **Open** — the contact identifier is unique on one device only, so a copy restored on a new phone
+  may match nobody (`add-birthday` § *Settled* 4). A lost tick was accepted on that ground; is a lost
+  list of typed ideas, under *restore, not sync*?
+- **Open** — a deleted contact takes its ticked row with it, by the owner's call. Does it take its
+  ideas too, and does an idea, once given, get crossed off or deleted?
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-10-11 — say that I chose not to do something today, and why (B-079) → Stories under
+  `FEAT: record` (#53) and `FEAT: day-screen` (#27), reopened with `EPIC: Daily commitments` (#1), and a
+  later count under `FEAT: look-back` (#271), reopened with `EPIC: Looking back` (#269); its Stories
+  come at G2, and are the cluster's first. A **declined** day is still owed and not kept — what
+  happened, not a day taken out of the rhythm — with an optional typed reason; a fifth kind of record,
+  never keeping. Kept or declined, never both: keeping replaces the decline, and a decline taken back
+  leaves nothing. Every kind but a weekly quota's, offered wherever a tick is. The row says it first,
+  the look-back counts it later. `CONTEXT.md` gained **Declined**; **Record** amended.
+
+- 2026-10-11 — tell the app ahead of time which days I am away, so they owe nothing (B-080) → Stories
+  under `FEAT: commitment` (#26), reopened with #1; after B-079's at G2. **Days away** are a **gap**
+  said for a span of dates, over the commitments a person picks — every gap rule carries, an
+  interval's count beginning again on the day back. Said ahead, or after the fact where nothing is
+  recorded on its days; either end moved, or the span removed, on the same condition; on the
+  commitments screen. A stopped commitment is not offered, and a shift with a day inside the span
+  refuses it. One-offs, birthdays and happenings show as on any day. `CONTEXT.md` gained **Days away**.
 
 - 2026-10-06 — know when a weekly quota can no longer be met without today (B-073) → a Story under
   `FEAT: day-screen` (#27), reopened with `EPIC: Daily commitments` (#1); its Story comes at G2, and is
@@ -1497,3 +1542,20 @@ found nothing.
     seam changes; the next pass's strongest. B-069 — the week with system blue ended today and the
     owner has not said; B-072 a sitting of its own; B-041 waits on the deployment target; B-066 waits
     for a cause.
+- 2026-10-11 — pass over 8 wants, the twenty-sixth, on `chore/backlog` (PR #398, holding B-078..B-080
+  unmerged), `origin/main` at 7dd6458.
+  - **Sweep** — no new silence: since the twenty-fifth pass #395, #396, #397 and #399 landed; a
+    **shift** has create, move-again and undo, and restarting is retired. Day-one week all shipped;
+    `docs/open-questions.md` gained six gaps and no want; no issue open.
+  - **Taken forward** — **two clusters at once, by the owner's decision.** **A**, days that owe
+    nothing: B-079 and B-080, grilled here. Seventeen questions over three rounds and one fact agent;
+    every answer as recommended except days away reaching past days where nothing is recorded. The
+    B-054 "drop" that B-079's Open line cited is recorded nowhere but in the 2026-10-06 Decided line,
+    and reads there as dropping the want rather than a day — asked on that premise, answered on its
+    merits. G1 approved, reopening #53, #27, #26, #271, #1 and #269. Declined first. Left for the
+    days-away Story grill: whether **slack** counts a day away as a day left. `CONTEXT.md` gained
+    **Declined** and **Days away**; **Record** amended. **B**, present ideas: B-078, handed to a session
+    of its own on `chore/groom-present-ideas`, to be logged as cluster B of this pass.
+  - **Not taken** — **C**, B-077: a commitments-screen redraw fix, to ask for as a chore. B-069 waits
+    for the owner's word on system blue; B-072 a sitting of its own; B-041 waits on the deployment
+    target; B-066 waits for a cause.

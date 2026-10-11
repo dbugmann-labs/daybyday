@@ -265,6 +265,18 @@ still said, owing nothing, as a month with no due day is. A record already stand
 stays in the store and is shown nowhere. Pausing is a stop followed by a resume, and the gap is the
 pause. Agreed 2026-09-23 at the grill of `stop-and-resume-as-eras` (#306).
 
+**Days away** — a span of dates a person says, for commitments they pick, on which those
+commitments owe nothing: a holiday said before it starts, or a sick week said after it, where
+nothing is recorded on its days. Each commitment picked takes a **gap** over the span, stopped on
+its first day and resumed the day after its last, so it means everything a gap means — no row, a
+**weekly quota** owing for the days it keeps, an every-N-days count beginning again on the day
+back — and it is the one way a stop and a resume are said for a day other than the one they are
+made on. Either end can be moved and the span can be taken away, while no day it would give back
+holds a record. A stopped commitment is not offered, and a commitment one of whose **shifts** has a
+day inside the span is refused until the shift is undone. **One-offs**, **birthdays** and
+**happenings** are not commitments and show on days away as on any other. Agreed 2026-10-11 at the
+twenty-sixth grooming pass's Feature grill, for B-080.
+
 **Resume** — the person's word, and the stopped row's swipe label, for **taking a stopped commitment
 up again**, which is what the specs call it; the two name one act. A resume is made on the day it is
 made and asks for nothing, and it begins a new **era** there unless no day would lie between it and
@@ -658,9 +670,22 @@ sum has reached its target — and any record can be **taken back**, because a t
 undone is a permanent false record: a tick, a number or a note leaves the day holding nothing, a
 total loses its last addition. Agreed 2026-09-02 at the first grooming pass, with `FEAT: record`.
 
+**Amended 2026-10-11**, at the twenty-sixth grooming pass's Feature grill: a record is no longer
+only the fact that a commitment was kept. A **declined** day is a record too, the one record that
+is never keeping, and it is still at most one per commitment per day.
+
 **Tick** — to record that a due commitment was done, and the plain kind of record that
 results. A tick is of a *due* commitment: a day on which the commitment is not due takes no
 tick. The past is writable: a day other than today can be ticked.
+
+**Declined** — a **due** day a person chose not to keep, and said so: a record of its own, with an
+optional short reason typed beside it. A declined day is still owed and still not **kept** — it is
+what happened, not a day taken out of the rhythm — but it reads apart from a day nobody recorded,
+on its row and, in time, in a **look-back**'s counts. A day is kept or declined, never both: keeping
+a declined day replaces the decline, reason and all, and a decline taken back leaves the day holding
+nothing. Every kind can be declined except a **weekly quota**'s, which owes no single day; a decline
+is **offered** wherever a tick is. Agreed 2026-10-11 at the twenty-sixth grooming pass's Feature
+grill, for B-079.
 
 **History** — every tick there is, across all commitments and all days, held together so that
 one question can be asked of it: was this commitment *kept* on this date? It answers from the ticks
