@@ -264,57 +264,28 @@ confirmed it as a gap rather than saying it unprompted.*
 - **Open** — a deleted contact takes its ticked row with it, by the owner's call. Does it take its
   ideas too, and does an idea, once given, get crossed off or deleted?
 
-### B-079 — say that I chose not to do something today, and why
-*Captured 2026-10-11.*
-
-> "record that a due commitment was deliberately not done today (including why), distinct from not
-> recorded"
-
-- **Trigger** — evening, on the day screen, looking at a due row that was skipped on purpose — too
-  sore for the gym, a rest day taken — and that would otherwise read the same as one forgotten.
-- **Touches** — `record`, and `look-back` for how such a day is counted. **Record** in `CONTEXT.md`
-  is "the durable fact that … the commitment was kept", one per commitment per day, so a record
-  saying it was *not* kept is a new kind of fact, not a fifth kind beside tick, number, note and
-  total. The *why* resembles a **note**, which is short text.
-- **Principle** — tested against *nothing congratulates you*: **passes.** It adds no praise; it
-  takes away the mark of a miss from a day that was a choice — and a broken run, read as failure, is
-  what the owner left other apps over.
-- **Open** — does the day still count as not kept, with a reason beside it, or as not owed? Not owed
-  is close to the *drop* the B-054 grill offered and the owner turned down in favour of a **shift**
-  ("gym is a quota"), on 2026-10-06; this want may be that drop coming back.
-- **Open** — the why: a sentence typed in the row, or one of a few reasons chosen? Is it required?
-- **Open** — what it means for a **weekly quota**, every day of which is due and none of which is
-  owed on its own.
-
-### B-080 — tell the app ahead of time which days I am away, so they owe nothing
-*Captured 2026-10-11.*
-
-> "declare days away ahead of time so nothing is due on them and nothing reads as missed (e.g.
-> holidays)"
-
-- **Trigger** — before a holiday, with the dates known; the days away should then pass without a
-  row asking for anything and come back with no misses in the look-back.
-- **Touches** — `commitment`, and `look-back`. The nearest thing today is a **gap**: a stop then a
-  resume, whose days "owe nothing and have no row", and "pausing is a stop followed by a resume"
-  (`CONTEXT.md` § *Gap*). But a stop is made on the day and a resume is "never a day picked", one
-  commitment at a time, so nothing can be said in advance or for all of them at once.
-- **Principle** — tested against *entered where you stand*: **passes.** Saying the dates of a
-  holiday is done once, ahead, and is not a daily visit, so it may live away from the day screen
-  without breaking the rule.
-- **Open** — every commitment, or chosen ones? The gym may stop on holiday while the contact lenses
-  go on.
-- **Open** — is this a gap planned in advance, or a new thing? A planned gap would split eras and
-  restart an every-N-days count when it ends, which a holiday may not mean.
-- **Open** — a week partly away against a **weekly quota**: does the quota shrink, or is the week
-  written off? And do one-offs and birthdays on those days still show?
-- **Open** — can days away be said after the fact too, for a sick week? If so it meets B-079 at a
-  single day, and the two may be one want at grooming.
-
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-10-11 — say that I chose not to do something today, and why (B-079) → Stories under
+  `FEAT: record` (#53) and `FEAT: day-screen` (#27), reopened with `EPIC: Daily commitments` (#1), and a
+  later count under `FEAT: look-back` (#271), reopened with `EPIC: Looking back` (#269); its Stories
+  come at G2, and are the cluster's first. A **declined** day is still owed and not kept — what
+  happened, not a day taken out of the rhythm — with an optional typed reason; a fifth kind of record,
+  never keeping. Kept or declined, never both: keeping replaces the decline, and a decline taken back
+  leaves nothing. Every kind but a weekly quota's, offered wherever a tick is. The row says it first,
+  the look-back counts it later. `CONTEXT.md` gained **Declined**; **Record** amended.
+
+- 2026-10-11 — tell the app ahead of time which days I am away, so they owe nothing (B-080) → Stories
+  under `FEAT: commitment` (#26), reopened with #1; after B-079's at G2. **Days away** are a **gap**
+  said for a span of dates, over the commitments a person picks — every gap rule carries, an
+  interval's count beginning again on the day back. Said ahead, or after the fact where nothing is
+  recorded on its days; either end moved, or the span removed, on the same condition; on the
+  commitments screen. A stopped commitment is not offered, and a shift with a day inside the span
+  refuses it. One-offs, birthdays and happenings show as on any day. `CONTEXT.md` gained **Days away**.
 
 - 2026-10-06 — know when a weekly quota can no longer be met without today (B-073) → a Story under
   `FEAT: day-screen` (#27), reopened with `EPIC: Daily commitments` (#1); its Story comes at G2, and is
@@ -1571,3 +1542,20 @@ found nothing.
     seam changes; the next pass's strongest. B-069 — the week with system blue ended today and the
     owner has not said; B-072 a sitting of its own; B-041 waits on the deployment target; B-066 waits
     for a cause.
+- 2026-10-11 — pass over 8 wants, the twenty-sixth, on `chore/backlog` (PR #398, holding B-078..B-080
+  unmerged), `origin/main` at 7dd6458.
+  - **Sweep** — no new silence: since the twenty-fifth pass #395, #396, #397 and #399 landed; a
+    **shift** has create, move-again and undo, and restarting is retired. Day-one week all shipped;
+    `docs/open-questions.md` gained six gaps and no want; no issue open.
+  - **Taken forward** — **two clusters at once, by the owner's decision.** **A**, days that owe
+    nothing: B-079 and B-080, grilled here. Seventeen questions over three rounds and one fact agent;
+    every answer as recommended except days away reaching past days where nothing is recorded. The
+    B-054 "drop" that B-079's Open line cited is recorded nowhere but in the 2026-10-06 Decided line,
+    and reads there as dropping the want rather than a day — asked on that premise, answered on its
+    merits. G1 approved, reopening #53, #27, #26, #271, #1 and #269. Declined first. Left for the
+    days-away Story grill: whether **slack** counts a day away as a day left. `CONTEXT.md` gained
+    **Declined** and **Days away**; **Record** amended. **B**, present ideas: B-078, handed to a session
+    of its own on `chore/groom-present-ideas`, to be logged as cluster B of this pass.
+  - **Not taken** — **C**, B-077: a commitments-screen redraw fix, to ask for as a chore. B-069 waits
+    for the owner's word on system blue; B-072 a sitting of its own; B-041 waits on the deployment
+    target; B-066 waits for a cause.
