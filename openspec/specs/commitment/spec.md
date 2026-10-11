@@ -1360,49 +1360,15 @@ number and SHALL be refused as such rather than kept shortened.
 - **AND** a screen alike in every way asked afterwards to define "Protein" of the total kind with a
   target of "0" holds that refusal instead, against defining a commitment
 
-### Requirement: A commitments screen says whether a commitment can be restarted, and offers the day it was handed to restart from
-
-A commitments screen SHALL say, for a commitment on either of its lists, whether it can be restarted:
-it can where its roster is keeping it and its schedule is an interval of days, and it cannot
-otherwise. The day it SHALL offer to restart from is the day it was handed.
-
-Asked to restart a commitment that cannot be restarted, or one on neither of its lists, a deleted one
-included, it SHALL do nothing: it SHALL write nothing at either place, SHALL refuse nothing and SHALL
-hold no refused change.
-
-#### Scenario: a commitments screen says only a kept interval commitment can be restarted
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on 1 January 2026, one
-  named "Lenses" on that same schedule, and one named "Gym" on a schedule listing Monday, Wednesday
-  and Saturday, all kept from 1 January 2026, are taken on at a roster place; "Lenses" is stopped
-  there as of Sunday 30 August 2026; and a commitments screen is opened at that roster place as of
-  Monday 31 August 2026
-- **THEN** what it says "Nails" is made of says it can be restarted
-- **AND** what it says "Lenses" and "Gym" are made of says each cannot
-- **AND** the day it offers to restart from is Monday 31 August 2026
-
-#### Scenario: a restart asked of a commitment that cannot be restarted does nothing and says nothing
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on 1 January 2026, one
-  named "Lenses" on that same schedule, one named "Pool" on that same schedule, and one named "Gym"
-  on a schedule listing Monday, Wednesday and Saturday, all kept from 1 January 2026, are taken on at
-  a roster place; "Lenses" is stopped there as of Sunday 30 August 2026 and "Pool" is deleted there;
-  a commitments screen is opened at that roster place and at a record place where nothing has
-  been kept as of Monday 31 August 2026; and "Lenses", "Pool" and "Gym" are each restarted through it
-  from Monday 31 August 2026
-- **THEN** nothing is refused and the screen holds no refused change
-- **AND** the content at both places is byte-for-byte what it was immediately after the screen was
-  opened
-
 ### Requirement: A change that carries records leaves a save in progress until its roster place is written
 
-A commitments screen SHALL, before a change or a restart writes anything at the record place, keep a
+A commitments screen SHALL, before a change writes anything at the record place, keep a
 save in progress beside the record place naming the commitment its records are carried from and the
-one they are carried to, and SHALL take it away once the roster place is written. A change or
-restart that carries no record SHALL keep no save in progress. Where it cannot be kept, the change or
-restart SHALL be refused as a place that could not be written, writing nothing at either place.
+one they are carried to, and SHALL take it away once the roster place is written. A change
+that carries no record SHALL keep no save in progress. Where it cannot be kept, the change SHALL be
+refused as a place that could not be written, writing nothing at either place.
 
-Where the roster place refuses a change or restart whose records were already carried, the screen
+Where the roster place refuses a change whose records were already carried, the screen
 SHALL undo the torn save exactly as reading its places does and SHALL then refuse it as a place that
 could not be written. Where that undo fails, the screen SHALL from then on hold a torn save it cannot
 undo.
@@ -1438,76 +1404,6 @@ undo.
 - **THEN** it is refused as a place that could not be written
 - **AND** no save in progress is kept beside that record place
 - **AND** the screen says it is keeping a roster, and what it keeps is one entry, named "Gym"
-
-### Requirement: Reading the places undoes a torn save as it was
-
-A day screen and a commitments screen SHALL read the save in progress each time they read their
-places — when opened, when shown again, and a day screen when returned to — before drawing anything
-from either place. Where one stands and the roster place holds, in any state, the commitment it names
-the records carried to, the screen SHALL take the save in progress away and SHALL write nothing else.
-Where one stands and the roster place holds no such commitment, the screen SHALL carry every record
-of that commitment back to the commitment they were carried from, SHALL keep that at the record
-place, SHALL then take the save in progress away, and SHALL say nothing of it.
-
-#### Scenario: a rename torn between its two places is undone when a commitments screen is opened
-
-- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
-  2026, is taken on at a roster place; a tick on Monday 3 August 2026 for a commitment named
-  "Gym 🏋️" alike in every other way is kept at a record place; a save in progress naming records
-  carried from "Gym" to "Gym 🏋️" is kept beside that record place; and a commitments screen is
-  opened at those places as of Monday 31 August 2026
-- **THEN** what it keeps is one entry, named "Gym"
-- **AND** a store opened afterwards at that record place answers that "Gym" was kept on Monday
-  3 August 2026 and that "Gym 🏋️" was not
-- **AND** no save in progress is kept beside that record place, and the screen does not say that
-  records belong to no commitment
-
-#### Scenario: a restart torn between its two places is undone when a day screen is opened
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
-  2026, kept from Saturday 1 August 2026, is taken on at a roster place; ticks on Thursday 6 August
-  2026 and Monday 10 August 2026 for a commitment named "Nails" on a schedule of every 4 days
-  starting on Sunday 2 August 2026, kept from that day, are kept at a record place; a save in
-  progress naming records carried from the first to the second is kept beside that record place; and
-  a day screen of no commitments is opened at those places as of Monday 10 August 2026
-- **THEN** its day view holds one row, named "Nails", saying the commitment is kept
-- **AND** a store opened afterwards at that record place answers that the first "Nails" was kept on
-  both days and the second on neither
-- **AND** no save in progress is kept beside that record place
-
-#### Scenario: a save in progress for a save its roster took is taken away and nothing else is written
-
-- **WHEN** a commitment named "Gym 🏋️" on a schedule listing all seven weekdays, kept from 1 January
-  2026, is taken on at a roster place and stopped there as of Sunday 30 August 2026; a tick for it on
-  Monday 3 August 2026 is kept at a record place; a save in progress naming records carried from a
-  commitment named "Gym" alike in every other way to "Gym 🏋️" is kept beside that record place; the
-  content at both places is read; and a commitments screen is opened at those places as of Monday
-  31 August 2026
-- **THEN** no save in progress is kept beside that record place
-- **AND** the content at both places is byte-for-byte what was read
-
-#### Scenario: a torn save is undone when a day screen is shown again
-
-- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
-  2026, is taken on at a roster place; a day screen of no commitments is opened at that roster place
-  and at a record place where nothing has been kept as of Monday 31 August 2026; a tick on that day
-  for a commitment named "Gym 🏋️" alike in every other way, and a save in progress naming records
-  carried from "Gym" to "Gym 🏋️", are then kept at those places by something else; and the screen is
-  shown again as of Monday 31 August 2026
-- **THEN** its day view holds one row, named "Gym", saying the commitment is kept
-- **AND** no save in progress is kept beside that record place
-
-#### Scenario: a torn save is undone when a day screen is returned to
-
-- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
-  2026, is taken on at a roster place; a day screen of no commitments is opened at that roster place
-  and at a record place where nothing has been kept as of Monday 31 August 2026; a tick on that day
-  for a commitment named "Gym 🏋️" alike in every other way, and a save in progress naming records
-  carried from "Gym" to "Gym 🏋️", are then kept at those places by something else; and the screen is
-  returned to
-- **THEN** its day view holds one row, named "Gym", saying the commitment is kept
-- **AND** a store opened afterwards at that record place answers that "Gym 🏋️" was not kept on that
-  day, and no save in progress is kept beside that record place
 
 ### Requirement: A torn save that cannot be undone keeps nothing from the record place
 
@@ -1585,94 +1481,6 @@ a torn save it cannot undo. A day screen SHALL say nothing about such records.
   at a record place; and a commitments screen is opened at those places as of Monday 31 August 2026
 - **THEN** the screen does not say that records belong to no commitment
 - **AND** the content at that record place is byte-for-byte what it was before the screen was opened
-
-### Requirement: What a commitments screen tells on its sheet lasts until that field is edited, the next ask, the sheet closing or the app being shown again
-
-What a commitments screen holds about a refusal on its sheet SHALL stand until the field it is about
-is edited, until the next commitment is defined, changed or restarted through the screen, until the
-sheet is closed, or until the app is shown again, and SHALL then be held no longer; nothing else
-SHALL end it. A field being edited SHALL end only what is about that field, and what is about the
-whole change SHALL be ended by no edit at all. An ask that is kept SHALL end it, an ask that is
-refused SHALL replace it, and a call asking for no change at all SHALL leave it exactly as it was.
-It SHALL be held beside what the screen holds about a refused change, which SHALL go on lasting as
-long as its own requirement says.
-
-#### Scenario: what a commitments screen tells on its sheet ends when the field it is about is edited
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept; a commitment named "   " on a weekday-set rhythm of all seven weekdays,
-  kept from that same day, is defined through it and refused; and its sheet's name field is told
-  edited
-- **THEN** the screen tells nothing on its sheet
-- **AND** it still holds a name that says nothing, against defining a commitment
-
-#### Scenario: what a commitments screen tells on its sheet stands when another field is edited
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept; a commitment named "   " on a weekday-set rhythm of all seven weekdays,
-  kept from that same day, is defined through it and refused; and its sheet's rhythm field, its
-  day-kept-from field, its range field, its target field and its restart day field are each told
-  edited
-- **THEN** it still tells a name that says nothing, about the name field of its sheet
-
-#### Scenario: what a commitments screen tells at the foot of its sheet stands when a field is edited
-
-- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
-  2026, is taken on at a roster place; a commitments screen is opened at that roster place as of
-  Monday 31 August 2026; what is at that place is then made impossible to write; a commitment named
-  "Journaling" on that same rhythm and kept-from day is defined through it and refused; and its
-  sheet's name field is told edited
-- **THEN** it still tells a place that could not be written, about the whole change and about no
-  field of its sheet
-
-#### Scenario: what a commitments screen tells on its sheet ends when the sheet is closed
-
-- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
-  2026, is taken on at a roster place; a commitments screen is opened at that roster place as of
-  Monday 31 August 2026; a commitment named "   " on a weekday-set rhythm of all seven weekdays,
-  kept from that same day, is defined through it and refused; and its sheet is told closed
-- **THEN** the screen tells nothing on its sheet
-- **AND** a screen whose sheet is told closed after a second commitment named "Gym" was defined
-  through it and refused tells nothing on its sheet either
-
-#### Scenario: a refused restart replaces what a refused save told on a commitments screen's sheet
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
-  2026, kept from Tuesday 4 August 2026, is taken on at a roster place; a commitments screen is
-  opened at that roster place and at a record place where nothing has been kept as of Monday
-  31 August 2026; a commitment named "   " on a weekday-set rhythm of all seven weekdays, kept from
-  that same day, is defined through it and refused; and "Nails" is then restarted through it from
-  Monday 3 August 2026 and refused
-- **THEN** it tells a day before the day it is kept from, about the restart day field of its sheet
-- **AND** a screen asked for the two the other way about tells a name that says nothing, about the
-  name field of its sheet
-
-#### Scenario: what a commitments screen tells on its sheet ends when an ask is kept
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept; a commitment named "   " on a weekday-set rhythm of all seven weekdays,
-  kept from that same day, is defined through it and refused; and a commitment named "Journaling"
-  on that same rhythm and kept-from day is then defined through it
-- **THEN** "Journaling" is not refused
-- **AND** the screen tells nothing on its sheet
-
-#### Scenario: what a commitments screen tells on its sheet ends when the app is shown again
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept; a commitment named "   " on a weekday-set rhythm of all seven weekdays,
-  kept from that same day, is defined through it and refused; and the app is then shown again as of
-  that same day
-- **THEN** the screen tells nothing on its sheet
-
-#### Scenario: what a commitments screen tells on its sheet stands when a call asks for no change at all
-
-- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
-  2026, is taken on at a roster place; a commitments screen is opened at that roster place as of
-  Monday 31 August 2026; a commitment named "   " on a weekday-set rhythm of all seven weekdays,
-  kept from that same day, is defined through it and refused; and "Gym" is then changed through it
-  to exactly the name, rhythm, day kept from and category it already has
-- **THEN** that call refuses nothing
-- **AND** the screen still tells a name that says nothing, about the name field of its sheet
 
 ### Requirement: A commitments screen offers all seven weekdays for a form's weekday chips
 
@@ -2286,104 +2094,6 @@ deleting one, moving one or putting one under a category SHALL leave every other
 - **AND** the later store's roster reads back all thousand, "Commitment 1" first, "Commitment 2"
   second and "Commitment 1000" last, in the order they were given
 
-### Requirement: A commitments screen says which field of its sheet a refusal it answers is about, or that it is about no field
-
-Where a commitments screen refuses a commitment defined through it, a change to one, or a restart,
-it SHALL hold that refusal with which field of its sheet it is about — at most one, the
-last ask's, a restart's included. A name that says nothing SHALL be about the name field. A rhythm
-due on no day, and a rhythm number the calendar will not take, SHALL be about the rhythm field. A
-range that is not a range SHALL be about the range field, and a target that is not a target about
-the target field. Every refusal a restart answers SHALL be about the restart day field but for a
-place that could not be written. A name a commitment its roster keeps or has stopped keeping already has SHALL be about the name
-field. A place that could not be written SHALL be about the whole change and no field.
-
-#### Scenario: a refusal that a name says nothing is about the name field
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept, and a commitment named "   " on a weekday-set rhythm of all seven weekdays,
-  kept from that same day, is defined through it
-- **THEN** it is refused as a name that says nothing, about the name field of its sheet
-- **AND** the screen holds that refusal against defining a commitment as well
-
-#### Scenario: a refusal that a rhythm is due on no day is about the rhythm field
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept, and a commitment named "Gym" on a weekday-set rhythm of no weekdays at all,
-  kept from that same day, is defined through it
-- **THEN** it is refused as a rhythm due on no day, about the rhythm field of its sheet
-
-#### Scenario: a refusal that the calendar will not take a rhythm's number is about the rhythm field
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept, and a commitment named "Contact lenses" on an interval rhythm of 0 days,
-  kept from that same day, is defined through it
-- **THEN** it is refused as a rhythm number the calendar will not take, about the rhythm field of
-  its sheet
-- **AND** one named "Finances" on a day-of-the-month rhythm of the 32nd is about that field too
-
-#### Scenario: a refusal that a range is not a range is about the range field
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept, and a commitment named "Mood" on a weekday-set rhythm of all seven
-  weekdays, kept from that same day, under no category, of the number kind with a lowest of "10" and
-  a highest of "1", is defined through it
-- **THEN** it is refused as a range that is not a range, about the range field of its sheet
-
-#### Scenario: a refusal that a target is not a target is about the target field
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept, and a commitment named "Water" on a weekday-set rhythm of all seven
-  weekdays, kept from that same day, under no category, of the total kind with a target of "0", is
-  defined through it
-- **THEN** it is refused as a target that is not a target, about the target field of its sheet
-
-#### Scenario: a refusal that a name is already in use is about the name field
-
-- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
-  2026, is taken on at a roster place; a commitments screen is opened at that roster place as of
-  Monday 31 August 2026; and a commitment named "Gym" on that same rhythm and day is defined through the screen
-- **THEN** it is refused as a name already in use, about the name field of its sheet
-
-#### Scenario: a refusal that a roster could not be written is about the whole change and no field
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept; what is at that place is then made impossible to write; and a commitment
-  named "Journaling" on a weekday-set rhythm of all seven weekdays, kept from that same day, is
-  defined through it
-- **THEN** it is refused as a place that could not be written, about the whole change and about no
-  field of its sheet
-
-#### Scenario: a restart refused for the day it was asked from is about the restart day field
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
-  2026, kept from Tuesday 4 August 2026, is taken on at a roster place; a commitments screen is
-  opened at that roster place and at a record place where nothing has been kept as of Monday
-  31 August 2026; and "Nails" is restarted through it from Monday 3 August 2026
-- **THEN** it is refused as a day before the day it is kept from, about the restart day field of its
-  sheet
-- **AND** a restart from Tuesday 1 September 2026 and one from Sunday 30 August 2026 are each about
-  that field too
-
-#### Scenario: a restart refused by a place that could not be written is about the whole change
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
-  2026, kept from Saturday 1 August 2026, is taken on at a roster place; ticks for it on Thursday
-  6 August 2026 and Monday 10 August 2026 are kept at a record place; a commitments screen is opened
-  at that roster place and that record place as of Monday 31 August 2026; what is at that roster
-  place is then made impossible to write; and "Nails" is restarted through it from Sunday 2 August
-  2026
-- **THEN** it is refused as a place that could not be written, about the whole change and about no
-  field of its sheet
-#### Scenario: a restart refused for a day already recorded on is about the restart day field
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
-  2026, kept from Tuesday 4 August 2026, is taken on at a roster place; a tick for it on Sunday
-  30 August 2026 is kept at a record place; a commitments screen is opened at that roster place and
-  that record place as of Monday 31 August 2026; and "Nails" is restarted through it from Saturday
-  29 August 2026
-- **THEN** it is refused as a day already recorded on that the change would leave not due, about the
-  restart day field of its sheet
-
 ### Requirement: A change leaves an interval era's start date where it was unless it names a different day kept from
 
 Where a commitments screen changes a commitment whose schedule is an interval of days, and the
@@ -2454,131 +2164,6 @@ day, whatever start date that era's schedule had before.
 - **AND** the commitment a roster store opened afterwards at that place holds is due on Monday
   3 August 2026 and on Friday 7 August 2026
 - **AND** it is not due on Thursday 6 August 2026
-
-### Requirement: A commitments screen restarts an interval commitment it keeps by putting a new era on it
-
-A commitments screen SHALL restart a commitment on its kept list whose schedule is an interval of
-days, on being given that commitment and a calendar date and nothing else. It SHALL put a new era on the commitment as of the day before that date — an era alike in name,
-interval and kind whose schedule starts on that date and which is kept from that date — under the
-category the commitment is under.
-
-It SHALL move no record and SHALL write nothing at the record place: every record already made
-stays a record of that commitment, on the day it was made for, whichever era now holds that day. A
-restart SHALL change no name, no interval, no kind and no category, and SHALL leave the day the
-commitment is kept from where it is.
-
-#### Scenario: an interval commitment restarted from today is kept until yesterday and runs on from today under its name, interval and category
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
-  2026, kept from Tuesday 4 August 2026, under the category "Care", is taken on at a roster place; a
-  tick for it on Monday 10 August 2026 is kept at a record place; a commitments screen is opened at
-  that roster place and that record place as of Monday 31 August 2026; and "Nails" is restarted
-  through it from Monday 31 August 2026
-- **THEN** nothing is refused
-- **AND** what it keeps is one group, "Care", holding one entry named "Nails", saying "Every 4 days"
-- **AND** a roster store opened afterwards at that place answers about Sunday 30 August 2026 with
-  "Nails" on every 4 days starting on Monday 31 August 2026, kept from that day, and then "Nails" on
-  every 4 days starting on Thursday 6 August 2026, kept from Tuesday 4 August 2026; and about Monday
-  31 August 2026 with the first alone
-- **AND** the content at that record place is byte-for-byte what it was immediately after the screen
-  was opened
-
-#### Scenario: an interval commitment restarted from the day it is kept from is kept on no date before the restart
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
-  2026, kept from Tuesday 4 August 2026, is taken on at a roster place; a commitments screen is
-  opened at that roster place and at a record place where nothing has been kept as of Monday
-  31 August 2026; and "Nails" is restarted through it from Tuesday 4 August 2026
-- **THEN** nothing is refused
-- **AND** the commitment a roster store opened afterwards at that place is keeping is due on Tuesday
-  4 August 2026 and on Saturday 8 August 2026, and not due on Thursday 6 August 2026
-- **AND** that roster store answers about Tuesday 4 August 2026 with that commitment alone
-
-#### Scenario: an interval commitment restarted through a commitments screen draws one row on a day screen on either side of the restart
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
-  2026, kept from Tuesday 4 August 2026, is taken on at a roster place; a commitments screen is
-  opened at that roster place and at a record place where nothing has been kept as of Monday
-  31 August 2026; and "Nails" is restarted through it from Monday 31 August 2026
-- **THEN** a day screen opened afterwards at those places as of Sunday 30 August 2026 draws one row,
-  named "Nails"
-- **AND** one opened as of Monday 31 August 2026 draws one row, named "Nails", and so does one
-  opened as of Friday 4 September 2026
-- **AND** one opened as of Thursday 3 September 2026 draws no row
-
-#### Scenario: restarting an interval commitment moves no record and writes nothing at the record place
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
-  2026, kept from Saturday 1 August 2026, is taken on at a roster place; ticks for it on Thursday
-  6 August 2026 and Monday 10 August 2026 are kept at a record place; a commitments screen is opened
-  at that roster place and that record place as of Monday 31 August 2026; the content at that record
-  place is read; and "Nails" is restarted through it from Sunday 2 August 2026
-- **THEN** nothing is refused
-- **AND** the content at that record place is byte-for-byte what was read
-- **AND** a look-back at "Nails" counts Thursday 6 August 2026 and Monday 10 August 2026 kept, and
-  says the day kept from "1 August 2026"
-
-### Requirement: A commitments screen refuses a restart it cannot make, and tells each refusal apart
-
-A commitments screen SHALL refuse a restart from a date later than the day it was handed, from a
-date earlier than the day the commitment is kept from, and from a date the commitment's newest era
-is already due on, each told apart from every other refusal.
-
-It SHALL refuse a restart as a day already recorded on that the change would leave not due where a
-record on or after the date is on a day the era the restart puts on is not due on, and as a place
-that could not be written. It SHALL refuse a restart for no name and for no record already kept: a
-restarted commitment is the commitment it was, and a restart takes no name and produces no second
-commitment. A refused restart SHALL keep nothing at
-either place and SHALL be held against the commitment it was asked about.
-
-#### Scenario: a restart from a day after today, a day before the day kept from, or a day the rhythm is already due on is refused, each told apart
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
-  2026, kept from Tuesday 4 August 2026, is taken on at a roster place; a commitments screen is
-  opened at that roster place and at a record place where nothing has been kept as of Monday
-  31 August 2026; and "Nails" is restarted through it three times — from Tuesday 1 September 2026,
-  from Monday 3 August 2026 and from Sunday 30 August 2026
-- **THEN** the three are refused as a day after today, a day before the day it is kept from and a day
-  the rhythm is already due on, each told apart from the others and from a place that could not be
-  written
-- **AND** what it keeps is one entry named "Nails", and the content at both places is byte-for-byte
-  what it was immediately after the screen was opened
-
-#### Scenario: a restart that would leave a day recorded on after it not due is refused
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
-  2026, kept from Tuesday 4 August 2026, is taken on at a roster place; a tick for it on Sunday
-  30 August 2026 is kept at a record place; a commitments screen is opened at that roster place and
-  that record place as of Monday 31 August 2026; and "Nails" is restarted through it from Saturday
-  29 August 2026
-- **THEN** it is refused as a day already recorded on that the change would leave not due
-- **AND** the content at both places is byte-for-byte what it was immediately after the screen was
-  opened
-
-#### Scenario: a restart is refused for no name and for no record already kept
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
-  2026, kept from Tuesday 4 August 2026, and one named "Nails 2" on a schedule of every 4 days
-  starting on Monday 31 August 2026, kept from that day, are taken on at a roster place; a tick for
-  "Nails" on Thursday 6 August 2026 is kept at a record place; a commitments screen is opened at that
-  roster place and that record place as of Monday 31 August 2026; and "Nails" is restarted through it
-  from Monday 31 August 2026
-- **THEN** nothing is refused
-- **AND** what it keeps is two entries, named "Nails" and then "Nails 2"
-- **AND** a look-back at "Nails" counts Thursday 6 August 2026 kept and says the day kept from
-  "4 August 2026"
-
-#### Scenario: a restart reaching behind a change is refused where a record the change's era holds would be left not due
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
-  2026, kept from Tuesday 4 August 2026, is taken on at a roster place; a commitments screen opened
-  at that roster place and at a record place where nothing has been kept as of Thursday 20 August
-  2026 changes it to an interval rhythm of 5 days, under no category; a tick for it on Tuesday
-  25 August 2026 is kept at that record place; and a commitments screen opened at those places as
-  of Monday 31 August 2026 restarts it from Tuesday 18 August 2026
-- **THEN** it is refused as a day already recorded on that the change would leave not due
-- **AND** the content at both places is byte-for-byte what it was immediately after the second
-  screen was opened
 
 ### Requirement: A roster deletes a commitment with every era of it
 
@@ -4756,8 +4341,8 @@ in no groups at all.
 Where a change asked of a commitments screen is refused, the screen SHALL hold which change was
 asked for and why it was refused, as well as answering the refusal to the caller. The change held
 SHALL be one of the ten a person can ask for — defining a commitment, stopping keeping one, taking
-a stopped one up again, deleting one, moving one, moving a whole group, changing one, restarting
-one, making a copy, restoring a copy — and for the six asked about a commitment already on one of
+a stopped one up again, deleting one, moving one, moving a whole group, changing one, making a
+copy, taking out the files, restoring a copy — and for the five asked about a commitment already on one of
 its lists it SHALL name that commitment: the one it was asked about, not the one the change would
 have produced. A refused group move SHALL name the category instead, a refused copy SHALL name the
 store that could not be read, or no store at all where the copy could not be written, and a refused
@@ -6647,101 +6232,6 @@ a target, and the total kind takes its target and ignores a range.
   category holding "Gym"
 - **AND** a look-back at "Creatine" says the day kept from "31 August 2026"
 
-### Requirement: A commitments screen keeps no era a change or a restart leaves holding no day, and a change back leaves the commitment as it was
-
-A commitments screen SHALL put on the era a change or a restart asks for as *A roster puts a new
-era on a commitment it is keeping, from a day, and keeps no era holding no day* says. A restart from
-a day before a later era's day kept from SHALL replace every era begun after that day, and the era
-holding the day before SHALL be kept until then.
-
-Where, with the eras holding no day dropped, the era a change's new era would give way to runs on
-the rhythm the change names and carries the range or target it names, no new era SHALL be put on,
-and that era SHALL run on as the newest with the schedule it had, an interval's start date
-included. A change back SHALL be refused for a recorded day it leaves not due as any change is.
-
-#### Scenario: a rhythm changed and changed back on one day leaves the commitment as it was that morning
-
-- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
-  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
-  and at a record place where nothing has been kept as of Monday 31 August 2026; and "Gym" is
-  changed through it to a weekday-set rhythm of Tuesday and Thursday and then back to one of Monday,
-  Wednesday and Saturday, each on the name and the day kept from it already has, under no category
-- **THEN** neither is refused
-- **AND** a roster store opened afterwards at that place reads back one era of "Gym", on Monday,
-  Wednesday and Saturday, kept from 1 January 2026, and answers about 31 August 2026 with that era
-  alone
-- **AND** a commitment named "Mood" of the number kind with a range of 1 to 10, changed alike to a
-  range of 1 to 5 and back to one of 1 to 10, reads back one era, ranging 1 to 10, kept from
-  1 January 2026
-
-#### Scenario: a rhythm changed three times on one day leaves one era for that day and a roster that can be read
-
-- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
-  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
-  and at a record place where nothing has been kept as of Monday 31 August 2026; and "Gym" is
-  changed through it to a weekday-set rhythm of Tuesday and Thursday, back to one of Monday,
-  Wednesday and Saturday, and to one of Tuesday and Thursday again, each under no category
-- **THEN** none of the three is refused
-- **AND** a roster store opened afterwards at that place opens without error and reads back two eras
-  of "Gym", the one on Tuesday and Thursday, kept from 31 August 2026, first and the one on Monday,
-  Wednesday and Saturday, kept from 1 January 2026, second
-- **AND** the screen shown again as of that day keeps one entry, named "Gym", saying "Tue, Thu"
-
-#### Scenario: a commitment defined and changed on one day keeps one era, kept from that day
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place and a record
-  place where nothing has been kept; a commitment named "Gym" on a weekday-set rhythm of Monday,
-  Wednesday and Saturday, kept from that same day, is defined through it; and "Gym" is changed
-  through it to a weekday-set rhythm of Tuesday and Thursday and then back to one of Monday,
-  Wednesday and Saturday, each under no category
-- **THEN** none is refused
-- **AND** a roster store opened afterwards at that place opens without error and reads back one era
-  of "Gym", on Monday, Wednesday and Saturday, kept from 31 August 2026
-
-#### Scenario: an interval rhythm changed away and back on one day keeps the start date it had
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
-  2026, kept from Tuesday 4 August 2026, is taken on at a roster place; a commitments screen is
-  opened at that roster place and at a record place where nothing has been kept as of Monday
-  31 August 2026; and "Nails" is changed through it to a weekday-set rhythm of Sunday and then back
-  to an interval rhythm of 4 days, each under no category
-- **THEN** neither is refused
-- **AND** a roster store opened afterwards at that place reads back one era of "Nails", on every
-  4 days starting on Thursday 6 August 2026, kept from Tuesday 4 August 2026
-- **AND** that commitment is due on Sunday 30 August 2026 and on Thursday 3 September 2026, and not
-  on Monday 31 August 2026
-
-#### Scenario: a change back on one day is refused where a record made that day would be left not due
-
-- **WHEN** a commitment named "Gym" on a schedule listing Tuesday and Thursday, kept from 1 January
-  2026, is taken on at a roster place; a commitments screen is opened at that roster place and at a
-  record place where nothing has been kept as of Monday 31 August 2026; "Gym" is changed through it
-  to a weekday-set rhythm of Monday, under no category; a tick for "Gym" on Monday 31 August 2026 is
-  then kept at that record place and the screen is shown again as of that day; and "Gym" is changed
-  back to a weekday-set rhythm of Tuesday and Thursday
-- **THEN** the change back is refused as a day already recorded on that the change would leave not
-  due
-- **AND** a roster store opened afterwards at that place answers about Monday 31 August 2026 with the
-  era on Monday alone
-
-#### Scenario: a restart reaches behind a change made days ago and replaces it
-
-- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
-  2026, kept from Tuesday 4 August 2026, is taken on at a roster place; a commitments screen opened
-  at that roster place and at a record place where nothing has been kept as of Thursday 20 August
-  2026 changes it to an interval rhythm of 5 days, under no category; and a commitments screen
-  opened at those places as of Monday 31 August 2026 restarts it from Tuesday 18 August 2026, a day
-  its every 4 days from 6 August was due on
-- **THEN** nothing is refused
-- **AND** a roster store opened afterwards at that place reads back two eras of "Nails", the newer on
-  every 5 days starting on Tuesday 18 August 2026, kept from that day, and the older on every 4 days
-  starting on Thursday 6 August 2026, kept from Tuesday 4 August 2026
-- **AND** asked about Monday 17 August 2026 it answers with both eras, and about Tuesday 18 August
-  2026 with the newer alone
-- **AND** a commitment alike restarted from Tuesday 25 August 2026 through a screen as of that day,
-  and then from Sunday 23 August 2026 through one as of Monday 31 August 2026, reads back two eras,
-  the newer on every 4 days starting on Sunday 23 August 2026
-
 ### Requirement: A roster store reads each commitment's eras mended
 
 A roster store SHALL read each commitment's eras mended, whatever form they were kept in, and a copy
@@ -6855,6 +6345,18 @@ kept there SHALL be written mended.
 - **THEN** it reads back two eras of "Gym", the one kept from 1 March 2026 first
 - **AND** asked about 15 February 2026 it answers with that one alone, and about 31 January 2026
   with both
+
+#### Scenario: neighbouring every-N-days eras of one interval counting from different days are read back as two
+
+- **WHEN** a roster store is opened at a place holding a roster store in the form this app writes,
+  whose entries are two eras of one commitment named "Nails" — on every 4 days starting on
+  31 August 2026, kept from that day and kept; and on every 4 days starting on 6 August 2026, kept
+  from 4 August 2026 and kept until 30 August 2026
+- **THEN** it reads back two eras of "Nails", the one starting on 31 August 2026 first
+- **AND** asked about 30 August 2026 it answers with both eras, and about 31 August 2026 with the
+  newer alone
+- **AND** the newer era is due on 31 August 2026 and on 4 September 2026 and not on 3 September
+  2026, and the older is due on 30 August 2026
 
 ### Requirement: A roster puts a new era on a commitment it is keeping, from a day, and keeps no era holding no day
 
@@ -8469,3 +7971,300 @@ no shift.
   which is then given a further era on a schedule listing Wednesday and Friday, kept from Tuesday
   1 September 2026, shifts Tuesday 1 September 2026 to Monday 31 August 2026, leaving it due on
   Monday 31 August 2026 and not on Tuesday 1 September 2026
+
+### Requirement: Reading the places undoes a torn save as it was, before anything is drawn from them
+
+A day screen and a commitments screen SHALL read the save in progress each time they read their
+places — when opened, when shown again, and a day screen when returned to — before drawing anything
+from either place. Where one stands and the roster place holds, in any state, the commitment it names
+the records carried to, the screen SHALL take the save in progress away and SHALL write nothing else.
+Where one stands and the roster place holds no such commitment, the screen SHALL carry every record
+of that commitment back to the commitment they were carried from, SHALL keep that at the record
+place, SHALL then take the save in progress away, and SHALL say nothing of it.
+
+#### Scenario: a rename torn between its two places is undone when a commitments screen is opened
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
+  2026, is taken on at a roster place; a tick on Monday 3 August 2026 for a commitment named
+  "Gym 🏋️" alike in every other way is kept at a record place; a save in progress naming records
+  carried from "Gym" to "Gym 🏋️" is kept beside that record place; and a commitments screen is
+  opened at those places as of Monday 31 August 2026
+- **THEN** what it keeps is one entry, named "Gym"
+- **AND** a store opened afterwards at that record place answers that "Gym" was kept on Monday
+  3 August 2026 and that "Gym 🏋️" was not
+- **AND** no save in progress is kept beside that record place, and the screen does not say that
+  records belong to no commitment
+
+#### Scenario: a torn save is undone when a day screen is opened
+
+- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
+  2026, kept from Saturday 1 August 2026, is taken on at a roster place; ticks on Thursday 6 August
+  2026 and Monday 10 August 2026 for a commitment named "Nails" on a schedule of every 4 days
+  starting on Sunday 2 August 2026, kept from that day, are kept at a record place; a save in
+  progress naming records carried from the first to the second is kept beside that record place; and
+  a day screen of no commitments is opened at those places as of Monday 10 August 2026
+- **THEN** its day view holds one row, named "Nails", saying the commitment is kept
+- **AND** a store opened afterwards at that record place answers that the first "Nails" was kept on
+  both days and the second on neither
+- **AND** no save in progress is kept beside that record place
+
+#### Scenario: a save in progress for a save its roster took is taken away and nothing else is written
+
+- **WHEN** a commitment named "Gym 🏋️" on a schedule listing all seven weekdays, kept from 1 January
+  2026, is taken on at a roster place and stopped there as of Sunday 30 August 2026; a tick for it on
+  Monday 3 August 2026 is kept at a record place; a save in progress naming records carried from a
+  commitment named "Gym" alike in every other way to "Gym 🏋️" is kept beside that record place; the
+  content at both places is read; and a commitments screen is opened at those places as of Monday
+  31 August 2026
+- **THEN** no save in progress is kept beside that record place
+- **AND** the content at both places is byte-for-byte what was read
+
+#### Scenario: a torn save is undone when a day screen is shown again
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
+  2026, is taken on at a roster place; a day screen of no commitments is opened at that roster place
+  and at a record place where nothing has been kept as of Monday 31 August 2026; a tick on that day
+  for a commitment named "Gym 🏋️" alike in every other way, and a save in progress naming records
+  carried from "Gym" to "Gym 🏋️", are then kept at those places by something else; and the screen is
+  shown again as of Monday 31 August 2026
+- **THEN** its day view holds one row, named "Gym", saying the commitment is kept
+- **AND** no save in progress is kept beside that record place
+
+#### Scenario: a torn save is undone when a day screen is returned to
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
+  2026, is taken on at a roster place; a day screen of no commitments is opened at that roster place
+  and at a record place where nothing has been kept as of Monday 31 August 2026; a tick on that day
+  for a commitment named "Gym 🏋️" alike in every other way, and a save in progress naming records
+  carried from "Gym" to "Gym 🏋️", are then kept at those places by something else; and the screen is
+  returned to
+- **THEN** its day view holds one row, named "Gym", saying the commitment is kept
+- **AND** a store opened afterwards at that record place answers that "Gym 🏋️" was not kept on that
+  day, and no save in progress is kept beside that record place
+
+### Requirement: What a commitments screen tells on its sheet lasts until that field is edited, the next definition or change, the sheet closing or the app being shown again
+
+What a commitments screen holds about a refusal on its sheet SHALL stand until the field it is about
+is edited, until the next commitment is defined or changed through the screen, until the sheet is
+closed, or until the app is shown again, and SHALL then be held no longer; nothing else
+SHALL end it. A field being edited SHALL end only what is about that field, and what is about the
+whole change SHALL be ended by no edit at all. An ask that is kept SHALL end it, an ask that is
+refused SHALL replace it, and a call asking for no change at all SHALL leave it exactly as it was.
+It SHALL be held beside what the screen holds about a refused change, which SHALL go on lasting as
+long as its own requirement says.
+
+#### Scenario: what a commitments screen tells on its sheet ends when the field it is about is edited
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept; a commitment named "   " on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, is defined through it and refused; and its sheet's name field is told
+  edited
+- **THEN** the screen tells nothing on its sheet
+- **AND** it still holds a name that says nothing, against defining a commitment
+
+#### Scenario: what a commitments screen tells on its sheet stands when another field is edited
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept; a commitment named "   " on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, is defined through it and refused; and its sheet's rhythm field, its
+  day-kept-from field, its range field and its target field are each told edited
+- **THEN** it still tells a name that says nothing, about the name field of its sheet
+
+#### Scenario: what a commitments screen tells at the foot of its sheet stands when a field is edited
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
+  2026, is taken on at a roster place; a commitments screen is opened at that roster place as of
+  Monday 31 August 2026; what is at that place is then made impossible to write; a commitment named
+  "Journaling" on that same rhythm and kept-from day is defined through it and refused; and its
+  sheet's name field is told edited
+- **THEN** it still tells a place that could not be written, about the whole change and about no
+  field of its sheet
+
+#### Scenario: what a commitments screen tells on its sheet ends when the sheet is closed
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
+  2026, is taken on at a roster place; a commitments screen is opened at that roster place as of
+  Monday 31 August 2026; a commitment named "   " on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, is defined through it and refused; and its sheet is told closed
+- **THEN** the screen tells nothing on its sheet
+- **AND** a screen whose sheet is told closed after a second commitment named "Gym" was defined
+  through it and refused tells nothing on its sheet either
+
+#### Scenario: a refused change replaces what a refused definition told on a commitments screen's sheet
+
+- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  and at a record place where nothing has been kept as of Monday 31 August 2026; a commitment named
+  "   " on a weekday-set rhythm of all seven weekdays, kept from that same day, is defined through it
+  and refused; and "Gym" is then changed through it to a weekday-set rhythm of no weekdays at all,
+  under no category, and refused
+- **THEN** it tells a rhythm due on no day, about the rhythm field of its sheet
+- **AND** a screen asked for the two the other way about tells a name that says nothing, about the
+  name field of its sheet
+
+#### Scenario: what a commitments screen tells on its sheet ends when an ask is kept
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept; a commitment named "   " on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, is defined through it and refused; and a commitment named "Journaling"
+  on that same rhythm and kept-from day is then defined through it
+- **THEN** "Journaling" is not refused
+- **AND** the screen tells nothing on its sheet
+
+#### Scenario: what a commitments screen tells on its sheet ends when the app is shown again
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept; a commitment named "   " on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, is defined through it and refused; and the app is then shown again as of
+  that same day
+- **THEN** the screen tells nothing on its sheet
+
+#### Scenario: what a commitments screen tells on its sheet stands when a call asks for no change at all
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
+  2026, is taken on at a roster place; a commitments screen is opened at that roster place as of
+  Monday 31 August 2026; a commitment named "   " on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, is defined through it and refused; and "Gym" is then changed through it
+  to exactly the name, rhythm, day kept from and category it already has
+- **THEN** that call refuses nothing
+- **AND** the screen still tells a name that says nothing, about the name field of its sheet
+
+### Requirement: A commitments screen says which field of its sheet a refused definition or change is about, or that it is about no field
+
+Where a commitments screen refuses a commitment defined through it or a change to one, it SHALL hold
+that refusal with which field of its sheet it is about — at most one, the last ask's. A name that says nothing SHALL be about the name field. A rhythm
+due on no day, and a rhythm number the calendar will not take, SHALL be about the rhythm field. A
+range that is not a range SHALL be about the range field, and a target that is not a target about
+the target field. A name a commitment its roster keeps or has stopped keeping already has SHALL be about the name
+field. A place that could not be written SHALL be about the whole change and no field.
+
+#### Scenario: a refusal that a name says nothing is about the name field
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "   " on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, is defined through it
+- **THEN** it is refused as a name that says nothing, about the name field of its sheet
+- **AND** the screen holds that refusal against defining a commitment as well
+
+#### Scenario: a refusal that a rhythm is due on no day is about the rhythm field
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Gym" on a weekday-set rhythm of no weekdays at all,
+  kept from that same day, is defined through it
+- **THEN** it is refused as a rhythm due on no day, about the rhythm field of its sheet
+
+#### Scenario: a refusal that the calendar will not take a rhythm's number is about the rhythm field
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Contact lenses" on an interval rhythm of 0 days,
+  kept from that same day, is defined through it
+- **THEN** it is refused as a rhythm number the calendar will not take, about the rhythm field of
+  its sheet
+- **AND** one named "Finances" on a day-of-the-month rhythm of the 32nd is about that field too
+
+#### Scenario: a refusal that a range is not a range is about the range field
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Mood" on a weekday-set rhythm of all seven
+  weekdays, kept from that same day, under no category, of the number kind with a lowest of "10" and
+  a highest of "1", is defined through it
+- **THEN** it is refused as a range that is not a range, about the range field of its sheet
+
+#### Scenario: a refusal that a target is not a target is about the target field
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Water" on a weekday-set rhythm of all seven
+  weekdays, kept from that same day, under no category, of the total kind with a target of "0", is
+  defined through it
+- **THEN** it is refused as a target that is not a target, about the target field of its sheet
+
+#### Scenario: a refusal that a name is already in use is about the name field
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
+  2026, is taken on at a roster place; a commitments screen is opened at that roster place as of
+  Monday 31 August 2026; and a commitment named "Gym" on that same rhythm and day is defined through the screen
+- **THEN** it is refused as a name already in use, about the name field of its sheet
+
+#### Scenario: a refusal that a roster could not be written is about the whole change and no field
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept; what is at that place is then made impossible to write; and a commitment
+  named "Journaling" on a weekday-set rhythm of all seven weekdays, kept from that same day, is
+  defined through it
+- **THEN** it is refused as a place that could not be written, about the whole change and about no
+  field of its sheet
+
+### Requirement: A commitments screen keeps no era a change leaves holding no day, and a change back leaves the commitment as it was
+
+A commitments screen SHALL put on the era a change asks for as *A roster puts a new era on a
+commitment it is keeping, from a day, and keeps no era holding no day* says.
+
+Where, with the eras holding no day dropped, the era a change's new era would give way to runs on
+the rhythm the change names and carries the range or target it names, no new era SHALL be put on,
+and that era SHALL run on as the newest with the schedule it had, an interval's start date
+included. A change back SHALL be refused for a recorded day it leaves not due as any change is.
+
+#### Scenario: a rhythm changed and changed back on one day leaves the commitment as it was that morning
+
+- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  and at a record place where nothing has been kept as of Monday 31 August 2026; and "Gym" is
+  changed through it to a weekday-set rhythm of Tuesday and Thursday and then back to one of Monday,
+  Wednesday and Saturday, each on the name and the day kept from it already has, under no category
+- **THEN** neither is refused
+- **AND** a roster store opened afterwards at that place reads back one era of "Gym", on Monday,
+  Wednesday and Saturday, kept from 1 January 2026, and answers about 31 August 2026 with that era
+  alone
+- **AND** a commitment named "Mood" of the number kind with a range of 1 to 10, changed alike to a
+  range of 1 to 5 and back to one of 1 to 10, reads back one era, ranging 1 to 10, kept from
+  1 January 2026
+
+#### Scenario: a rhythm changed three times on one day leaves one era for that day and a roster that can be read
+
+- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  and at a record place where nothing has been kept as of Monday 31 August 2026; and "Gym" is
+  changed through it to a weekday-set rhythm of Tuesday and Thursday, back to one of Monday,
+  Wednesday and Saturday, and to one of Tuesday and Thursday again, each under no category
+- **THEN** none of the three is refused
+- **AND** a roster store opened afterwards at that place opens without error and reads back two eras
+  of "Gym", the one on Tuesday and Thursday, kept from 31 August 2026, first and the one on Monday,
+  Wednesday and Saturday, kept from 1 January 2026, second
+- **AND** the screen shown again as of that day keeps one entry, named "Gym", saying "Tue, Thu"
+
+#### Scenario: a commitment defined and changed on one day keeps one era, kept from that day
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place and a record
+  place where nothing has been kept; a commitment named "Gym" on a weekday-set rhythm of Monday,
+  Wednesday and Saturday, kept from that same day, is defined through it; and "Gym" is changed
+  through it to a weekday-set rhythm of Tuesday and Thursday and then back to one of Monday,
+  Wednesday and Saturday, each under no category
+- **THEN** none is refused
+- **AND** a roster store opened afterwards at that place opens without error and reads back one era
+  of "Gym", on Monday, Wednesday and Saturday, kept from 31 August 2026
+
+#### Scenario: an interval rhythm changed away and back on one day keeps the start date it had
+
+- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 6 August
+  2026, kept from Tuesday 4 August 2026, is taken on at a roster place; a commitments screen is
+  opened at that roster place and at a record place where nothing has been kept as of Monday
+  31 August 2026; and "Nails" is changed through it to a weekday-set rhythm of Sunday and then back
+  to an interval rhythm of 4 days, each under no category
+- **THEN** neither is refused
+- **AND** a roster store opened afterwards at that place reads back one era of "Nails", on every
+  4 days starting on Thursday 6 August 2026, kept from Tuesday 4 August 2026
+- **AND** that commitment is due on Sunday 30 August 2026 and on Thursday 3 September 2026, and not
+  on Monday 31 August 2026
+
+#### Scenario: a change back on one day is refused where a record made that day would be left not due
+
+- **WHEN** a commitment named "Gym" on a schedule listing Tuesday and Thursday, kept from 1 January
+  2026, is taken on at a roster place; a commitments screen is opened at that roster place and at a
+  record place where nothing has been kept as of Monday 31 August 2026; "Gym" is changed through it
+  to a weekday-set rhythm of Monday, under no category; a tick for "Gym" on Monday 31 August 2026 is
+  then kept at that record place and the screen is shown again as of that day; and "Gym" is changed
+  back to a weekday-set rhythm of Tuesday and Thursday
+- **THEN** the change back is refused as a day already recorded on that the change would leave not
+  due
+- **AND** a roster store opened afterwards at that place answers about Monday 31 August 2026 with the
+  era on Monday alone

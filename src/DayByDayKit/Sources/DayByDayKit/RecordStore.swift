@@ -311,22 +311,8 @@ public final class RecordStore {
     /// another, at its place*.
     @discardableResult
     public func carryOver(_ commitment: Commitment, to changed: Commitment) throws -> Bool {
-        try carryOver(commitment, to: changed, matching: { _ in true }) { nextHistory in
+        try carryOver(commitment, to: changed) { nextHistory in
             nextHistory.carryOver(commitment, to: changed)
-        }
-    }
-
-    /// Carries the records held of `commitment` made on or after `day` over to `changed`, kept
-    /// at `place` before this returns; every record made before `day` stays under `commitment`.
-    /// Package-internal, the dated counterpart of `carryOver(_:to:)` a restart needs. See
-    /// `openspec/specs/commitment/spec.md` § *A commitments screen restarts an interval
-    /// commitment it keeps, from a day it is given*.
-    @discardableResult
-    func carryOver(_ commitment: Commitment, to changed: Commitment, onOrAfter day: CalendarDate)
-        throws -> Bool
-    {
-        try carryOver(commitment, to: changed, matching: { day.days(until: $0) >= 0 }) { nextHistory in
-            nextHistory.carryOver(commitment, to: changed, onOrAfter: day)
         }
     }
 
@@ -337,19 +323,17 @@ public final class RecordStore {
     /// back to its one possible source.
     @discardableResult
     func carryBack(_ orphan: Commitment, to source: Commitment) throws -> Bool {
-        try carryOver(orphan, to: source, matching: { _ in true }) { nextHistory in
+        try carryOver(orphan, to: source) { nextHistory in
             nextHistory.carryBack(orphan, to: source)
         }
     }
 
-    /// The act both `carryOver` overloads perform: ask `historyCarryOver` to carry `history`
-    /// itself over first — the one place either overload's own refusal rules are judged — then,
-    /// only where that changed anything, move the matching entries in this store's own mirrored
-    /// dictionaries the same way and write them. `matches` must pick out exactly the dated
-    /// records `historyCarryOver` moved, so the two never disagree on which records this call
-    /// touched.
+    /// The act `carryOver` and `carryBack` perform: ask `historyCarryOver` to carry `history`
+    /// itself over first — the one place each one's own refusal rules are judged — then,
+    /// only where that changed anything, move every entry of `commitment` in this store's own
+    /// mirrored dictionaries the same way and write them.
     private func carryOver(
-        _ commitment: Commitment, to changed: Commitment, matching matches: (CalendarDate) -> Bool,
+        _ commitment: Commitment, to changed: Commitment,
         historyCarryOver: (inout History) -> Bool
     ) throws -> Bool {
         var nextHistory = history
@@ -364,25 +348,25 @@ public final class RecordStore {
         // under `changed`, so every force-unwrap below is re-running formation the history has
         // already proven succeeds.
         var nextTicks = ticks
-        for tick in ticks where tick.commitment == commitment && matches(tick.date) {
+        for tick in ticks where tick.commitment == commitment {
             nextTicks.remove(tick)
             nextTicks.insert(Tick(changed, on: tick.date)!)
         }
 
         var nextNumbers = numbers
-        for (day, value) in numbers where day.commitment == commitment && matches(day.date) {
+        for (day, value) in numbers where day.commitment == commitment {
             nextNumbers[day] = nil
             nextNumbers[RecordedDay(commitment: changed, date: day.date)] = value
         }
 
         var nextNotes = notes
-        for (day, text) in notes where day.commitment == commitment && matches(day.date) {
+        for (day, text) in notes where day.commitment == commitment {
             nextNotes[day] = nil
             nextNotes[RecordedDay(commitment: changed, date: day.date)] = text
         }
 
         var nextAdditions = additions
-        for (day, amounts) in additions where day.commitment == commitment && matches(day.date) {
+        for (day, amounts) in additions where day.commitment == commitment {
             nextAdditions[day] = nil
             nextAdditions[RecordedDay(commitment: changed, date: day.date)] = amounts
         }

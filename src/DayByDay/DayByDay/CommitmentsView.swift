@@ -105,12 +105,6 @@ func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
             Text("That's not a range.")
         case .targetIsNotATarget:
             Text("That's not a target.")
-        case .restartDayIsAfterToday:
-            Text("Choose a day that isn't after today.")
-        case .restartDayIsBeforeKeptFrom:
-            Text("Choose a day that isn't before it's kept from.")
-        case .alreadyDueOnRestartDay:
-            Text("It's already due that day.")
         case .storeCouldNotBeRead:
             // Never drawn on its own: a refused copy is always drawn through
             // `copySectionRefusalText` below, which reads the store off the `RefusedChange`
@@ -816,15 +810,6 @@ private struct CommitmentSheet: View {
     let screen: CommitmentsScreen
     let changing: Commitment?
     let canChangeMoreThanNameAndCategory: Bool
-    /// Whether the sheet draws a *Restart* section — `true` only where `changing` is a
-    /// commitment `screen.whatItIsMadeOf` says can be restarted.
-    /// `openspec/changes/add-interval-restart/design.md` § *The shell rides this Story*.
-    let canRestart: Bool
-    /// The day `changing` is kept from, the *Restart* date picker's lower bound. Read once, at
-    /// init, from `screen.whatItIsMadeOf` — not the "Kept from" field above, which is a person's
-    /// typed correction to the rhythm form and not the commitment's own unchanging day.
-    private let restartLowerBound: Date
-
     @State private var name: String
     @State private var category: String
     /// Whether the category control is showing the *New…* text field rather than the menu of
@@ -845,7 +830,6 @@ private struct CommitmentSheet: View {
     /// The usual amounts card's rows, as typed: an amount and a name, each with an identity of its
     /// own so a row taken away does not move the text of the ones after it.
     @State private var usualAmountRows: [UsualAmountRow]
-    @State private var restartDate: Date
     /// Whether a person has changed anything since the sheet opened. Set only by the `onChange`
     /// handlers below, which do not fire on the initial population, so an untouched sheet is
     /// never "edited". It guards a stray swipe and makes *Cancel* ask.
@@ -863,8 +847,6 @@ private struct CommitmentSheet: View {
 
         let madeOf = commitment.flatMap { screen.whatItIsMadeOf($0) }
         canChangeMoreThanNameAndCategory = madeOf?.canChangeMoreThanNameAndCategory ?? true
-        canRestart = madeOf?.canRestart ?? false
-        restartLowerBound = date(from: madeOf?.keptFrom ?? screen.dayToKeepFrom)
 
         _name = State(initialValue: madeOf?.name ?? "")
         let initialCategory = madeOf?.category ?? ""
@@ -873,7 +855,6 @@ private struct CommitmentSheet: View {
             initialValue: !initialCategory.isEmpty
                 && !screen.categoriesInUse.contains(initialCategory))
         _keptFromDate = State(initialValue: date(from: madeOf?.keptFrom ?? screen.dayToKeepFrom))
-        _restartDate = State(initialValue: date(from: screen.dayToKeepFrom))
         _usualAmountRows = State(
             initialValue: (madeOf?.usualAmounts ?? []).map {
                 UsualAmountRow(amount: "\($0.amount)", name: $0.name ?? "")
@@ -1227,34 +1208,6 @@ private struct CommitmentSheet: View {
                         refusalText(footRefusal)
                     }
                 }
-
-                if canRestart, let commitment = changing {
-                    Section("Restart") {
-                        // `restartDateRange` is `nil` for a commitment kept from a day after
-                        // today — a future kept-from day the spec allows, and `canRestart` says
-                        // nothing against. A `ClosedRange` built from that pair would trap, so
-                        // the picker goes unbounded instead of hiding the section: `design.md`
-                        // § *The shell rides this Story* calls the bounds "only a convenience"
-                        // — the kit's own `restart` still refuses whatever the picker would have
-                        // ruled out.
-                        if let restartDateRange {
-                            DatePicker(
-                                "Restart from", selection: $restartDate, in: restartDateRange,
-                                displayedComponents: [.date])
-                        } else {
-                            DatePicker(
-                                "Restart from", selection: $restartDate,
-                                displayedComponents: [.date])
-                        }
-                        if let restartDayRefusal = sheetRefusal(under: .restartDay) {
-                            refusalText(restartDayRefusal)
-                        }
-                        Button("Restart") {
-                            restart(commitment)
-                        }
-                    }
-                    .onChange(of: restartDate) { _, _ in isEdited = true; screen.sheetFieldEdited(.restartDay) }
-                }
             }
             .interactiveDismissDisabled(isEdited)
             .navigationTitle(changing == nil ? "Define a commitment" : "Change \(changing!.name)")
@@ -1279,25 +1232,13 @@ private struct CommitmentSheet: View {
                 }
             }
         }
-        // Every dismiss path — Cancel, a swipe down, and the `dismiss()` a kept save or restart
+        // Every dismiss path — Cancel, a swipe down, and the `dismiss()` a kept save
         // calls below — ends with this sheet disappearing exactly once, so this is the one place
         // that needs to tell the screen the sheet closed. `openspec/specs/commitment/spec.md` §
         // *What a commitments screen tells on its sheet lasts until…*.
         .onDisappear {
             screen.sheetClosed()
         }
-    }
-
-    /// The *Restart* date picker's bounds — `restartLowerBound` through `screen.dayToKeepFrom` —
-    /// or `nil` where `restartLowerBound` falls after `screen.dayToKeepFrom`: a commitment kept
-    /// from a day after today, which `canRestart` still allows. `nil` here means the picker goes
-    /// unbounded rather than forming a `ClosedRange` that would trap.
-    private var restartDateRange: ClosedRange<Date>? {
-        let upperBound = date(from: screen.dayToKeepFrom)
-        guard restartLowerBound <= upperBound else {
-            return nil
-        }
-        return restartLowerBound...upperBound
     }
 
     /// The rows of the usual amounts card as typed, blank ones included.
@@ -1349,25 +1290,6 @@ private struct CommitmentSheet: View {
                 under: category.isEmpty ? nil : category, kind: kindChoice, lowest: lowest,
                 highest: highest, target: target, usualAmounts: typedUsualAmounts)
         }
-
-        if refusal == nil {
-            dismiss()
-        }
-    }
-
-    /// Hands `restartDate`, converted the same way `save()` converts `keptFromDate`, to
-    /// `screen.restart(commitment:from:)`. Dismisses on a restart kept; stays open with the day
-    /// picked exactly as it was and says why on a refusal.
-    /// `openspec/changes/add-interval-restart/design.md` § *The shell rides this Story*.
-    private func restart(_ commitment: Commitment) {
-        let components = Calendar.current.dateComponents(
-            [.year, .month, .day], from: restartDate)
-        guard
-            let day = CalendarDate(
-                year: components.year!, month: components.month!, day: components.day!)
-        else { return }
-
-        let refusal = screen.restart(commitment, from: day)
 
         if refusal == nil {
             dismiss()

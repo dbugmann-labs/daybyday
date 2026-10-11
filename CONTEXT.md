@@ -283,8 +283,8 @@ commitments it leaves with one name are the person's to tidy. Agreed 2026-09-22 
 `give-a-commitment-an-identity` (#303), on the Feature grill's answers of the day before.
 
 **Collapse** — what becomes of an **era** that would hold no day: it is not one, and the roster
-does not keep it. Whatever began it — a rhythm, a range, a target or a restart — an era replaced
-on the day it began, or reached behind by a restart, leaves nothing behind, and where the eras
+does not keep it. Whatever began it — a rhythm, a range or a target — an era replaced
+on the day it began leaves nothing behind, and where the eras
 either side of it are alike they are one era again, as though the change had never been made. A
 commitment changed back on the day it was changed is the commitment it was that morning. A roster
 already holding such an era, or two eras holding the same days, is mended silently whenever it is
@@ -429,42 +429,6 @@ made that morning under the old rhythm no longer stands undrawn: since #303 a ch
 a recorded day not due is refused, and that one is, so untick-then-change is the way through. An era
 replaced on the day it began is not kept at all — **Collapse**.
 
-**Restarting** — beginning an every-N-days commitment's count again from a day the person picks,
-because it was kept late: nails due on day 3 and done on day 4 run three days on from day 4. It
-belongs only to every N days. A weekday set, a day of the month and a weekly quota are anchored to
-the calendar, and a late day does not move them. Restarting leaves the **start date** fixed and
-the rhythm unchanged. The grid that ran until the picked day stays exactly as it was: every day
-recorded before the restart answers against it. A new grid runs from that day on. It is refused on
-the same ground as any change: a day recorded on or after the picked day that would no longer be
-due. To a person it is one commitment across the restart, with one entry and one row and no seam
-drawn. That is a claim about the screens and not about identity. How the two grids read as one run,
-when anything looks back, is B-007's to decide. It is reached from the change sheet, and it is not
-a move of the **kept-from** day: that corrects the whole of a history, while this starts the count
-again partway through one. Agreed 2026-09-14 at the eighth grooming pass's Feature grill, from the
-owner's own case: a workaround through the kept-from day refused for a cause it did not have.
-
-**Amended 2026-09-14**, while writing the delta of `add-interval-restart` (#248). The commitment a
-restart forms is kept from the picked day as well as starting its count there, exactly as the one a
-rhythm change forms is kept from the day it was made. That is what makes a later restart unable to
-reach behind an earlier one, and a kept-from correction unable to undo a restart by rebuilding the
-grid from an older day. The day offered is **today**, and the picked day may be no later than today
-and no earlier than the day the commitment is kept from. A day the commitment is already due on is
-refused, because restarting there changes nothing. Records made on or after the picked day are
-carried onto the restarted commitment, and those made before it stay where they are.
-
-**Amended 2026-09-23**, at the grill of `collapse-a-same-day-rhythm-change` (#305). A later restart
-*can* reach behind an earlier one, and behind a rhythm, range or target change, as far back as the
-day the commitment is kept from: every era that began after the picked day is replaced, and the era
-holding the picked day ends the day before it. Since #303 this was already what the app did, without
-the replacing; the owner chose to keep the reach rather than restore the bound. A record on any day
-the restarted count would leave not due still refuses it.
-
-**To be retired, agreed 2026-10-06** at the twenty-fifth grooming pass's Feature grill, for B-054.
-A **shift** of an every-N-days due day does what a restart was for — the count runs on from the day it
-was put on — and leaves the day it came from not due, where a restart leaves it due and unkept. The
-owner chose the shift to replace restarting outright. Restarts already made stay in the history as
-made. This entry stands until the Story that retires it is archived.
-
 **Shift** — putting one **due** day of a commitment on another day that is not due, because the
 commitment slipped: gym on Monday done on Tuesday. The day it came from stops being due and its
 **row** says where the day went, offering no tick; the day it lands on is due, and is counted due in
@@ -472,7 +436,7 @@ a look-back in its place. It belongs to the shapes with named days — a weekday
 month, every N days — and never to a **weekly quota**, every day of which is already due. A weekday
 set or a day of the month is shifted to a day of the same **week** that is not one of its days, and
 the rest of its rhythm is unchanged; an every-N-days day is shifted to a day between the due days
-either side of it, and its count runs on from there, which is what replaces **restarting**. It is made
+either side of it, and its count runs on from there. It is made
 from the row of the day being shifted, so a day already past is reached by paging back to it; a
 ticked day is refused, and a shifted day may be shifted again, to its own date included. Not a
 **move** — that word already means reordering a roster and paging a day view. Agreed 2026-10-06 at
@@ -1634,9 +1598,7 @@ roster, a record and a **today** together, which is why the look-back is its ans
 second screen's; it answers none at a commitment on neither list, and none at all while it cannot
 read either place.
 
-**The kinds of refused change are eight, and they are counted in one place and numbered nowhere.**
-The eighth is a **restart**, added 2026-09-14 while writing the delta of `add-interval-restart`
-(#248), and it names the commitment tapped, as a change does.
+**The kinds of refused change are counted in one place and numbered nowhere.**
 Withdrawing the category kind renumbers every kind after it, so the ordinals above are withdrawn with
 it: a **group move** is a refused change that names a **category** rather than a commitment — the
 only one that does — and a **change** is a refused change that names the commitment tapped rather
@@ -1685,19 +1647,19 @@ the point at which one word should replace both.
 
 **Amended 2026-09-15**, at the grill of `place-sheet-refusals` (#261). On the **commitment sheet** a
 refused change is told **under the field it is about** — the name, the weekday chips, the rhythm's
-number, the range row, the target, the restart day — and **at the foot of the form** where it is
+number, the range row, the target — and **at the foot of the form** where it is
 about the whole change: already kept, a place that could not be written, records already under that,
 or both the rhythm and the kept-from day moved at once. What is told under a field ends when that
 field is edited and not when another is; the foot ends on the next save; and closing the sheet ends
 whatever it told, so a sheet opened again tells nothing. One is told at a time on a sheet, the one
-asked last, a restart's included. That is a third end condition the refused change on the lists has
+asked last. That is a third end condition the refused change on the lists has
 never had, and it is the shape the day screen's one-off entry already has; whether it is the refused
 change gaining a place or a second thing beside it — the point above at which one word should
 replace both — is the delta's to say. The words a person reads are still the **app shell**'s.
 
 **Sheet refusal** — the delta's answer to that, and a second thing beside the refused change rather
 than a place added to it: the refusal a **commitment sheet** is telling and which of its fields —
-the name, the rhythm, the day kept from, the range, the target, the restart day — it is about,
+the name, the rhythm, the day kept from, the range, the target — it is about,
 about *no* field being what puts it at the foot of the form. A screen tells one at a time. Two
 values, because the refused change belongs to the two lists as much as to the sheet, and a name
 typed on a sheet must not end a refusal told beside a row; the **day screen** already divides its
@@ -2416,7 +2378,7 @@ three sentences above out: the line said "wherever one gives way to the next", t
 weekday set's months and a quota's weeks, and the vertical rule on a number's graph. Nothing stands
 between two **eras** now. The months and the weeks run on unbroken, in the one newest-first order
 they were already in, and so does the graph's trace; no line, no rule, no wordless mark and no gap,
-whatever ended the older era — a rhythm change, an interval restart, or a range or a target changed
+whatever ended the older era — a rhythm change, or a range or a target changed
 on the sheet. The mark had been the designer's recommendation at #272, on the reasoning that a
 reader who sees the counts shift with no word for it sees a defect; the owner read the shipped page
 and called it clutter, breaking the run of the page for something its head already says. The head
@@ -2506,8 +2468,8 @@ one target is a **stretch** of the rule, and a rule with no step is one stretch.
 `look-back-at-a-total` (#275).
 
 **Era** — one commitment's span of being kept on one rhythm: from the day it is kept from through
-the day it was kept until, or through today while it is still kept. A **rhythm change** or an
-**interval restart** ends one era and begins the next by **superseding** — the old commitment held
+the day it was kept until, or through today while it is still kept. A **rhythm change** ends
+one era and begins the next by **superseding** — the old commitment held
 removed with a day kept until, the new one kept from the next day — and the roster holds no link
 between them. To a person the eras are one commitment, and a **look-back** reads them as one
 **chain** by resemblance: behind a commitment stands the removed commitment of the same name and the

@@ -275,40 +275,20 @@ public struct History: Hashable, Sendable {
 
     /// Carries every record held of `commitment` over to `changed`, on the same date each was
     /// made for. See `openspec/specs/record/spec.md` § *A history carries every record of one
-    /// commitment over to another*.
+    /// commitment over to another*. Refuses wherever `changed` holds any record at all — the
+    /// wider of the two refusals `move(_:to:)` is shared behind, `design.md` § *Carrying back
+    /// refuses only on a shared day*.
     public mutating func carryOver(_ commitment: Commitment, to changed: Commitment) -> Bool {
-        carryOver(commitment, to: changed, matching: { _ in true })
-    }
-
-    /// Carries the records held of `commitment` made on or after `day` over to `changed`, on the
-    /// same date each was made for; every record made before `day` stays under `commitment`.
-    /// Package-internal: a restart needs this before it carries part of a history over, to tell
-    /// this cause apart from carrying it whole. `openspec/changes/add-interval-restart/design.md`
-    /// § *Carrying part of a history is package-internal*.
-    mutating func carryOver(_ commitment: Commitment, to changed: Commitment, onOrAfter day: CalendarDate)
-        -> Bool
-    {
-        carryOver(commitment, to: changed, matching: { day.days(until: $0) >= 0 })
-    }
-
-    /// The act both `carryOver` overloads perform, differing only in which dated records
-    /// `matches` lets through: every one, for the whole-history overload, or only those on or
-    /// after a day, for the restart's dated one. Refuses wherever `changed` holds any record at
-    /// all — the wider of the two refusals `move(_:to:matching:)` is shared behind, `design.md`
-    /// § *Carrying back refuses only on a shared day*.
-    private mutating func carryOver(
-        _ commitment: Commitment, to changed: Commitment, matching matches: (CalendarDate) -> Bool
-    ) -> Bool {
         guard commitment != changed else {
             return true
         }
-        guard hasRecords(of: commitment, matching: matches) else {
+        guard hasRecords(of: commitment) else {
             return true
         }
         guard !holdsRecords(of: changed) else {
             return false
         }
-        return move(commitment, to: changed, matching: matches)
+        return move(commitment, to: changed)
     }
 
     /// Carries every record held of `orphan` back to `source`, on the same date each was made
@@ -321,39 +301,34 @@ public struct History: Hashable, Sendable {
         guard orphan != source else {
             return true
         }
-        guard hasRecords(of: orphan, matching: { _ in true }) else {
+        guard hasRecords(of: orphan) else {
             return true
         }
         guard datesRecorded(for: source).isDisjoint(with: datesRecorded(for: orphan)) else {
             return false
         }
-        return move(orphan, to: source, matching: { _ in true })
+        return move(orphan, to: source)
     }
 
-    /// Whether this history holds any record of `commitment` on a date `matches` lets through —
-    /// the emptiness check `carryOver` and `carryBack` both start from, before either asks what
-    /// its own refusal is.
-    private func hasRecords(of commitment: Commitment, matching matches: (CalendarDate) -> Bool)
-        -> Bool
-    {
-        ticks.contains { $0.commitment == commitment && matches($0.date) }
-            || numbers.keys.contains { $0.commitment == commitment && matches($0.date) }
-            || notes.keys.contains { $0.commitment == commitment && matches($0.date) }
-            || additions.keys.contains { $0.commitment == commitment && matches($0.date) }
+    /// Whether this history holds any record of `commitment` — the emptiness check `carryOver`
+    /// and `carryBack` both start from, before either asks what its own refusal is.
+    private func hasRecords(of commitment: Commitment) -> Bool {
+        ticks.contains { $0.commitment == commitment }
+            || numbers.keys.contains { $0.commitment == commitment }
+            || notes.keys.contains { $0.commitment == commitment }
+            || additions.keys.contains { $0.commitment == commitment }
     }
 
-    /// Moves every record held of `commitment` matching `matches` over to `changed`, on the same
+    /// Moves every record held of `commitment` over to `changed`, on the same
     /// date each was made for. The caller must already have confirmed the move is allowed —
-    /// `hasRecords(of:matching:)` found something to move and whichever refusal applies did not
+    /// `hasRecords(of:)` found something to move and whichever refusal applies did not
     /// fire — so this only performs it, answering `false` without moving anything where a record
     /// cannot re-form under `changed`.
-    private mutating func move(
-        _ commitment: Commitment, to changed: Commitment, matching matches: (CalendarDate) -> Bool
-    ) -> Bool {
-        let matchingTicks = ticks.filter { $0.commitment == commitment && matches($0.date) }
-        let matchingNumbers = numbers.filter { $0.key.commitment == commitment && matches($0.key.date) }
-        let matchingNotes = notes.filter { $0.key.commitment == commitment && matches($0.key.date) }
-        let matchingAdditions = additions.filter { $0.key.commitment == commitment && matches($0.key.date) }
+    private mutating func move(_ commitment: Commitment, to changed: Commitment) -> Bool {
+        let matchingTicks = ticks.filter { $0.commitment == commitment }
+        let matchingNumbers = numbers.filter { $0.key.commitment == commitment }
+        let matchingNotes = notes.filter { $0.key.commitment == commitment }
+        let matchingAdditions = additions.filter { $0.key.commitment == commitment }
 
         var newTicks: Set<Tick> = []
         for tick in matchingTicks {

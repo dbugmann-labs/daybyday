@@ -4348,3 +4348,37 @@ func aRosterStoreDeclaringAFormWrittenBeforeUsualAmountsAndSayingSomethingAboutT
 func aRosterStoreDeclaringTheFormThisAppWritesAndSayingNothingAboutUsualAmountsIsRefused() throws {
     try expectNotAStore(rosterJSON(version: 8, usualAmounts: nil))
 }
+
+@Test(
+    "neighbouring every-N-days eras of one interval counting from different days are read back as two"
+)
+func neighbouringEveryNDaysErasOfOneIntervalCountingFromDifferentDaysAreReadBackAsTwo() throws {
+    let place = freshPlace()
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let august30th = CalendarDate(year: 2026, month: 8, day: 30)!
+    let august31st = CalendarDate(year: 2026, month: 8, day: 31)!
+    let september3rd = CalendarDate(year: 2026, month: 9, day: 3)!
+    let september4th = CalendarDate(year: 2026, month: 9, day: 4)!
+    let interval = DayInterval(days: 4)!
+    let older = Commitment(
+        name: "Nails", schedule: .everyNDays(interval, from: august6th), keptFrom: august4th)!
+    let newer = Commitment(
+        era: older, schedule: .everyNDays(interval, from: august31st), keptFrom: august31st,
+        kind: .tick)!
+
+    let store = try RosterStore(at: place)
+    try store.add(older)
+    try store.put(era: newer, on: older, keptUntil: august30th, under: nil)
+
+    let later = try RosterStore(at: place)
+
+    #expect(later.roster.eras(of: newer) == [newer, older])
+    #expect(later.roster.entries.count == 2)
+    #expect(later.roster.commitments(on: august30th) == [newer, older])
+    #expect(later.roster.commitments(on: august31st) == [newer])
+    #expect(newer.isDue(on: august31st))
+    #expect(newer.isDue(on: september4th))
+    #expect(!newer.isDue(on: september3rd))
+    #expect(older.isDue(on: august30th))
+}
