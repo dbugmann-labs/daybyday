@@ -122,6 +122,10 @@ flowchart TD
   I392["Story 392 — shift-a-due-day"]
   I393["Story 393 — shift-an-interval-day"]
   I394["Story 394 — retire-interval-restart"]
+  I400["Story 400 — decline-a-due-day"]
+  I401["Story 401 — say-days-away"]
+  I402["Story 402 — change-days-away"]
+  I403["Story 403 — count-declined-days"]
 
   I1 --> I26
   I1 --> I27
@@ -160,6 +164,8 @@ flowchart TD
   I26 --> I392
   I26 --> I393
   I26 --> I394
+  I26 --> I401
+  I26 --> I402
   I26 --> I42
   I263 --> I264
   I264 --> I266
@@ -196,6 +202,7 @@ flowchart TD
   I271 --> I276
   I271 --> I300
   I271 --> I369
+  I271 --> I403
   I321 --> I322
   I322 --> I326
   I322 --> I327
@@ -218,6 +225,7 @@ flowchart TD
   I53 --> I214
   I53 --> I222
   I53 --> I235
+  I53 --> I400
   I53 --> I55
   I53 --> I56
   I6 --> I10
@@ -234,10 +242,10 @@ flowchart TD
   class I9 story,done
   class I10 story,done
   class I11 story,done
-  class I26 feature,settled
+  class I26 feature
   class I27 feature,settled
   class I42 story,done
-  class I53 feature,settled
+  class I53 feature
   class I55 story,done
   class I56 story,done
   class I70 story,done
@@ -300,7 +308,7 @@ flowchart TD
   class I268 story,done
   class I269 epic
   class I270 story,done
-  class I271 feature,settled
+  class I271 feature
   class I272 story,done
   class I273 story,done
   class I274 story,done
@@ -338,3 +346,7 @@ flowchart TD
   class I392 story,done
   class I393 story,done
   class I394 story,done
+  class I400 story
+  class I401 story
+  class I402 story
+  class I403 story
