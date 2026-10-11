@@ -23,7 +23,7 @@ reverted, and named in the PR body.
 
 ## 3. `commitment` — `CommitmentsScreen`, `RosterStore`, `DayScreen`
 
-- [x] 3.1 a torn save is undone when a day screen is opened — the carried test renamed to this title, its body unchanged, its before and after in the PR body
+- [x] 3.1 a torn save is undone when a day screen is opened — the carried test renamed to this title, its body unchanged but for the local `restartedNails` renamed `changedNails`, which 4.1's grep forces, its before and after in the PR body
 - [x] 3.2 a refused change replaces what a refused definition told on a commitments screen's sheet — mutation: a refused change leaves the sheet refusal it found standing
 - [x] 3.3 neighbouring every-N-days eras of one interval counting from different days are read back as two — mutation: the mend compares an every-N-days schedule without its start date
 
