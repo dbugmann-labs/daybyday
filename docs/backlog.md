@@ -236,6 +236,34 @@ confirmed it as a gap rather than saying it unprompted.*
 - **Open** — does the rename sheet lose the place too? It was not measured at #379, and "both
   together" assumes it does.
 
+### B-078 — keep a list of present ideas for each person whose birthday I see
+*Captured 2026-10-11.*
+
+> "I would like to be able to have a list of birthday present ideas for the contact where I have a
+> birthday stored (the ones where I already see the birthday in the app)"
+
+- **Trigger** — any day of the year, when an idea for someone comes up and would otherwise be
+  forgotten; and again before their birthday, when it is time to buy.
+- **Touches** — `birthday`. Who is meant is exactly who the birthday rows already show: everyone the
+  phone's birthday calendars hand, chosen nowhere in the app (the 2026-09-24 Decided line). It
+  would be the first thing the app keeps against a contact besides a tick, and the first typed text
+  in that capability — the tick store is keyed to the contact's identifier and the day
+  (`add-birthday`'s `grill.md` § *Settled* 4).
+- **Principle** — tested against *entered where you stand*: **passes, but it is the line to watch.**
+  An idea is not a daily entry, so the principle does not rule out a place outside the day screen —
+  and it needs one, because a birthday row is on the day screen only on its own day, and the
+  commitments screen holds the switch but lists nobody.
+- **Open** — where is the list reached the other 364 days? There is no screen today that lists the
+  people who have birthdays, and adding one is most of this want.
+- **Open** — seeing the ideas on the birthday itself is too late to buy anything. Does this want
+  pull in seeing a birthday coming, which the Feature grill kept off the table by making a birthday
+  a row on its day and never a notification?
+- **Open** — the contact identifier is unique on one device only, so a copy restored on a new phone
+  may match nobody (`add-birthday` § *Settled* 4). A lost tick was accepted on that ground; is a lost
+  list of typed ideas, under *restore, not sync*?
+- **Open** — a deleted contact takes its ticked row with it, by the owner's call. Does it take its
+  ideas too, and does an idea, once given, get crossed off or deleted?
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
