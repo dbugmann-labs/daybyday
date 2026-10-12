@@ -20,4 +20,9 @@ enum DayTitle {
     static func shiftedDayInWords(_ day: CalendarDate) -> String {
         "\(weekdayNames[day.weekday]!) \(day.day) \(LookBackWords.shortMonthNames[day.month]!)"
     }
+
+    /// A birthday's day as the Birthdays screen says it, as "Sat 14 November".
+    static func birthdayDayInWords(_ day: CalendarDate) -> String {
+        "\(weekdayNames[day.weekday]!) \(day.day) \(LookBackWords.monthNames[day.month]!)"
+    }
 }

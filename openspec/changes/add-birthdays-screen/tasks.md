@@ -11,18 +11,18 @@ calendar, a fake phone and a switch place of its own, as `DayScreenBirthdayTests
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's fourteen scenarios uncovered and no other
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's fourteen scenarios uncovered and no other
 
 ## 2. The seam
 
-- [ ] 2.1 `BirthdaysScreen`, its `Line` and `BirthdayState`, `CommitmentsScreen`'s `whileOn` parameter and `offersGoingToBirthdays`, and `DayTitle.birthdayDayInWords` exist with the signatures in `design.md` § *The seam*, and 3.1 is red before any of them does more than compile
+- [x] 2.1 `BirthdaysScreen`, its `Line` and `BirthdayState`, `CommitmentsScreen`'s `whileOn` parameter and `offersGoingToBirthdays`, and `DayTitle.birthdayDayInWords` exist with the signatures in `design.md` § *The seam*, and 3.1 is red before any of them does more than compile
 - [ ] 2.2 Every existing `CommitmentsScreen(...)` call site compiles unchanged, and every carried `CommitmentsScreen`, `DayScreen` and `BirthdaySwitch` test passes unedited
 - [ ] 2.3 `BirthdaysScreen` takes no place, opens no store and writes nothing, and asks its calendar only from `init` and `shown(asOf:)`
 
 ## 3. The fourteen scenarios of `birthday` — one test each
 
-- [ ] 3.1 a Birthdays screen asks the calendar once, for the days from its today through the day before the same date a year later — catches a 365-day span, or an ask on every read of the lines
-- [ ] 3.2 a Birthdays screen lists each birthday handed in its span as often as it is handed, and none handed outside it — catches the calendar's answer listed unfiltered, or duplicates merged
+- [x] 3.1 a Birthdays screen asks the calendar once, for the days from its today through the day before the same date a year later — catches a 365-day span, or an ask on every read of the lines
+- [x] 3.2 a Birthdays screen lists each birthday handed in its span as often as it is handed, and none handed outside it — catches the calendar's answer listed unfiltered, or duplicates merged
 - [ ] 3.3 a Birthdays screen takes a new today only when it is shown again — catches a today read off a clock, or "Today" kept from the opening day
 - [ ] 3.4 a Birthdays screen lists the soonest birthday first, whatever order the calendar hands them in — catches the handed order kept, or a month-and-day sort that puts January before November
 - [ ] 3.5 a Birthdays screen lists one day's birthdays in the order their words are collated in — catches collation outranking the day
