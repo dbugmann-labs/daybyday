@@ -52,7 +52,7 @@ calendar, a fake phone and a switch place of its own, as `DayScreenBirthdayTests
 - [x] 6.1 `openspec validate add-birthdays-screen --strict` exits 0, and `pnpm run checks` is clean
 - [x] 6.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with fourteen more tests than a run on `origin/main` reports, both read off runs
 - [x] 6.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
-- [ ] 6.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked — W.2–W.4 by the conductor at G7 — and the walk comment's URL is in W.5. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/birthday/spec.md` gains this delta's six requirements and fourteen scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
+- [x] 6.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked — W.2–W.4 by the conductor at G7 — and the walk comment's URL is in W.5. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/birthday/spec.md` gains this delta's six requirements and fourteen scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 
