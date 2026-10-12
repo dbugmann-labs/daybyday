@@ -59,7 +59,7 @@ calendar, a fake phone and a switch place of its own, as `DayScreenBirthdayTests
 A fresh install, so birthdays are off. Every step with birthdays on is the phone's (`docs/open-questions.md`: no simulator here gets calendar access).
 
 - [x] W.1 The commitments screen with birthdays off — its toolbar the ⇅ + capsule alone, no gift symbol.
-- [ ] W.2 phone: birthdays turned on in Settings, then the commitments screen — the gift symbol in its own circle, left of the ⇅ + capsule.
-- [ ] W.3 phone: the gift tapped — the large title "Birthdays" over one card, today's birthdays (if any) first saying "Today", then soonest first, each line the calendar's words beside its date as "Sat 14 November", dimmed and right-aligned, with no chevron, tick or 🎂.
-- [ ] W.4 phone: back to the day screen, birthdays turned off in Settings, then the commitments screen — no gift symbol.
+- [x] W.2 phone: birthdays turned on in Settings, then the commitments screen — the gift symbol in its own circle, left of the ⇅ + capsule.
+- [x] W.3 phone: the gift tapped — the large title "Birthdays" over one card, today's birthdays (if any) first saying "Today", then soonest first, each line the calendar's words beside its date as "Sat 14 November", dimmed and right-aligned, with no chevron, tick or 🎂.
+- [x] W.4 phone: back to the day screen, birthdays turned off in Settings, then the commitments screen — no gift symbol.
 - [x] W.5 **The handover** — W.1, taken on the final build, is posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. W.2–W.4 are the human's at G7; the conductor ticks them on the G7 approval.
