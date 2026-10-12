@@ -22,9 +22,9 @@ the next.
 
 ## 3. `DayScreen` — the words after a change
 
-- [ ] 3.1 a take-back on a day screen leaves its row saying the addition made before it — catches a row not formed again, or equal amounts collapsed
-- [ ] 3.2 a take-back says a decimal amount as the day's sum says it — catches a formatter or a `Double` in place of the sum's own description
-- [ ] 3.3 a take-back says a usual amount by its amount and never by its name — catches a usual amount's name looked up by its amount
+- [x] 3.1 a take-back on a day screen leaves its row saying the addition made before it — catches a row not formed again, or equal amounts collapsed
+- [x] 3.2 a take-back says a decimal amount as the day's sum says it — catches a formatter or a `Double` in place of the sum's own description
+- [x] 3.3 a take-back says a usual amount by its amount and never by its name — catches a usual amount's name looked up by its amount
 
 ## 4. The shell (ADR-1019: no rule the Kit does not state)
 
