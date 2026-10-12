@@ -236,6 +236,29 @@ confirmed it as a gap rather than saying it unprompted.*
 - **Open** — does the rename sheet lose the place too? It was not measured at #379, and "both
   together" assumes it does.
 
+### B-081 — see how much *Take back last* will remove before tapping it
+*Captured 2026-10-12.*
+
+> "When a total commitment is opened on the day screen, I want to see - in the Take Back Last - the
+> amount which will be taken back in brackets"
+
+- **Trigger** — a total's entry sheet open on the day screen, about to undo an addition. *Take back
+  last* has no confirmation, so today the button says what it does and not how much it does it to.
+- **Touches** — `day-screen`, and `record` under it. The day screen's requirement *A row offers
+  taking back its day's last addition* reads the offer off the day's sum alone and says this
+  capability "SHALL NOT ask for the additions themselves" (`openspec/specs/day-screen/spec.md`), so
+  the amount is a new thing for the Kit to hand the shell, not a label change in
+  `ContentView.swift`. The record already keeps a day's additions in the order they were made, which
+  is what names the one a take-back removes (`openspec/specs/record/spec.md`).
+- **Principle** — tested against *five percent of seven things*: **it deepens rather than widens.**
+  It makes nothing new possible; it makes an existing undo readable before it is used. It is small,
+  and that is the case for it, not a pass.
+- **Open** — the wording: "Take back last (35)", or the amount alone, or the amount in the
+  button's place?
+- **Open** — when the last addition came from a usual amount, the label says the amount and never
+  its name, since the day keeps the 35 and never *Müesli* (`CONTEXT.md` § *Usual amount*). Confirm
+  at the grill rather than assume.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
