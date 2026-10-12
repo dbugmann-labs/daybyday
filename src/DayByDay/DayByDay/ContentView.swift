@@ -873,8 +873,8 @@ struct ContentView: View {
             }
             // A total takes an amount in a half-height sheet over the dimmed day: the row's name
             // with `soFarOfTarget` under it, the amount field focused as it opens so the keyboard is up, the row's usual
-            // amounts under it — a tap adds one and closes — and *Take back last* below, where
-            // `offersTakeBackLast(asOf:)` says it is. Nothing here decides anything: every word
+            // amounts under it — a tap adds one and closes — and *Take back last (n)* below, where
+            // `takeBackLastInWords(asOf:)` answers its words. Nothing here decides anything: every word
             // and every amount is the Kit's, the field's text still goes to `enter(_:on:)` as
             // typed and a usual amount to `add(_:on:)`. `design.md` § *What the shell draws*.
             .sheet(
@@ -918,9 +918,9 @@ struct ContentView: View {
                                     }
                                 }
                             }
-                            if row.offersTakeBackLast(asOf: today()) {
+                            if let takeBack = row.takeBackLastInWords(asOf: today()) {
                                 Section {
-                                    Button("Take back last", role: .destructive) {
+                                    Button(takeBack, role: .destructive) {
                                         keeping { try screen.takeBackLast(on: row) }
                                         enteringTotalRow = nil
                                     }
