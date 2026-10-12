@@ -1184,6 +1184,13 @@ standings, are different rows, and a row on any other schedule holds no standing
 rows differ by something no reader can see. The count is the whole of how a met quota says so; a row
 carries no separate met state, since nothing here congratulates anyone.
 
+**Amended 2026-10-12**, while writing the delta of `say-the-last-addition` (#413), on its grill's
+settled answers. A total row's **take-back** says what it will remove before it is tapped — "Take
+back last (35)" — the amount of the day's last **addition**, said as the sum is and never by a
+**usual amount**'s name. What a row **is** grows by that last addition, for the reason it grew by
+the sum: two total rows whose days sum alike but end in different amounts say different words, so
+they are different rows. It is the one addition a row holds; the ones before it stay the history's.
+
 **Today** — the day a screen is being looked at on, and the only thing in the system that does not
 come from the calendar. It is always handed in and never asked for: nothing in the rule engine reads
 a clock, a time zone or a locale (ADR-1004), so *today* arrives as an argument at the moment a
