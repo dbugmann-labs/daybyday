@@ -44,31 +44,31 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 4. `day-screen` — `DayView` and `DayScreen`
 
-- [ ] 4.1 a day screen offers declining a row of every kind but a weekly quota's whose day holds nothing
-- [ ] 4.2 a day screen offers no decline for a row whose day holds a record — catches `isKept` used in place of any record
-- [ ] 4.3 a day screen offers no decline where it is not keeping its record, for a row of a day either side, or for a row a shift took its due day from
-- [ ] 4.4 a declined row offers its tick or entry, and a record made through it replaces the decline — catches a blank commit taking the decline back
-- [ ] 4.5 a row declined with a reason is kept at the record place, and its row says it is declined with that reason
-- [ ] 4.6 a row declined with a blank reason is declined with none
-- [ ] 4.7 a declined row's reason is changed or cleared, and the decline stands — catches a cleared reason taking the decline back
-- [ ] 4.8 declining a row whose decline is not offered changes nothing and tells nothing — catches `decline` trusting its caller
-- [ ] 4.9 a decline the record place cannot keep is refused and told on its row — catches `notice` left standing after a kept decline
-- [ ] 4.10 a declined row's decline taken back leaves its day holding nothing
-- [ ] 4.11 taking back the decline of a row that is not declined changes nothing and tells nothing
-- [ ] 4.12 a decline's take-back or new reason the record place cannot keep is refused and told on its row
-- [ ] 4.13 two rows alike but for whether their day is declined, or for its reason, are different rows — catches the reason left out of row equality
-- [ ] 4.14 a declined row gives back that it is declined and its whole reason, and says its rhythm — catches a reason cut in the Kit
-- [ ] 4.15 a day screen offers no day to shift a declined row — catches `holdsARecord` left at four kinds
+- [x] 4.1 a day screen offers declining a row of every kind but a weekly quota's whose day holds nothing
+- [x] 4.2 a day screen offers no decline for a row whose day holds a record — catches `isKept` used in place of any record
+- [x] 4.3 a day screen offers no decline where it is not keeping its record, for a row of a day either side, or for a row a shift took its due day from
+- [x] 4.4 a declined row offers its tick or entry, and a record made through it replaces the decline — catches a blank commit taking the decline back
+- [x] 4.5 a row declined with a reason is kept at the record place, and its row says it is declined with that reason
+- [x] 4.6 a row declined with a blank reason is declined with none
+- [x] 4.7 a declined row's reason is changed or cleared, and the decline stands — catches a cleared reason taking the decline back
+- [x] 4.8 declining a row whose decline is not offered changes nothing and tells nothing — catches `decline` trusting its caller
+- [x] 4.9 a decline the record place cannot keep is refused and told on its row — catches `notice` left standing after a kept decline
+- [x] 4.10 a declined row's decline taken back leaves its day holding nothing
+- [x] 4.11 taking back the decline of a row that is not declined changes nothing and tells nothing
+- [x] 4.12 a decline's take-back or new reason the record place cannot keep is refused and told on its row
+- [x] 4.13 two rows alike but for whether their day is declined, or for its reason, are different rows — catches the reason left out of row equality
+- [x] 4.14 a declined row gives back that it is declined and its whole reason, and says its rhythm — catches a reason cut in the Kit
+- [x] 4.15 a day screen offers no day to shift a declined row — catches `holdsARecord` left at four kinds
 
 ## 5. `commitment` — `CommitmentsScreen`
 
-- [ ] 5.1 a deletion erases every decline of its commitment — catches `erase` left at four kinds
-- [ ] 5.2 a commitment stopped through a commitments screen on a day it was declined is kept until that day — catches `datesRecorded` left at four kinds
+- [x] 5.1 a deletion erases every decline of its commitment — catches `erase` left at four kinds
+- [x] 5.2 a commitment stopped through a commitments screen on a day it was declined is kept until that day — catches `datesRecorded` left at four kinds
 
 ## 6. `restore`
 
-- [ ] 6.1 a decline made, its reason changed and its take-back on a day screen each write a copy at the copy place — catches `copyPlace?.keptAChange()` left out
-- [ ] 6.2 a copy holding a decline, restored, puts the decline and its reason back at the record place — catches `formCopy` left at four kinds
+- [x] 6.1 a decline made, its reason changed and its take-back on a day screen each write a copy at the copy place — catches `copyPlace?.keptAChange()` left out
+- [x] 6.2 a copy holding a decline, restored, puts the decline and its reason back at the record place — catches `formCopy` left at four kinds
 
 ## 7. The shell (ADR-1019: no rule the Kit does not state)
 
