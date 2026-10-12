@@ -1961,8 +1961,8 @@ what the screen is telling SHALL be left as it was.
 
 ### Requirement: A row is its commitment, its date and what that day holds
 
-A row SHALL be its commitment, its day view's date, whether that day is kept and, for a number, a
-note or a total, what that day holds, its starting number or none, for a total the usual amounts its
+A row SHALL be its commitment, its day view's date, whether that day is kept, whether it is declined
+and with what reason or none, and, for a number, a note or a total, what that day holds, its starting number or none, for a total the usual amounts its
 commitment declares, and, only where its commitment is on a weekly quota, its standing on that date
 and what its week owes, and, where a shift took its due day from that date or put one on it, the
 day that due day went to or came from. Two rows SHALL be the same row when all of these agree, and SHALL be
@@ -2130,10 +2130,23 @@ nothing at all.
   31 August 2026 and the screen is moved back, the row its day view holds is the same row as the one
   held
 
+#### Scenario: two rows alike but for whether their day is declined, or for its reason, are different rows
+
+- **WHEN** three day views are formed on Monday 31 August 2026, each of a commitment named "Gym" on a
+  schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, the first from a history
+  that has taken no record, the second from a history holding a decline of it on that date with the
+  reason "Away", and the third from a history holding one with the reason "Ill"
+- **THEN** the three rows are different rows, and none says the commitment is kept
+- **AND** a row of a day view formed the same way from a history holding a decline with no reason is
+  different from all three
+- **AND** a row of a day view formed the same way from a history holding a decline with the reason
+  "Away" is the same row as the second
+
 ### Requirement: A row gives back what a screen draws and what a tap makes
 
-A row SHALL be reachable only through the day view holding it, and SHALL give back four things: its
-commitment's name, its rhythm in words, whether it is kept, and what it offers — a tick or the entry
+A row SHALL be reachable only through the day view holding it, and SHALL give back six things: its
+commitment's name, its rhythm in words, whether it is kept, whether it is declined, the reason it is
+declined with, whole, or none, and what it offers — a tick or the entry
 its commitment's kind takes. It MUST NOT give back the commitment, its schedule, the day it is kept
 from, the date or its standing, and SHALL give out the number, the note and the sum only inside the
 entry it offers.
@@ -2270,6 +2283,19 @@ kept or not and whatever it offers.
   place where nothing has been kept
 - **THEN** its one row says "from Sun 30 Aug"
 - **AND** the row of the day view it says of the day before says "to Mon 31 Aug"
+
+#### Scenario: a declined row gives back that it is declined and its whole reason, and says its rhythm
+
+- **WHEN** a day view is formed on Monday 31 August 2026 of a commitment named "Run" on a schedule
+  listing Monday, Wednesday and Saturday, one named "Magnesium" on a schedule listing all seven
+  weekdays and one named "Gym" on a schedule listing Monday, Wednesday and Saturday, all three kept
+  from 1 January 2026, from a history holding a decline of "Run" on that date with the reason "Knee
+  still sore after Tuesday's run, resting it until the weekend." and one of "Magnesium" with no
+  reason
+- **THEN** the row of "Run" says it is declined, gives back that reason whole, says "Mon, Wed, Sat"
+  and says its commitment is not kept
+- **AND** the row of "Magnesium" says it is declined, gives back no reason and says "Every day"
+- **AND** the row of "Gym" says it is not declined and gives back no reason
 
 ### Requirement: A day screen's reach bounds its day picker and is read again whenever its roster is
 
@@ -7294,7 +7320,8 @@ Asked about a row its day view holds, a day screen SHALL offer exactly the days 
 shift that row's due day onto, in date order, each with its date and the three-letter name of its
 weekday, as a day view says its day, and, on every N days, the day of the month and the
 three-letter month name after it, as "Thu 27 Aug". It SHALL offer none where the row's day holds
-any record — a tick, a number, a note or an addition, a total short of its target included — none
+any record — a tick, a number, a note, an addition or a decline, a total short of its target
+included — none
 on every N days while a later day holds one of its commitment, none where it is not keeping its
 record or its roster, and none for a row only a day view either side holds. Asking SHALL change nothing the screen holds and nothing at any of its
 places.
@@ -7377,6 +7404,15 @@ places.
 - **AND** once moved to Monday 31 August 2026, it offers its "Gym" row Tuesday 1, Thursday 3,
   Friday 4 and Sunday 6 September 2026
 
+#### Scenario: a day screen offers no day to shift a declined row
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been
+  kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, and its one row is declined with no reason
+- **THEN** the day screen offers the row its day view then holds no day to shift to
+- **AND** once that row's decline is taken back, it offers the row its day view then holds Tuesday 1,
+  Thursday 3, Friday 4 and Sunday 6 September 2026
+
 ### Requirement: A day screen shifts a row's due day to a day it offers, and keeps the shift at its roster place before the day view says so
 
 A day screen SHALL shift the due day of a row its day view holds onto a day it offers that row,
@@ -7446,3 +7482,183 @@ requires, its day view staying as it was.
   moved on to Friday 4 September 2026 it holds one row, named "Nails", saying "Every 4 days"
 - **AND** the commitment a roster store opened afterwards at that roster place keeps is due on
   Monday 31 August 2026 and not on Sunday 30 August 2026
+
+### Requirement: A day screen offers declining a row whose day holds nothing, and a declined row its reason and its take-back
+
+A day screen SHALL offer the decline of a row its day view holds where that row offers its tick or
+entry as of the today it was handed, its commitment is not on a weekly quota, and its day
+holds no record but a decline — no tick, number, note or addition, a total short of its target
+included: on a row whose day holds nothing, as declining, and on a declined row, as changing its
+reason and taking the decline back. It SHALL offer none where it is not keeping its record, and none
+for a row only a day view either side holds. Asking SHALL change nothing at the screen or its places.
+A declined row SHALL offer its tick or entry, a record made through it replacing the
+decline as *A history holds a decline in its day's place, and never beside another record* requires.
+
+#### Scenario: a day screen offers declining a row of every kind but a weekly quota's whose day holds nothing
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been kept,
+  of a commitment named "Gym" of the tick kind, one named "Weight" of the number kind with a range of
+  40 to 150, one named "Journal" of the note kind and one named "Protein" of the total kind with a
+  target of 120, each on a schedule listing Monday, Wednesday and Saturday, and one named "Yuno" on a
+  weekly quota of 2 times a week, all five kept from 1 January 2026
+- **THEN** the day screen offers the decline of the rows of "Gym", "Weight", "Journal" and "Protein",
+  and not of the row of "Yuno"
+- **AND** once moved to Saturday 29 August 2026, a day already past, it offers the decline of that
+  day's "Gym" row
+- **AND** once moved to Wednesday 2 September 2026, a day not yet arrived, it offers the decline of
+  no row
+- **AND** the content at every place is byte-for-byte what it was immediately after it was opened
+
+#### Scenario: a day screen offers no decline for a row whose day holds a record
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been kept,
+  of a commitment named "Gym" of the tick kind, one named "Weight" of the number kind with no range,
+  one named "Journal" of the note kind and one named "Protein" of the total kind with a target of
+  120, all four on a schedule listing Monday, Wednesday and Saturday and kept from 1 January 2026;
+  its "Gym" row is ticked; and "70.5" is entered on "Weight", "Ran 8k." on "Journal" and "30" on
+  "Protein"
+- **THEN** the day screen offers the decline of none of the four rows its day view then holds, though
+  the row of "Protein" says its commitment is not kept
+- **AND** once the "Gym" row is ticked again, it offers the decline of the row its day view then holds
+
+#### Scenario: a day screen offers no decline where it is not keeping its record, for a row of a day either side, or for a row a shift took its due day from
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a roster place where nothing has
+  been kept and a record place holding a run of bytes that is not what a record is written as, of a
+  commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from 1 January
+  2026
+- **THEN** the day screen offers the decline of no row
+- **AND** a day screen opened as of Monday 31 August 2026, at places where nothing has been kept, of
+  a commitment named "Run" on a schedule listing Tuesday and Thursday, kept from 1 January 2026,
+  offers the decline of no row of the day view it says of the day after
+- **AND** a day screen opened as of Tuesday 1 September 2026 at a roster place holding "Gym" whose
+  due day on Monday 31 August 2026 is shifted to that Tuesday, and a record place where nothing has
+  been kept, offers the decline of its one row, saying "from Mon", and, once moved to the day before,
+  not of that day's row, saying "to Tue"
+
+#### Scenario: a declined row offers its tick or entry, and a record made through it replaces the decline
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been kept,
+  of a commitment named "Gym" of the tick kind, one named "Weight" of the number kind with no range,
+  one named "Journal" of the note kind and one named "Protein" of the total kind with a target of
+  120, all four on a schedule listing Monday, Wednesday and Saturday and kept from 1 January 2026;
+  each of its four rows is declined with the reason "Away"; and then the "Gym" row is ticked, "70.5"
+  is entered on "Weight", "Ran 8k." on "Journal" and "30" on "Protein"
+- **THEN** nothing is refused, and no row its day view then holds says it is declined
+- **AND** the rows of "Gym", "Weight" and "Journal" say their commitments are kept, and the row of
+  "Protein" says its commitment is not, its entry saying "30 of 120"
+- **AND** on a day screen opened the same way whose declined "Weight" and "Journal" rows are each
+  committed blank in their entries, both rows still say they are declined, with the reason "Away"
+
+### Requirement: A day screen declines a row with the reason committed, and keeps it before the day view says so
+
+A day screen SHALL decline a row whose decline it offers, with the reason committed, blank space at
+its start and end disregarded, and with no reason where what is committed is blank; asked of a
+declined row, it SHALL give the decline that reason, or none, in place of the one it had, the
+decline standing. It SHALL keep the change at its record place before its day view says so, the day
+view then being formed again from the record as it stands. A row whose decline it does not offer
+SHALL change nothing, keep nothing at any place and tell nothing. A change that cannot be kept SHALL
+be refused with an error and told on its row naming no cause, as *A day screen tells on the row that
+was tapped that its change could not be kept* requires, its day view staying as it was.
+
+#### Scenario: a row declined with a reason is kept at the record place, and its row says it is declined with that reason
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been kept,
+  of a commitment named "Run" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, and its one row is declined with "  Knee still sore.  "
+- **THEN** nothing is refused, and the row its day view then holds says it is declined, with the
+  reason "Knee still sore.", and that its commitment is not kept
+- **AND** the day screen offers that row its decline
+- **AND** a record store opened afterwards at that record place answers that "Run" is declined on
+  Monday 31 August 2026, with the reason "Knee still sore."
+
+#### Scenario: a row declined with a blank reason is declined with none
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been kept,
+  of a commitment named "Gym" and one named "Run", both on a schedule listing Monday, Wednesday and
+  Saturday and kept from 1 January 2026; the "Gym" row is declined with the empty text; and the
+  "Run" row is declined with three spaces and a line break
+- **THEN** nothing is refused, and both rows its day view then holds say they are declined
+- **AND** neither gives back a reason
+
+#### Scenario: a declined row's reason is changed or cleared, and the decline stands
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been kept,
+  of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026; its one row is declined with "Away"; the row its day view then holds is declined
+  with "Away at a wedding"; and the row its day view then holds is declined with the empty text
+- **THEN** nothing is refused
+- **AND** after the second, its row says it is declined, with the reason "Away at a wedding"
+- **AND** after the third, its row says it is declined and gives back no reason, and a record store
+  opened afterwards at that record place answers that "Gym" is declined on Monday 31 August 2026,
+  with no reason
+
+#### Scenario: declining a row whose decline is not offered changes nothing and tells nothing
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been kept,
+  of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, one named "Run"
+  on a schedule listing Tuesday and Thursday and one named "Yuno" on a weekly quota of 2 times a
+  week, all three kept from 1 January 2026; its "Gym" row is ticked; and the "Gym" row its day view
+  then holds and the "Yuno" row are each declined with "Away"
+- **THEN** nothing is refused and nothing is told on any row
+- **AND** the "Gym" row says its commitment is kept, and neither row says it is declined
+- **AND** declining the "Run" row of the day view it says of the day after, and, once moved to
+  Wednesday 2 September 2026, a day not yet arrived, that day's "Gym" row, changes nothing and tells
+  nothing either
+- **AND** the content at every place is byte-for-byte what it was immediately after "Gym" was ticked
+
+#### Scenario: a decline the record place cannot keep is refused and told on its row
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been kept,
+  of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday and one named
+  "Journaling" on a schedule listing all seven weekdays, in that order and both kept from 1 January
+  2026; what is at its record place is then made impossible to write; and the "Gym" row is declined
+  with "Away"
+- **THEN** declining is refused with an error
+- **AND** the day screen tells, on the "Gym" row, that the change could not be kept, naming no cause,
+  and nothing on the "Journaling" row
+- **AND** its day view still holds the "Gym" row, not declined
+- **AND** once the place is made writable again and the "Journaling" row is declined with no reason,
+  nothing is refused and the day screen tells nothing on any row
+
+### Requirement: A day screen takes a declined row's decline back, and keeps that before the day view says so
+
+A day screen SHALL take back the decline of a declined row whose decline it offers, keeping that at
+its record place before its day view says so, the row's day then holding no record and the day view
+being formed again from the record as it stands. A row that is not declined, and a row whose decline
+it does not offer, SHALL change nothing, keep nothing at any place and tell nothing. A take-back that
+cannot be kept SHALL be refused with an error and told on its row naming no cause, its day view
+staying as it was.
+
+#### Scenario: a declined row's decline taken back leaves its day holding nothing
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been kept,
+  of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026; its one row is declined with "Away"; and the decline of the row its day view then
+  holds is taken back
+- **THEN** nothing is refused, and the row its day view then holds says neither that it is declined
+  nor that its commitment is kept
+- **AND** the day screen offers that row its decline, and that row offers its tick
+- **AND** a record store opened afterwards at that record place holds a history that has taken no
+  record
+
+#### Scenario: taking back the decline of a row that is not declined changes nothing and tells nothing
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been kept,
+  of a commitment named "Gym" and one named "Run", both on a schedule listing Monday, Wednesday and
+  Saturday and kept from 1 January 2026; its "Gym" row is ticked; and the decline of the "Gym" row
+  its day view then holds and of the "Run" row is each taken back
+- **THEN** nothing is refused and nothing is told on any row
+- **AND** the "Gym" row says its commitment is kept
+- **AND** the content at every place is byte-for-byte what it was immediately after "Gym" was ticked
+
+#### Scenario: a decline's take-back or new reason the record place cannot keep is refused and told on its row
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at places where nothing has been kept,
+  of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026; its one row is declined with "Away"; what is at its record place is then made
+  impossible to write; and the decline of the row its day view then holds is taken back
+- **THEN** taking it back is refused with an error, and the day screen tells, on that row, that the
+  change could not be kept, naming no cause
+- **AND** declining that row with "Ill" is refused with an error and told on it the same way
+- **AND** its day view still holds the "Gym" row, declined with the reason "Away"
