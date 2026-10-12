@@ -206,6 +206,45 @@ private final class FocusOnAppearTextField: UITextField {
     }
 }
 
+/// The reason sheet a row's "Decline" and "Reason" open: the row's name as the title, "Cancel"
+/// leading, the confirming word trailing and never disabled, and one field, focused on appearing.
+/// Decides nothing — the presenter hands the text to `DayScreen.decline`. ADR-1019;
+/// `openspec/changes/decline-a-due-day/design.md` § *The shell*.
+private struct DeclineReasonSheet: View {
+    let title: String
+    let confirmWord: String
+    @Binding var text: String
+    let confirm: () -> Void
+    let cancel: () -> Void
+
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        NavigationStack {
+            TextField("Reason (optional)", text: $text)
+                .focused($focused)
+                .padding(12)
+                .background(
+                    Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12)
+                )
+                .padding()
+                .frame(maxHeight: .infinity, alignment: .top)
+                .background(Color(.systemGroupedBackground).ignoresSafeArea())
+                .navigationTitle(title)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel", action: cancel)
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(confirmWord, action: confirm)
+                    }
+                }
+                .onAppear { focused = true }
+        }
+    }
+}
+
 /// The Kit screen the Settings sheet is open to, wrapped so `.sheet(item:)` can drive the sheet.
 private struct OpenSettings: Identifiable {
     let id = UUID()
@@ -443,6 +482,10 @@ struct ContentView: View {
     // anchored to the row that opened it rather than presented once for the whole list.
     @State private var choosingRow: DayView.Row?
     @State private var enteringNoteRow: DayView.Row?
+    /// The row whose reason sheet is open, and the text in its field. `decline-a-due-day/design.md`
+    /// § *The shell*.
+    @State private var decliningRow: DayView.Row?
+    @State private var decliningText = ""
     @State private var notingHappening: NotedHappening?
     // A happening row tapped with several occurrences on the day shown opens a popover of them;
     // one tapped in it is held here until the popover has gone, then opens the change sheet.
@@ -743,6 +786,33 @@ struct ContentView: View {
                             }
                         }
                     }
+                }
+            }
+            // The reason sheet, opened from a row's menu: short, its field focused, and one button
+            // that says "Decline" or "Save" by whether the row is declined already. It passes the
+            // field's text as typed; `DayScreen.decline` trims and judges. `decline-a-due-day/design.md`
+            // § *The shell*.
+            .sheet(
+                isPresented: Binding(
+                    get: { decliningRow != nil },
+                    set: { isPresented in
+                        if !isPresented {
+                            decliningRow = nil
+                        }
+                    }
+                )
+            ) {
+                if let row = decliningRow {
+                    DeclineReasonSheet(
+                        title: row.name, confirmWord: row.isDeclined ? "Save" : "Decline",
+                        text: $decliningText
+                    ) {
+                        keeping { try screen.decline(row, reason: decliningText) }
+                        decliningRow = nil
+                    } cancel: {
+                        decliningRow = nil
+                    }
+                    .presentationDetents([.height(170)])
                 }
             }
             // A happening is noted in a sheet of its own, opened from the bolt's menu. `DayScreen`
@@ -1833,15 +1903,43 @@ struct ContentView: View {
         // The long-press menu rides only a row the Kit offers a shift for, and its words are the
         // Kit's own — `shift-a-due-day/design.md` § *The shell*.
         let days = screen.shiftDays(for: row)
-        if days.isEmpty {
+        let offersDecline = screen.offersDecline(for: row)
+        if days.isEmpty && !offersDecline {
             rowContent(row)
         } else {
             rowContent(row)
                 .contextMenu {
-                    Menu("Shift to") {
-                        ForEach(days, id: \.self) { day in
-                            Button(day.words) {
-                                keeping { try screen.shift(row, to: day.date) }
+                    if !days.isEmpty {
+                        Menu("Shift to") {
+                            ForEach(days, id: \.self) { day in
+                                Button(day.words) {
+                                    keeping { try screen.shift(row, to: day.date) }
+                                }
+                            }
+                        }
+                    }
+                    if offersDecline {
+                        if row.isDeclined {
+                            if let reason = row.declineReason {
+                                Section {
+                                    Text(reason)
+                                        .foregroundStyle(Color.secondary)
+                                        .disabled(true)
+                                }
+                            }
+                            Section {
+                                Button("Reason") {
+                                    decliningText = row.declineReason ?? ""
+                                    decliningRow = row
+                                }
+                                Button("Take back", role: .destructive) {
+                                    keeping { try screen.takeBackDecline(on: row) }
+                                }
+                            }
+                        } else {
+                            Button("Decline") {
+                                decliningText = ""
+                                decliningRow = row
                             }
                         }
                     }
@@ -1863,12 +1961,13 @@ struct ContentView: View {
         // mark at all. The trailing slot holds a mark only where the row is kept, so the open
         // `circle` that used to say "not yet kept, but you can" is gone and nothing takes its
         // place.
-        let markSystemName: String? = row.isKept ? "checkmark" : nil
+        let markSystemName: String? =
+            row.isKept ? "checkmark" : row.isDeclined ? "minus" : nil
         // Decision 8: the checkmark takes the system green — the concrete `Color.green`, never
         // a hierarchical style, so it reads green inside the enclosing `Button` and outside it
         // alike. It is the only mark this slot draws now, and it is still stated explicitly,
         // since it is not drawn inside a `Button` reliably.
-        let markColor: Color = Color.green
+        let markColor: Color = row.isDeclined ? Color.secondary : Color.green
         // Resets the hierarchy the rhythm inside `commitmentLine` still reads `.secondary`
         // against, so it reads grey rather than the Button's accent tint, without editing that
         // file. Decision 11: the strikethrough goes on this child `Text`, not the composed one
@@ -1887,6 +1986,14 @@ struct ContentView: View {
         let label = HStack {
             VStack(alignment: .leading) {
                 nameLine
+                if let reason = row.declineReason {
+                    Text(reason)
+                        .font(.caption)
+                        // Concrete, as the name's colour is: a hierarchical style resolves against the
+                        // enclosing `Button`'s accent tint and reads blue.
+                        .foregroundStyle(Color.secondary)
+                        .lineLimit(1)
+                }
                 if let totalEntry {
                     Text(totalEntry.soFarOfTarget)
                         .font(.caption)

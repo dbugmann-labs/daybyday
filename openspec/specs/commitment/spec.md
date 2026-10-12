@@ -2437,7 +2437,7 @@ nothing. Asking about a commitment on neither list SHALL change nothing.
 ### Requirement: A deletion erases every record of its commitment, or keeps nothing at either place
 
 A commitments screen confirming a deletion SHALL erase at the record place every record against any
-era of that commitment — every tick, number, note and addition — and SHALL keep that before the
+era of that commitment — every tick, number, note, addition and decline — and SHALL keep that before the
 roster place is written. Every record of every other commitment SHALL be left exactly as it was, and
 where the commitment holds no record the record place SHALL NOT be written. A deletion SHALL be
 whole or nothing: where the record place cannot be read or written, it SHALL be refused as a roster
@@ -2528,6 +2528,18 @@ commitment's records, however alike the two are.
   defined through it; and the app is shown again as of Monday 31 August 2026
 - **THEN** a look-back at "Lifting" counts no day of August 2026 kept
 - **AND** the screen does not say that records belong to no commitment
+
+#### Scenario: a deletion erases every decline of its commitment
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on a schedule listing all seven weekdays
+  and kept from 1 January 2026, are taken on at a roster place; a decline of "Gym" with the reason
+  "Away" on Monday 3 August 2026, one with no reason on Tuesday 4 August 2026, and a decline of "Run"
+  with the reason "Ill" on Monday 3 August 2026 are kept at a record place; a commitments screen is
+  opened at those places as of Monday 31 August 2026; and "Gym" is deleted through it, "Gym" typed
+  back
+- **THEN** the deletion is not refused
+- **AND** a store opened afterwards at that record place holds a history the decline of "Run" alone
+  was added to, and the content at that place holds "Away" nowhere
 
 ### Requirement: A roster store reads a commitment a stored roster held removed as deleted
 
@@ -4686,7 +4698,7 @@ awaiting confirmation.
 
 A confirmed stop SHALL stop keeping the commitment as of the day before the one the screen was handed,
 that day being the last it was kept, or as of the day handed itself where the record the screen reads
-holds a tick, a number, a note or an addition of that commitment on it, but for a stop *A
+holds a tick, a number, a note, an addition or a decline of that commitment on it, but for a stop *A
 commitments screen refuses a change deciding due days, and a stop, while a shift has a day after the
 day it was handed* refuses; and it SHALL keep that at the roster place before either list says
 so; the commitment SHALL then be in what the screen has stopped and not in what it keeps, in the place
@@ -4899,6 +4911,17 @@ both lists as they were.
   stop, a roster store opened afterwards answers with "Gym" when asked what it had not stopped
   keeping on Tuesday 1 September 2026, and that day screen holds one row, named "Gym", saying
   "from Mon" and saying its commitment is kept
+
+#### Scenario: a commitment stopped through a commitments screen on a day it was declined is kept until that day
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a decline of "Gym" with the reason "Away" on Monday
+  31 August 2026 is kept at a record place; a commitments screen is opened at those places as of that
+  day; and it is asked to stop keeping "Gym" and the stop is confirmed
+- **THEN** a roster store opened afterwards at that roster place answers with "Gym" when asked what
+  it had not stopped keeping on Monday 31 August 2026, and with nothing on Tuesday 1 September 2026
+- **AND** a day screen opened afterwards at those places as of Monday 31 August 2026 holds one row,
+  named "Gym", declined with the reason "Away"
 
 ### Requirement: Reading the places carries an orphaned record back to its one possible source, kept or stopped
 
