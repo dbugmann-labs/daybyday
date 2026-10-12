@@ -242,6 +242,15 @@ One line per entry that has left, newest first. This is the dedup index: `/atlas
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-10-12 — see how much *Take back last* will remove before tapping it (B-081) → Story #413
+  `say-the-last-addition` under `FEAT: day-screen` (#27), reopened under Epic #1. Captured and
+  groomed in one session, one question over one round, one fact agent. The last amount only: the
+  button says what it will remove, and listing a day's additions stays out, a want of its own if it
+  is ever missed. The fact agent found the amount closed off twice, by `record`'s "A history SHALL
+  give out the sum and SHALL NOT give out the additions themselves" and `day-screen`'s "this
+  capability SHALL NOT ask for the additions themselves", so the one Story amends both; how narrowly
+  is `spec-author`'s at G4. A usual amount is no question: the day keeps the 35 and never the name.
+  Wording, a decimal amount and the walk are left to the Story grill.
 - 2026-10-12 — keep a list of present ideas for each person whose birthday I see (B-078) → `FEAT:
   present-idea` (#405), new, and a Story under `FEAT: birthday` (#322), both under `EPIC: Birthdays`
   (#321), reopened; the Stories come at G2, the Birthdays screen first. A **Birthdays screen**, reached
@@ -1556,3 +1565,13 @@ found nothing.
     thing. The owner chose to build it thin. G1 approved: `FEAT: present-idea` (#405), new, and a
     Birthdays screen Story under `FEAT: birthday` (#322), both under `EPIC: Birthdays` (#321),
     reopened. #321's outcome and #322's intent still say "on the day", for G2.
+- 2026-10-12 — targeted pass over B-081 (`/atlas backlog B-081`, typed as `/atlas feature B-081`),
+  groomed on `chore/backlog` (PR #412) in the session that captured it, `origin/main` at 6fc8a77.
+  - **Sweep** — no silence. Since the twenty-sixth pass swept on 2026-10-11, `main` gained #404 and
+    `FEAT: present-idea` (#405), whose create and change are #408 and #409 and whose retire its
+    grill settled (a given idea is kept); nothing else had landed.
+  - **Promoted** — B-081 → #413 `say-the-last-addition` under #27, no blocking edges; the Decided
+    line above has what the grill settled. No G1, and presented at G2 by the conductor without
+    `/to-tickets`, one Story under an existing Feature as B-056 was. Built after #401 and #407,
+    whose worktrees were already cut.
+  - **Not re-judged** — B-041, B-066, B-069, B-072, B-077; a targeted pass holds one entry.
