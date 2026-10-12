@@ -172,3 +172,88 @@ func takingBackADeclineWhereTheHistoryHoldsNoneLeavesItUnchanged() {
     history.removeDecline(for: gym, on: tuesday)
     #expect(history == before)
 }
+
+@Test("a decline is carried over with its reason, character for character")
+func aDeclineIsCarriedOverWithItsReasonCharacterForCharacter() {
+    let every = Schedule.weekdays([.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday])
+    let magnesium = Commitment(name: "Magnesium", schedule: every, keptFrom: keptFrom)!
+    let renamed = Commitment(name: "Magnesium 💊", schedule: every, keptFrom: keptFrom)!
+    let august3 = date(2026, 8, 3)
+    var history = History()
+    history.add(Decline(for: magnesium, on: august3, reason: " Ran out ")!)
+
+    let carried = history.carryOver(magnesium, to: renamed)
+
+    #expect(carried)
+    #expect(history.decline(for: renamed, on: august3)?.reason == " Ran out ")
+    #expect(history.decline(for: magnesium, on: august3) == nil)
+
+    var refused = History()
+    refused.add(Decline(for: magnesium, on: august3, reason: " Ran out ")!)
+    let before = refused
+    let late = Commitment(name: "Magnesium", schedule: every, keptFrom: date(2026, 9, 1))!
+    let refusedCarry = refused.carryOver(magnesium, to: late)
+    #expect(!refusedCarry)
+    #expect(refused == before)
+}
+
+@Test("a history counts a decline as a record in every question asked of its records")
+func aHistoryCountsADeclineAsARecordInEveryQuestionAskedOfItsRecords() {
+    let commitment = magnesium()
+    let other = Commitment(name: "Zinc", schedule: mwf, keptFrom: keptFrom)!
+    var history = History()
+    history.add(Decline(for: commitment, on: monday, reason: "Away")!)
+
+    #expect(history.holdsRecords(of: commitment))
+    #expect(!history.holdsRecords(of: other))
+    #expect(history.datesRecorded(for: commitment) == [monday])
+    #expect(history.commitmentsWithRecords() == [commitment])
+    let parts = history.recordDocumentParts()
+    #expect(parts.declines.count == 1)
+
+    let erased = history.erase([commitment.identity])
+    #expect(erased)
+    #expect(history == History())
+}
+
+@Test("a history settles a decline onto the identity a fold names, and drops one the fold drops")
+func aHistorySettlesADeclineOntoTheIdentityAFoldNamesAndDropsOneTheFoldDrops() {
+    let commitment = magnesium()
+    let identity = Commitment.Identity("22222222-2222-2222-2222-222222222222")!
+    var history = History()
+    history.add(Decline(for: commitment, on: monday, reason: "Away")!)
+
+    let fold: [CommitmentRecord: Commitment.Identity?] = [CommitmentRecord.bare(commitment): identity]
+    let moved = history.settle(fold)
+
+    let settled = Commitment(
+        identity: identity, name: "Magnesium", schedule: mwf, keptFrom: keptFrom, kind: .tick)!
+    #expect(moved)
+    #expect(history.decline(for: settled, on: monday)?.reason == "Away")
+    #expect(history.decline(for: commitment, on: monday) == nil)
+
+    let none: Commitment.Identity? = nil
+    let drop: [CommitmentRecord: Commitment.Identity?] = [CommitmentRecord.bare(settled): none]
+    let dropped = history.settle(drop)
+    #expect(dropped)
+    #expect(history == History())
+}
+
+@Test("a copy holding a decline is written and read back with its reason")
+func aCopyHoldingADeclineIsWrittenAndReadBackWithItsReason() throws {
+    let commitment = magnesium()
+    var roster = Roster()
+    _ = roster.add(commitment)
+    var history = History()
+    history.add(Decline(for: roster.commitments[0], on: monday, reason: " Ran out ")!)
+    let copy = Copy(
+        moment: Moment(on: monday, hour: 14, minute: 32)!, history: history, roster: roster,
+        oneOffs: OneOffs())
+
+    let data = try JSONEncoder().encode(CopyDocument(copy))
+    let formed = try JSONDecoder().decode(CopyDocument.self, from: data).formCopy()
+    let read = try CopyDocument.read(data).get()
+
+    #expect(formed?.history == history)
+    #expect(read.history.decline(for: roster.commitments[0], on: monday)?.reason == " Ran out ")
+}

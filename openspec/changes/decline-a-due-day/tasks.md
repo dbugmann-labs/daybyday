@@ -9,38 +9,38 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 40 new scenarios uncovered and no other
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 40 new scenarios uncovered and no other
 
 ## 2. The seam and the form
 
-- [ ] 2.1 The members in `design.md` § *The seam* exist with those signatures, and 3.1 is red before any does more than compile
-- [ ] 2.2 Every hand enumeration of the four kinds takes declines — `History.holdsRecords`, `hasRecords`, `datesRecorded`, `commitmentsWithRecords`, `settle`, `erase`, `move`, `recordDocumentParts`; `DayView.Row.holdsARecord`; `RecordStore.formed`; `CopyDocument.init` and `formCopy` — each named in the PR body with the scenario that reaches it, or "none reaches it" where none does
-- [ ] 2.3 The record form is 9, `declines` judged shape-against-form at 9 as `design.md` § *Migration* says, and every `RecordStore` change writes its next history's parts as § *The store writes what its history holds* says
-- [ ] 2.4 The form sweep, the one sanctioned edit of carried tests: the lines naming record form 9 as the later form are made to name form 10 and assert what they asserted before — `RecordStoreTests.swift` 261, 264; `DayScreenTests.swift` 348, 432, 612, 3624, 4295, 7786 — each listed with its before and after in the PR body; any other carried edit is a stop
+- [x] 2.1 The members in `design.md` § *The seam* exist with those signatures, and 3.1 is red before any does more than compile
+- [x] 2.2 Every hand enumeration of the four kinds takes declines — `History.holdsRecords`, `hasRecords`, `datesRecorded`, `commitmentsWithRecords`, `settle`, `erase`, `move`, `recordDocumentParts`; `DayView.Row.holdsARecord`; `RecordStore.formed`; `CopyDocument.init` and `formCopy` — each named in the PR body with the scenario that reaches it, or "none reaches it" where none does
+- [x] 2.3 The record form is 9, `declines` judged shape-against-form at 9 as `design.md` § *Migration* says, and every `RecordStore` change writes its next history's parts as § *The store writes what its history holds* says
+- [x] 2.4 The form sweep, the one sanctioned edit of carried tests: the lines naming record form 9 as the later form are made to name form 10 and assert what they asserted before — `RecordStoreTests.swift` 261, 264; `DayScreenTests.swift` 348, 432, 612, 3624, 4295, 7786 — each listed with its before and after in the PR body; any other carried edit is a stop
 
 ## 3. `record` — `Decline`, `History`, `RecordStore`
 
-- [ ] 3.1 a decline is formed for a commitment of every kind on a date it is due on, with a reason or none
-- [ ] 3.2 a commitment takes no decline on a date it is not due on — catches the kept-from floor skipped
-- [ ] 3.3 a commitment on a weekly quota takes no decline on any date — catches the quota let through as due every day
-- [ ] 3.4 a reason that says nothing forms no decline — catches a blank reason taken as none
-- [ ] 3.5 a reason is kept exactly as given, whatever it holds — catches a trim in the record
-- [ ] 3.6 two declines are the same exactly when their commitment, date and reason all are
-- [ ] 3.7 a declined day is answered declined, with its reason, and not kept — catches `isKept` or `standing` reading a decline
-- [ ] 3.8 a decline added on a declined day replaces it
-- [ ] 3.9 a decline added on a day holding any other record leaves the history as it was — catches a short total let through
-- [ ] 3.10 a record added on a declined day replaces the decline — catches a decline left beside an addition
-- [ ] 3.11 two histories given the same declines in either order are the same history
-- [ ] 3.12 a decline taken back leaves its day holding nothing
-- [ ] 3.13 taking back a decline where the history holds none leaves it unchanged — catches a take-back that removes a tick
-- [ ] 3.14 declines kept in a store are read back by a store opened afterwards, each with its reason
-- [ ] 3.15 a record added on a declined day is read back alone by a store opened afterwards — catches a mirror left holding the decline
-- [ ] 3.16 a decline that cannot be kept is refused and not held
-- [ ] 3.17 a decline on a day a shift put a due day on is read back after the app is closed and opened again — catches the shift left out beside a decline
-- [ ] 3.18 a history kept before a day could hold a decline is read with none, and its place left as it was
-- [ ] 3.19 a store holding what could not be a decline is refused — catches a decline re-formed without its rules
-- [ ] 3.20 a store whose shape and declared form disagree about declines is refused
-- [ ] 3.21 a decline is carried over with its reason, character for character — catches `move` left at four kinds
+- [x] 3.1 a decline is formed for a commitment of every kind on a date it is due on, with a reason or none
+- [x] 3.2 a commitment takes no decline on a date it is not due on — catches the kept-from floor skipped
+- [x] 3.3 a commitment on a weekly quota takes no decline on any date — catches the quota let through as due every day
+- [x] 3.4 a reason that says nothing forms no decline — catches a blank reason taken as none
+- [x] 3.5 a reason is kept exactly as given, whatever it holds — catches a trim in the record
+- [x] 3.6 two declines are the same exactly when their commitment, date and reason all are
+- [x] 3.7 a declined day is answered declined, with its reason, and not kept — catches `isKept` or `standing` reading a decline
+- [x] 3.8 a decline added on a declined day replaces it
+- [x] 3.9 a decline added on a day holding any other record leaves the history as it was — catches a short total let through
+- [x] 3.10 a record added on a declined day replaces the decline — catches a decline left beside an addition
+- [x] 3.11 two histories given the same declines in either order are the same history
+- [x] 3.12 a decline taken back leaves its day holding nothing
+- [x] 3.13 taking back a decline where the history holds none leaves it unchanged — catches a take-back that removes a tick
+- [x] 3.14 declines kept in a store are read back by a store opened afterwards, each with its reason
+- [x] 3.15 a record added on a declined day is read back alone by a store opened afterwards — catches a mirror left holding the decline
+- [x] 3.16 a decline that cannot be kept is refused and not held
+- [x] 3.17 a decline on a day a shift put a due day on is read back after the app is closed and opened again — catches the shift left out beside a decline
+- [x] 3.18 a history kept before a day could hold a decline is read with none, and its place left as it was
+- [x] 3.19 a store holding what could not be a decline is refused — catches a decline re-formed without its rules
+- [x] 3.20 a store whose shape and declared form disagree about declines is refused
+- [x] 3.21 a decline is carried over with its reason, character for character — catches `move` left at four kinds
 
 ## 4. `day-screen` — `DayView` and `DayScreen`
 

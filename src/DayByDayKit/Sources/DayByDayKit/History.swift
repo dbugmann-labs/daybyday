@@ -178,8 +178,8 @@ public struct History: Hashable, Sendable {
         additions[day] = amounts.isEmpty ? nil : amounts
     }
 
-    /// Whether this history holds any record of `commitment` — a tick, a number, a note or an
-    /// addition. Package-internal: a screen that would carry records onto `commitment` needs
+    /// Whether this history holds any record of `commitment` — a tick, a number, a note, an
+    /// addition or a decline. Package-internal: a screen that would carry records onto `commitment` needs
     /// this before it does, to tell that cause apart from a day left not due. `design.md` §
     /// *The seam*.
     func holdsRecords(of commitment: Commitment) -> Bool {
@@ -187,10 +187,11 @@ public struct History: Hashable, Sendable {
             || numbers.keys.contains { $0.commitment == commitment }
             || notes.keys.contains { $0.commitment == commitment }
             || additions.keys.contains { $0.commitment == commitment }
+            || declines.keys.contains { $0.commitment == commitment }
     }
 
-    /// The dates this history holds any record of `commitment` on — a tick, a number, a note or
-    /// an addition, each contributing the dates it is held for. Package-internal, the same seam
+    /// The dates this history holds any record of `commitment` on — a tick, a number, a note, an
+    /// addition or a decline, each contributing the dates it is held for. Package-internal, the same seam
     /// as `holdsRecords(of:)`.
     func datesRecorded(for commitment: Commitment) -> Set<CalendarDate> {
         var dates: Set<CalendarDate> = []
@@ -198,6 +199,7 @@ public struct History: Hashable, Sendable {
         dates.formUnion(numbers.keys.filter { $0.commitment == commitment }.map(\.date))
         dates.formUnion(notes.keys.filter { $0.commitment == commitment }.map(\.date))
         dates.formUnion(additions.keys.filter { $0.commitment == commitment }.map(\.date))
+        dates.formUnion(declines.keys.filter { $0.commitment == commitment }.map(\.date))
         return dates
     }
 
@@ -283,10 +285,26 @@ public struct History: Hashable, Sendable {
         }
         additions = newAdditions
 
+        var newDeclines: [RecordedDay: Decline] = [:]
+        for (day, decline) in declines {
+            guard let outcome = settled(day.commitment) else {
+                newDeclines[day] = decline
+                continue
+            }
+            moved = true
+            if let settledCommitment = outcome,
+                let newDecline = Decline(
+                    for: settledCommitment, on: day.date, reason: decline.reason)
+            {
+                newDeclines[RecordedDay(commitment: settledCommitment, date: day.date)] = newDecline
+            }
+        }
+        declines = newDeclines
+
         return moved
     }
 
-    /// Erases every tick, number, note and addition whose commitment's identity is one of
+    /// Erases every tick, number, note, addition and decline whose commitment's identity is one of
     /// `identities`, from every date it was made on. Answers whether anything was erased.
     /// Package-internal: `RecordStore.erase(_:)` is the one caller. `design.md` § *The seam* and
     /// § *Deletion writes the record place first and puts it back* — the one act both a single
@@ -313,6 +331,10 @@ public struct History: Hashable, Sendable {
         let newAdditions = additions.filter { !identities.contains($0.key.commitment.identity) }
         if newAdditions.count != additions.count { erased = true }
         additions = newAdditions
+
+        let newDeclines = declines.filter { !identities.contains($0.key.commitment.identity) }
+        if newDeclines.count != declines.count { erased = true }
+        declines = newDeclines
 
         return erased
     }
@@ -361,6 +383,7 @@ public struct History: Hashable, Sendable {
             || numbers.keys.contains { $0.commitment == commitment }
             || notes.keys.contains { $0.commitment == commitment }
             || additions.keys.contains { $0.commitment == commitment }
+            || declines.keys.contains { $0.commitment == commitment }
     }
 
     /// Moves every record held of `commitment` over to `changed`, on the same
@@ -373,6 +396,7 @@ public struct History: Hashable, Sendable {
         let matchingNumbers = numbers.filter { $0.key.commitment == commitment }
         let matchingNotes = notes.filter { $0.key.commitment == commitment }
         let matchingAdditions = additions.filter { $0.key.commitment == commitment }
+        let matchingDeclines = declines.filter { $0.key.commitment == commitment }
 
         var newTicks: Set<Tick> = []
         for tick in matchingTicks {
@@ -410,6 +434,15 @@ public struct History: Hashable, Sendable {
             newAdditions[RecordedDay(commitment: changed, date: day.date)] = carriedAmounts
         }
 
+        var newDeclines: [RecordedDay: Decline] = [:]
+        for (day, decline) in matchingDeclines {
+            guard let newDecline = Decline(for: changed, on: day.date, reason: decline.reason)
+            else {
+                return false
+            }
+            newDeclines[RecordedDay(commitment: changed, date: day.date)] = newDecline
+        }
+
         for tick in matchingTicks {
             ticks.remove(tick)
         }
@@ -436,11 +469,18 @@ public struct History: Hashable, Sendable {
             additions[day] = value
         }
 
+        for day in matchingDeclines.keys {
+            declines[day] = nil
+        }
+        for (day, value) in newDeclines {
+            declines[day] = value
+        }
+
         return true
     }
 
-    /// Every tick, number, note and addition this history holds, as the four collections
-    /// `RecordDocument.init(ticks:numbers:notes:additions:)` takes — the one way back out of the
+    /// Every tick, number, note, addition and decline this history holds, as the five collections
+    /// `RecordDocument.init(ticks:numbers:notes:additions:declines:)` takes — the one way back out of the
     /// private storage this type otherwise keeps to itself (see that initializer's own doc
     /// comment). Package-internal: `CopyDocument` is the one caller outside `RecordStore`, to
     /// write a copy's record in the form the record store writes now, from a `History` value
@@ -453,8 +493,8 @@ public struct History: Hashable, Sendable {
         (ticks, numbers, notes, additions, declines)
     }
 
-    /// Every commitment this history holds any record of — a tick, a number, a note or an
-    /// addition — each once. Package-internal: `SaveInProgress.carryBackOrphanedRecords(in:
+    /// Every commitment this history holds any record of — a tick, a number, a note, an
+    /// addition or a decline — each once. Package-internal: `SaveInProgress.carryBackOrphanedRecords(in:
     /// against:)` needs this to find which commitments a roster no longer holds in any state
     /// still have records at the record place.
     func commitmentsWithRecords() -> Set<Commitment> {
@@ -463,6 +503,7 @@ public struct History: Hashable, Sendable {
         commitments.formUnion(numbers.keys.map(\.commitment))
         commitments.formUnion(notes.keys.map(\.commitment))
         commitments.formUnion(additions.keys.map(\.commitment))
+        commitments.formUnion(declines.keys.map(\.commitment))
         return commitments
     }
 }
