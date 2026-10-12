@@ -48,33 +48,33 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 5. `commitment` — a stop, a deletion, a change, the store and the shift
 
-- [ ] 5.1 a commitment stopped before its days away begin leaves them, and they stay over the others
-- [ ] 5.2 a commitment stopped while its days away are under way is kept until the day before them
-- [ ] 5.3 days away a stop leaves over no commitment go from the roster
-- [ ] 5.4 a deletion takes a commitment out of its days away, past ones included, and days away left over none go
-- [ ] 5.5 a stopped commitment stays in days away already past — catches a stop reaching every span
-- [ ] 5.6 a rhythm changed before days away begin holds before them and after them, and not on their days — catches the mend erasing the gap
-- [ ] 5.7 a rhythm changed while days away are under way holds from the day after them
-- [ ] 5.8 an every-N-days count changed before days away begins again on the day after them
-- [ ] 5.9 the day kept from moved onto or past days away is refused, naming them
-- [ ] 5.10 days away kept at a roster place are read back after the app is closed and opened again
-- [ ] 5.11 a roster kept before days away could be said is read with none, and its place left as it was
-- [ ] 5.12 a roster store holding days away no roster could hold is refused
-- [ ] 5.13 a roster store whose shape and declared form disagree about days away is refused
-- [ ] 5.14 a roster shifts an every-N-days due day before days away said over it — catches `laterEra` left unchanged
+- [x] 5.1 a commitment stopped before its days away begin leaves them, and they stay over the others
+- [x] 5.2 a commitment stopped while its days away are under way is kept until the day before them
+- [x] 5.3 days away a stop leaves over no commitment go from the roster
+- [x] 5.4 a deletion takes a commitment out of its days away, past ones included, and days away left over none go
+- [x] 5.5 a stopped commitment stays in days away already past — catches a stop reaching every span
+- [x] 5.6 a rhythm changed before days away begin holds before them and after them, and not on their days — catches the mend erasing the gap
+- [x] 5.7 a rhythm changed while days away are under way holds from the day after them
+- [x] 5.8 an every-N-days count changed before days away begins again on the day after them
+- [x] 5.9 the day kept from moved onto or past days away is refused, naming them
+- [x] 5.10 days away kept at a roster place are read back after the app is closed and opened again
+- [x] 5.11 a roster kept before days away could be said is read with none, and its place left as it was
+- [x] 5.12 a roster store holding days away no roster could hold is refused
+- [x] 5.13 a roster store whose shape and declared form disagree about days away is refused
+- [x] 5.14 a roster shifts an every-N-days due day before days away said over it — catches `laterEra` left unchanged
 
 ## 6. `day-screen`
 
-- [ ] 6.1 a day screen says the name of days away on each of their days, and nothing either side — catches the neighbour views formed without the lines
-- [ ] 6.2 days away with no name are said as Away, and two on one day in the order of their first days
-- [ ] 6.3 days away are said on days already gone, and on a first day a commitment is kept through — catches lines read off the gaps
-- [ ] 6.4 a day screen's week strip marks each day of days away as away, whatever is recorded — catches a neighbour strip left unmarked
-- [ ] 6.5 a weekly-quota row on today owing every day left before days away later in its week is marked Needed today — catches `hasNoSlack` left on calendar days
+- [x] 6.1 a day screen says the name of days away on each of their days, and nothing either side — catches the neighbour views formed without the lines
+- [x] 6.2 days away with no name are said as Away, and two on one day in the order of their first days
+- [x] 6.3 days away are said on days already gone, and on a first day a commitment is kept through — catches lines read off the gaps
+- [x] 6.4 a day screen's week strip marks each day of days away as away, whatever is recorded — catches a neighbour strip left unmarked
+- [x] 6.5 a weekly-quota row on today owing every day left before days away later in its week is marked Needed today — catches `hasNoSlack` left on calendar days
 
 ## 7. `restore`
 
-- [ ] 7.1 days away said and removed on a commitments screen each write a copy at the copy place — catches `copyPlace?.keptAChange()` left out
-- [ ] 7.2 a copy holding days away, restored, puts them and their gaps back at the roster place
+- [x] 7.1 days away said and removed on a commitments screen each write a copy at the copy place — catches `copyPlace?.keptAChange()` left out
+- [x] 7.2 a copy holding days away, restored, puts them and their gaps back at the roster place
 
 ## 8. The shell (ADR-1019: no rule the Kit does not state)
 
