@@ -1028,6 +1028,13 @@ Things that are built, or deliberately not built, in a state someone will trip o
   refused. Accepted by the owner rather than taking a third G4. The fix is rewording the dueness
   rule's bound.
 
+- **A record document can be formed with its declines left out, and nothing complains.**
+  `RecordDocument`'s initialiser defaults `declines` to none (`RecordDocument.swift`), so a caller
+  that omits it writes a form-9 document with every decline lost. Both production callers pass
+  declines; the default exists so the carried test in `RecordDocumentTests.swift` compiles without an
+  edit, which #400's carried-test sweep did not allow. Found at #400's G7 on 2026-10-12 and left by
+  the owner's reply. The fix is removing the default and passing none in that one test.
+
 ## Settled
 
 - 2026-09-22 — **ADR-1055 says "the same name and the same kind" where the shipped chain rule said
