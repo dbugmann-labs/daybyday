@@ -78,18 +78,18 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 8. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 8.1 `CommitmentsView` draws the Days away card, its swipe, its alert and its sheet exactly as `design.md` § *The shell* says, its words exactly those there, "Add" disabled while nothing is picked, the sheet calling `sayDaysAway` alone
-- [ ] 8.2 `ContentView` draws the away lines first in the day list and the strip's dot where `isAway`, as § *The shell* says; nothing else on the day screen moves
-- [ ] 8.3 `git diff --stat origin/main... -- src/DayByDay/` lists `CommitmentsView.swift` and `ContentView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
+- [x] 8.1 `CommitmentsView` draws the Days away card, its swipe, its alert and its sheet exactly as `design.md` § *The shell* says, its words exactly those there, "Add" disabled while nothing is picked, the sheet calling `sayDaysAway` alone
+- [x] 8.2 `ContentView` draws the away lines first in the day list and the strip's dot where `isAway`, as § *The shell* says; nothing else on the day screen moves
+- [x] 8.3 `git diff --stat origin/main... -- src/DayByDay/` lists `CommitmentsView.swift` and `ContentView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 9. The records
 
-- [ ] 9.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2); `CONTEXT.md` and ADR-1069 are as this folder's PR left them, and not edited since G4
+- [x] 9.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2); `CONTEXT.md` and ADR-1069 are as this folder's PR left them, and not edited since G4
 
 ## 10. The gates and the archive handover
 
-- [ ] 10.1 `openspec validate say-days-away --strict` exits 0, and `pnpm run checks` is clean but for the one `check:budgets` warning on the carried change requirement
-- [ ] 10.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with 44 more tests than a run on `origin/main` reports — one for each of the 43 new scenarios and 2.4's — both read off runs
+- [x] 10.1 `openspec validate say-days-away --strict` exits 0, and `pnpm run checks` is clean but for the one `check:budgets` warning on the carried change requirement
+- [x] 10.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with 44 more tests than a run on `origin/main` reports — one for each of the 43 new scenarios and 2.4's — both read off runs
 - [ ] 10.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 10.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked, W.6 included, and the walk comment's URL is in W.7. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `commitment`, `day-screen` and `restore` move, gaining this delta's 43 new scenarios, and no other spec file does. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
@@ -98,10 +98,10 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 A fresh install, walked on the simulator on any day, light only, the day-one week, nothing recorded;
 the days away are said from tomorrow, so the walk pages forward rather than moving the clock.
 
-- [ ] W.1 Commitments screen, "New days away" tapped — the empty sheet titled "Days away": "Name (optional)", "First day" and "Last day" on today, every kept commitment with an empty circle, "Add" greyed out.
-- [ ] W.2 "Mallorca" typed, the first day tomorrow and the last day six days on, "Gym" and "Run" picked — two filled circles, "Add" enabled.
-- [ ] W.3 "Add" tapped — the commitments screen scrolled to its foot, the Days away card between Stopped and Happenings holding "Mallorca - <first> – <last>" over "Gym, Run".
-- [ ] W.4 The day screen paged forward to the first day of "Mallorca" on which "Gym" or "Run" is due — "Mallorca" as a bare line above the rows, a dot under each of its days on the strip, neither "Gym" nor "Run" among the rows, "Creatine" and "Magnesium" there.
-- [ ] W.5 The sheet opened again, "Gym" picked over the last two days of "Mallorca" and the day after, "Add" tapped — the sheet still open over its red refusal naming "Mallorca".
-- [ ] W.6 "Mallorca" swiped, the trash and "Remove" in the alert tapped, the day screen paged forward again to that same day — no line, no dots, and the row of "Gym" or "Run" due that day back.
-- [ ] W.7 **The handover** — W.1–W.6, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. Posted:
+- [x] W.1 Commitments screen, "New days away" tapped — the empty sheet titled "Days away": "Name (optional)", "First day" and "Last day" on today, every kept commitment with an empty circle, "Add" greyed out.
+- [x] W.2 "Mallorca" typed, the first day tomorrow and the last day six days on, "Gym" and "Run" picked — two filled circles, "Add" enabled.
+- [x] W.3 "Add" tapped — the commitments screen scrolled to its foot, the Days away card between Stopped and Happenings holding "Mallorca - <first> – <last>" over "Gym, Run".
+- [x] W.4 The day screen paged forward to the first day of "Mallorca" on which "Gym" or "Run" is due — "Mallorca" as a bare line above the rows, a dot under each of its days on the strip, neither "Gym" nor "Run" among the rows, "Creatine" and "Magnesium" there.
+- [x] W.5 The sheet opened again, "Gym" picked over the last two days of "Mallorca" and the day after, "Add" tapped — the sheet still open over its red refusal naming "Mallorca".
+- [x] W.6 "Mallorca" swiped, the trash and "Remove" in the alert tapped, the day screen paged forward again to that same day — no line, no dots, and the row of "Gym" or "Run" due that day back.
+- [x] W.7 **The handover** — W.1–W.6, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. Posted: https://github.com/dbugmann-labs/daybyday/pull/414#issuecomment-6131644143
