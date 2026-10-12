@@ -133,7 +133,12 @@ public struct DayView: Hashable, Sendable {
         /// Whether this row's day holds any record of its commitment: a tick, a number, a note or a
         /// sum above zero, a total short of its target included.
         var holdsARecord: Bool {
-            isKept || isDeclined || number != nil || note != nil || total > 0
+            isDeclined || holdsARecordOtherThanADecline
+        }
+
+        /// Whether this row's day holds a record of any kind but a decline.
+        private var holdsARecordOtherThanADecline: Bool {
+            isKept || number != nil || note != nil || total > 0
         }
 
         /// Whether this row offers declining its day: it offers a tick or an entry as of `today`,
@@ -142,8 +147,7 @@ public struct DayView: Hashable, Sendable {
             if case .weeklyQuota = commitment.schedule {
                 return false
             }
-            return offersAnything(asOf: today)
-                && !(isKept || number != nil || note != nil || total > 0)
+            return offersAnything(asOf: today) && !holdsARecordOtherThanADecline
         }
 
         public var name: String { commitment.name }

@@ -104,7 +104,7 @@ public final class RecordStore {
             history.add(addition)
         }
         for decline in formedDeclines {
-            guard !history.holdsARecord(of: decline.commitment, on: decline.date) else {
+            guard !history.holdsAnyRecordOtherThanADecline(of: decline.commitment, on: decline.date) else {
                 return nil
             }
             history.add(decline)

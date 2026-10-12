@@ -342,6 +342,11 @@ func aDeclinesTakeBackOrNewReasonTheRecordPlaceCannotKeepIsRefusedAndToldOnItsRo
     #expect(day.notice?.row == declined)
     #expect(day.notice?.cause == nil)
 
+    try setWritable(directory, true)
+    try day.decline(declined, reason: "Away")
+    #expect(day.notice == nil)
+    try setWritable(directory, false)
+
     #expect(throws: (any Error).self) { try day.decline(declined, reason: "Ill") }
     #expect(day.notice?.row == declined)
     #expect(day.dayView.rows[0].isDeclined)

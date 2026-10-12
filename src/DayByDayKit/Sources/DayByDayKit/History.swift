@@ -56,7 +56,7 @@ public struct History: Hashable, Sendable {
 
     /// Whether this history holds, for `commitment` on `date`, a tick, a number, a note or an
     /// addition. Package-internal: `RecordStore.formed(from:)` refuses a decline beside one.
-    func holdsARecord(of commitment: Commitment, on date: CalendarDate) -> Bool {
+    func holdsAnyRecordOtherThanADecline(of commitment: Commitment, on date: CalendarDate) -> Bool {
         holdsAnyRecordOtherThanADecline(on: RecordedDay(commitment: commitment, date: date))
     }
 

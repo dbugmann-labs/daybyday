@@ -344,8 +344,8 @@ struct AdditionsRecord: Codable, DatedCommitmentRecord {
     }
 }
 
-/// A decline: a commitment record, a date, and a reason — written as `null` where there is none,
-/// so a day declined with no reason is told apart from a key left out.
+/// A decline: a commitment record, a date, and a reason — written as `null` where there is none.
+/// Read back, a `null` and a key left out alike mean no reason.
 struct DeclineRecord: Codable, DatedCommitmentRecord {
     var commitment: CommitmentRecord
     var date: DateRecord

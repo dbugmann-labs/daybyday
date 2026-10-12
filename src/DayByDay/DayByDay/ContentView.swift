@@ -1921,16 +1921,20 @@ struct ContentView: View {
                     if offersDecline {
                         if row.isDeclined {
                             if let reason = row.declineReason {
-                                Text(reason)
-                                    .foregroundStyle(Color.secondary)
-                                    .disabled(true)
+                                Section {
+                                    Text(reason)
+                                        .foregroundStyle(Color.secondary)
+                                        .disabled(true)
+                                }
                             }
-                            Button("Reason") {
-                                decliningText = row.declineReason ?? ""
-                                decliningRow = row
-                            }
-                            Button("Take back", role: .destructive) {
-                                keeping { try screen.takeBackDecline(on: row) }
+                            Section {
+                                Button("Reason") {
+                                    decliningText = row.declineReason ?? ""
+                                    decliningRow = row
+                                }
+                                Button("Take back", role: .destructive) {
+                                    keeping { try screen.takeBackDecline(on: row) }
+                                }
                             }
                         } else {
                             Button("Decline") {
