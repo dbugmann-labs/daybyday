@@ -12,7 +12,7 @@ import Foundation
 struct RecordDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 8
+    static let currentVersion = 9
 
     /// The form `numbers` was introduced at: forms at or after this one carry the key, forms
     /// before it never do. Kept apart from `currentVersion` on purpose — a fourth form would move
@@ -46,6 +46,11 @@ struct RecordDocument: Codable {
     /// never do. Judged against this constant, never the newest form.
     static let shiftedToIntroducedInVersion = 8
 
+    /// The form `declines` was introduced at, on the same footing as the constants above: forms
+    /// at or after this one carry the key, forms before it never do — and a form is judged
+    /// against this, never the newest.
+    static let declinesIntroducedInVersion = 9
+
     var version: Int
     var ticks: [TickRecord]
 
@@ -66,6 +71,10 @@ struct RecordDocument: Codable {
     /// are a list, and the file holds them as one record per day*.
     var additions: [AdditionsRecord]?
 
+    /// `nil` exactly when the document held no `declines` key at all — forms 1 through 8 never
+    /// write one, on the same footing as `additions` above.
+    var declines: [DeclineRecord]?
+
     /// Builds the document that exactly represents `ticks`, `numbers`, `notes` and `additions`, in
     /// the stable order `design.md` fixes: by commitment name, then kept-from day, then date, then
     /// schedule, then kind as the final tiebreaker — so two equal histories produce byte-identical
@@ -77,7 +86,7 @@ struct RecordDocument: Codable {
     /// ticks.
     init(
         ticks: Set<Tick>, numbers: [RecordedDay: Decimal], notes: [RecordedDay: String],
-        additions: [RecordedDay: [Decimal]]
+        additions: [RecordedDay: [Decimal]], declines: [RecordedDay: Decline] = [:]
     ) {
         version = Self.currentVersion
         self.ticks = ticks.map(TickRecord.init).sorted(by: Self.isOrderedBefore)
@@ -103,6 +112,14 @@ struct RecordDocument: Codable {
                     commitment: CommitmentRecord($0.key.commitment, recordedOn: $0.key.date),
                     date: DateRecord($0.key.date),
                     amounts: $0.value)
+            }
+            .sorted(by: Self.isOrderedBefore)
+        self.declines = declines
+            .map {
+                DeclineRecord(
+                    commitment: CommitmentRecord($0.key.commitment, recordedOn: $0.key.date),
+                    date: DateRecord($0.key.date),
+                    reason: $0.value.reason)
             }
             .sorted(by: Self.isOrderedBefore)
     }
@@ -167,6 +184,21 @@ struct RecordDocument: Codable {
                 return nil
             }
             result.append(contentsOf: formed)
+        }
+        return result
+    }
+
+    /// Re-forms every decline this document holds, through `Decline.init?` so every rule a
+    /// decline is formed by is applied again to what comes off the place. `nil` here means one
+    /// of the declines present could not be formed — the whole document refused, not the bad
+    /// ones dropped.
+    func formDeclines() -> [Decline]? {
+        var result: [Decline] = []
+        for record in declines ?? [] {
+            guard let decline = record.formed() else {
+                return nil
+            }
+            result.append(decline)
         }
         return result
     }
@@ -309,5 +341,46 @@ struct AdditionsRecord: Codable, DatedCommitmentRecord {
             result.append(addition)
         }
         return result
+    }
+}
+
+/// A decline: a commitment record, a date, and a reason — written as `null` where there is none,
+/// so a day declined with no reason is told apart from a key left out.
+struct DeclineRecord: Codable, DatedCommitmentRecord {
+    var commitment: CommitmentRecord
+    var date: DateRecord
+    var reason: String?
+
+    init(commitment: CommitmentRecord, date: DateRecord, reason: String?) {
+        self.commitment = commitment
+        self.date = date
+        self.reason = reason
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        commitment = try container.decode(CommitmentRecord.self, forKey: .commitment)
+        date = try container.decode(DateRecord.self, forKey: .date)
+        reason = try container.decodeIfPresent(String.self, forKey: .reason)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(commitment, forKey: .commitment)
+        try container.encode(date, forKey: .date)
+        try container.encode(reason, forKey: .reason)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case commitment, date, reason
+    }
+
+    func formed() -> Decline? {
+        guard let date = date.calendarDate(),
+            let commitment = commitment.commitment(recordedOn: date)
+        else {
+            return nil
+        }
+        return Decline(for: commitment, on: date, reason: reason)
     }
 }

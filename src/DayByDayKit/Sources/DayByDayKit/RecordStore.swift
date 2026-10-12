@@ -6,24 +6,12 @@ import Foundation
 public final class RecordStore {
     private let place: URL
 
-    /// Mirrors exactly what `history` holds. `History` keeps its own ticks and numbers private by
-    /// design (see `RecordDocument.swift`), so the store keeps these alongside it — the one thing
-    /// a write needs that `history` itself cannot give back out.
-    private var ticks: Set<Tick>
-    private var numbers: [RecordedDay: Decimal]
-    private var notes: [RecordedDay: String]
-    private var additions: [RecordedDay: [Decimal]]
-
     /// Opens the store kept at `place`, reading what is there. A place where nothing has been
     /// kept opens empty; a place holding something that cannot be read as a store throws.
     public init(at place: URL) throws {
         self.place = place
 
         guard FileManager.default.fileExists(atPath: place.path) else {
-            self.ticks = []
-            self.numbers = [:]
-            self.notes = [:]
-            self.additions = [:]
             self.history = History()
             return
         }
@@ -45,11 +33,7 @@ public final class RecordStore {
             throw RecordStoreError.notAStore(at: place)
         }
 
-        self.ticks = formed.ticks
-        self.numbers = formed.numbers
-        self.notes = formed.notes
-        self.additions = formed.additions
-        self.history = formed.history
+        self.history = formed
     }
 
     /// Whether `document`'s shape agrees with its own declared form, per `design.md` § *Each
@@ -66,7 +50,9 @@ public final class RecordStore {
             (document.notes != nil)
                 == (document.version >= RecordDocument.notesIntroducedInVersion),
             (document.additions != nil)
-                == (document.version >= RecordDocument.additionsIntroducedInVersion)
+                == (document.version >= RecordDocument.additionsIntroducedInVersion),
+            (document.declines != nil)
+                == (document.version >= RecordDocument.declinesIntroducedInVersion)
         else {
             return false
         }
@@ -85,21 +71,21 @@ public final class RecordStore {
             && (document.numbers ?? []).allSatisfy { agrees($0.commitment) }
             && (document.notes ?? []).allSatisfy { agrees($0.commitment) }
             && (document.additions ?? []).allSatisfy { agrees($0.commitment) }
+            && (document.declines ?? []).allSatisfy { agrees($0.commitment) }
     }
 
-    /// Forms the ticks, numbers, notes and additions `document` holds — `nil` where its shape
-    /// disagrees with its own declared form, or where any one of the four fails to form. The one
-    /// place `init(at:)` reads a decoded document into this store's own shape, shared with
-    /// `CopyDocument.read`'s own per-store reading — `openspec/changes/restore-from-a-copy
-    /// /design.md` § *Reading a copy: the envelope decides, and a later version outranks damage*
-    /// — so a copy's nested record is judged by exactly the rule a store's own place is.
-    static func formed(from document: RecordDocument) -> (
-        ticks: Set<Tick>, numbers: [RecordedDay: Decimal], notes: [RecordedDay: String],
-        additions: [RecordedDay: [Decimal]], history: History
-    )? {
+    /// Forms the history `document` holds — `nil` where its shape disagrees with its own declared
+    /// form, where any one record fails to form, or where a decline sits beside another record of
+    /// its commitment on its day, which a history never holds. The one place `init(at:)` reads a
+    /// decoded document, shared with `CopyDocument.read`'s own per-store reading — `openspec/
+    /// changes/restore-from-a-copy/design.md` § *Reading a copy: the envelope decides, and a later
+    /// version outranks damage* — so a copy's nested record is judged by exactly the rule a
+    /// store's own place is.
+    static func formed(from document: RecordDocument) -> History? {
         guard document.version >= 1, shapeMatchesItsForm(document), let ticks = document.formTicks(),
             let formedNumbers = document.formNumbers(), let formedNotes = document.formNotes(),
-            let formedAdditions = document.formAdditions()
+            let formedAdditions = document.formAdditions(),
+            let formedDeclines = document.formDeclines()
         else {
             return nil
         }
@@ -108,24 +94,23 @@ public final class RecordStore {
         for tick in ticks {
             history.add(tick)
         }
-        var numbers: [RecordedDay: Decimal] = [:]
         for number in formedNumbers {
-            numbers[RecordedDay(commitment: number.commitment, date: number.date)] = number.number
             history.add(number)
         }
-        var notes: [RecordedDay: String] = [:]
         for note in formedNotes {
-            notes[RecordedDay(commitment: note.commitment, date: note.date)] = note.text
             history.add(note)
         }
-        var additions: [RecordedDay: [Decimal]] = [:]
         for addition in formedAdditions {
-            let day = RecordedDay(commitment: addition.commitment, date: addition.date)
-            additions[day, default: []].append(addition.amount)
             history.add(addition)
         }
+        for decline in formedDeclines {
+            guard !history.holdsARecord(of: decline.commitment, on: decline.date) else {
+                return nil
+            }
+            history.add(decline)
+        }
 
-        return (ticks, numbers, notes, additions, history)
+        return history
     }
 
     /// Every tick and every number added and not since taken back — exactly what is kept at
@@ -134,108 +119,62 @@ public final class RecordStore {
 
     /// Kept at `place` before this returns; on failure throws and leaves `history` as it was.
     public func add(_ tick: Tick) throws {
-        var nextTicks = ticks
-        nextTicks.insert(tick)
-        guard nextTicks != ticks else {
-            return
-        }
-        try write(ticks: nextTicks, numbers: numbers, notes: notes, additions: additions)
-
-        ticks = nextTicks
-        history.add(tick)
+        try keep { $0.add(tick) }
     }
 
     public func remove(_ tick: Tick) throws {
-        var nextTicks = ticks
-        nextTicks.remove(tick)
-        guard nextTicks != ticks else {
-            return
-        }
-        try write(ticks: nextTicks, numbers: numbers, notes: notes, additions: additions)
-
-        ticks = nextTicks
-        history.remove(tick)
+        try keep { $0.remove(tick) }
     }
 
-    public func add(_ decline: Decline) throws {}
+    /// Kept at `place` before this returns; on failure throws and leaves `history` as it was.
+    public func add(_ decline: Decline) throws {
+        try keep { $0.add(decline) }
+    }
 
-    public func removeDecline(for commitment: Commitment, on date: CalendarDate) throws {}
+    public func removeDecline(for commitment: Commitment, on date: CalendarDate) throws {
+        try keep { $0.removeDecline(for: commitment, on: date) }
+    }
 
     /// Kept at `place` before this returns; on failure throws and leaves `history` as it was.
     public func add(_ number: Number) throws {
-        var nextNumbers = numbers
-        nextNumbers[RecordedDay(commitment: number.commitment, date: number.date)] = number.number
-        guard nextNumbers != numbers else {
-            return
-        }
-        try write(ticks: ticks, numbers: nextNumbers, notes: notes, additions: additions)
-
-        numbers = nextNumbers
-        history.add(number)
+        try keep { $0.add(number) }
     }
 
     public func removeNumber(for commitment: Commitment, on date: CalendarDate) throws {
-        var nextNumbers = numbers
-        nextNumbers[RecordedDay(commitment: commitment, date: date)] = nil
-        guard nextNumbers != numbers else {
-            return
-        }
-        try write(ticks: ticks, numbers: nextNumbers, notes: notes, additions: additions)
-
-        numbers = nextNumbers
-        history.removeNumber(for: commitment, on: date)
+        try keep { $0.removeNumber(for: commitment, on: date) }
     }
 
     /// Kept at `place` before this returns; on failure throws and leaves `history` as it was.
     public func add(_ note: Note) throws {
-        var nextNotes = notes
-        nextNotes[RecordedDay(commitment: note.commitment, date: note.date)] = note.text
-        guard nextNotes != notes else {
-            return
-        }
-        try write(ticks: ticks, numbers: numbers, notes: nextNotes, additions: additions)
-
-        notes = nextNotes
-        history.add(note)
+        try keep { $0.add(note) }
     }
 
     public func removeNote(for commitment: Commitment, on date: CalendarDate) throws {
-        var nextNotes = notes
-        nextNotes[RecordedDay(commitment: commitment, date: date)] = nil
-        guard nextNotes != notes else {
-            return
-        }
-        try write(ticks: ticks, numbers: numbers, notes: nextNotes, additions: additions)
-
-        notes = nextNotes
-        history.removeNote(for: commitment, on: date)
+        try keep { $0.removeNote(for: commitment, on: date) }
     }
 
     /// Kept at `place` before this returns; on failure throws and leaves `history` as it was.
     public func add(_ addition: Addition) throws {
-        var nextAdditions = additions
-        let day = RecordedDay(commitment: addition.commitment, date: addition.date)
-        nextAdditions[day, default: []].append(addition.amount)
-        try write(ticks: ticks, numbers: numbers, notes: notes, additions: nextAdditions)
-
-        additions = nextAdditions
-        history.add(addition)
+        try keep { $0.add(addition) }
     }
 
     public func removeLastAddition(for commitment: Commitment, on date: CalendarDate) throws {
-        var nextAdditions = additions
-        let day = RecordedDay(commitment: commitment, date: date)
-        if var amounts = nextAdditions[day], !amounts.isEmpty {
-            amounts.removeLast()
-            nextAdditions[day] = amounts.isEmpty ? nil : amounts
-        }
-        guard nextAdditions != additions else {
+        try keep { $0.removeLastAddition(for: commitment, on: date) }
+    }
+
+    /// Forms the next history by `change`, writes everything that history holds, and only then
+    /// takes it — so a record that replaced another leaves nothing of it at the place, whichever
+    /// of the five kinds either was (`design.md` § *The store writes what its history holds*).
+    /// Writes nothing where `change` leaves the history as it was.
+    private func keep(_ change: (inout History) -> Void) throws {
+        var nextHistory = history
+        change(&nextHistory)
+        guard nextHistory != history else {
             return
         }
-        try write(ticks: ticks, numbers: numbers, notes: notes, additions: nextAdditions)
+        try write(nextHistory)
 
-        additions = nextAdditions
-        history.removeLastAddition(for: commitment, on: date)
+        history = nextHistory
     }
 
     /// Gives every record `fold` names an identity that identity, drops every record it maps to
@@ -248,15 +187,8 @@ public final class RecordStore {
             return false
         }
 
-        let parts = nextHistory.recordDocumentParts()
-        try write(
-            ticks: parts.ticks, numbers: parts.numbers, notes: parts.notes,
-            additions: parts.additions)
+        try write(nextHistory)
 
-        ticks = parts.ticks
-        numbers = parts.numbers
-        notes = parts.notes
-        additions = parts.additions
         history = nextHistory
 
         return true
@@ -273,15 +205,8 @@ public final class RecordStore {
             return false
         }
 
-        let parts = nextHistory.recordDocumentParts()
-        try write(
-            ticks: parts.ticks, numbers: parts.numbers, notes: parts.notes,
-            additions: parts.additions)
+        try write(nextHistory)
 
-        ticks = parts.ticks
-        numbers = parts.numbers
-        notes = parts.notes
-        additions = parts.additions
         history = nextHistory
 
         return true
@@ -294,15 +219,8 @@ public final class RecordStore {
     /// and puts it back*.
     @discardableResult
     func replace(with nextHistory: History) throws -> Bool {
-        let parts = nextHistory.recordDocumentParts()
-        try write(
-            ticks: parts.ticks, numbers: parts.numbers, notes: parts.notes,
-            additions: parts.additions)
+        try write(nextHistory)
 
-        ticks = parts.ticks
-        numbers = parts.numbers
-        notes = parts.notes
-        additions = parts.additions
         history = nextHistory
 
         return true
@@ -333,9 +251,8 @@ public final class RecordStore {
     }
 
     /// The act `carryOver` and `carryBack` perform: ask `historyCarryOver` to carry `history`
-    /// itself over first — the one place each one's own refusal rules are judged — then,
-    /// only where that changed anything, move every entry of `commitment` in this store's own
-    /// mirrored dictionaries the same way and write them.
+    /// itself over — the one place each one's own refusal rules are judged — then write the
+    /// history that came of it, only where it changed anything.
     private func carryOver(
         _ commitment: Commitment, to changed: Commitment,
         historyCarryOver: (inout History) -> Bool
@@ -348,56 +265,22 @@ public final class RecordStore {
             return true
         }
 
-        // The history's own carry-over already refused where any record could not re-form
-        // under `changed`, so every force-unwrap below is re-running formation the history has
-        // already proven succeeds.
-        var nextTicks = ticks
-        for tick in ticks where tick.commitment == commitment {
-            nextTicks.remove(tick)
-            nextTicks.insert(Tick(changed, on: tick.date)!)
-        }
+        try write(nextHistory)
 
-        var nextNumbers = numbers
-        for (day, value) in numbers where day.commitment == commitment {
-            nextNumbers[day] = nil
-            nextNumbers[RecordedDay(commitment: changed, date: day.date)] = value
-        }
-
-        var nextNotes = notes
-        for (day, text) in notes where day.commitment == commitment {
-            nextNotes[day] = nil
-            nextNotes[RecordedDay(commitment: changed, date: day.date)] = text
-        }
-
-        var nextAdditions = additions
-        for (day, amounts) in additions where day.commitment == commitment {
-            nextAdditions[day] = nil
-            nextAdditions[RecordedDay(commitment: changed, date: day.date)] = amounts
-        }
-
-        try write(
-            ticks: nextTicks, numbers: nextNumbers, notes: nextNotes, additions: nextAdditions)
-
-        ticks = nextTicks
-        numbers = nextNumbers
-        notes = nextNotes
-        additions = nextAdditions
         history = nextHistory
 
         return true
     }
 
-    /// Writes `nextTicks`, `nextNumbers`, `nextNotes` and `nextAdditions` as the whole document,
-    /// in the byte-stable form `design.md` § *The form on disk* fixes: `.sortedKeys` so a keyed
-    /// container's keys do not follow Foundation's per-process hash order, on top of
-    /// `RecordDocument`'s own stable order, so two equal histories always produce byte-identical
-    /// files.
-    private func write(
-        ticks nextTicks: Set<Tick>, numbers nextNumbers: [RecordedDay: Decimal],
-        notes nextNotes: [RecordedDay: String], additions nextAdditions: [RecordedDay: [Decimal]]
-    ) throws {
+    /// Writes everything `nextHistory` holds as the whole document, in the byte-stable form
+    /// `design.md` § *The form on disk* fixes: `.sortedKeys` so a keyed container's keys do not
+    /// follow Foundation's per-process hash order, on top of `RecordDocument`'s own stable order,
+    /// so two equal histories always produce byte-identical files.
+    private func write(_ nextHistory: History) throws {
+        let parts = nextHistory.recordDocumentParts()
         let document = RecordDocument(
-            ticks: nextTicks, numbers: nextNumbers, notes: nextNotes, additions: nextAdditions)
+            ticks: parts.ticks, numbers: parts.numbers, notes: parts.notes,
+            additions: parts.additions, declines: parts.declines)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
 

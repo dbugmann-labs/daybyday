@@ -34,7 +34,7 @@ struct CopyDocument: Codable {
         let parts = copy.history.recordDocumentParts()
         record = RecordDocument(
             ticks: parts.ticks, numbers: parts.numbers, notes: parts.notes,
-            additions: parts.additions)
+            additions: parts.additions, declines: parts.declines)
         roster = RosterDocument(copy.roster)
         oneOffs = OneOffDocument(copy.oneOffs)
         birthdayTicks = BirthdayDocument(copy.birthdayTicks)
@@ -52,7 +52,8 @@ struct CopyDocument: Codable {
             return nil
         }
         guard let ticks = record.formTicks(), let numbers = record.formNumbers(),
-            let notes = record.formNotes(), let additions = record.formAdditions()
+            let notes = record.formNotes(), let additions = record.formAdditions(),
+            let declines = record.formDeclines()
         else {
             return nil
         }
@@ -95,6 +96,9 @@ struct CopyDocument: Codable {
         }
         for addition in additions {
             formedHistory.add(addition)
+        }
+        for decline in declines {
+            formedHistory.add(decline)
         }
 
         return Copy(
@@ -195,7 +199,7 @@ struct CopyDocument: Codable {
         // A commitment the nested roster held removed, in a form written before a commitment
         // could be deleted, is read as deleted — its records go with it, exactly as they would
         // reading that roster at its own place. `design.md` § *Migration*.
-        var history = formedRecord.history
+        var history = formedRecord
         _ = history.erase(formedRoster.erased)
 
         return .success(

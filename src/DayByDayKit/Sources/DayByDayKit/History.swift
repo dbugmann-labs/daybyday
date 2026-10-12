@@ -54,6 +54,12 @@ public struct History: Hashable, Sendable {
         return numbers[day] != nil || notes[day] != nil || additions[day] != nil
     }
 
+    /// Whether this history holds, for `commitment` on `date`, a tick, a number, a note or an
+    /// addition. Package-internal: `RecordStore.formed(from:)` refuses a decline beside one.
+    func holdsARecord(of commitment: Commitment, on date: CalendarDate) -> Bool {
+        holdsAnyRecordOtherThanADecline(on: RecordedDay(commitment: commitment, date: date))
+    }
+
     public mutating func add(_ number: Number) {
         let day = RecordedDay(commitment: number.commitment, date: number.date)
         numbers[day] = number.number
@@ -442,9 +448,9 @@ public struct History: Hashable, Sendable {
     /// *A copy is the values, not the files*.
     func recordDocumentParts() -> (
         ticks: Set<Tick>, numbers: [RecordedDay: Decimal], notes: [RecordedDay: String],
-        additions: [RecordedDay: [Decimal]]
+        additions: [RecordedDay: [Decimal]], declines: [RecordedDay: Decline]
     ) {
-        (ticks, numbers, notes, additions)
+        (ticks, numbers, notes, additions, declines)
     }
 
     /// Every commitment this history holds any record of — a tick, a number, a note or an
