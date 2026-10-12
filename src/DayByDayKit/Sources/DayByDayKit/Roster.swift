@@ -1046,6 +1046,33 @@ extension Roster {
         entries.replaceSubrange(start..<(start + length), with: Self.mended(cut))
     }
 
+    /// Cuts the gap of days away from `first` through `last` out of the eras of `commitment` again,
+    /// after an era put on has erased it: kept until the day before `first`, taken up again on the
+    /// day after `last`. The days away themselves are held already.
+    mutating func cutDaysAwayGap(of commitment: Commitment, from first: CalendarDate, through last: CalendarDate) {
+        cutGap(of: commitment.identity, keptThrough: first.adding(days: -1) ?? first, through: last)
+    }
+
+    /// Takes `commitment` out of every days away it is over whose last day is `day` or later — every
+    /// one where `day` is `nil` — and drops the days away that are left over no commitment. Touches
+    /// no era: a stop or a deletion has already formed those.
+    mutating func leaveDaysAway(of commitment: Commitment, endingOnOrAfter day: CalendarDate?) {
+        spans = spans.compactMap { span in
+            guard span.commitments.contains(commitment.identity),
+                day.map({ $0.days(until: span.lastDay) >= 0 }) ?? true
+            else {
+                return span
+            }
+            let left = span.commitments.filter { $0 != commitment.identity }
+            guard !left.isEmpty else {
+                return nil
+            }
+            return Span(
+                identity: span.identity, name: span.name, firstDay: span.firstDay,
+                lastDay: span.lastDay, commitments: left)
+        }
+    }
+
     /// `commitment` kept from `day`, an every-N-days count beginning there.
     private static func restarted(_ commitment: Commitment, on day: CalendarDate) -> Commitment {
         var schedule = commitment.schedule
