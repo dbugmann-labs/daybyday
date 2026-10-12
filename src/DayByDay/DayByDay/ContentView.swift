@@ -1922,7 +1922,7 @@ struct ContentView: View {
                         if row.isDeclined {
                             if let reason = row.declineReason {
                                 Text(reason)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Color.secondary)
                                     .disabled(true)
                             }
                             Button("Reason") {
@@ -1985,7 +1985,9 @@ struct ContentView: View {
                 if let reason = row.declineReason {
                     Text(reason)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        // Concrete, as the name's colour is: a hierarchical style resolves against the
+                        // enclosing `Button`'s accent tint and reads blue.
+                        .foregroundStyle(Color.secondary)
                         .lineLimit(1)
                 }
                 if let totalEntry {
