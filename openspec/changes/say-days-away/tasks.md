@@ -9,42 +9,42 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 43 new scenarios uncovered and no other
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 43 new scenarios uncovered and no other
 
 ## 2. The seam and the form
 
-- [ ] 2.1 The members in `design.md` § *The seam* exist with those signatures, and 3.1 is red before any does more than compile
-- [ ] 2.2 The roster form is 10, `daysAway` said once of the whole roster and judged shape-against-form at 10 as `design.md` § *Migration* says, and saying, removing, a change, a stop and a deletion each write the next roster's eras and days away in one write, as ADR-1069 says
-- [ ] 2.3 The form sweep, the one sanctioned edit of carried tests: the lines naming roster form 10 as the later form are made to name form 11, and the write asserted at form 9 to assert form 10, each asserting what it asserted before — `DayScreenTests.swift` 995, 1205, 3433, 3610, 3627; `RosterStoreTests.swift` 324, 327, 1980, 1983, 4257; `CommitmentsScreenTests.swift` 2271 — each listed with its before and after in the PR body; any other carried edit is a stop
-- [ ] 2.4 A unit test beside the scenarios: a look-back at a commitment with days away ahead is the same look-back as one taken before they were said
+- [x] 2.1 The members in `design.md` § *The seam* exist with those signatures, and 3.1 is red before any does more than compile
+- [x] 2.2 The roster form is 10, `daysAway` said once of the whole roster and judged shape-against-form at 10 as `design.md` § *Migration* says, and saying, removing, a change, a stop and a deletion each write the next roster's eras and days away in one write, as ADR-1069 says
+- [x] 2.3 The form sweep, the one sanctioned edit of carried tests: the lines naming roster form 10 as the later form are made to name form 11, and the write asserted at form 9 to assert form 10, each asserting what it asserted before — `DayScreenTests.swift` 995, 1205, 3433, 3610, 3627; `RosterStoreTests.swift` 324, 327, 1980, 1983, 4257; `CommitmentsScreenTests.swift` 2271 — each listed with its before and after in the PR body; any other carried edit is a stop
+- [x] 2.4 A unit test beside the scenarios: a look-back at a commitment with days away ahead is the same look-back as one taken before they were said
 
 ## 3. `commitment` — saying days away
 
-- [ ] 3.1 days away said over two commitments leave them no row on their days and rows again from the day after
-- [ ] 3.2 days away keep their name trimmed, and a name that says nothing is none — catches a blank name stored as a name
-- [ ] 3.3 days away of one day are said, and so are days away of any length however far ahead — catches a maximum or a last day after the first required
-- [ ] 3.4 a commitment is taken up again after days away on the rhythm, range and target it had, an every-N-days count beginning again — catches the old start date carried
-- [ ] 3.5 days away from today keep a commitment that holds a record today until today, and the others until the day before — catches the record read after the day is fixed
-- [ ] 3.6 days away from a day already gone, ending before they begin, or over nothing are refused and keep nothing
-- [ ] 3.7 days away over a commitment other days away are over on a shared day are refused, naming those days away — catches overlap judged on dates alone
-- [ ] 3.8 days away over a commitment kept from their first day or later are refused, naming it — catches "after" read strictly
-- [ ] 3.9 days away over a commitment with a shift on one of their days are refused, naming it
-- [ ] 3.10 days away a commitments screen cannot keep at its roster place are refused
-- [ ] 3.11 a commitments screen asked to say days away over a commitment it does not keep does nothing
-- [ ] 3.12 a refusal of days away is told until the sheet is edited or closed, days away are kept, or the app is shown again — catches `endedByAChangeOrByBeingShown` ending it on a stop
+- [x] 3.1 days away said over two commitments leave them no row on their days and rows again from the day after
+- [x] 3.2 days away keep their name trimmed, and a name that says nothing is none — catches a blank name stored as a name
+- [x] 3.3 days away of one day are said, and so are days away of any length however far ahead — catches a maximum or a last day after the first required
+- [x] 3.4 a commitment is taken up again after days away on the rhythm, range and target it had, an every-N-days count beginning again — catches the old start date carried
+- [x] 3.5 days away from today keep a commitment that holds a record today until today, and the others until the day before — catches the record read after the day is fixed
+- [x] 3.6 days away from a day already gone, ending before they begin, or over nothing are refused and keep nothing
+- [x] 3.7 days away over a commitment other days away are over on a shared day are refused, naming those days away — catches overlap judged on dates alone
+- [x] 3.8 days away over a commitment kept from their first day or later are refused, naming it — catches "after" read strictly
+- [x] 3.9 days away over a commitment with a shift on one of their days are refused, naming it
+- [x] 3.10 days away a commitments screen cannot keep at its roster place are refused
+- [x] 3.11 a commitments screen asked to say days away over a commitment it does not keep does nothing
+- [x] 3.12 a refusal of days away is told until the sheet is edited or closed, days away are kept, or the app is shown again — catches `endedByAChangeOrByBeingShown` ending it on a stop
 
 ## 4. `commitment` — listing and removing
 
-- [ ] 4.1 a commitments screen lists days away by name or Away, with their days in words and their commitments, earliest first — catches names stored rather than read
-- [ ] 4.2 days away leave the list once their last day has passed and stay at the roster place — catches a past span deleted
-- [ ] 4.3 a commitments screen that cannot read its roster lists no days away
-- [ ] 4.4 asking to remove days away changes nothing until it is confirmed, and a cancel changes nothing
-- [ ] 4.5 days away removed before they begin leave their commitments as though never said — catches an interval count restarted on the day after
-- [ ] 4.6 days away already begun offer no removal, and asking to remove them does nothing
-- [ ] 4.7 a commitments screen awaits one removal, stop or deletion at a time — catches `awaitNothing` left without the removal
-- [ ] 4.8 days away removed beside other days away over the same commitment leave the other's gap where it was
-- [ ] 4.9 days away removed after a change of rhythm leave that change standing from the day it was made
-- [ ] 4.10 a removal a commitments screen cannot keep at its roster place is refused and the days away stay listed
+- [x] 4.1 a commitments screen lists days away by name or Away, with their days in words and their commitments, earliest first — catches names stored rather than read
+- [x] 4.2 days away leave the list once their last day has passed and stay at the roster place — catches a past span deleted
+- [x] 4.3 a commitments screen that cannot read its roster lists no days away
+- [x] 4.4 asking to remove days away changes nothing until it is confirmed, and a cancel changes nothing
+- [x] 4.5 days away removed before they begin leave their commitments as though never said — catches an interval count restarted on the day after
+- [x] 4.6 days away already begun offer no removal, and asking to remove them does nothing
+- [x] 4.7 a commitments screen awaits one removal, stop or deletion at a time — catches `awaitNothing` left without the removal
+- [x] 4.8 days away removed beside other days away over the same commitment leave the other's gap where it was
+- [x] 4.9 days away removed after a change of rhythm leave that change standing from the day it was made
+- [x] 4.10 a removal a commitments screen cannot keep at its roster place is refused and the days away stay listed
 
 ## 5. `commitment` — a stop, a deletion, a change, the store and the shift
 

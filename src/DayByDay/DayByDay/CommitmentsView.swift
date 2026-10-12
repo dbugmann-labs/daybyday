@@ -130,6 +130,20 @@ func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
             Text("Five usual amounts at most.")
         case .shiftedDayAhead:
             Text("Shift its day back first.")
+        case .firstDayHasPassed:
+            Text("The first day has passed.")
+        case .lastDayBeforeFirstDay:
+            Text("The last day is before the first.")
+        case .overNoCommitment:
+            Text("Pick a commitment.")
+        case .shiftOnDaysAway(let name):
+            Text("\(name) has a day shifted into these days.")
+        case .overlapsDaysAway(let daysAway):
+            Text("These days overlap \(daysAway.title), \(daysAway.daysInWords).")
+        case .keptFromMovedIntoDaysAway(let daysAway):
+            Text("That day falls in \(daysAway.title).")
+        case .keptFromFirstDayOrLater(let name):
+            Text("\(name) is kept from their first day or later.")
         case .nameAlreadyInUse(let name):
             // The sheet's own wording — a define and a rename alike, `grill.md` § *Settled* 6 —
             // naming the collision and the field to fix, unlike the old foot-of-sheet caption it
