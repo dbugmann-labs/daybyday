@@ -451,6 +451,9 @@ struct ContentView: View {
     // one instance, built here and handed to `SettingsView`, reading and asking through the
     // shell's own adapter in `BirthdayCalendarAccess.swift`.
     @State private var birthdaySwitch: BirthdaySwitch
+    // The one phone calendar, handed to the day screen and to every Birthdays screen, so one
+    // `EKEventStore` backs both — `add-birthdays-screen/design.md` § *The shell*.
+    @State private var birthdayCalendar: BirthdayCalendar
     @State private var screen: DayScreen
     // ADR-1045's 2026-09-28 amendment: "one light impact for every change the screen keeps, and a
     // selection tick when a day turns". Neither is read for its value — each only has to change
@@ -466,6 +469,10 @@ struct ContentView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showingCommitments = false
     @State private var commitmentsScreen: CommitmentsScreen?
+    // The Birthdays screen the gift on the commitments screen opened: built as of `today()` at the
+    // tap, pushed on the same stack, shown again when the app is shown and dropped on the way back.
+    @State private var showingBirthdays = false
+    @State private var birthdaysScreen: BirthdaysScreen?
     // Settings builds a Kit screen of its own each time it opens, `add-settings-screen/design.md`
     // § *Settings builds a Kit screen of its own each time it opens*, and drops it on dismissal.
     // `settingsScreen` is what the sheet is open to and is `nil` once it is dismissed;
@@ -623,10 +630,12 @@ struct ContentView: View {
         let birthdaySwitch = BirthdaySwitch(
             readingAccess: currentCalendarAccess, askingForAccess: askForCalendarAccess)
         _birthdaySwitch = State(initialValue: birthdaySwitch)
+        let birthdayCalendar = makeBirthdayCalendar()
+        _birthdayCalendar = State(initialValue: birthdayCalendar)
         _screen = State(
             initialValue: DayScreen(
                 startingFrom: dayOneCommitments, asOf: today(),
-                readingBirthdaysFrom: makeBirthdayCalendar(), whileOn: birthdaySwitch,
+                readingBirthdaysFrom: birthdayCalendar, whileOn: birthdaySwitch,
                 copyingTo: copyPlace))
     }
 
@@ -659,7 +668,15 @@ struct ContentView: View {
             }
             .navigationDestination(isPresented: $showingCommitments) {
                 if let commitmentsScreen {
-                    CommitmentsView(screen: commitmentsScreen)
+                    CommitmentsView(
+                        screen: commitmentsScreen, birthdaysScreen: birthdaysScreen,
+                        showingBirthdays: $showingBirthdays,
+                        openBirthdays: {
+                            birthdaysScreen = BirthdaysScreen(
+                                asOf: today(), readingBirthdaysFrom: birthdayCalendar,
+                                whileOn: birthdaySwitch)
+                            showingBirthdays = true
+                        })
                 }
             }
             // The day is the title: the weekday in full, large, over the date row `dayControls`
@@ -690,7 +707,8 @@ struct ContentView: View {
                 // Commitments and Settings, one trailing group — one capsule.
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button {
-                        commitmentsScreen = CommitmentsScreen(asOf: today(), copyingTo: copyPlace)
+                        commitmentsScreen = CommitmentsScreen(
+                            asOf: today(), whileOn: birthdaySwitch, copyingTo: copyPlace)
                         showingCommitments = true
                     } label: {
                         Image(systemName: "list.bullet")
@@ -945,7 +963,13 @@ struct ContentView: View {
                 // — so this no longer asks it directly.
                 screen.shown(asOf: today())
                 commitmentsScreen?.shown(asOf: today())
+                birthdaysScreen?.shown(asOf: today())
                 settingsScreen?.screen.shown(asOf: today())
+            }
+        }
+        .onChange(of: showingBirthdays) { _, isShowing in
+            if !isShowing {
+                birthdaysScreen = nil
             }
         }
         .onChange(of: showingCommitments) { _, isShowing in
