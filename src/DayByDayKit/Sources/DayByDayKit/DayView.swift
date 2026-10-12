@@ -476,6 +476,10 @@ public struct DayView: Hashable, Sendable {
         return formed
     }
 
+    /// A line for each days away that holds this day view's date, by the days away's title, in the
+    /// order of their first days. `[]` from every initializer.
+    public private(set) var daysAwayInWords: [String] = []
+
     /// Every row this day view holds, read across `groups` in the order the groups are drawn —
     /// the same rows `groups` holds and each exactly once.
     public var rows: [Row] { groups.flatMap(\.rows) }

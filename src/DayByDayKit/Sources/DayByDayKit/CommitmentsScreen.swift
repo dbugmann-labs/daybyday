@@ -89,6 +89,48 @@ public final class CommitmentsScreen {
     /// The happenings this screen lists, in the order held. `design.md` § *The seam*.
     public private(set) var happenings: [Happening] = []
 
+    /// The days away this screen lists. `openspec/changes/say-days-away/design.md` § *The seam*.
+    public private(set) var daysAway: [DaysAway] = []
+
+    /// The last refusal of days away said or removed through this screen.
+    public private(set) var daysAwayRefusal: Refusal?
+
+    /// The days away a removal has been asked for and not yet confirmed or cancelled.
+    public private(set) var daysAwayAwaitingRemoval: DaysAway?
+
+    /// Says days away. Stubbed until the Story's first scenario drives it.
+    @discardableResult
+    public func sayDaysAway(
+        named name: String, from firstDay: CalendarDate, through lastDay: CalendarDate,
+        over commitments: [Commitment]
+    ) -> Refusal? {
+        nil
+    }
+
+    /// The days away sheet has been edited: ends `daysAwayRefusal`.
+    public func daysAwaySheetEdited() {
+        daysAwayRefusal = nil
+    }
+
+    /// The days away sheet has been closed: ends `daysAwayRefusal`.
+    public func daysAwaySheetClosed() {
+        daysAwayRefusal = nil
+    }
+
+    /// Whether removing `daysAway` is offered.
+    public func offersRemoving(_ daysAway: DaysAway) -> Bool { false }
+
+    /// Puts `daysAway` up for removal.
+    public func askToRemove(_ daysAway: DaysAway) {}
+
+    /// Leaves nothing awaiting removal.
+    public func cancelRemovingDaysAway() {
+        daysAwayAwaitingRemoval = nil
+    }
+
+    /// Removes whatever is awaiting removal.
+    @discardableResult public func confirmRemovingDaysAway() -> Refusal? { nil }
+
     /// Whether this screen is keeping its happenings, apart from `rosterState`: the happening
     /// place is read beside `readPlaces` and its state never reaches the roster's.
     public private(set) var happeningState: RosterState = .kept
@@ -731,6 +773,20 @@ public final class CommitmentsScreen {
         /// while a shift of the commitment has either day after the day this screen was handed.
         /// `openspec/changes/shift-a-due-day/design.md` § *Settled 7 is read as written*.
         case shiftedDayAhead
+        /// Days away whose first day is before the day the screen was handed.
+        case firstDayHasPassed
+        /// Days away whose last day is before their first.
+        case lastDayBeforeFirstDay
+        /// Days away picked over no commitment.
+        case overNoCommitment
+        /// Days away over a commitment with a shift on one of their days, naming it.
+        case shiftOnDaysAway(String)
+        /// Days away over a commitment other days away are over on a shared day, naming those.
+        case overlapsDaysAway(DaysAway)
+        /// A day kept from moved onto or past days away, naming them.
+        case keptFromMovedIntoDaysAway(DaysAway)
+        /// Days away over a commitment kept from their first day or later, naming it.
+        case keptFromFirstDayOrLater(String)
     }
 
     /// A field of the sheet a commitments screen draws — a definition or a change —

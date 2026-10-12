@@ -27,11 +27,18 @@ public struct Roster: Hashable, Sendable {
 
     var entries: [Entry]
 
+    /// The days away this roster holds, in the order they were said. `daysAway` reads them in the
+    /// order of their first days. ADR-1069.
+    var spans: [Span] = []
+
     /// Whether deleting left this roster holding nothing. `false` for a roster given no
     /// commitment at all — the two are not the same roster. Set by `delete` when the last entry
     /// goes, cleared by any `add`. `design.md` § *Emptied is a mark on the roster, not the file's
     /// absence*.
     var emptied: Bool
+
+    /// The days away this roster holds. Stubbed until the screen says some.
+    public var daysAway: [DaysAway] { [] }
 
     /// A category, or no category at all, together with the commitments under it in the order
     /// the roster holds them. `design.md` § *The seam*.
@@ -941,5 +948,17 @@ public struct Roster: Hashable, Sendable {
 
             return date.days(until: keptUntil) >= 0 ? entry.commitment : nil
         }
+    }
+}
+
+extension Roster {
+    /// One days away as the roster holds it: an identity of its own, a name or none, a first and a
+    /// last day, and the identities of the commitments it is over. ADR-1069.
+    struct Span: Hashable, Sendable {
+        let identity: DaysAway.Identity
+        let name: String?
+        let firstDay: CalendarDate
+        let lastDay: CalendarDate
+        let commitments: [Commitment.Identity]
     }
 }

@@ -631,6 +631,8 @@ public final class DayScreen {
         /// Whether a tap on this day is offered: it holds a date, it is not the day being shown,
         /// and it is not earlier than the day picker's reach.
         public let isOffered: Bool
+        /// Whether some days away holds this day. Stubbed until the day screen says them.
+        public let isAway: Bool
     }
 
     /// The English letter this capability says for the day `mondayOffset` days after a Monday,
@@ -687,7 +689,7 @@ public final class DayScreen {
             let isOffered = date != nil && !isShown && date!.days(until: earliest) <= 0
             return WeekStripDay(
                 letter: Self.weekStripLetters[position], date: date, isShown: isShown,
-                isToday: isToday, isOffered: isOffered)
+                isToday: isToday, isOffered: isOffered, isAway: false)
         }
     }
 
