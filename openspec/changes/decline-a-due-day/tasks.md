@@ -72,17 +72,17 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 ## 7. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 7.1 `rowView` and `rowContent` draw the menu, the dash and the reason line exactly as `design.md` § *The shell* says, the menu attached only where `shiftDays(for:)` is non-empty or `offersDecline(for:)` is true, its words exactly the grill's: "Decline", "Reason", "Take back", "Save", "Reason (optional)" and "Cancel"
-- [ ] 7.2 The reason sheet opens empty from "Decline" and on the row's reason from "Reason", says "Decline" or "Save" by `isDeclined`, and calls `decline(_:reason:)` alone
-- [ ] 7.3 `git diff --stat origin/main... -- src/DayByDay/` lists `ContentView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
+- [x] 7.1 `rowView` and `rowContent` draw the menu, the dash and the reason line exactly as `design.md` § *The shell* says, the menu attached only where `shiftDays(for:)` is non-empty or `offersDecline(for:)` is true, its words exactly the grill's: "Decline", "Reason", "Take back", "Save", "Reason (optional)" and "Cancel"
+- [x] 7.2 The reason sheet opens empty from "Decline" and on the row's reason from "Reason", says "Decline" or "Save" by `isDeclined`, and calls `decline(_:reason:)` alone
+- [x] 7.3 `git diff --stat origin/main... -- src/DayByDay/` lists `ContentView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 8. The records
 
-- [ ] 8.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2); `CONTEXT.md` and ADR-1068 are as this folder's PR left them, and not edited since G4
+- [x] 8.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2); `CONTEXT.md` and ADR-1068 are as this folder's PR left them, and not edited since G4
 
 ## 9. The gates and the archive handover
 
-- [ ] 9.1 `openspec validate decline-a-due-day --strict` exits 0, and `pnpm run checks` is clean but for `check:budgets` warnings on the carried requirements
+- [x] 9.1 `openspec validate decline-a-due-day --strict` exits 0, and `pnpm run checks` is clean but for `check:budgets` warnings on the carried requirements
 - [ ] 9.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with 40 more tests than a run on `origin/main` reports, both read off runs
 - [ ] 9.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 9.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked, W.10 included, and the walk comment's URL is in W.11. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `record`, `day-screen`, `commitment` and `restore` move, gaining this delta's 40 new scenarios, and no other spec file does. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
@@ -91,14 +91,14 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 A fresh install, walked on the simulator on any day, light only; the day-one week, nothing recorded.
 
-- [ ] W.1 Today's "Magnesium" row long-pressed — the menu holding "Decline" alone, Magnesium being due every day.
-- [ ] W.2 "Decline" chosen — the short sheet titled "Magnesium", "Cancel" and "Decline", the field saying "Reason (optional)", keyboard up.
-- [ ] W.3 "Ran out" typed and "Decline" tapped — "Magnesium - Every day" with a plain name, a grey dash in the check's place, "Ran out" in grey under it.
-- [ ] W.4 That row tapped — the name struck through and grey, the green check, no reason line.
-- [ ] W.5 Its tick taken back, the row declined again with "Ran out" and long-pressed — the menu with "Ran out" in grey at its head, "Reason", and "Take back" in red.
-- [ ] W.6 "Take back" chosen — "Magnesium - Every day" with nothing in the check's place and no reason line.
-- [ ] W.7 "Creatine" ticked and its row long-pressed, the press dragged off the row before it lifts — no menu opens, Decline nowhere, Creatine still ticked. (A lift on a row with no menu taps it — `docs/open-questions.md` § Known gaps — so the drag keeps the picture honest.)
-- [ ] W.8 The "Yuno" row long-pressed, dragged off before it lifts as in W.7 — no menu, Decline nowhere, Yuno still unticked.
-- [ ] W.9 Paged back to yesterday, its "Magnesium" row declined with "Away" and its "Weight" row declined with no reason — the dash and "Away" on the one, the dash before the chevron and no line on the other.
+- [x] W.1 Today's "Magnesium" row long-pressed — the menu holding "Decline" alone, Magnesium being due every day.
+- [x] W.2 "Decline" chosen — the short sheet titled "Magnesium", "Cancel" and "Decline", the field saying "Reason (optional)", keyboard up.
+- [x] W.3 "Ran out" typed and "Decline" tapped — "Magnesium - Every day" with a plain name, a grey dash in the check's place, "Ran out" in grey under it.
+- [x] W.4 That row tapped — the name struck through and grey, the green check, no reason line.
+- [x] W.5 Its tick taken back, the row declined again with "Ran out" and long-pressed — the menu with "Ran out" in grey at its head, "Reason", and "Take back" in red.
+- [x] W.6 "Take back" chosen — "Magnesium - Every day" with nothing in the check's place and no reason line.
+- [x] W.7 "Creatine" ticked and its row long-pressed, the press dragged off the row before it lifts — no menu opens, Decline nowhere, Creatine still ticked. (A lift on a row with no menu taps it — `docs/open-questions.md` § Known gaps — so the drag keeps the picture honest.)
+- [x] W.8 The "Yuno" row long-pressed, dragged off before it lifts as in W.7 — no menu, Decline nowhere, Yuno still unticked.
+- [x] W.9 Paged back to yesterday, its "Magnesium" row declined with "Away" and its "Weight" row declined with no reason — the dash and "Away" on the one, the dash before the chevron and no line on the other.
 - [ ] W.10 phone: a declined row with its reason, in dark — the dash and the reason legible.
-- [ ] W.11 **The handover** — W.1–W.9, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.11 **The handover** — W.1–W.9, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
