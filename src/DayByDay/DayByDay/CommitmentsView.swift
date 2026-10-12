@@ -230,6 +230,7 @@ struct CommitmentsView: View {
 
     @State private var sheetTarget: SheetTarget?
     @State private var happeningSheetTarget: HappeningSheetTarget?
+    @State private var sayingDaysAway = false
     /// Bumped in `.sheet(item:onDismiss:)`'s `onDismiss`, and read by `body` where the lists are
     /// built, so a dismissed sheet always leaves this view's `List` re-evaluated against
     /// `screen.kept`/`keptGroups`/`stopped` — `tasks.md` § 14.4. A rename or a rhythm change kept
@@ -471,6 +472,33 @@ struct CommitmentsView: View {
                 }
             }
 
+            Section {
+                ForEach(screen.daysAway, id: \.self) { daysAway in
+                    VStack(alignment: .leading, spacing: 2) {
+                        commitmentLine(Text(daysAway.title), rhythmInWords: daysAway.daysInWords)
+                        Text(daysAway.commitments.map(\.name).joined(separator: ", "))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .swipeActions(edge: .trailing) {
+                        if screen.offersRemoving(daysAway) {
+                            Button(role: .destructive) {
+                                screen.askToRemove(daysAway)
+                            } label: {
+                                Image(systemName: "trash")
+                            }
+                            .tint(.red)
+                            .accessibilityLabel("Remove")
+                        }
+                    }
+                }
+                Button("New days away") {
+                    sayingDaysAway = true
+                }
+            } header: {
+                Text("Days away")
+            }
+
             switch screen.rosterState {
             case .kept:
                 EmptyView()
@@ -630,6 +658,28 @@ struct CommitmentsView: View {
             }
         }
         .alert(
+            "Remove days away?",
+            isPresented: Binding(
+                get: { screen.daysAwayAwaitingRemoval != nil },
+                set: { isPresented in
+                    if !isPresented && screen.daysAwayAwaitingRemoval != nil {
+                        screen.cancelRemovingDaysAway()
+                    }
+                }
+            ),
+            presenting: screen.daysAwayAwaitingRemoval
+        ) { _ in
+            Button("Remove", role: .destructive) {
+                screen.confirmRemovingDaysAway()
+                listRevision += 1
+            }
+            Button("Cancel", role: .cancel) {
+                screen.cancelRemovingDaysAway()
+            }
+        } message: { daysAway in
+            Text("\(daysAway.title), \(daysAway.daysInWords)")
+        }
+        .alert(
             "Stop noting this happening?",
             isPresented: Binding(
                 get: { screen.happeningAwaitingStop != nil },
@@ -751,7 +801,103 @@ struct CommitmentsView: View {
         .sheet(item: $happeningSheetTarget, onDismiss: { listRevision += 1 }) { target in
             HappeningSheet(screen: screen, renaming: target.happening)
         }
+        .sheet(isPresented: $sayingDaysAway, onDismiss: { listRevision += 1 }) {
+            DaysAwaySheet(screen: screen)
+        }
     }
+}
+
+/// The sheet that says days away: an optional name, two days, and the kept commitments to pick
+/// from. A kept ask dismisses; a refused one stays open over its red caption, everything as
+/// typed. Decides nothing — `screen.sayDaysAway` judges, this draws (ADR-1019).
+private struct DaysAwaySheet: View {
+    let screen: CommitmentsScreen
+
+    @State private var name = ""
+    @State private var firstDay: Date
+    @State private var lastDay: Date
+    @State private var picked: [Commitment] = []
+    @Environment(\.dismiss) private var dismiss
+
+    init(screen: CommitmentsScreen) {
+        self.screen = screen
+        _firstDay = State(initialValue: date(from: screen.dayToKeepFrom))
+        _lastDay = State(initialValue: date(from: screen.dayToKeepFrom))
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Name (optional)", text: $name)
+                        .onChange(of: name) { _, _ in screen.daysAwaySheetEdited() }
+                    DatePicker("First day", selection: $firstDay, displayedComponents: [.date])
+                        .onChange(of: firstDay) { _, _ in screen.daysAwaySheetEdited() }
+                    DatePicker("Last day", selection: $lastDay, displayedComponents: [.date])
+                        .onChange(of: lastDay) { _, _ in screen.daysAwaySheetEdited() }
+                }
+                Section {
+                    ForEach(screen.kept, id: \.self) { commitment in
+                        Button {
+                            if let at = picked.firstIndex(of: commitment) {
+                                picked.remove(at: at)
+                            } else {
+                                picked.append(commitment)
+                            }
+                            screen.daysAwaySheetEdited()
+                        } label: {
+                            HStack {
+                                Image(
+                                    systemName: picked.contains(commitment)
+                                        ? "checkmark.circle.fill" : "circle")
+                                commitmentLine(
+                                    Text(commitment.name), rhythmInWords: commitment.rhythmInWords)
+                            }
+                            .foregroundStyle(.primary)
+                        }
+                    }
+                } header: {
+                    Text("Commitments")
+                } footer: {
+                    if let refusal = screen.daysAwayRefusal {
+                        refusalText(refusal)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
+                }
+            }
+            .navigationTitle("Days away")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Add") { add() }
+                        .disabled(picked.isEmpty)
+                }
+            }
+        }
+        .onDisappear {
+            screen.daysAwaySheetClosed()
+        }
+    }
+
+    private func add() {
+        guard let first = calendarDate(from: firstDay), let last = calendarDate(from: lastDay) else {
+            return
+        }
+        // Kept order, as the roster holds them, whatever order they were picked in.
+        let over = screen.kept.filter { picked.contains($0) }
+        if screen.sayDaysAway(named: name, from: first, through: last, over: over) == nil {
+            dismiss()
+        }
+    }
+}
+
+private func calendarDate(from date: Date) -> CalendarDate? {
+    let components = Calendar.current.dateComponents([.year, .month, .day], from: date)
+    return CalendarDate(year: components.year!, month: components.month!, day: components.day!)
 }
 
 /// The one sheet that makes a happening and renames one: a single name field with *Cancel* and

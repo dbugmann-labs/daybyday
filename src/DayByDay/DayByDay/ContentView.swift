@@ -1600,6 +1600,14 @@ struct ContentView: View {
         .foregroundStyle(textColor)
         .padding(.vertical, 6)
         .frame(maxWidth: .infinity)
+        .overlay(alignment: .bottom) {
+            // The dot under a day the roster holds days away over — `isAway` says it; this draws it.
+            if day.isAway {
+                Circle()
+                    .fill(day.isShown ? textColor : Color.secondary)
+                    .frame(width: 4, height: 4)
+            }
+        }
         .background {
             if day.isShown {
                 Capsule().fill(day.isToday ? Color.accentColor : Color.primary)
@@ -1782,7 +1790,13 @@ struct ContentView: View {
     private func dayList(for dayView: DayView?) -> some View {
         List {
             if let dayView {
-                // The Birthdays group, first of all — `openspec/specs/day-screen/spec.md`'s
+                // Each days away the day falls in, first of all: a bare line, said by the Kit.
+                ForEach(Array(dayView.daysAwayInWords.enumerated()), id: \.offset) { _, line in
+                    Text(line)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                // The Birthdays group, first of the groups — `openspec/specs/day-screen/spec.md`'s
                 // *A day screen draws the birthdays falling on each day...*: "it SHALL come
                 // before every group of commitments." `nil` while birthdays are off or none
                 // fall on this date (`design.md` § *A group of its own, mirroring the
