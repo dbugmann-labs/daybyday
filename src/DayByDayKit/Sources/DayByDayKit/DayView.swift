@@ -136,6 +136,16 @@ public struct DayView: Hashable, Sendable {
             isKept || isDeclined || number != nil || note != nil || total > 0
         }
 
+        /// Whether this row offers declining its day: it offers a tick or an entry as of `today`,
+        /// its commitment is not on a weekly quota, and its day holds no record but a decline.
+        func offersDecline(asOf today: CalendarDate) -> Bool {
+            if case .weeklyQuota = commitment.schedule {
+                return false
+            }
+            return offersAnything(asOf: today)
+                && !(isKept || number != nil || note != nil || total > 0)
+        }
+
         public var name: String { commitment.name }
 
         /// The rhythm this row's commitment runs on, in words — given this row's standing and
@@ -547,10 +557,11 @@ public struct DayView: Hashable, Sendable {
                         shift = nil
                     }
                     let number = history.number(for: commitment, on: date)
+                    let decline = tookDueDay ? nil : history.decline(for: commitment, on: date)
                     return Row(
                         commitment: commitment, date: date,
                         isKept: !tookDueDay && history.isKept(commitment, on: date),
-                        isDeclined: false, declineReason: nil,
+                        isDeclined: decline != nil, declineReason: decline?.reason,
                         number: number,
                         startingNumber: Self.startingNumber(
                             for: commitment, heldNumber: number, on: date, in: history),

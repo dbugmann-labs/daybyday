@@ -1442,11 +1442,62 @@ public final class DayScreen {
         }
     }
 
-    public func offersDecline(for row: DayView.Row) -> Bool { false }
+    /// Whether `row`'s day may be declined, or a declined `row` given another reason or taken
+    /// back: `row` is one this screen's day view holds, this screen is keeping a record, and
+    /// `row` offers declining as of today. Changes nothing. `design.md` § *The seam*.
+    public func offersDecline(for row: DayView.Row) -> Bool {
+        dayView.rows.contains(row) && recordStore != nil && row.offersDecline(asOf: today)
+    }
 
-    public func decline(_ row: DayView.Row, reason text: String) throws {}
+    /// Declines `row`'s day with the reason `text` holds, blank space at its start and end
+    /// disregarded, or with none where `text` is blank, and keeps the change before `dayView`
+    /// says so; asked of a declined row, gives the decline that reason in place of the one it
+    /// had. Does nothing when `offersDecline(for: row)` is false. Throws when the change could
+    /// not be kept at the record's place, leaving `dayView` as it was. `design.md` § *The seam*.
+    public func decline(_ row: DayView.Row, reason text: String) throws {
+        guard offersDecline(for: row), let recordStore else {
+            return
+        }
+        guard
+            let decline = Decline(
+                for: row.commitment, on: row.date,
+                reason: Blank.saysNothing(text) ? nil : Blank.trimmed(text))
+        else {
+            return
+        }
 
-    public func takeBackDecline(on row: DayView.Row) throws {}
+        do {
+            try recordStore.add(decline)
+        } catch {
+            notice = Notice(row: row)
+            throw error
+        }
+        notice = nil
+
+        dayView = dayViewOfShownDay()
+        copyPlace?.keptAChange()
+    }
+
+    /// Takes `row`'s decline back, leaving its day holding nothing, and keeps the change before
+    /// `dayView` says so. Does nothing when `offersDecline(for: row)` is false or `row` is not
+    /// declined. Throws when the change could not be kept at the record's place, leaving
+    /// `dayView` as it was. `design.md` § *The seam*.
+    public func takeBackDecline(on row: DayView.Row) throws {
+        guard offersDecline(for: row), row.isDeclined, let recordStore else {
+            return
+        }
+
+        do {
+            try recordStore.removeDecline(for: row.commitment, on: row.date)
+        } catch {
+            notice = Notice(row: row)
+            throw error
+        }
+        notice = nil
+
+        dayView = dayViewOfShownDay()
+        copyPlace?.keptAChange()
+    }
 
     /// Shifts `row`'s due day to `date`, a day `shiftDays(for:)` offers. `design.md` § *The seam*.
     public func shift(_ row: DayView.Row, to date: CalendarDate) throws {
