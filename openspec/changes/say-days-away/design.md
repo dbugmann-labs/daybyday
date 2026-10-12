@@ -135,17 +135,11 @@ one-offs, birthdays and happenings do not move.
 
 ## Open Questions
 
-`grill.md` § *Left open* is "None." Writing the delta raised one question, below, written on the
-recommended answer; the readings above follow from settled answers and are recorded, not asked.
+`grill.md` § *Left open* is "None." Writing the delta raised one question, now settled; the
+readings above follow from settled answers and are recorded, not asked.
 
-## Questions for you
-
-1. **An every-N-days due day before days away said over it.** A shipped rule refuses shifting an
-   every-N-days due day while any later era of it stands, and days away put one on — the era from
-   the day after them. So once days away are said over "Nails", none of its due days before them
-   can be shifted until they are over. Shift as though they were not there, or keep refusing?
-   - *Recommended:* shift — that era begins its own count whatever a shift before did, so the shift
-     undoes nothing, which is all the rule guards; and removing the days away then leaves the shift
-     exactly as if they had never been said (settled 13).
-   - *If you say keep refusing:* the MODIFIED interval-shift requirement and its new scenario come
-     out, replaced by one scenario saying the shift is refused; nothing else in the delta moves.
+- **Settled: an every-N-days due day before days away said over it can be shifted.** The shipped
+  refusal of a shift while a later era stands does not count the era begun the day after days away:
+  that era begins its own count whatever a shift before did, so the shift undoes nothing the rule
+  guards, and removing the days away leaves it exactly as if they had never been said (settled 13).
+  The owner answered "allow" to the residual round; the interval-shift requirement is MODIFIED on it.
