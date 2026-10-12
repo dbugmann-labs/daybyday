@@ -919,3 +919,27 @@ func theDayKeptFromMovedOntoOrPastDaysAwayIsRefusedNamingThem() throws {
         creatine, toName: "Creatine", on: .weekdays(everyWeekday), keptFrom: monday12, under: nil)
     #expect(allowed == nil)
 }
+
+@MainActor
+@Test("a roster shifts an every-N-days due day before days away said over it")
+func aRosterShiftsAnEveryNDaysDueDayBeforeDaysAwaySaidOverIt() throws {
+    let places = Places()
+    let nails = commitment(
+        "Nails", .everyNDays(DayInterval(days: 4)!, from: date(2026, 10, 1)), keptFrom: date(2026, 10, 1))
+    try takeOn([nails], at: places)
+    screen(places).sayDaysAway(
+        named: "", from: date(2026, 10, 20), through: date(2026, 10, 25), over: [nails])
+    let store = try RosterStore(at: places.roster)
+
+    let shifted = try store.shift(nails, from: date(2026, 10, 13), to: date(2026, 10, 14))
+
+    #expect(shifted)
+    for due in [date(2026, 10, 14), date(2026, 10, 18), date(2026, 10, 26), date(2026, 10, 30)] {
+        #expect(isDue("Nails", on: due, in: store.roster))
+    }
+    for notDue in [date(2026, 10, 13), date(2026, 10, 17)] {
+        #expect(!isDue("Nails", on: notDue, in: store.roster))
+    }
+    let again = try store.shift(nails, from: date(2026, 10, 18), to: date(2026, 10, 20))
+    #expect(!again)
+}

@@ -86,8 +86,9 @@ struct RosterDocument: Codable {
 
     /// The days away this document holds, formed: none in a form before
     /// `daysAwayIntroducedInVersion`, and `nil` where the form carries them and these say
-    /// something no roster could hold.
-    private func formSpans() -> [Roster.Span]? {
+    /// something no roster could hold — over no commitment, over one `held` does not hold or one
+    /// twice, named with what says nothing, or sharing a day and a commitment with other days away.
+    private func formSpans(holding held: Set<Commitment.Identity>) -> [Roster.Span]? {
         guard version >= Self.daysAwayIntroducedInVersion else {
             return []
         }
@@ -96,7 +97,22 @@ struct RosterDocument: Codable {
         }
         var formed: [Roster.Span] = []
         for record in records {
-            guard let span = record.span() else {
+            guard let span = record.span(),
+                !span.commitments.isEmpty, Set(span.commitments).count == span.commitments.count,
+                span.commitments.allSatisfy(held.contains),
+                span.name.map({ !Blank.saysNothing($0) }) ?? true
+            else {
+                return nil
+            }
+            let sharesADay = { (other: Roster.Span) in
+                span.firstDay.days(until: other.lastDay) >= 0
+                    && other.firstDay.days(until: span.lastDay) >= 0
+            }
+            guard
+                !formed.contains(where: { other in
+                    sharesADay(other) && !Set(other.commitments).isDisjoint(with: span.commitments)
+                })
+            else {
                 return nil
             }
             formed.append(span)
@@ -224,7 +240,7 @@ struct RosterDocument: Codable {
             return nil
         }
 
-        guard let spans = formSpans() else {
+        guard let spans = formSpans(holding: Set(entries.map(\.commitment.identity))) else {
             return nil
         }
 

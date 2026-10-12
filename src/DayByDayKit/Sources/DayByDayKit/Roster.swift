@@ -901,8 +901,13 @@ public struct Roster: Hashable, Sendable {
 
         let bar = day.days(until: anchor) > 0 ? anchor : day
         let laterShift = shifts.contains { bar.days(until: $0.key) > 0 || bar.days(until: $0.value) > 0 }
+        // The era begun the day after days away begins its own count whatever a shift before did, so
+        // it does not stand in the way. `say-days-away` design.md § *Open Questions*.
+        let takenUpAfterDaysAway = spans.filter { $0.commitments.contains(commitment.identity) }
+            .compactMap { $0.lastDay.adding(days: 1) }
         let laterEra = entries.contains {
             $0.commitment.identity == commitment.identity && bar.days(until: $0.commitment.keptFrom) > 0
+                && !takenUpAfterDaysAway.contains($0.commitment.keptFrom)
         }
         guard !laterShift, !laterEra else {
             return false
