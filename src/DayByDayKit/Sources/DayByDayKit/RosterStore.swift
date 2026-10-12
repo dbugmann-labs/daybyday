@@ -116,7 +116,10 @@ public final class RosterStore {
             (document.emptied != nil)
             == (document.version >= RosterDocument.emptiedIntroducedInVersion)
         let emptiedConsistent = document.emptied != true || document.commitments.isEmpty
-        return entriesAgree && emptiedKeyAgrees && emptiedConsistent
+        let daysAwayKeyAgrees =
+            (document.daysAway != nil)
+            == (document.version >= RosterDocument.daysAwayIntroducedInVersion)
+        return entriesAgree && emptiedKeyAgrees && emptiedConsistent && daysAwayKeyAgrees
     }
 
     /// Exactly what is kept at `place`.
