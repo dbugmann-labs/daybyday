@@ -101,4 +101,4 @@ A fresh install, walked on the simulator on any day, light only; the day-one wee
 - [x] W.8 The "Yuno" row long-pressed, dragged off before it lifts as in W.7 — no menu, Decline nowhere, Yuno still unticked.
 - [x] W.9 Paged back to yesterday, its "Magnesium" row declined with "Away" and its "Weight" row declined with no reason — the dash and "Away" on the one, the dash before the chevron and no line on the other.
 - [x] W.10 phone: a declined row with its reason, in dark — the dash and the reason legible.
-- [x] W.11 **The handover** — W.1–W.9, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.11 **The handover** — W.1–W.9, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. Posted: https://github.com/dbugmann-labs/daybyday/pull/404#issuecomment-6118789263
