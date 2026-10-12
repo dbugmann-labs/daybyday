@@ -84,7 +84,7 @@ public final class CommitmentsScreen {
 
     /// Whether this screen offers the way to the Birthdays screen: exactly while it was handed a
     /// birthday switch and that switch is on. Asks the phone nothing.
-    public var offersGoingToBirthdays: Bool { false }
+    public var offersGoingToBirthdays: Bool { birthdaySwitch?.isOn ?? false }
 
     /// The happenings this screen lists, in the order held. `design.md` § *The seam*.
     public private(set) var happenings: [Happening] = []
@@ -2163,6 +2163,7 @@ public final class CommitmentsScreen {
     /// The app has been shown on `today`: the day this screen holds is replaced and the roster is
     /// read again.
     public func shown(asOf today: CalendarDate) {
+        birthdaySwitch?.shown()
         dayToKeepFrom = today
         endedByAChangeOrByBeingShown()
         sheetRefusal = nil

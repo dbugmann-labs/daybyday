@@ -16,8 +16,8 @@ calendar, a fake phone and a switch place of its own, as `DayScreenBirthdayTests
 ## 2. The seam
 
 - [x] 2.1 `BirthdaysScreen`, its `Line` and `BirthdayState`, `CommitmentsScreen`'s `whileOn` parameter and `offersGoingToBirthdays`, and `DayTitle.birthdayDayInWords` exist with the signatures in `design.md` § *The seam*, and 3.1 is red before any of them does more than compile
-- [ ] 2.2 Every existing `CommitmentsScreen(...)` call site compiles unchanged, and every carried `CommitmentsScreen`, `DayScreen` and `BirthdaySwitch` test passes unedited
-- [ ] 2.3 `BirthdaysScreen` takes no place, opens no store and writes nothing, and asks its calendar only from `init` and `shown(asOf:)`
+- [x] 2.2 Every existing `CommitmentsScreen(...)` call site compiles unchanged, and every carried `CommitmentsScreen`, `DayScreen` and `BirthdaySwitch` test passes unedited
+- [x] 2.3 `BirthdaysScreen` takes no place, opens no store and writes nothing, and asks its calendar only from `init` and `shown(asOf:)`
 
 ## 3. The fourteen scenarios of `birthday` — one test each
 
@@ -33,8 +33,8 @@ calendar, a fake phone and a switch place of its own, as `DayScreenBirthdayTests
 - [x] 3.10 a Birthdays screen shown again after the phone withdraws calendar access lists nothing and says birthdays are off — catches `shown(asOf:)` asking the calendar before showing the switch
 - [x] 3.11 a Birthdays screen with birthdays on and nobody handed in its span lists nothing and says birthdays are on — catches an empty list read as off
 - [x] 3.12 a Birthdays screen whose calendar cannot be read lists nothing and says birthdays could not be read — catches a failure that sticks after the calendar answers
-- [ ] 3.13 a commitments screen offers the way to the Birthdays screen while birthdays are on, and none while they are off — catches the switch read once at `init`
-- [ ] 3.14 a commitments screen shown again after the phone withdraws calendar access offers no way to the Birthdays screen — catches `shown(asOf:)` leaving the switch unshown
+- [x] 3.13 a commitments screen offers the way to the Birthdays screen while birthdays are on, and none while they are off — catches the switch read once at `init`
+- [x] 3.14 a commitments screen shown again after the phone withdraws calendar access offers no way to the Birthdays screen — catches `shown(asOf:)` leaving the switch unshown
 
 ## 4. The shell (ADR-1019: no rule the Kit does not state)
 

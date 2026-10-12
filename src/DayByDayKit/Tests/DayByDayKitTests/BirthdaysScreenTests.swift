@@ -406,3 +406,58 @@ func aBirthdaysScreenWhoseCalendarCannotBeReadListsNothingAndSaysBirthdaysCouldN
         screen.lines == [.init(words: "Kate Bell's 48th Birthday", dayInWords: "Sat 14 November")])
     #expect(screen.birthdayState == .on)
 }
+
+/// A commitments screen opened as of Monday 12 October 2026 at places where nothing has been kept.
+@MainActor
+private func commitmentsScreen(whileOn birthdaySwitch: BirthdaySwitch?) -> CommitmentsScreen {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    return CommitmentsScreen(
+        asOf: date(2026, 10, 12),
+        keepingRosterAt: directory.appendingPathComponent("roster.json"),
+        keepingRecordAt: directory.appendingPathComponent("record.json"),
+        keepingOneOffsAt: directory.appendingPathComponent("one-offs.json"),
+        whileOn: birthdaySwitch)
+}
+
+@MainActor
+@Test(
+    "a commitments screen offers the way to the Birthdays screen while birthdays are on, and none while they are off"
+)
+func aCommitmentsScreenOffersTheWayToTheBirthdaysScreenWhileBirthdaysAreOnAndNoneWhileTheyAreOff()
+    async
+{
+    let phone = FakePhone(access: .full)
+    let switchUnderTest = await onSwitch(on: phone)
+    let readsBefore = phone.asks
+    let screen = commitmentsScreen(whileOn: switchUnderTest)
+    #expect(screen.offersGoingToBirthdays)
+
+    switchUnderTest.turnOff()
+    #expect(!screen.offersGoingToBirthdays)
+
+    #expect(!commitmentsScreen(whileOn: nil).offersGoingToBirthdays)
+    #expect(phone.asks == readsBefore && phone.prompts == 0)
+}
+
+@MainActor
+@Test(
+    "a commitments screen shown again after the phone withdraws calendar access offers no way to the Birthdays screen"
+)
+func aCommitmentsScreenShownAgainAfterThePhoneWithdrawsCalendarAccessOffersNoWayToTheBirthdaysScreen()
+    async
+{
+    let phone = FakePhone(access: .full)
+    let switchUnderTest = await onSwitch(on: phone)
+    let screen = commitmentsScreen(whileOn: switchUnderTest)
+    #expect(screen.offersGoingToBirthdays)
+
+    phone.access = .denied
+    screen.shown(asOf: date(2026, 10, 12))
+    #expect(!screen.offersGoingToBirthdays)
+    #expect(!switchUnderTest.isOn)
+
+    phone.access = .full
+    screen.shown(asOf: date(2026, 10, 12))
+    #expect(!screen.offersGoingToBirthdays)
+}
