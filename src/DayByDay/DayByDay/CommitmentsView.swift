@@ -855,6 +855,7 @@ private struct DaysAwaySheet: View {
                             }
                             .foregroundStyle(.primary)
                         }
+                        .buttonStyle(.plain)
                     }
                 } header: {
                     Text("Commitments")
