@@ -23,12 +23,12 @@ calendar, a fake phone and a switch place of its own, as `DayScreenBirthdayTests
 
 - [x] 3.1 a Birthdays screen asks the calendar once, for the days from its today through the day before the same date a year later — catches a 365-day span, or an ask on every read of the lines
 - [x] 3.2 a Birthdays screen lists each birthday handed in its span as often as it is handed, and none handed outside it — catches the calendar's answer listed unfiltered, or duplicates merged
-- [ ] 3.3 a Birthdays screen takes a new today only when it is shown again — catches a today read off a clock, or "Today" kept from the opening day
-- [ ] 3.4 a Birthdays screen lists the soonest birthday first, whatever order the calendar hands them in — catches the handed order kept, or a month-and-day sort that puts January before November
-- [ ] 3.5 a Birthdays screen lists one day's birthdays in the order their words are collated in — catches collation outranking the day
-- [ ] 3.6 a Birthdays screen line says the calendar's words exactly, and its day as weekday, day and month — catches trimmed words, a leading zero or a year
-- [ ] 3.7 a Birthdays screen line says Today for a birthday falling on its today, and the date for any other — catches "Tomorrow", or a year said for a date in the next one
-- [ ] 3.8 a Birthdays screen says each month by its own name — catches a month table of its own with a typo
+- [x] 3.3 a Birthdays screen takes a new today only when it is shown again — catches a today read off a clock, or "Today" kept from the opening day
+- [x] 3.4 a Birthdays screen lists the soonest birthday first, whatever order the calendar hands them in — catches the handed order kept, or a month-and-day sort that puts January before November
+- [x] 3.5 a Birthdays screen lists one day's birthdays in the order their words are collated in — catches collation outranking the day
+- [x] 3.6 a Birthdays screen line says the calendar's words exactly, and its day as weekday, day and month — catches trimmed words, a leading zero or a year
+- [x] 3.7 a Birthdays screen line says Today for a birthday falling on its today, and the date for any other — catches "Tomorrow", or a year said for a date in the next one
+- [x] 3.8 a Birthdays screen says each month by its own name — catches a month table of its own with a typo
 - [ ] 3.9 a Birthdays screen opened with birthdays off lists nothing, says they are off and asks the calendar nothing — catches an ask made before the switch is read
 - [ ] 3.10 a Birthdays screen shown again after the phone withdraws calendar access lists nothing and says birthdays are off — catches `shown(asOf:)` asking the calendar before showing the switch
 - [ ] 3.11 a Birthdays screen with birthdays on and nobody handed in its span lists nothing and says birthdays are on — catches an empty list read as off

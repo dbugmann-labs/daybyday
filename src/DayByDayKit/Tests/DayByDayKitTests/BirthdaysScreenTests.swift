@@ -160,3 +160,152 @@ func aBirthdaysScreenListsEachBirthdayHandedInItsSpanAsOftenAsItIsHandedAndNoneH
     #expect(another.lines.count == 3)
     #expect(Set(another.lines.filter { $0.words == "Kate Bell's 48th Birthday" }).count == 1)
 }
+
+@MainActor
+@Test("a Birthdays screen takes a new today only when it is shown again")
+func aBirthdaysScreenTakesANewTodayOnlyWhenItIsShownAgain() async {
+    let fake = FakeCalendar(handing: [
+        birthday("anna", "Anna Haro's Birthday", date(2026, 10, 12)),
+        birthday("john", "John Appleseed's 40th Birthday", date(2026, 10, 13)),
+    ])
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(fake), whileOn: await onSwitch())
+
+    #expect(
+        screen.lines == [
+            .init(words: "Anna Haro's Birthday", dayInWords: "Today"),
+            .init(words: "John Appleseed's 40th Birthday", dayInWords: "Tue 13 October"),
+        ])
+
+    screen.shown(asOf: date(2026, 10, 13))
+    #expect(fake.asks.count == 2)
+    #expect(fake.asks[0].first == date(2026, 10, 12) && fake.asks[0].last == date(2027, 10, 11))
+    #expect(fake.asks[1].first == date(2026, 10, 13) && fake.asks[1].last == date(2027, 10, 12))
+    #expect(screen.lines == [.init(words: "John Appleseed's 40th Birthday", dayInWords: "Today")])
+}
+
+@MainActor
+@Test("a Birthdays screen lists the soonest birthday first, whatever order the calendar hands them in")
+func aBirthdaysScreenListsTheSoonestBirthdayFirstWhateverOrderTheCalendarHandsThemIn() async {
+    let handed = [
+        birthday("john", "John Appleseed's 40th Birthday", date(2027, 3, 1)),
+        birthday("zoe", "Zoe Adams's Birthday", date(2027, 1, 1)),
+        birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14)),
+        birthday("anna", "Anna Haro's Birthday", date(2026, 10, 12)),
+    ]
+    let expected = [
+        "Anna Haro's Birthday", "Kate Bell's 48th Birthday", "Zoe Adams's Birthday",
+        "John Appleseed's 40th Birthday",
+    ]
+    let forward = BirthdaysScreen(
+        asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(FakeCalendar(handing: handed)),
+        whileOn: await onSwitch())
+    #expect(forward.lines.map(\.words) == expected)
+
+    let reverse = BirthdaysScreen(
+        asOf: date(2026, 10, 12),
+        readingBirthdaysFrom: calendar(FakeCalendar(handing: handed.reversed())),
+        whileOn: await onSwitch())
+    #expect(reverse.lines.map(\.words) == expected)
+}
+
+@MainActor
+@Test("a Birthdays screen lists one day's birthdays in the order their words are collated in")
+func aBirthdaysScreenListsOneDaysBirthdaysInTheOrderTheirWordsAreCollatedIn() async {
+    let handed = [
+        birthday("aaron", "Aaron Appleseed's Birthday", date(2026, 11, 15)),
+        birthday("zoe", "Zoe Adams's Birthday", date(2026, 11, 14)),
+        birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14)),
+        birthday("anna", "anna Haro's Birthday", date(2026, 11, 14)),
+    ]
+    let alphabetical = BirthdaysScreen(
+        asOf: date(2026, 10, 12),
+        readingBirthdaysFrom: calendar(
+            FakeCalendar(handing: handed), collatingWith: { $0.lowercased() < $1.lowercased() }),
+        whileOn: await onSwitch())
+    #expect(
+        alphabetical.lines.map(\.words) == [
+            "anna Haro's Birthday", "Kate Bell's 48th Birthday", "Zoe Adams's Birthday",
+            "Aaron Appleseed's Birthday",
+        ])
+
+    let reversed = BirthdaysScreen(
+        asOf: date(2026, 10, 12),
+        readingBirthdaysFrom: calendar(
+            FakeCalendar(handing: handed), collatingWith: { $0.lowercased() > $1.lowercased() }),
+        whileOn: await onSwitch())
+    #expect(
+        reversed.lines.map(\.words) == [
+            "Zoe Adams's Birthday", "Kate Bell's 48th Birthday", "anna Haro's Birthday",
+            "Aaron Appleseed's Birthday",
+        ])
+}
+
+@MainActor
+@Test(
+    "a Birthdays screen line says the calendar's words exactly, and its day as weekday, day and month"
+)
+func aBirthdaysScreenLineSaysTheCalendarsWordsExactlyAndItsDayAsWeekdayDayAndMonth() async {
+    func line(_ words: String, on day: CalendarDate) async -> [BirthdaysScreen.Line] {
+        BirthdaysScreen(
+            asOf: date(2026, 10, 12),
+            readingBirthdaysFrom: calendar(
+                FakeCalendar(handing: [birthday("kate", words, day)])),
+            whileOn: await onSwitch()
+        ).lines
+    }
+
+    #expect(
+        await line("Kate Bell's 48th Birthday", on: date(2026, 11, 14)) == [
+            .init(words: "Kate Bell's 48th Birthday", dayInWords: "Sat 14 November")
+        ])
+    #expect(
+        await line("John Appleseed's 40th Birthday", on: date(2027, 6, 5)) == [
+            .init(words: "John Appleseed's 40th Birthday", dayInWords: "Sat 5 June")
+        ])
+    #expect(
+        await line(" Kate Bell's 48th Birthday ", on: date(2026, 11, 14)) == [
+            .init(words: " Kate Bell's 48th Birthday ", dayInWords: "Sat 14 November")
+        ])
+    #expect(
+        await line("", on: date(2026, 11, 14)) == [.init(words: "", dayInWords: "Sat 14 November")])
+}
+
+@MainActor
+@Test(
+    "a Birthdays screen line says Today for a birthday falling on its today, and the date for any other"
+)
+func aBirthdaysScreenLineSaysTodayForABirthdayFallingOnItsTodayAndTheDateForAnyOther() async {
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 12),
+        readingBirthdaysFrom: calendar(
+            FakeCalendar(handing: [
+                birthday("anna", "Anna Haro's Birthday", date(2026, 10, 12)),
+                birthday("john", "John Appleseed's 40th Birthday", date(2026, 10, 13)),
+                birthday("kate", "Kate Bell's 48th Birthday", date(2027, 10, 11)),
+            ])),
+        whileOn: await onSwitch())
+    #expect(screen.lines.map(\.dayInWords) == ["Today", "Tue 13 October", "Mon 11 October"])
+}
+
+@MainActor
+@Test("a Birthdays screen says each month by its own name")
+func aBirthdaysScreenSaysEachMonthByItsOwnName() async {
+    let firsts = [
+        date(2026, 11, 1), date(2026, 12, 1), date(2027, 1, 1), date(2027, 2, 1),
+        date(2027, 3, 1), date(2027, 4, 1), date(2027, 5, 1), date(2027, 6, 1),
+        date(2027, 7, 1), date(2027, 8, 1), date(2027, 9, 1), date(2027, 10, 1),
+    ]
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 12),
+        readingBirthdaysFrom: calendar(
+            FakeCalendar(
+                handing: firsts.enumerated().map { birthday("contact-\($0.offset)", "Words", $0.element) })),
+        whileOn: await onSwitch())
+    #expect(
+        screen.lines.map(\.dayInWords) == [
+            "Sun 1 November", "Tue 1 December", "Fri 1 January", "Mon 1 February", "Mon 1 March",
+            "Thu 1 April", "Sat 1 May", "Tue 1 June", "Thu 1 July", "Sun 1 August",
+            "Wed 1 September", "Fri 1 October",
+        ])
+}

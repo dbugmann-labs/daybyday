@@ -44,7 +44,27 @@ public final class BirthdaysScreen {
         let handed = (try? calendar.reading(today, last)) ?? []
         lines = handed
             .filter { today.days(until: $0.day) >= 0 && $0.day.days(until: last) >= 0 }
-            .map { Line(words: $0.words, dayInWords: "") }
+            .enumerated()
+            .sorted { first, second in
+                let firstDay = today.days(until: first.element.day)
+                let secondDay = today.days(until: second.element.day)
+                if firstDay != secondDay {
+                    return firstDay < secondDay
+                }
+                if calendar.collating(first.element.words, second.element.words) {
+                    return true
+                }
+                if calendar.collating(second.element.words, first.element.words) {
+                    return false
+                }
+                return first.offset < second.offset
+            }
+            .map(\.element)
+            .map {
+                Line(
+                    words: $0.words,
+                    dayInWords: $0.day == today ? "Today" : DayTitle.birthdayDayInWords($0.day))
+            }
     }
 
     private static func lastDay(ofTheYearFrom today: CalendarDate) -> CalendarDate {
