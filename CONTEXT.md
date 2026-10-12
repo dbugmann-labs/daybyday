@@ -277,6 +277,15 @@ day inside the span is refused until the shift is undone. **One-offs**, **birthd
 **happenings** are not commitments and show on days away as on any other. Agreed 2026-10-11 at the
 twenty-sixth grooming pass's Feature grill, for B-080.
 
+**Amended 2026-10-12**, at the grill of `say-days-away` (#401). Days away are remembered as one
+thing — a span over the commitments picked, with an optional name — listed on the **commitments
+screen** until its last day passes and kept after it, so a copy carries it and the **day screen**
+says on each of its days that the day is away, by the span's name or "Away". Each commitment picked
+is kept until the day before the span's first day, not stopped on it. A stop or a delete for good
+takes a commitment out of its spans, and a span left with none goes; a change to a commitment's
+rhythm keeps them. Removing a span before it starts leaves every commitment as though it had never
+been said.
+
 **Resume** — the person's word, and the stopped row's swipe label, for **taking a stopped commitment
 up again**, which is what the specs call it; the two name one act. A resume is made on the day it is
 made and asks for nothing, and it begins a new **era** there unless no day would lie between it and
@@ -1377,6 +1386,10 @@ the rows are replaced where they stand once it lands, and under the day swipe on
 still redraws in place. The chevrons #346 took off the head come back here as the week's, not the
 day's: they page weeks, never step one day.
 
+**Amended 2026-10-12**, while writing the delta of `say-days-away` (#401). The strip marks a third
+thing: each day inside **days away**, by a small dot under its number, as that Story's grill chose.
+It says the person said the day owes nothing, never how a day went, so it is not a streak's mark.
+
 **Day screen** — the day view a person is actually looking at, together with what it takes to answer
 and to keep an answer: the **record store** it reads a history from and writes a tick back to, the
 **roster store** it reads its commitments from, and the
@@ -2312,6 +2325,9 @@ today is unticked; a week that can no longer be met at all says nothing beyond i
 warns and never rewards, and counts nothing across weeks — the pressure side of the mechanic streaks
 run on, accepted against *nothing congratulates you* for that reason. Agreed 2026-10-06 at the
 twenty-fifth grooming pass's Feature grill, for B-073.
+
+**Amended 2026-10-12**, at the grill of `say-days-away` (#401). The days left count only days the
+commitment is kept on, so a **gap** later in the week — **days away** said ahead — is not a day left.
 
 **Rhythm** — a person's word for the schedule a commitment runs on, and the shape a **commitments
 screen** offers them to build one from: one of the four schedule shapes carrying nothing the
