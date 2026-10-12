@@ -38,19 +38,20 @@ private func calendar(
         reading: { first, last in try fake.read(first: first, last: last) }, collating: collate)
 }
 
-/// A phone whose access a test changes, and which counts how often it was asked.
+/// A phone whose access a test changes. `reads` counts looks at its access, `asks` the prompts
+/// shown for it, as `BirthdaySwitchTests.swift` counts them.
 @MainActor
 private final class FakePhone {
     var access: CalendarAccess
+    private(set) var reads = 0
     private(set) var asks = 0
-    private(set) var prompts = 0
     init(access: CalendarAccess) { self.access = access }
     func read() -> CalendarAccess {
-        asks += 1
+        reads += 1
         return access
     }
     func prompt() {
-        prompts += 1
+        asks += 1
     }
 }
 
@@ -92,7 +93,7 @@ private func birthday(_ contact: String, _ words: String, _ day: CalendarDate) -
     "a Birthdays screen asks the calendar once, for the days from its today through the day before the same date a year later"
 )
 func aBirthdaysScreenAsksTheCalendarOnceForTheDaysFromItsTodayThroughTheDayBeforeTheSameDateAYearLater() async {
-    func asks(openedAsOf today: CalendarDate, reading: Bool = false) async -> [(
+    func asks(openedAsOf today: CalendarDate) async -> [(
         first: CalendarDate, last: CalendarDate
     )] {
         let fake = FakeCalendar(handing: [
@@ -318,15 +319,16 @@ func aBirthdaysScreenOpenedWithBirthdaysOffListsNothingSaysTheyAreOffAndAsksTheC
 {
     let phone = FakePhone(access: .full)
     let fake = FakeCalendar(handing: [birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))])
+    let switchUnderTest = birthdaySwitch(on: phone)
+    let readsBefore = phone.reads
     let screen = BirthdaysScreen(
         asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(fake),
-        whileOn: birthdaySwitch(on: phone))
-    let readsBefore = phone.asks
+        whileOn: switchUnderTest)
 
     #expect(screen.lines.isEmpty)
     #expect(screen.birthdayState == .off)
     #expect(fake.asks.isEmpty)
-    #expect(phone.asks == readsBefore && phone.prompts == 0)
+    #expect(phone.reads == readsBefore && phone.asks == 0)
 
     screen.shown(asOf: date(2026, 10, 12))
     #expect(screen.lines.isEmpty)
@@ -429,7 +431,7 @@ func aCommitmentsScreenOffersTheWayToTheBirthdaysScreenWhileBirthdaysAreOnAndNon
 {
     let phone = FakePhone(access: .full)
     let switchUnderTest = await onSwitch(on: phone)
-    let readsBefore = phone.asks
+    let readsBefore = phone.reads
     let screen = commitmentsScreen(whileOn: switchUnderTest)
     #expect(screen.offersGoingToBirthdays)
 
@@ -437,7 +439,7 @@ func aCommitmentsScreenOffersTheWayToTheBirthdaysScreenWhileBirthdaysAreOnAndNon
     #expect(!screen.offersGoingToBirthdays)
 
     #expect(!commitmentsScreen(whileOn: nil).offersGoingToBirthdays)
-    #expect(phone.asks == readsBefore && phone.prompts == 0)
+    #expect(phone.reads == readsBefore && phone.asks == 0)
 }
 
 @MainActor
