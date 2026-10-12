@@ -60,6 +60,12 @@ public struct DayView: Hashable, Sendable {
         let date: CalendarDate
         public let isKept: Bool
 
+        /// Whether this row's day is declined, and the reason it was declined with, or `nil`
+        /// where it was declined with none or is not declined. Part of the row, since a
+        /// commitment's equality is its identity alone.
+        public let isDeclined: Bool
+        public let declineReason: String?
+
         /// The number the history the day view was formed from holds for this row's commitment
         /// on this row's date, or `nil` where it holds none. Not given back by anything but
         /// `numberEntry(asOf:)`; see `design.md` § *A row holds the number and does not give it
@@ -127,7 +133,7 @@ public struct DayView: Hashable, Sendable {
         /// Whether this row's day holds any record of its commitment: a tick, a number, a note or a
         /// sum above zero, a total short of its target included.
         var holdsARecord: Bool {
-            isKept || number != nil || note != nil || total > 0
+            isKept || isDeclined || number != nil || note != nil || total > 0
         }
 
         public var name: String { commitment.name }
@@ -544,6 +550,7 @@ public struct DayView: Hashable, Sendable {
                     return Row(
                         commitment: commitment, date: date,
                         isKept: !tookDueDay && history.isKept(commitment, on: date),
+                        isDeclined: false, declineReason: nil,
                         number: number,
                         startingNumber: Self.startingNumber(
                             for: commitment, heldNumber: number, on: date, in: history),

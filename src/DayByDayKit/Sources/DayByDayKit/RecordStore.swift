@@ -157,6 +157,10 @@ public final class RecordStore {
         history.remove(tick)
     }
 
+    public func add(_ decline: Decline) throws {}
+
+    public func removeDecline(for commitment: Commitment, on date: CalendarDate) throws {}
+
     /// Kept at `place` before this returns; on failure throws and leaves `history` as it was.
     public func add(_ number: Number) throws {
         var nextNumbers = numbers

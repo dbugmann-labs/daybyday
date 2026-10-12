@@ -5,24 +5,59 @@ public struct History: Hashable, Sendable {
     private var numbers: [RecordedDay: Decimal]
     private var notes: [RecordedDay: String]
     private var additions: [RecordedDay: [Decimal]]
+    private var declines: [RecordedDay: Decline]
 
     public init() {
         ticks = []
         numbers = [:]
         notes = [:]
         additions = [:]
+        declines = [:]
     }
 
     public mutating func add(_ tick: Tick) {
         ticks.insert(tick)
+        declines[RecordedDay(commitment: tick.commitment, date: tick.date)] = nil
     }
 
     public mutating func remove(_ tick: Tick) {
         ticks.remove(tick)
     }
 
+    /// Holds `decline` on its day, a later one replacing it — and leaves the history as it was
+    /// where the day already holds a tick, a number, a note or an addition: a decline holds its
+    /// day's place alone, and never overwrites. ADR-1068.
+    public mutating func add(_ decline: Decline) {
+        let day = RecordedDay(commitment: decline.commitment, date: decline.date)
+        guard !holdsAnyRecordOtherThanADecline(on: day) else {
+            return
+        }
+        declines[day] = decline
+    }
+
+    /// Takes back the decline of `commitment` on `date`, leaving the history unchanged where it
+    /// holds none.
+    public mutating func removeDecline(for commitment: Commitment, on date: CalendarDate) {
+        declines[RecordedDay(commitment: commitment, date: date)] = nil
+    }
+
+    public func decline(for commitment: Commitment, on date: CalendarDate) -> Decline? {
+        declines[RecordedDay(commitment: commitment, date: date)]
+    }
+
+    /// Whether `day` holds a tick, a number, a note or an addition — a total short of its target
+    /// included — which a decline never overwrites.
+    private func holdsAnyRecordOtherThanADecline(on day: RecordedDay) -> Bool {
+        if let tick = Tick(day.commitment, on: day.date), ticks.contains(tick) {
+            return true
+        }
+        return numbers[day] != nil || notes[day] != nil || additions[day] != nil
+    }
+
     public mutating func add(_ number: Number) {
-        numbers[RecordedDay(commitment: number.commitment, date: number.date)] = number.number
+        let day = RecordedDay(commitment: number.commitment, date: number.date)
+        numbers[day] = number.number
+        declines[day] = nil
     }
 
     public mutating func removeNumber(for commitment: Commitment, on date: CalendarDate) {
@@ -75,7 +110,9 @@ public struct History: Hashable, Sendable {
     }
 
     public mutating func add(_ note: Note) {
-        notes[RecordedDay(commitment: note.commitment, date: note.date)] = note.text
+        let day = RecordedDay(commitment: note.commitment, date: note.date)
+        notes[day] = note.text
+        declines[day] = nil
     }
 
     public mutating func removeNote(for commitment: Commitment, on date: CalendarDate) {
@@ -121,6 +158,7 @@ public struct History: Hashable, Sendable {
     public mutating func add(_ addition: Addition) {
         let day = RecordedDay(commitment: addition.commitment, date: addition.date)
         additions[day, default: []].append(addition.amount)
+        declines[day] = nil
     }
 
     /// Removes the last addition of that day, leaving the history unchanged where it holds none.

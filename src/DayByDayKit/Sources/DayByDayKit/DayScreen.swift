@@ -1442,6 +1442,12 @@ public final class DayScreen {
         }
     }
 
+    public func offersDecline(for row: DayView.Row) -> Bool { false }
+
+    public func decline(_ row: DayView.Row, reason text: String) throws {}
+
+    public func takeBackDecline(on row: DayView.Row) throws {}
+
     /// Shifts `row`'s due day to `date`, a day `shiftDays(for:)` offers. `design.md` § *The seam*.
     public func shift(_ row: DayView.Row, to date: CalendarDate) throws {
         guard shiftDays(for: row).contains(where: { $0.date == date }) else {
