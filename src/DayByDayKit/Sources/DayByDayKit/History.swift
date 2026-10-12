@@ -136,6 +136,12 @@ public struct History: Hashable, Sendable {
         return (additions[day] ?? []).reduce(0, +)
     }
 
+    /// The last addition that day holds, or `nil` where it holds none. Package-internal: only a
+    /// day view's row says it.
+    func lastAddition(for commitment: Commitment, on date: CalendarDate) -> Decimal? {
+        additions[RecordedDay(commitment: commitment, date: date)]?.last
+    }
+
     /// How many days of `date`'s Monday-to-Sunday week `commitment` was kept, through `date`
     /// inclusive and no later day. See `openspec/specs/record/spec.md` § *A history answers a
     /// commitment's standing in the week of a calendar date* and this change's `design.md` for

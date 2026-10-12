@@ -10,15 +10,15 @@ the next.
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 6 new scenarios uncovered and no other, and `openspec validate say-the-last-addition --strict` exits 0 on a branch rebased onto current `main`
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 6 new scenarios uncovered and no other, and `openspec validate say-the-last-addition --strict` exits 0 on a branch rebased onto current `main`
 
 ## 2. `DayView.Row` — the words and what a row is
 
-- [ ] 2.1 The members in `design.md` § *The seam* exist with those signatures, `takeBackLastInWords` answering `nil`, and 2.3 is red before any does more than compile
-- [ ] 2.2 two rows whose days hold different additions summing alike are the same row — the one sanctioned edit of a carried test: its fixture becomes 30 and 30 against 10, 20 and 30, and it asserts the take-back words, its before and after listed in the PR body
-- [ ] 2.3 two rows whose days hold additions summing alike but ending in different amounts are different rows — catches `lastAddition` left out of the row
-- [ ] 2.4 a row says the amount of its day's last addition in its take-back — catches the first addition said in place of the last
-- [ ] 2.5 a row that offers no take-back says no take-back words — catches words read off `lastAddition` without `offersTakeBackLast`
+- [x] 2.1 The members in `design.md` § *The seam* exist with those signatures, `takeBackLastInWords` answering `nil`, and 2.3 is red before any does more than compile
+- [x] 2.2 two rows whose days hold different additions summing alike are the same row — the one sanctioned edit of a carried test: its fixture becomes 30 and 30 against 10, 20 and 30, and it asserts the take-back words, its before and after listed in the PR body
+- [x] 2.3 two rows whose days hold additions summing alike but ending in different amounts are different rows — catches `lastAddition` left out of the row
+- [x] 2.4 a row says the amount of its day's last addition in its take-back — catches the first addition said in place of the last
+- [x] 2.5 a row that offers no take-back says no take-back words — catches words read off `lastAddition` without `offersTakeBackLast`
 
 ## 3. `DayScreen` — the words after a change
 

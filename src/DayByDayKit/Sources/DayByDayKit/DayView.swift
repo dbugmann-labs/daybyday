@@ -90,6 +90,12 @@ public struct DayView: Hashable, Sendable {
         /// on this row's date. Not given back by anything but `totalEntry(asOf:)`.
         let total: Decimal
 
+        /// The last addition the history the day view was formed from holds for this row's
+        /// commitment on this row's date, or `nil` where it holds none. Part of the row, since
+        /// two days can sum alike and end differently. Not given back by anything but
+        /// `takeBackLastInWords(asOf:)`.
+        let lastAddition: Decimal?
+
         /// The usual amounts this row's commitment declares as the roster the day view was
         /// formed from answers them, read at formation and part of the row — a commitment's
         /// identity is all its equality is, so a change of usual amounts alone would otherwise
@@ -303,6 +309,15 @@ public struct DayView: Hashable, Sendable {
         /// a total entry as of `today` and its day's sum is above zero.
         public func offersTakeBackLast(asOf today: CalendarDate) -> Bool {
             totalEntry(asOf: today) != nil && total > 0
+        }
+
+        /// The words of the take-back this row offers as of `today`: "Take back last", a space and
+        /// its day's last addition in round brackets, or `nil` where it offers none.
+        public func takeBackLastInWords(asOf today: CalendarDate) -> String? {
+            guard offersTakeBackLast(asOf: today), let lastAddition else {
+                return nil
+            }
+            return "Take back last (\(lastAddition))"
         }
 
         /// Whether this row offers anything at all as of `today`: a tick, a number entry, a
@@ -571,6 +586,7 @@ public struct DayView: Hashable, Sendable {
                             for: commitment, heldNumber: number, on: date, in: history),
                         note: history.note(for: commitment, on: date),
                         total: history.total(for: commitment, on: date),
+                        lastAddition: history.lastAddition(for: commitment, on: date),
                         usualAmounts: (roster?.usualAmounts(of: commitment) ?? []).map {
                             UsualAmount(amount: "\($0.amount)", name: $0.name)
                         },
