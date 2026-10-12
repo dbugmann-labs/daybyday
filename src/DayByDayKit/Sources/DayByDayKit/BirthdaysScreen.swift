@@ -33,6 +33,7 @@ public final class BirthdaysScreen {
     }
 
     public func shown(asOf today: CalendarDate) {
+        birthdaySwitch.shown()
         form(asOf: today)
     }
 
@@ -40,8 +41,18 @@ public final class BirthdaysScreen {
     /// year later — through 28 February where `today` is 29 February, and through the last
     /// supported date where that day would fall past it.
     private func form(asOf today: CalendarDate) {
+        guard birthdaySwitch.isOn else {
+            lines = []
+            birthdayState = .off
+            return
+        }
         let last = Self.lastDay(ofTheYearFrom: today)
-        let handed = (try? calendar.reading(today, last)) ?? []
+        guard let handed = try? calendar.reading(today, last) else {
+            lines = []
+            birthdayState = .calendarUnreadable
+            return
+        }
+        birthdayState = .on
         lines = handed
             .filter { today.days(until: $0.day) >= 0 && $0.day.days(until: last) >= 0 }
             .enumerated()

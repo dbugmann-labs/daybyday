@@ -309,3 +309,100 @@ func aBirthdaysScreenSaysEachMonthByItsOwnName() async {
             "Wed 1 September", "Fri 1 October",
         ])
 }
+
+@MainActor
+@Test(
+    "a Birthdays screen opened with birthdays off lists nothing, says they are off and asks the calendar nothing"
+)
+func aBirthdaysScreenOpenedWithBirthdaysOffListsNothingSaysTheyAreOffAndAsksTheCalendarNothing()
+{
+    let phone = FakePhone(access: .full)
+    let fake = FakeCalendar(handing: [birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))])
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(fake),
+        whileOn: birthdaySwitch(on: phone))
+    let readsBefore = phone.asks
+
+    #expect(screen.lines.isEmpty)
+    #expect(screen.birthdayState == .off)
+    #expect(fake.asks.isEmpty)
+    #expect(phone.asks == readsBefore && phone.prompts == 0)
+
+    screen.shown(asOf: date(2026, 10, 12))
+    #expect(screen.lines.isEmpty)
+    #expect(screen.birthdayState == .off)
+    #expect(fake.asks.isEmpty)
+}
+
+@MainActor
+@Test(
+    "a Birthdays screen shown again after the phone withdraws calendar access lists nothing and says birthdays are off"
+)
+func aBirthdaysScreenShownAgainAfterThePhoneWithdrawsCalendarAccessListsNothingAndSaysBirthdaysAreOff()
+    async
+{
+    let phone = FakePhone(access: .full)
+    let switchUnderTest = await onSwitch(on: phone)
+    let fake = FakeCalendar(handing: [birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))])
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(fake), whileOn: switchUnderTest)
+    #expect(screen.lines.count == 1)
+
+    phone.access = .denied
+    screen.shown(asOf: date(2026, 10, 12))
+    #expect(screen.lines.isEmpty)
+    #expect(screen.birthdayState == .off)
+    #expect(!switchUnderTest.isOn)
+    #expect(fake.asks.count == 1)
+
+    let otherSwitch = await onSwitch()
+    let other = BirthdaysScreen(
+        asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(FakeCalendar(handing: [
+            birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))])),
+        whileOn: otherSwitch)
+    otherSwitch.turnOff()
+    other.shown(asOf: date(2026, 10, 12))
+    #expect(other.lines.isEmpty)
+    #expect(other.birthdayState == .off)
+}
+
+@MainActor
+@Test(
+    "a Birthdays screen with birthdays on and nobody handed in its span lists nothing and says birthdays are on"
+)
+func aBirthdaysScreenWithBirthdaysOnAndNobodyHandedInItsSpanListsNothingAndSaysBirthdaysAreOn()
+    async
+{
+    let empty = BirthdaysScreen(
+        asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(FakeCalendar()),
+        whileOn: await onSwitch())
+    #expect(empty.lines.isEmpty)
+    #expect(empty.birthdayState == .on)
+
+    let outside = BirthdaysScreen(
+        asOf: date(2026, 10, 12),
+        readingBirthdaysFrom: calendar(
+            FakeCalendar(handing: [birthday("kate", "Kate Bell's 48th Birthday", date(2027, 10, 12))])),
+        whileOn: await onSwitch())
+    #expect(outside.lines.isEmpty)
+    #expect(outside.birthdayState == .on)
+}
+
+@MainActor
+@Test(
+    "a Birthdays screen whose calendar cannot be read lists nothing and says birthdays could not be read"
+)
+func aBirthdaysScreenWhoseCalendarCannotBeReadListsNothingAndSaysBirthdaysCouldNotBeRead() async {
+    let fake = FakeCalendar(shouldThrow: true)
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(fake), whileOn: await onSwitch())
+    #expect(screen.lines.isEmpty)
+    #expect(screen.birthdayState == .calendarUnreadable)
+
+    fake.shouldThrow = false
+    fake.handed = [birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))]
+    screen.shown(asOf: date(2026, 10, 12))
+    #expect(
+        screen.lines == [.init(words: "Kate Bell's 48th Birthday", dayInWords: "Sat 14 November")])
+    #expect(screen.birthdayState == .on)
+}

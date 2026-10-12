@@ -29,10 +29,10 @@ calendar, a fake phone and a switch place of its own, as `DayScreenBirthdayTests
 - [x] 3.6 a Birthdays screen line says the calendar's words exactly, and its day as weekday, day and month — catches trimmed words, a leading zero or a year
 - [x] 3.7 a Birthdays screen line says Today for a birthday falling on its today, and the date for any other — catches "Tomorrow", or a year said for a date in the next one
 - [x] 3.8 a Birthdays screen says each month by its own name — catches a month table of its own with a typo
-- [ ] 3.9 a Birthdays screen opened with birthdays off lists nothing, says they are off and asks the calendar nothing — catches an ask made before the switch is read
-- [ ] 3.10 a Birthdays screen shown again after the phone withdraws calendar access lists nothing and says birthdays are off — catches `shown(asOf:)` asking the calendar before showing the switch
-- [ ] 3.11 a Birthdays screen with birthdays on and nobody handed in its span lists nothing and says birthdays are on — catches an empty list read as off
-- [ ] 3.12 a Birthdays screen whose calendar cannot be read lists nothing and says birthdays could not be read — catches a failure that sticks after the calendar answers
+- [x] 3.9 a Birthdays screen opened with birthdays off lists nothing, says they are off and asks the calendar nothing — catches an ask made before the switch is read
+- [x] 3.10 a Birthdays screen shown again after the phone withdraws calendar access lists nothing and says birthdays are off — catches `shown(asOf:)` asking the calendar before showing the switch
+- [x] 3.11 a Birthdays screen with birthdays on and nobody handed in its span lists nothing and says birthdays are on — catches an empty list read as off
+- [x] 3.12 a Birthdays screen whose calendar cannot be read lists nothing and says birthdays could not be read — catches a failure that sticks after the calendar answers
 - [ ] 3.13 a commitments screen offers the way to the Birthdays screen while birthdays are on, and none while they are off — catches the switch read once at `init`
 - [ ] 3.14 a commitments screen shown again after the phone withdraws calendar access offers no way to the Birthdays screen — catches `shown(asOf:)` leaving the switch unshown
 
