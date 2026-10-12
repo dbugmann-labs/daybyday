@@ -28,17 +28,17 @@ the next.
 
 ## 4. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 4.1 The total entry sheet's take-back button draws `takeBackLastInWords(asOf:)` as its label and is drawn exactly where that is not `nil`, keeping its section, its destructive role and what a tap does
-- [ ] 4.2 `git diff --stat origin/main... -- src/DayByDay/` lists `ContentView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
+- [x] 4.1 The total entry sheet's take-back button draws `takeBackLastInWords(asOf:)` as its label and is drawn exactly where that is not `nil`, keeping its section, its destructive role and what a tap does
+- [x] 4.2 `git diff --stat origin/main... -- src/DayByDay/` lists `ContentView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 5. The records
 
-- [ ] 5.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2), and `CONTEXT.md` is as this folder's PR left it and has not been edited since G4
+- [x] 5.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2), and `CONTEXT.md` is as this folder's PR left it and has not been edited since G4
 
 ## 6. The gates and the archive handover
 
-- [ ] 6.1 `openspec validate say-the-last-addition --strict` exits 0, and `pnpm run checks` is clean but for `check:budgets` warnings on the carried requirements
-- [ ] 6.2 `pnpm run verify` is green, and `swift test` in `src/DayByDayKit` passes with 6 more tests than a run on `origin/main` reports, both counts read off runs
+- [x] 6.1 `openspec validate say-the-last-addition --strict` exits 0, and `pnpm run checks` is clean but for `check:budgets` warnings on the carried requirements
+- [x] 6.2 `pnpm run verify` is green, and `swift test` in `src/DayByDayKit` passes with 6 more tests than a run on `origin/main` reports, both counts read off runs
 - [ ] 6.3 **G7** — the reviewer's findings are answered, and the PR is rebased onto current `main`
 - [ ] 6.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, once every other box is ticked and the walk comment's URL is in W.3. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff. `record` and `day-screen` move, `day-screen` gaining this delta's 6 new scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit**: the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
@@ -47,6 +47,6 @@ the next.
 A fresh install, walked on the simulator on any day, light only. A total named "Protein", target
 120, is defined through the commitments screen, and its amounts are typed through the day screen.
 
-- [ ] W.1 "35" and then "20" saved in today's "Protein" sheet, and the sheet opened again: "55 of 120" under the name, and "Take back last (20)" in its own section under the field. Dismiss the keyboard first if it covers that section.
-- [ ] W.2 That button tapped, the sheet closed, and the sheet opened again: "35 of 120" under the name, and "Take back last (35)" in its own section. Dismiss the keyboard as in W.1.
-- [ ] W.3 **The handover**: W.1–W.2, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, never with `gh pr comment --attach`, and this box is ticked on that comment's URL.
+- [x] W.1 "35" and then "20" saved in today's "Protein" sheet, and the sheet opened again: "55 of 120" under the name, and "Take back last (20)" in its own section under the field. Dismiss the keyboard first if it covers that section.
+- [x] W.2 That button tapped, the sheet closed, and the sheet opened again: "35 of 120" under the name, and "Take back last (35)" in its own section. Dismiss the keyboard as in W.1.
+- [x] W.3 **The handover**: W.1–W.2, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, never with `gh pr comment --attach`, and this box is ticked on that comment's URL.
