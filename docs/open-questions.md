@@ -144,6 +144,12 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   refactor. The trigger named above has fired and the second answer's ground ("stable at three") is
   gone; the first answer now moves every one of those call sites at once, and a fifth store would
   thread through all of them again. Recorded 2026-09-25, at #329's G7.
+  **The fifth came with happenings, and a sixth is now queued.** `carry-happenings-in-a-copy` (#380)
+  threaded `happeningsAt:` the same way, and a new place now passes through 13 sites in the Kit
+  (nine signatures, three stored properties and one static). `carry-present-ideas-in-a-copy` will
+  add a sixth place. At G2 for `FEAT: present-idea` (#405) the owner left the fold to one type
+  undone again: the threading is mechanical and shows in the diff, and nothing after this Feature
+  adds a store. Recorded 2026-10-12, at #405's G2.
 
 - **A copy can be formed two ways, and only one of them checks.** `CopyDocument.formCopy()`
   (`CopyDocument.swift:37-70`) forms the three stores through `formTicks()`, `formRoster()` and

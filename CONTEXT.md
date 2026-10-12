@@ -2073,6 +2073,25 @@ else: no words, no name and not whether birthdays are turned on. It is the fourt
 tick until it is taken back whatever the calendar hands. Agreed 2026-09-24 while writing the delta
 of `add-birthday` (#326).
 
+**Birthdays screen** — the screen that lists everyone the phone's birthday calendars hand, soonest
+first from today and round the year, so that it is where a **birthday** is seen coming: the day
+screen still draws a birthday on its day only, and nothing here notifies. It is reached from the
+**commitments screen**, and it is not drawn at all while birthdays are off, when what it would list
+is kept and nothing is shown. It is where a person's **present ideas** are kept and read, and the
+only place: a birthday row on its day stays a name and a tick. Agreed 2026-10-12 at the Feature
+grill of B-078, cluster B of the twenty-sixth pass; it reads the birthday calendar, so it is the
+`birthday` capability's (#322).
+
+**Present idea** — something a person might be given, kept against someone the phone's birthday
+calendars hand: a short text, and a link if there is one. It is typed and read on the **Birthdays
+screen** and nowhere else, and it is neither a **record** nor a **note**: it belongs to no day. It
+can be changed, deleted, and marked given, and the mark taken back; a given idea is kept, so the
+list also says what was given, but not when. It is held against the contact the way a birthday tick
+is (ADR-1062), so a deleted contact's ideas are kept unseen and come back with the contact, and a
+restore onto a phone where the contact is not the same matches nobody, as a tick does. It is carried
+in a **copy**, and kept unseen while birthdays are off. Agreed 2026-10-12 at the Feature grill of
+B-078; the capability is `present-idea`, under `EPIC: Birthdays` (#321).
+
 **Happening store** — the store that keeps the **happenings**: each one's identity and name, in the
 order they were made, and nothing another store holds. It is the fifth store, at a place of its own,
 and it is in no **copy** until `carry-happenings-in-a-copy` (#380). Agreed 2026-10-02 while writing
