@@ -403,11 +403,13 @@ public final class DayScreen {
     ) -> DayView {
         guard let oneOffStore else {
             return DayView(
-                of: groups, on: date, in: history, roster: roster, birthdayGroup: birthdayGroup)
+                of: groups, on: date, in: history, roster: roster, birthdayGroup: birthdayGroup
+            ).withDaysAway(of: roster)
         }
         return DayView(
             of: groups, oneOffs: oneOffStore.oneOffs, asOf: today, on: date, in: history,
-            roster: roster, birthdayGroup: birthdayGroup)
+            roster: roster, birthdayGroup: birthdayGroup
+        ).withDaysAway(of: roster)
     }
 
     /// Opens the birthday ticks at `place`, telling apart the one refusal a person can act on
@@ -631,7 +633,7 @@ public final class DayScreen {
         /// Whether a tap on this day is offered: it holds a date, it is not the day being shown,
         /// and it is not earlier than the day picker's reach.
         public let isOffered: Bool
-        /// Whether some days away holds this day. Stubbed until the day screen says them.
+        /// Whether some days away its roster holds includes this day, whatever is recorded on it.
         public let isAway: Bool
     }
 
@@ -689,7 +691,12 @@ public final class DayScreen {
             let isOffered = date != nil && !isShown && date!.days(until: earliest) <= 0
             return WeekStripDay(
                 letter: Self.weekStripLetters[position], date: date, isShown: isShown,
-                isToday: isToday, isOffered: isOffered, isAway: false)
+                isToday: isToday, isOffered: isOffered,
+                isAway: date.map { day in
+                    roster.daysAway.contains { daysAway in
+                        daysAway.firstDay.days(until: day) >= 0 && day.days(until: daysAway.lastDay) >= 0
+                    }
+                } ?? false)
         }
     }
 

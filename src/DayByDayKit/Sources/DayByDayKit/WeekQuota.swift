@@ -84,6 +84,22 @@ enum WeekQuota {
         return (kept, owed)
     }
 
+    /// How many days of the week from `day` through its Sunday, both counted, some link of `links`
+    /// holds — a day a gap of days away cuts is no day left, as it is no day owed.
+    static func daysHeld(from day: CalendarDate, links: [Link]) -> Int {
+        var held = 0
+        var current = day
+        while true {
+            if Self.link(holding: current, in: links) != nil {
+                held += 1
+            }
+            guard current.weekday != .sunday, let next = current.adding(days: 1) else {
+                return held
+            }
+            current = next
+        }
+    }
+
     /// The Monday of `date`'s calendar week, walked back one day at a time so every step stays
     /// at the ±1 `adding(days:)` documents as safe. Shared by every caller of `standing(monday:
     /// links:history:)`, so a week is found the same way wherever it is read.
