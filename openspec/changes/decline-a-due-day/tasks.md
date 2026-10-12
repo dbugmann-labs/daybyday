@@ -97,8 +97,8 @@ A fresh install, walked on the simulator on any day, light only; the day-one wee
 - [ ] W.4 That row tapped — the name struck through and grey, the green check, no reason line.
 - [ ] W.5 Its tick taken back, the row declined again with "Ran out" and long-pressed — the menu with "Ran out" in grey at its head, "Reason", and "Take back" in red.
 - [ ] W.6 "Take back" chosen — "Magnesium - Every day" with nothing in the check's place and no reason line.
-- [ ] W.7 "Creatine" ticked and its row long-pressed — no menu opens, Decline nowhere.
-- [ ] W.8 The "Yuno" row long-pressed — no menu, Decline nowhere.
+- [ ] W.7 "Creatine" ticked and its row long-pressed, the press dragged off the row before it lifts — no menu opens, Decline nowhere, Creatine still ticked. (A lift on a row with no menu taps it — `docs/open-questions.md` § Known gaps — so the drag keeps the picture honest.)
+- [ ] W.8 The "Yuno" row long-pressed, dragged off before it lifts as in W.7 — no menu, Decline nowhere, Yuno still unticked.
 - [ ] W.9 Paged back to yesterday, its "Magnesium" row declined with "Away" and its "Weight" row declined with no reason — the dash and "Away" on the one, the dash before the chevron and no line on the other.
 - [ ] W.10 phone: a declined row with its reason, in dark — the dash and the reason legible.
 - [ ] W.11 **The handover** — W.1–W.9, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
