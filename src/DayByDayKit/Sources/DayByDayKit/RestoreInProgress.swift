@@ -23,6 +23,10 @@ struct RestoreInProgress: Codable {
     /// before restores wrote the happening place at all, told apart from a snapshot of a place
     /// that held nothing. `design.md` § *Migration*.
     var happenings: PlaceSnapshot?
+    /// The present-idea place's own snapshot — `nil` where this restore in progress was written
+    /// before restores wrote the present-idea place at all, told apart from a snapshot of a place
+    /// that held nothing. `design.md` § *Migration*.
+    var presentIdeas: PlaceSnapshot?
 
     /// Wraps a place's bytes, or that nothing stood there, so the outer `Data?` on
     /// `birthdayTicks` and `happenings` can carry a third meaning — "this restore in progress
@@ -77,10 +81,13 @@ struct RestoreInProgress: Codable {
     static func restore(
         _ copy: Copy, recordAt recordPlace: URL, rosterAt rosterPlace: URL,
         oneOffsAt oneOffPlace: URL, birthdayTicksAt birthdayPlace: URL,
-        happeningsAt happeningPlace: URL? = nil, stoppingAfter writes: Int? = nil
+        happeningsAt happeningPlace: URL? = nil, presentIdeasAt presentIdeaPlace: URL? = nil,
+        stoppingAfter writes: Int? = nil
     ) throws {
         let happeningPlace =
             happeningPlace ?? DayScreen.happeningPlace(besideRecordAt: recordPlace)
+        let presentIdeaPlace =
+            presentIdeaPlace ?? DayScreen.presentIdeaPlace(besideRecordAt: recordPlace)
         let saveInProgressPlace = SaveInProgress.place(besideRecordAt: recordPlace)
         let restoreInProgressPlace = Self.place(besideRecordAt: recordPlace)
 
@@ -88,7 +95,8 @@ struct RestoreInProgress: Codable {
             record: bytes(at: recordPlace), roster: bytes(at: rosterPlace),
             oneOffs: bytes(at: oneOffPlace), saveInProgress: bytes(at: saveInProgressPlace),
             birthdayTicks: PlaceSnapshot(bytes: bytes(at: birthdayPlace)),
-            happenings: PlaceSnapshot(bytes: bytes(at: happeningPlace)))
+            happenings: PlaceSnapshot(bytes: bytes(at: happeningPlace)),
+            presentIdeas: PlaceSnapshot(bytes: bytes(at: presentIdeaPlace)))
 
         do {
             let encoder = JSONEncoder()
@@ -125,6 +133,9 @@ struct RestoreInProgress: Codable {
             try Self.put(try encoder.encode(document.happenings), at: happeningPlace)
 
             guard writes != 5 else { return }
+            try Self.put(try encoder.encode(document.presentIdeas), at: presentIdeaPlace)
+
+            guard writes != 6 else { return }
             try Self.put(nil, at: restoreInProgressPlace)
         } catch {
             do {
@@ -134,6 +145,7 @@ struct RestoreInProgress: Codable {
                 try Self.put(snapshot.saveInProgress, at: saveInProgressPlace)
                 try Self.put(snapshot.birthdayTicks?.bytes, at: birthdayPlace)
                 try Self.put(snapshot.happenings?.bytes, at: happeningPlace)
+                try Self.put(snapshot.presentIdeas?.bytes, at: presentIdeaPlace)
                 try Self.put(nil, at: restoreInProgressPlace)
             } catch {
                 // The restore in progress stands; `undoTornRestore` puts it right when the
@@ -154,10 +166,13 @@ struct RestoreInProgress: Codable {
     /// stands. `design.md` § *Migration*.
     static func undoTornRestore(
         recordAt recordPlace: URL, rosterAt rosterPlace: URL, oneOffsAt oneOffPlace: URL,
-        birthdayTicksAt birthdayPlace: URL, happeningsAt happeningPlace: URL? = nil
+        birthdayTicksAt birthdayPlace: URL, happeningsAt happeningPlace: URL? = nil,
+        presentIdeasAt presentIdeaPlace: URL? = nil
     ) -> Bool {
         let happeningPlace =
             happeningPlace ?? DayScreen.happeningPlace(besideRecordAt: recordPlace)
+        let presentIdeaPlace =
+            presentIdeaPlace ?? DayScreen.presentIdeaPlace(besideRecordAt: recordPlace)
         let place = Self.place(besideRecordAt: recordPlace)
 
         guard FileManager.default.fileExists(atPath: place.path) else {
@@ -183,6 +198,9 @@ struct RestoreInProgress: Codable {
             }
             if let happeningSnapshot = snapshot.happenings {
                 try Self.put(happeningSnapshot.bytes, at: happeningPlace)
+            }
+            if let presentIdeaSnapshot = snapshot.presentIdeas {
+                try Self.put(presentIdeaSnapshot.bytes, at: presentIdeaPlace)
             }
             try Self.put(nil, at: place)
         } catch {

@@ -29,6 +29,9 @@ public final class CommitmentsScreen {
     /// `readPlaces`, and the fifth place a copy holds.
     private let happeningPlace: URL
     private var happeningStore: HappeningStore?
+    /// The place the present ideas are kept at, the sixth place a copy holds. This screen keeps no
+    /// present-idea store of its own.
+    private let presentIdeaPlace: URL
     /// The birthday switch a Commitments tap hands in, read live and shown again with the screen;
     /// `nil` where none was handed in, which offers no way to the Birthdays screen.
     private let birthdaySwitch: BirthdaySwitch?
@@ -57,6 +60,7 @@ public final class CommitmentsScreen {
         keepingOneOffsAt oneOffPlace: URL = DayScreen.oneOffPlace,
         keepingBirthdayTicksAt birthdayPlace: URL? = nil,
         keepingHappeningsAt happeningPlace: URL? = nil,
+        keepingPresentIdeasAt presentIdeaPlace: URL? = nil,
         whileOn birthdaySwitch: BirthdaySwitch? = nil,
         copyingTo copyPlace: CopyPlace? = nil
     ) {
@@ -67,12 +71,15 @@ public final class CommitmentsScreen {
         self.birthdayPlace = birthdayPlace ?? DayScreen.birthdayPlace(besideRecordAt: recordPlace)
         self.happeningPlace =
             happeningPlace ?? DayScreen.happeningPlace(besideRecordAt: recordPlace)
+        self.presentIdeaPlace =
+            presentIdeaPlace ?? DayScreen.presentIdeaPlace(besideRecordAt: recordPlace)
         self.dayToKeepFrom = today
         self.copyPlace = copyPlace
 
         let opened = Self.readPlaces(
             place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace,
-            birthdayPlace: self.birthdayPlace, happeningPlace: self.happeningPlace)
+            birthdayPlace: self.birthdayPlace, happeningPlace: self.happeningPlace,
+            presentIdeaPlace: self.presentIdeaPlace)
         self.rosterStore = opened.rosterStore
         self.rosterState = opened.rosterState
         self.recordStore = opened.recordStore
@@ -490,14 +497,16 @@ public final class CommitmentsScreen {
     /// real — `openspec/changes/save-change-whole/design.md` § *A torn save that cannot be undone
     /// reuses two existing states*.
     private static func readPlaces(
-        place: URL, recordPlace: URL, oneOffPlace: URL, birthdayPlace: URL, happeningPlace: URL
+        place: URL, recordPlace: URL, oneOffPlace: URL, birthdayPlace: URL, happeningPlace: URL,
+        presentIdeaPlace: URL
     ) -> (
         rosterStore: RosterStore?, rosterState: RosterState, recordStore: RecordStore?,
         recordsBelongToNoCommitment: Bool, storesNotRead: [StoreNotRead]
     ) {
         let read = CopyPlace.readStores(
             recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace,
-            birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace)
+            birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace,
+            presentIdeasAt: presentIdeaPlace)
 
         let rosterState: RosterState
         switch read.notRead.first(where: { $0.store == .roster })?.cause {
@@ -649,16 +658,20 @@ public final class CommitmentsScreen {
         /// for both where the happening place cannot be read. No occurrence is counted.
         public let happenings: Int?
         public let stoppedHappenings: Int?
+        /// The present ideas held, given or not together, against whatever contact — `nil` where
+        /// the present-idea place cannot be read.
+        public let presentIdeas: Int?
 
         init(
             kept: Int?, stopped: Int?, oneOffs: Int?, happenings: Int? = 0,
-            stoppedHappenings: Int? = 0
+            stoppedHappenings: Int? = 0, presentIdeas: Int? = 0
         ) {
             self.kept = kept
             self.stopped = stopped
             self.oneOffs = oneOffs
             self.happenings = happenings
             self.stoppedHappenings = stoppedHappenings
+            self.presentIdeas = presentIdeas
         }
     }
 
@@ -1968,7 +1981,8 @@ public final class CommitmentsScreen {
     ) -> Result<URL, Refusal> {
         let formed = CopyPlace.form(
             recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace,
-            birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace, asOf: moment)
+            birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace,
+            presentIdeasAt: presentIdeaPlace, asOf: moment)
         switch formed.result {
         case .failure(let refusal):
             refusedChange = .makingACopy(formed.notRead.first?.store, refusal)
@@ -2086,11 +2100,20 @@ public final class CommitmentsScreen {
     /// two lists, a removed commitment in neither; *one-offs* counts all (settled 12)." A
     /// removed commitment is counted as neither kept nor stopped, matching
     /// `stopped(in:)` and `Roster.commitments` above.
-    private static func counts(roster: Roster, oneOffs: OneOffs, happenings: Happenings) -> Counts {
+    private static func counts(
+        roster: Roster, oneOffs: OneOffs, happenings: Happenings,
+        presentIdeas: [String: [PresentIdea]]
+    ) -> Counts {
         let (notStopped, stopped) = Self.happeningCounts(happenings)
         return Counts(
             kept: roster.commitments.count, stopped: Self.stopped(in: roster).count,
-            oneOffs: oneOffs.entries.count, happenings: notStopped, stoppedHappenings: stopped)
+            oneOffs: oneOffs.entries.count, happenings: notStopped, stoppedHappenings: stopped,
+            presentIdeas: Self.presentIdeaCount(presentIdeas))
+    }
+
+    /// Every present idea held, given or not, against whatever contact.
+    private static func presentIdeaCount(_ ideas: [String: [PresentIdea]]) -> Int {
+        ideas.values.reduce(0) { $0 + $1.count }
     }
 
     /// How many of `happenings` are not stopped and, apart from them, how many are. An occurrence
@@ -2140,17 +2163,20 @@ public final class CommitmentsScreen {
     private func formAwaitingRestore(for copy: Copy) -> AwaitingRestore {
         let phoneRead = CopyPlace.readStores(
             recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace,
-            birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace)
+            birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace,
+            presentIdeasAt: presentIdeaPlace)
         let phoneCounts = Counts(
             kept: phoneRead.roster.map { $0.roster.commitments.count },
             stopped: phoneRead.roster.map { Self.stopped(in: $0.roster).count },
             oneOffs: phoneRead.oneOffs.map { $0.oneOffs.entries.count },
             happenings: phoneRead.happenings.map { Self.happeningCounts($0.happenings).0 },
-            stoppedHappenings: phoneRead.happenings.map { Self.happeningCounts($0.happenings).1 })
+            stoppedHappenings: phoneRead.happenings.map { Self.happeningCounts($0.happenings).1 },
+            presentIdeas: phoneRead.presentIdeas.map { Self.presentIdeaCount($0.all) })
 
         return AwaitingRestore(
             moment: copy.moment, copy: Self.counts(
-                roster: copy.roster, oneOffs: copy.oneOffs, happenings: copy.happenings),
+                roster: copy.roster, oneOffs: copy.oneOffs, happenings: copy.happenings,
+                presentIdeas: copy.presentIdeas),
             phone: phoneCounts, unreadable: phoneRead.unreadable)
     }
 
@@ -2244,7 +2270,8 @@ public final class CommitmentsScreen {
         do {
             try RestoreInProgress.restore(
                 copy, recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace,
-                birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace)
+                birthdayTicksAt: birthdayPlace, happeningsAt: happeningPlace,
+                presentIdeasAt: presentIdeaPlace)
         } catch {
             refusedChange = .restoring(.notKept)
             copyRestored = nil
@@ -2253,7 +2280,8 @@ public final class CommitmentsScreen {
 
         let opened = Self.readPlaces(
             place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace,
-            birthdayPlace: birthdayPlace, happeningPlace: happeningPlace)
+            birthdayPlace: birthdayPlace, happeningPlace: happeningPlace,
+            presentIdeaPlace: presentIdeaPlace)
         rosterStore = opened.rosterStore
         rosterState = opened.rosterState
         recordStore = opened.recordStore
@@ -2381,7 +2409,8 @@ public final class CommitmentsScreen {
 
         let opened = Self.readPlaces(
             place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace,
-            birthdayPlace: birthdayPlace, happeningPlace: happeningPlace)
+            birthdayPlace: birthdayPlace, happeningPlace: happeningPlace,
+            presentIdeaPlace: presentIdeaPlace)
         rosterStore = opened.rosterStore
         rosterState = opened.rosterState
         recordStore = opened.recordStore

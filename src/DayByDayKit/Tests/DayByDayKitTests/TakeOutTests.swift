@@ -60,6 +60,8 @@ private func laterFormBytes(for store: Copy.Store) -> Data {
         return Data(#"{"version":\#(BirthdayDocument.currentVersion + 1),"ticks":[]}"#.utf8)
     case .happenings:
         return Data(#"{"version":\#(HappeningDocument.currentVersion + 1),"happenings":[]}"#.utf8)
+    case .presentIdeas:
+        return Data(#"{"version":\#(PresentIdeaDocument.currentVersion + 1),"contacts":[]}"#.utf8)
     }
 }
 

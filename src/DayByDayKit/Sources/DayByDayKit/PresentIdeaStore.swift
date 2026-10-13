@@ -27,12 +27,22 @@ public final class PresentIdeaStore {
             throw PresentIdeaStoreError.notAStore(at: place)
         }
         guard let document = try? JSONDecoder().decode(PresentIdeaDocument.self, from: data),
-            let formed = document.formIdeas()
+            let formed = Self.formed(from: document)
         else {
             throw PresentIdeaStoreError.notAStore(at: place)
         }
         self.held = formed
     }
+
+    /// The ideas `document` holds as a store would hold them, or `nil` where a store would refuse
+    /// them at its own place as not such a store. The one re-forming `init(at:)` and a copy both
+    /// go through, so they refuse alike.
+    static func formed(from document: PresentIdeaDocument) -> [String: [PresentIdea]]? {
+        document.formIdeas()
+    }
+
+    /// Every idea held, against its contact.
+    var all: [String: [PresentIdea]] { held }
 
     /// The ideas held against `contact`, in the order added.
     public func ideas(of contact: String) -> [PresentIdea] {
