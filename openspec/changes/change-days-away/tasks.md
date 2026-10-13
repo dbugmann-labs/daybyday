@@ -54,7 +54,7 @@ the next.
 ## 7. `commitment` — a stopped commitment
 
 - [x] 7.1 a stopped commitment in days away already past stays picked through a change, and unticked has their days back up to its stop
-- [ ] 7.2 days away moved past the last day a stopped commitment was kept keep it until the day before them
+- [x] 7.2 days away moved past the last day a stopped commitment was kept keep it until the day before them
 - [ ] 7.3 days away moved wholly past the last day a stopped commitment was kept leave it out, and are refused where it was all they were over
 
 ## 8. `commitment` — listing and removing
