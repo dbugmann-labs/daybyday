@@ -56,8 +56,8 @@ and that edit is red before the code it needs.
 
 ## 8. The gates and the archive handover
 
-- [ ] 8.1 `openspec validate reach-any-past-day --strict` exits 0, and `pnpm run checks` is clean but for any `check:budgets` warning on a carried requirement
-- [ ] 8.2 `pnpm run verify` is green, and `swift test` in `src/DayByDayKit` passes. Its count and a run on `origin/main` are both read off runs and given in the PR body, and the difference is the 13 tests added less the 22 deleted
+- [x] 8.1 `openspec validate reach-any-past-day --strict` exits 0, and `pnpm run checks` is clean but for any `check:budgets` warning on a carried requirement
+- [x] 8.2 `pnpm run verify` is green, and `swift test` in `src/DayByDayKit` passes. Its count and a run on `origin/main` are both read off runs and given in the PR body, and the difference is the 13 tests added less the 22 deleted
 - [ ] 8.3 **G7**: the reviewer's findings are answered, and the PR is rebased onto current `main`
 - [ ] 8.4 **The archive handover. `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked, W.5 included with the walk comment's URL. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and reads the spec diff: `day-screen` moves and no other spec file does. It gains the 13 new scenarios, loses the 22 withdrawn ones, and has four requirements re-headed at its foot. **Any other drift is a stop and a report, never a hand-edit.** The archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
@@ -65,8 +65,8 @@ and that edit is red before the code it needs.
 
 The walk runs on a fresh install, on the simulator, in light mode only, on any day. The day-one roster is kept from Friday 4 September 2026, so the walk pages the strip back to that week from today.
 
-- [ ] W.1 The strip paged back to the week before the one holding Friday 4 September 2026. Every day is drawn plainly with its number, none is faded, and there is no dash.
-- [ ] W.2 The strip paged forward to the week holding Friday 4 September 2026, with a day other than the 4th shown (tap one if the page landed on the 4th). A short grey dash sits under the 4, in the dot's slot.
-- [ ] W.3 The date row tapped and the picker turned back to July 2026. Every day of that month is drawn in full and can be picked; none is greyed.
-- [ ] W.4 Wednesday 15 July 2026 picked, and "Renew passport" entered as a one-off. The day screen of that day shows a One-offs group holding "Renew passport", done.
-- [ ] W.5 **The handover.** W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, never with `gh pr comment --attach`, and this box is ticked on that comment's URL.
+- [x] W.1 The strip paged back to the week before the one holding Friday 4 September 2026. Every day is drawn plainly with its number, none is faded, and there is no dash.
+- [x] W.2 The strip paged forward to the week holding Friday 4 September 2026, with a day other than the 4th shown (tap one if the page landed on the 4th). A short grey dash sits under the 4, in the dot's slot.
+- [x] W.3 The date row tapped and the picker turned back to July 2026. Every day of that month is drawn in full and can be picked; none is greyed.
+- [x] W.4 Wednesday 15 July 2026 picked, and "Renew passport" entered as a one-off. The day screen of that day shows a One-offs group holding "Renew passport", done.
+- [x] W.5 **The handover.** W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, never with `gh pr comment --attach`, and this box is ticked on that comment's URL.
