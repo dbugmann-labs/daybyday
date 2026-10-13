@@ -87,7 +87,8 @@ struct RosterDocument: Codable {
     /// The days away this document holds, formed: none in a form before
     /// `daysAwayIntroducedInVersion`, and `nil` where the form carries them and these say
     /// something no roster could hold — over no commitment, over one `held` does not hold or one
-    /// twice, named with what says nothing, or sharing a day and a commitment with other days away.
+    /// twice, named with what says nothing, sharing an identity with other days away, or sharing a day and
+    /// a commitment with other days away.
     private func formSpans(holding held: Set<Commitment.Identity>) -> [Roster.Span]? {
         guard version >= Self.daysAwayIntroducedInVersion else {
             return []
@@ -100,7 +101,8 @@ struct RosterDocument: Codable {
             guard let span = record.span(),
                 !span.commitments.isEmpty, Set(span.commitments).count == span.commitments.count,
                 span.commitments.allSatisfy(held.contains),
-                span.name.map({ !Blank.saysNothing($0) }) ?? true
+                span.name.map({ !Blank.saysNothing($0) }) ?? true,
+                !formed.contains(where: { $0.identity == span.identity })
             else {
                 return nil
             }

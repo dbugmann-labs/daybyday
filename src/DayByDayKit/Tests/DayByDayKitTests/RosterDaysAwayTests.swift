@@ -15,6 +15,7 @@ private func freshPlace() -> URL {
 
 private let gymID = "11111111-1111-1111-1111-111111111111"
 private let runID = "22222222-2222-2222-2222-222222222222"
+private let sharedID = "44444444-4444-4444-4444-444444444444"
 
 private func day(_ month: Int, _ day: Int) -> String {
     #"{ "year": 2026, "month": \#(month), "day": \#(day) }"#
@@ -22,12 +23,13 @@ private func day(_ month: Int, _ day: Int) -> String {
 
 /// One days away as a roster document writes it.
 private func span(
-    _ name: String?, from first: String, through last: String, over commitments: [String]
+    _ name: String?, from first: String, through last: String, over commitments: [String],
+    identity: String = UUID().uuidString
 ) -> String {
     let named = name.map { #""\#($0)""# } ?? "null"
     let over = commitments.map { #""\#($0)""# }.joined(separator: ",")
     return """
-        { "identity": "\(UUID().uuidString)", "name": \(named), "firstDay": \(first),
+        { "identity": "\(identity)", "name": \(named), "firstDay": \(first),
           "lastDay": \(last), "commitments": [\(over)] }
         """
 }
@@ -121,6 +123,13 @@ func aRosterStoreHoldingDaysAwayNoRosterCouldHoldIsRefused() throws {
         "["
             + span("Mallorca", from: thirteen, through: eighteen, over: [gymID]) + ","
             + span("Lisbon", from: eighteen, through: day(10, 19), over: [gymID, runID]) + "]",
+        "["
+            + span(
+                "Mallorca", from: thirteen, through: day(10, 14), over: [gymID], identity: sharedID)
+            + ","
+            + span(
+                "Lisbon", from: day(10, 20), through: day(10, 21), over: [runID], identity: sharedID)
+            + "]",
     ]
     for list in refused {
         let (place, result) = try opened(rosterJSON(version: 10, daysAway: list))

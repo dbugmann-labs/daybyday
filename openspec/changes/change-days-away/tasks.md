@@ -67,7 +67,7 @@ the next.
 
 ## 9. `commitment` — the roster store
 
-- [ ] 9.1 a roster store holding days away no roster could hold is refused — the carried test gains the place of two days away with one identity
+- [x] 9.1 a roster store holding days away no roster could hold is refused — the carried test gains the place of two days away with one identity
 
 ## 10. `restore`
 
