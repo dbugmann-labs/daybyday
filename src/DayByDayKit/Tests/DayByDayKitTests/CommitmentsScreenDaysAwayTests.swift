@@ -997,3 +997,34 @@ func daysAwayEndingBeforeTheyBeginOrOverNothingAreRefusedAndKeepNothing() throws
     #expect(commitments.daysAway.isEmpty)
     #expect(try Data(contentsOf: places.roster) == before)
 }
+
+@MainActor
+@Test("days away begun on a first day a commitment was kept through are removed whole")
+func daysAwayBegunOnAFirstDayACommitmentWasKeptThroughAreRemovedWhole() throws {
+    let places = Places()
+    let creatine = commitment("Creatine")
+    let magnesium = commitment("Magnesium")
+    try takeOn([creatine, magnesium], at: places)
+    try RecordStore(at: places.record).add(Tick(creatine, on: monday12)!)
+    screen(places).sayDaysAway(
+        named: "", from: monday12, through: date(2026, 10, 14), over: [creatine, magnesium])
+    let removing = screen(places, asOf: date(2026, 10, 13))
+    let said = try #require(removing.daysAway.first)
+
+    removing.askToRemove(said)
+    let refusal = removing.confirmRemovingDaysAway()
+
+    #expect(refusal == nil)
+    #expect(removing.daysAway.isEmpty)
+    let kept = try RosterStore(at: places.roster).roster
+    for name in ["Creatine", "Magnesium"] {
+        for day in [13, 14] {
+            #expect(isDue(name, on: date(2026, 10, day), in: kept))
+        }
+    }
+    let monday = DayScreen(
+        startingFrom: [], asOf: monday12, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOffs)
+    #expect(monday.dayView.rows.map(\.name) == ["Creatine", "Magnesium"])
+    #expect(monday.dayView.rows.map(\.isKept) == [true, false])
+}
