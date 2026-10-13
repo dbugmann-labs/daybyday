@@ -58,8 +58,8 @@ and that edit is red before the code it needs.
 
 - [x] 8.1 `openspec validate reach-any-past-day --strict` exits 0, and `pnpm run checks` is clean but for any `check:budgets` warning on a carried requirement
 - [x] 8.2 `pnpm run verify` is green, and `swift test` in `src/DayByDayKit` passes. Its count and a run on `origin/main` are both read off runs and given in the PR body, and the difference is the 13 tests added less the 22 deleted
-- [ ] 8.3 **G7**: the reviewer's findings are answered, and the PR is rebased onto current `main`
-- [ ] 8.4 **The archive handover. `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked, W.5 included with the walk comment's URL. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and reads the spec diff: `day-screen` moves and no other spec file does. It gains the 13 new scenarios, loses the 22 withdrawn ones, and has four requirements re-headed at its foot. **Any other drift is a stop and a report, never a hand-edit.** The archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
+- [x] 8.3 **G7**: the reviewer's findings are answered, and the PR is rebased onto current `main`
+- [x] 8.4 **The archive handover. `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked, W.5 included with the walk comment's URL. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and reads the spec diff: `day-screen` moves and no other spec file does. It gains the 13 new scenarios, loses the 22 withdrawn ones, and has four requirements re-headed at its foot. **Any other drift is a stop and a report, never a hand-edit.** The archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 
