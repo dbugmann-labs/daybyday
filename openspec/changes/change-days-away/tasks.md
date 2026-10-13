@@ -92,16 +92,19 @@ the next.
 
 ## The walk
 
-A fresh install, walked on the simulator on any day, light only, nothing recorded. Before W.1:
-"Mallorca" said from tomorrow through six days on over "Gym" and "Run", and "Sick" said over the
-three days ending a week ago over "Creatine" — both through the sheet, since the first day may now
-be any day.
+A fresh install, walked on the simulator on any day from Monday 14 September 2026 on, light only,
+nothing recorded. "Gym", "Run" and "Creatine" are not defined through the sheet: the fresh install
+takes on the day-one roster (`ContentView.swift`, `dayOneCommitments`), which holds all three kept
+from Friday 4 September 2026, so every day the walk visits, a week back included, is on or after it;
+defining them again would be refused as names already in use. Before W.1: "Mallorca" said from
+tomorrow through six days on over "Gym" and "Run", and "Sick" said over the three days ending a week
+ago over "Creatine" — both through the sheet, since the first day may now be any day.
 
 - [ ] W.1 The commitments screen scrolled to Days away — "Mallorca" over "Gym, Run" and "New days away" in the first card, "Sick" alone in a second card below it with no header.
 - [ ] W.2 "Mallorca" swiped from the leading edge, the pencil tapped — the sheet titled "Change Mallorca" with "Save", the name and both days filled, "Gym" and "Run" with filled circles.
 - [ ] W.3 The last day moved one day earlier and "Save" tapped — the list's "Mallorca" ending on its new last day.
 - [ ] W.4 The day screen paged forward to Mallorca's old last day — no "Mallorca" line and no dot under that day, and the row of "Gym" or "Run" due that day, where either is, back.
 - [ ] W.5 "Creatine" ticked on the day screen moved back to yesterday; "Mallorca" opened by Edit, its first day set to yesterday, "Creatine" picked, "Save" tapped — the sheet still open, the red refusal under the "Creatine" row naming it and yesterday.
-- [ ] W.6 The day screen moved back to the middle day of "Sick" — the "Sick" line above the rows, no "Creatine" row.
+- [ ] W.6 The sheet cancelled and "Discard" chosen, then the day screen moved back to the middle day of "Sick" — the "Sick" line above the rows, no "Creatine" row.
 - [ ] W.7 "Sick" swiped, the trash and "Remove" in the alert tapped, the day screen moved back to that same day — no line, and the "Creatine" row back, not ticked.
 - [ ] W.8 **The handover** — W.1–W.7, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
