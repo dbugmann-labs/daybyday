@@ -231,6 +231,7 @@ struct CommitmentsView: View {
     @State private var sheetTarget: SheetTarget?
     @State private var happeningSheetTarget: HappeningSheetTarget?
     @State private var sayingDaysAway = false
+    @State private var removalRefusal: CommitmentsScreen.Refusal?
     /// Bumped in `.sheet(item:onDismiss:)`'s `onDismiss`, and read by `body` where the lists are
     /// built, so a dismissed sheet always leaves this view's `List` re-evaluated against
     /// `screen.kept`/`keptGroups`/`stopped` — `tasks.md` § 14.4. A rename or a rhythm change kept
@@ -493,10 +494,15 @@ struct CommitmentsView: View {
                     }
                 }
                 Button("New days away") {
+                    removalRefusal = nil
                     sayingDaysAway = true
                 }
             } header: {
                 Text("Days away")
+            } footer: {
+                if let removalRefusal {
+                    refusalText(removalRefusal)
+                }
             }
 
             switch screen.rosterState {
@@ -670,7 +676,10 @@ struct CommitmentsView: View {
             presenting: screen.daysAwayAwaitingRemoval
         ) { _ in
             Button("Remove", role: .destructive) {
-                screen.confirmRemovingDaysAway()
+                // A removal that cannot be saved is said here, under the list it failed on,
+                // and not left held for the next days away sheet to draw at its foot.
+                removalRefusal = screen.confirmRemovingDaysAway()
+                screen.daysAwaySheetClosed()
                 listRevision += 1
             }
             Button("Cancel", role: .cancel) {
@@ -827,6 +836,7 @@ private struct DaysAwaySheet: View {
 
     var body: some View {
         NavigationStack {
+            ScrollViewReader { scroll in
             Form {
                 Section {
                     TextField("Name (optional)", text: $name)
@@ -852,20 +862,29 @@ private struct DaysAwaySheet: View {
                                         ? "checkmark.circle.fill" : "circle")
                                 commitmentLine(
                                     Text(commitment.name), rhythmInWords: commitment.rhythmInWords)
+                                Spacer(minLength: 0)
                             }
+                            .contentShape(Rectangle())
                             .foregroundStyle(.primary)
                         }
                         .buttonStyle(.plain)
                     }
                 } header: {
-                    Text("Commitments")
+                    Text("Commitments to pause")
                 } footer: {
                     if let refusal = screen.daysAwayRefusal {
                         refusalText(refusal)
                             .font(.caption)
                             .foregroundStyle(.red)
+                            .id("daysAwayRefusal")
                     }
                 }
+            }
+            .onChange(of: screen.daysAwayRefusal != nil) { _, shown in
+                if shown {
+                    withAnimation { scroll.scrollTo("daysAwayRefusal", anchor: .bottom) }
+                }
+            }
             }
             .navigationTitle("Days away")
             .navigationBarTitleDisplayMode(.inline)

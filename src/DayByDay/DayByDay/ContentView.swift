@@ -1795,6 +1795,8 @@ struct ContentView: View {
                     Text(line)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                 }
                 // The Birthdays group, first of the groups — `openspec/specs/day-screen/spec.md`'s
                 // *A day screen draws the birthdays falling on each day...*: "it SHALL come
