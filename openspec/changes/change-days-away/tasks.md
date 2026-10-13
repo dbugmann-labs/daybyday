@@ -78,8 +78,8 @@ the next.
 
 ## 9. `commitment` — the roster store
 
-- [ ] 9.1 a roster store holding days away no roster could hold is refused — the carried test gains the place of two days away with one identity, and its fixtures are written in form 11, each days away remembering nothing
-- [ ] 9.2 a roster kept before days away remembered a stop is read as remembering the later of their last day and the last day kept
+- [x] 9.1 a roster store holding days away no roster could hold is refused — the carried test gains the place of two days away with one identity, and its fixtures are written in form 11, each days away remembering nothing
+- [x] 9.2 a roster kept before days away remembered a stop is read as remembering the later of their last day and the last day kept
 - [ ] 9.3 a roster store whose days away remember what no roster could is refused
 
 ## 10. `restore`

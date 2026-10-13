@@ -94,7 +94,8 @@ struct RosterDocument: Codable {
     /// something no roster could hold — over no commitment, over one `held` does not hold or one
     /// twice, named with what says nothing, sharing an identity with other days away, or sharing a day and
     /// a commitment with other days away.
-    private func formSpans(holding held: Set<Commitment.Identity>) -> [Roster.Span]? {
+    private func formSpans(over entries: [Roster.Entry]) -> [Roster.Span]? {
+        let held = Set(entries.map(\.commitment.identity))
         guard version >= Self.daysAwayIntroducedInVersion else {
             return []
         }
@@ -103,7 +104,7 @@ struct RosterDocument: Codable {
         }
         var formed: [Roster.Span] = []
         for record in records {
-            guard let span = record.span(),
+            guard var span = record.span(),
                 !span.commitments.isEmpty, Set(span.commitments).count == span.commitments.count,
                 span.commitments.allSatisfy(held.contains),
                 span.name.map({ !Blank.saysNothing($0) }) ?? true,
@@ -121,6 +122,19 @@ struct RosterDocument: Codable {
                 })
             else {
                 return nil
+            }
+            if version < Self.remembersIntroducedInVersion {
+                // A form written before days away remembered a stop: for each stopped commitment they
+                // are over, the later of their last day and the last day it was kept.
+                for commitment in span.commitments {
+                    guard let newest = entries.first(where: { $0.commitment.identity == commitment }),
+                        let keptUntil = newest.keptUntil
+                    else {
+                        continue
+                    }
+                    span.remembers[commitment] =
+                        span.lastDay.days(until: keptUntil) > 0 ? keptUntil : span.lastDay
+                }
             }
             formed.append(span)
         }
@@ -247,7 +261,7 @@ struct RosterDocument: Codable {
             return nil
         }
 
-        guard let spans = formSpans(holding: Set(entries.map(\.commitment.identity))) else {
+        guard let spans = formSpans(over: entries) else {
             return nil
         }
 
