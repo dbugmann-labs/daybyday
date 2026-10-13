@@ -72,8 +72,8 @@ temporary one of the test's own.
 
 Every step needs birthdays on, so every step is the phone's (`docs/open-questions.md`: no simulator here gets calendar access). Birthdays are turned on in Settings first.
 
-- [ ] W.1 phone: the Birthdays screen, a chevron on every line; a real contact opened — the words as the page's heading, not cut — a text idea and then an idea of the link "amazon.de/xyz" alone added; back on the Birthdays screen the line says "2 ideas" dimmed under the words, and the page lists the two in the order added.
-- [ ] W.2 phone: *Add* with both fields blank — "Type an idea or a link." under the fields; then the text "Book voucher" with the link "amazon", no dot in its host — "That link is not a web address."; each time the sheet stays open with the fields as typed.
-- [ ] W.3 phone: the link idea from W.1, typed as "amazon.de/xyz", drawn as "https://amazon.de/xyz" on one line, cut where long; tapped, Safari opens https://amazon.de/xyz.
-- [ ] W.4 phone: the app closed from the switcher and opened again, back to the Birthdays screen — the line still says "2 ideas", and the page still lists both.
+- [x] W.1 phone: the Birthdays screen, a chevron on every line; a real contact opened — the words as the page's heading, not cut — a text idea and then an idea of the link "amazon.de/xyz" alone added; back on the Birthdays screen the line says "2 ideas" dimmed under the words, and the page lists the two in the order added.
+- [x] W.2 phone: *Add* with both fields blank — "Type an idea or a link." under the fields; then the text "Book voucher" with the link "amazon", no dot in its host — "That link is not a web address."; each time the sheet stays open with the fields as typed.
+- [x] W.3 phone: the link idea from W.1, typed as "amazon.de/xyz", drawn as "https://amazon.de/xyz" on one line, cut where long; tapped, Safari opens https://amazon.de/xyz.
+- [x] W.4 phone: the app closed from the switcher and opened again, back to the Birthdays screen — the line still says "2 ideas", and the page still lists both.
 - [x] W.5 **The handover** — no step is the simulator's, so `pnpm run walk` is not run and nothing is posted; before hand-back the implementer ticks this on naming, here, the commit the human installs with `cd <this worktree> && pnpm run phone` to walk W.1–W.4 at G7. The conductor ticks W.1–W.4 on the G7 approval.
