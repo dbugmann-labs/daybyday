@@ -69,4 +69,4 @@ The walk runs on a fresh install, on the simulator, in light mode only, on any d
 - [x] W.2 The strip paged forward to the week holding Friday 4 September 2026, with a day other than the 4th shown (tap one if the page landed on the 4th). A short grey dash sits under the 4, in the dot's slot.
 - [x] W.3 The date row tapped and the picker turned back to July 2026. Every day of that month is drawn in full and can be picked; none is greyed.
 - [x] W.4 Wednesday 15 July 2026 picked, and "Renew passport" entered as a one-off. The day screen of that day shows a One-offs group holding "Renew passport", done.
-- [x] W.5 **The handover.** W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, never with `gh pr comment --attach`, and this box is ticked on that comment's URL.
+- [x] W.5 **The handover.** W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, never with `gh pr comment --attach`, and this box is ticked on that comment's URL. Walk comment: https://github.com/dbugmann-labs/daybyday/pull/421#issuecomment-6147026977
