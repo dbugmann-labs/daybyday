@@ -90,8 +90,8 @@ title verbatim, which `pnpm run check:scenarios` checks — watch it fail, make 
 
 - [x] 10.1 `openspec validate say-days-away --strict` exits 0, and `pnpm run checks` is clean but for the one `check:budgets` warning on the carried change requirement
 - [x] 10.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with 44 more tests than a run on `origin/main` reports — one for each of the 43 new scenarios and 2.4's — both read off runs
-- [ ] 10.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
-- [ ] 10.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked, W.6 included, and the walk comment's URL is in W.7. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `commitment`, `day-screen` and `restore` move, gaining this delta's 43 new scenarios, and no other spec file does. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
+- [x] 10.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
+- [x] 10.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked, W.6 included, and the walk comment's URL is in W.7. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `commitment`, `day-screen` and `restore` move, gaining this delta's 43 new scenarios, and no other spec file does. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 
