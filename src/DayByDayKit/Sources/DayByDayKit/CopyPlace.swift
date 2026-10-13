@@ -254,9 +254,9 @@ public final class CopyPlace {
         )
     }
 
-    /// What reading the five stores comes back as, each opened independently, `nil` in its own
+    /// What reading the six stores comes back as, each opened independently, `nil` in its own
     /// field exactly where that store could not be read, without stopping at the first — shared by
-    /// `form(...)`, which cares only whether all five read, and by `makeACopy` and `askToRestore`,
+    /// `form(...)`, which cares only whether all six read, and by `makeACopy` and `askToRestore`,
     /// which name every one that did not. Internal rather than `private`, so `CommitmentsScreen`
     /// reads off this one definition rather than keeping a second of its own.
     struct StoresRead {
@@ -266,14 +266,14 @@ public final class CopyPlace {
         let birthdayTicks: BirthdayStore?
         let happenings: HappeningStore?
         let presentIdeas: PresentIdeaStore?
-        /// Which of the five could not be read, and why, in the fixed order record, roster,
-        /// one-offs, birthday ticks, happenings. `design.md` § *One reading of the three places, carrying the
-        /// cause*.
+        /// Which of the six could not be read, and why, in the fixed order record, roster,
+        /// one-offs, birthday ticks, happenings, present ideas. `design.md` § *One reading of the
+        /// three places, carrying the cause*.
         let notRead: [CommitmentsScreen.StoreNotRead]
 
-        /// Which of the five could not be read, in the fixed order record, roster, one-offs,
-        /// birthday ticks, happenings — `AwaitingRestore.unreadable` reads off this: the restore sheet says a
-        /// count is missing, not why.
+        /// Which of the six could not be read, in the fixed order record, roster, one-offs,
+        /// birthday ticks, happenings, present ideas — `AwaitingRestore.unreadable` reads off this:
+        /// the restore sheet says a count is missing, not why.
         var unreadable: [Copy.Store] { notRead.map(\.store) }
     }
 
@@ -365,7 +365,7 @@ public final class CopyPlace {
     /// `rosterAt`, `oneOffsAt` and `birthdayTicksAt`, undoing a restore in progress and then a
     /// save in progress first, so a torn restore and a torn save are both undone before either
     /// place is read and an earlier-form store yields a current-form copy. Never carries an
-    /// orphaned record back: a copy SHALL leave the five places exactly as it found them, apart
+    /// orphaned record back: a copy SHALL leave the six places exactly as it found them, apart
     /// from a restore in progress or a save in progress undone. Where a restore in progress or a
     /// save in progress stands and cannot itself be undone, the record, the roster and the
     /// one-offs answer not read, each as a place that could not be read, told as the record — the
@@ -471,7 +471,7 @@ public final class CopyPlace {
         return try body()
     }
 
-    /// Forms a copy of this copy place's own five places as of `moment`, and writes it into
+    /// Forms a copy of this copy place's own six places as of `moment`, and writes it into
     /// `url`, updating `lastCopy` and `stopped` from the result. Called from inside a
     /// security-scoped bracket the caller already holds on `url` — `set(to:)`'s own, or one of
     /// `keptAChange()`'s two candidates. A store that cannot be read stops as

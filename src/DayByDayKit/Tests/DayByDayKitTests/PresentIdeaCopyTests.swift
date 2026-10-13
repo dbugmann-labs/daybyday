@@ -357,22 +357,23 @@ func aCopyMadeBeforeCopiesHeldPresentIdeasIsReadAsHoldingNoneAndRestoringItLeave
 
         #expect(try PresentIdeaStore(at: places.presentIdeas).ideas(of: "kate").isEmpty)
         #expect(screen.kept.map(\.name) == ["Gym"])
+
+        // A copy made through the screen that confirmed the restore, afterwards, says a form later
+        // than the file's.
+        let result = screen.makeACopy(asOf: moment(14, 32), writingInto: freshDirectory())
+        guard case .success(let url) = result else {
+            Issue.record("expected a copy to be made")
+            return
+        }
+        let written =
+            try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as! [String: Any]
+        #expect((written["version"] as? Int ?? 0) > 3)
     }
 
     let copy = gymCopy()
     try restoring(earlierFormCopyBytes(copy, version: 3))
     try restoring(earlierFormCopyBytes(copy, version: 2))
     try restoring(earlierFormCopyBytes(copy, version: 1))
-
-    // A copy made through a screen afterwards says a form later than the file's.
-    let result = Places().commitmentsScreen().makeACopy(
-        asOf: moment(14, 32), writingInto: freshDirectory())
-    guard case .success(let url) = result else {
-        Issue.record("expected a copy to be made")
-        return
-    }
-    let written = try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as! [String: Any]
-    #expect((written["version"] as? Int ?? 0) > 3)
 }
 
 /// The bytes of the copy `screen` makes as of 14:32, its `presentIdeas` key replaced by
@@ -438,6 +439,12 @@ func aCopyHoldingPresentIdeasTheAppNeverWritesIsRefusedAsADamagedCopyAndOneWhose
         #expect(try askingToRestore(presentIdeas: ideas(contacts)).0 == .damagedCopy)
     }
     #expect(try askingToRestore(presentIdeas: nil).0 == .damagedCopy)
+
+    // A version below 1 is no form of present ideas at all, as a store at its own place says.
+    for version in [0, -1] {
+        let below = #"{"version":\#(version),"contacts":[]}"#
+        #expect(try askingToRestore(presentIdeas: below).0 == .damagedCopy)
+    }
 
     let later = #"{"version":\#(PresentIdeaDocument.currentVersion + 1),"contacts":[]}"#
     #expect(try askingToRestore(presentIdeas: later).0 == .copyFromALaterVersion)

@@ -38,7 +38,10 @@ public final class PresentIdeaStore {
     /// them at its own place as not such a store. The one re-forming `init(at:)` and a copy both
     /// go through, so they refuse alike.
     static func formed(from document: PresentIdeaDocument) -> [String: [PresentIdea]]? {
-        document.formIdeas()
+        guard document.version >= 1 else {
+            return nil
+        }
+        return document.formIdeas()
     }
 
     /// Every idea held, against its contact.

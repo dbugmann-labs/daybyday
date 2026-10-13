@@ -63,21 +63,23 @@ struct RestoreInProgress: Codable {
         try bytes.write(to: place, options: .atomic)
     }
 
-    /// Restores `copy` at `recordPlace`, `rosterPlace`, `oneOffPlace`, `birthdayPlace` and `happeningPlace`, whole
-    /// or nothing: keeps a restore in progress beside `recordPlace` holding what stood at the
-    /// five places and at a save in progress, takes the save in progress away, writes the five
-    /// places in the forms they write now, and takes the restore in progress away. Throws where
-    /// any write fails; the five places and the save in progress are then put back as they were,
+    /// Restores `copy` at `recordPlace`, `rosterPlace`, `oneOffPlace`, `birthdayPlace`,
+    /// `happeningPlace` and `presentIdeaPlace`, whole or nothing: keeps a restore in progress
+    /// beside `recordPlace` holding what stood at the six places and at a save in progress, takes
+    /// the save in progress away, writes the six places in the forms they write now, and takes
+    /// the restore in progress away. Throws where any write fails; the six places and the save
+    /// in progress are then put back as they were,
     /// and the restore in progress taken away — unless that itself fails, in which case the
     /// restore in progress stands, for `undoTornRestore` to put right when the places are next
     /// opened.
     ///
-    /// `stoppingAfter` a number of the five writes — record first, then roster, then one-offs,
-    /// then the birthday ticks, then the happenings — stops after that many have happened, leaving
-    /// the restore in progress standing and attempting no rollback: the test seam for a restore
-    /// stopped before it was whole, on the same footing `SaveInProgress.keep` is for a save torn mid-change.
-    /// `stoppingAfter: 5` stops with all five written, the restore in progress still standing —
-    /// the crash lands between the last write and the file being taken away.
+    /// `stoppingAfter` a number of the six writes — record first, then roster, then one-offs,
+    /// then the birthday ticks, then the happenings, then the present ideas — stops after that
+    /// many have happened, leaving the restore in progress standing and attempting no rollback:
+    /// the test seam for a restore stopped before it was whole, on the same footing
+    /// `SaveInProgress.keep` is for a save torn mid-change. `stoppingAfter: 6` stops with all six
+    /// written, the restore in progress still standing — the crash lands between the last write
+    /// and the file being taken away.
     static func restore(
         _ copy: Copy, recordAt recordPlace: URL, rosterAt rosterPlace: URL,
         oneOffsAt oneOffPlace: URL, birthdayTicksAt birthdayPlace: URL,

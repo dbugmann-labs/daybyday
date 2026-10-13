@@ -28,7 +28,7 @@ struct CopyDocument: Codable {
     /// told apart from a form-4 document whose present ideas fail to form, which is a damaged copy.
     var presentIdeas: PresentIdeaDocument?
 
-    /// Builds the document that exactly represents `copy`, each of the five stores written in
+    /// Builds the document that exactly represents `copy`, each of the six stores written in
     /// the form that store writes now.
     init(_ copy: Copy) {
         version = Self.currentVersion
@@ -46,8 +46,8 @@ struct CopyDocument: Codable {
     }
 
     /// Re-forms `moment`, and the record, the roster, the one-offs, the birthday ticks and the
-    /// happenings this document holds, through the same re-forming each of their own documents already does.
-    /// `nil` if the moment or any one of the five could not be formed. A document at form 1, from
+    /// happenings this document holds, through the same re-forming each of their own documents already
+    /// does. `nil` if the moment or any one of the six could not be formed. A document at form 1, from
     /// before a copy held birthday ticks, forms as holding none — `design.md` § *The copy's form
     /// moves to 2, and form 1 holds no ticks*; a document at form 2 or later with no birthday
     /// ticks, or ticks that do not form, forms as `nil`.
@@ -125,9 +125,9 @@ struct CopyDocument: Codable {
     /// copy: the envelope decides, and a later version outranks damage*. Reads an envelope of
     /// this document's own `version` and `moment` first: where that does not read, or its form is
     /// below 1, `data` is not a copy; where it is above `currentVersion`, it is from a later
-    /// version. Next come the envelopes of the five nested stores, read independently of one
+    /// version. Next come the envelopes of the six nested stores, read independently of one
     /// another and of the rest of the document — any one of them holding a later form than that
-    /// store reads makes the whole copy one from a later version, whatever state the other four
+    /// store reads makes the whole copy one from a later version, whatever state the other five
     /// are in. Only then is the whole document decoded and each store's own shape checked against its
     /// declared form, exactly as that store's `init(at:)` checks its own place; any failure there
     /// is a damaged copy.

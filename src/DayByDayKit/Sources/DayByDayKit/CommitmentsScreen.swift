@@ -488,7 +488,7 @@ public final class CommitmentsScreen {
     /// torn save as it was, before anything is drawn from them* — then the roster, the record and
     /// the one-offs opened, and any orphaned record carried back to its one possible source
     /// before this screen says whether any
-    /// remain. Shared by `init`, `shown(asOf:)` and `confirmRestoring`, which all read all five
+    /// remain. Shared by `init`, `shown(asOf:)` and `confirmRestoring`, which all read all six
     /// places afresh. Runs through `CopyPlace.readStores`, the one place the cause per store is
     /// told apart, so the offer, a refused copy and the copy place's own stop all read off the
     /// same answer — `design.md` § *One reading of the three places, carrying the cause*. Where
@@ -677,7 +677,7 @@ public final class CommitmentsScreen {
         }
     }
 
-    /// Which of the five places cannot be read, and which of the two things is so — `design.md`
+    /// Which of the six places cannot be read, and which of the two things is so — `design.md`
     /// § *One reading of the three places, carrying the cause*: the one answer the offer, a
     /// refused copy and the copy place's own stop all read off.
     public struct StoreNotRead: Hashable, Sendable {
@@ -697,7 +697,7 @@ public final class CommitmentsScreen {
 
     /// A restore asked for and not yet confirmed, cancelled or replaced by another ask: the
     /// moment the copy was made, what it and the phone each keep, have stopped and hold as
-    /// one-offs, and which of the phone's five places, if any, could not be read.
+    /// one-offs, and which of the phone's six places, if any, could not be read.
     /// `openspec/changes/restore-from-a-copy/design.md` § *The seam*.
     public struct AwaitingRestore: Hashable, Sendable {
         public let moment: Moment
@@ -2021,9 +2021,9 @@ public final class CommitmentsScreen {
 
     /// The eight files a take-out reaches for, in the fixed order this screen answers a take-out
     /// in: the record, the roster, the one-offs, the birthday ticks, the happenings, the present
-    /// ideas, a save in
-    /// progress and a restore in progress, the last two each named as the record. `openspec/specs/restore/spec.md` § *A
-    /// take-out is the files at the five places exactly as they lie*.
+    /// ideas, a save in progress and a restore in progress, the last two each named as the record.
+    /// `openspec/specs/restore/spec.md` § *A take-out is the files at the six places exactly as
+    /// they lie*.
     private var takeOutCandidates: [TakeOutCandidate] {
         [
             TakeOutCandidate(source: recordPlace, namedAs: .record),
