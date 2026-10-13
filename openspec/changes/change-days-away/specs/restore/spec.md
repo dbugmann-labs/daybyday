@@ -10,7 +10,7 @@
 Where a copy place is set, a commitments screen SHALL write a copy there after every days away it
 says, changes or removes and keeps at its roster place, as of the moment its clock answers once the change is
 kept, and that copy SHALL hold every days away the roster place then holds, each with its name or
-none, its days, its commitments and the day it remembers for each. Days away refused, a change refused, a removal asked for or
+none, its days, its commitments and the stops it remembers of each. Days away refused, a change refused, a removal asked for or
 cancelled, and a removal refused SHALL write no copy and SHALL leave the last copy as it was. A restore confirmed SHALL make the
 roster place hold exactly the days away the copy holds, each remembering what it remembers there,
 and nothing of the days away it held before, every commitment holding the gaps the copy's roster

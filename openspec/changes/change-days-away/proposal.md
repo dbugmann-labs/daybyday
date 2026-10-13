@@ -17,11 +17,12 @@ part, and removed whenever, refusing only what would hide a record.
   recorded day under them; a first day that is today keeps that commitment through it instead.
 - A stopped commitment already in a span stays picked or can be unticked; a span moved past its stop
   keeps it until the day before, and one moved wholly past takes it out.
-- Days away remember the day a stop kept each commitment in them until — a stop once they have begun,
-  under way included, leaving it in them — so removing, unticking or moving them never makes it owe a
-  day after its stop, and moving them back gives those days back.
-- A stopped commitment taken up again inside days away over it is taken up on the day after them.
-- The roster form moves to 11 to hold what days away remember; form 10 is read without loss.
+- Days away remember every stop and take-up of a commitment they are over that is made once they
+  have begun, under way included, or that their days come to hide; removing, unticking or moving them,
+  in any order, never makes it owe a day between a stop and its take-up, and a move back restores.
+- A stopped commitment taken up again inside days away is taken up the day after them, moving with it.
+- The roster form moves to 11 to hold what days away remember, refused only where no roster the app
+  writes could hold it; form 10 is read without loss.
 - Every days away is listed: those not over earliest first, then past ones apart, latest first.
 - Any listed days away can be removed, begun or over, erasing it whole, its days owed again.
 - A roster holding two days away with one identity is refused.
@@ -35,7 +36,7 @@ None.
 
 ### Modified Capabilities
 
-- `commitment`: ten ADDED, four MODIFIED, one RENAMED, three REMOVED — the three carried whole into
+- `commitment`: twelve ADDED, four MODIFIED, one RENAMED, three REMOVED — the three carried whole into
   ADDED without a scenario each retires.
 - `restore`: one MODIFIED, one RENAMED.
 

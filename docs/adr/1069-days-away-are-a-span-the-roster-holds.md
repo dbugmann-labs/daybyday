@@ -10,10 +10,12 @@
   again: days given back before the new first day go to the era held the day before the old one, and
   the era a commitment is taken up on moves with the day back. A span moved past a stop moves it to
   the day before the span in the eras, and — settled at G7, because the eras store that and a stop
-  the day after a span alike — every begun span keeping a stopped commitment remembers the day the
-  stop kept it until, in roster form 11, a stop under way included, through every later change of
-  the span; a take-up made inside it moves with the day back. § *Decision* and
-  § *Consequences* are changed in place to say so; the decision stands.
+  the day after a span alike, and made one model at the next G7 — a span remembers, per commitment,
+  every stop made once it has begun or that its days come to hide, each with its take-up: none, the
+  day back wherever it moves, or a day. Every give-back reads those and the eras outside the span,
+  never what the last move left, and the store refuses only what no write could produce, checking
+  nothing against the eras. § *Decision* and § *Consequences* are changed in place to say so; the
+  decision stands.
 
 ## Context
 
@@ -34,8 +36,8 @@ day they are made.
 
 **The roster holds each days away beside its commitments, and gives each commitment picked its gap
 as eras.** A days away carries an identity of its own, a name or none, a first and a last day, the
-identities of the commitments it is over, and, for each it kept through a stop, the day that stop
-kept it until. Saying it ends each picked commitment's era on the day
+identities of the commitments it is over, and, for each, the stops of it that it remembers with
+their take-ups. Saying it ends each picked commitment's era on the day
 before the first day and begins a new one on the day after the last; changing it moves those two
 ends, the era begun the day after the last moving with it; removing it, begun or not, re-forms those
 eras as though it had never been said. Saying, removing, a change, a stop and a
@@ -43,7 +45,8 @@ deletion each form the next roster, eras and days away together, and write it in
 
 The roster form moves to 10, adding the list of days away; an earlier form reads as holding none.
 Form 11 adds what each days away remembers; form 10 reads as remembering, for each stopped
-commitment a span is over, the later of the span's last day and its own last day kept. A copy nests
+commitment a span is over, a stop not taken up on the later of the span's last day and its own last
+day kept. A copy nests
 the roster form as written and keeps its own form.
 
 ## Consequences
@@ -52,11 +55,11 @@ the roster form as written and keeps its own form.
   reader that met only past gaps meets one; the change and the interval shift had to learn it.
 - **Removing is a re-forming, not a delete of two eras**: the era before the gap runs through it, so
   an every-N-days count runs on unbroken, and a change made since stands from the day it was made.
-- **A span remembers a stop, not a first day kept through.** A first day a commitment was kept
-  through lives only in its eras, so a change keeps it only while the first day stays. The day a
-  stop kept a commitment until is remembered by every begun span keeping it, wherever the span then
-  moves, so removing, unticking or moving a span makes it owe no day between its stop and its
-  take-up, and a span moved back past the stop gives the days back.
+- **A span remembers stops, not a first day kept through.** A first day a commitment was kept
+  through lives only in its eras, so a change keeps it only while the first day stays. The stops and
+  take-ups a span remembers are the person's acts, which no change moves; the eras are formed from
+  them on every move, so removing, unticking or moving a span, in any order, makes a commitment owe
+  no day between a stop and its take-up, and a span moved back gives back what a move took.
 - **The span and the gaps cannot drift apart at rest**, since one write carries both. What keeps them
   agreeing is that every act that moves either forms the other with it.
 

@@ -89,14 +89,14 @@ commitment it neither keeps nor those days away are over, it SHALL do nothing an
 
 ### Requirement: A change of days away gives back the days a commitment no longer has under them and takes those it newly has
 
-A kept change SHALL give each commitment the changed days away are over their gap as changed, every
-day of it neither given back nor newly taken left as it was. Days given back before the new first day SHALL be kept on the rhythm, range and target the
-commitment held on the day before the old first day. The commitment SHALL be taken up again on the
-day after the new last day on the rhythm, range and target it holds on the later of that day and the
-day after the old last day, an every-N-days count beginning again there. A commitment kept through
-the old first day SHALL stay kept through it while the first day does not move. A commitment newly
-picked SHALL take its gap as days away said give one, and one no longer picked SHALL be left as a
-removal leaves it.
+A kept change SHALL give each commitment they are over its gap as changed, leaving every day neither
+given back nor newly taken as it was. Days given back before the new first day SHALL be kept on the
+rhythm, range and target held the day before the old first day. The commitment SHALL be taken up again
+on the day after the new last day on the rhythm, range and target it holds on the later of that day
+and the day after the old last day, an every-N-days count beginning again there. A commitment kept
+through the old first day SHALL stay kept through it while the first day does not move. A commitment
+newly picked SHALL take its gap as saying gives one, and one unpicked SHALL be left as a removal
+leaves it. None of these SHALL owe a day in a remembered stop's gap.
 
 #### Scenario: a last day moved later keeps commitments away through it and takes them up again the day after, an every-N-days count beginning there
 
@@ -260,14 +260,12 @@ leave its lists as they were.
 ### Requirement: A change of days away keeps a stopped commitment they are over, picked or not, and keeps it no later than their first day where they reach past its stop
 
 A change through a commitments screen SHALL keep over the changed days away a stopped commitment
-they are over that stays picked, and SHALL give one no longer picked back their days up to the day
-they remember it kept until, as a removal gives them back. Where they begin on or before that day
+they are over that stays picked, and SHALL give one no longer picked back their days as a removal
+gives them back. Where they begin on or before the day its stop, as they remember it, kept it until
 and end after it, the commitment SHALL be kept until the day before their first day and no later.
-A change moving their last day back SHALL give it back the days after the new last day up to the
-day remembered. Only a change moving their first day later than the
-day after the day remembered SHALL take a stopped commitment out of them, giving back their days up
-to that day, and a change leaving them over no commitment SHALL be refused as days away over no
-commitment.
+Only a change moving their first day later than the day after that day SHALL take a stopped
+commitment out of them, giving back their days as a removal does, and a change leaving them over no
+commitment SHALL be refused as days away over no commitment.
 
 #### Scenario: a stopped commitment in days away already past stays picked through a change, and unticked has their days back up to its stop
 
@@ -391,16 +389,40 @@ commitment.
 - **AND** a roster store opened afterwards at that place answers with "Gym" when asked what it had not
   stopped keeping on Sunday 4 October 2026 and not on Monday 5 October 2026
 
-### Requirement: Days away remember the day a stop kept each commitment they are over until, and no change or removal of them makes it owe a day after it
+### Requirement: Days away remember every stop of a commitment they are over that is made once they have begun or that their days come to hide, with its take-up
 
-A stop confirmed through a commitments screen SHALL make every days away that keep the commitment
-remember the day the stop kept it until, unless they remember a day for it already, which SHALL stay
-as it is. Days away SHALL keep remembering that day through every change of them that keeps the
-commitment over them, wherever their days move, and once it is taken up again. A removal confirmed
-and the commitment unticked SHALL give it back their days up to the day remembered, and no removal
-and no change of them SHALL make it owe a day after that day and before the day it is taken up
-again, which for one taken up again inside them is the day after their last day, moving with it.
-What days away remember SHALL be kept at the roster place with them, before either list says so.
+Days away SHALL remember stops of commitments they are over, each a day kept until and a take-up:
+none, the day after their last day, or a day. A stop confirmed SHALL be added, not taken up, to all
+days away over it that have begun, save that one on the day of their last stop of it SHALL undo that
+stop's take-up instead. A take-up again SHALL take up each one's last stop not taken up, at the day
+after their last day if made inside them, else on its own day, or, undoing the stop, forget it.
+Saying, ticking or changing days away SHALL add each stop of a commitment in its eras, not yet
+remembered, whose gap holds a day newly under them or the day after them. A commitment leaving them
+SHALL take its stops with it.
+
+#### Scenario: days away said over the days of a stop and take-up already made give the commitment back, once removed, no day between them
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on schedules listing all seven weekdays
+  and kept from 1 January 2026, are taken on at a roster place; "Gym" is stopped, the stop confirmed,
+  through a commitments screen opened at that roster place as of Monday 5 October 2026, and taken up
+  again through one opened there as of Monday 12 October 2026; days away named "Sick" from Thursday
+  1 through Wednesday 7 October 2026 are said through that screen over both; and "Sick" is removed
+  through it, the removal confirmed
+- **THEN** nothing is refused
+- **AND** a roster store opened afterwards at that place holds "Gym" due on Sunday 4 and Monday
+  12 October 2026 and on none of Monday 5, Wednesday 7 and Sunday 11 October 2026, and "Run" due on
+  Monday 5 October 2026
+
+### Requirement: No removal, untick or change of days away makes a commitment owe a day in the gap of a stop they remember
+
+A removal confirmed, and a change unticking a commitment or taking it out, SHALL give it back every
+day of their gap outside each remembered stop's gap: from the day after its day kept until to the day
+before its take-up, the day after their last day standing for a take-up there, and endless for one not
+taken up. A take-up on a day given back SHALL begin there on the rhythm held on its stop's day, an
+every-N-days count beginning there. A change keeping a commitment over them SHALL leave it owing
+exactly the days in no such gap, on the days it gives back and from the day after the new last day,
+reading a take-up there at the new one. The same days reached in one change or several SHALL leave it
+owing the same days, and a change moved back SHALL give back what it took.
 
 #### Scenario: days away over a commitment stopped the day after them, removed, give it back every day of them
 
@@ -460,15 +482,63 @@ What days away remember SHALL be kept at the roster place with them, before eith
   stopped keeping on Sunday 4 and on Monday 12 October 2026, and on none of Monday 5, Tuesday 6,
   Wednesday 7 and Sunday 11 October 2026
 
+#### Scenario: days away moved to end before a stop made inside them, then removed, give the commitment back its days up to its stop and none after
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on schedules listing all seven weekdays
+  and kept from 1 January 2026, are taken on at a roster place; days away named "Mallorca" from
+  Tuesday 13 through Sunday 18 October 2026 are said over both through a commitments screen opened at
+  that roster place as of Monday 12 October 2026; "Gym" is stopped, the stop confirmed, through one
+  opened there as of Thursday 15 October 2026; and through one opened there as of Friday 16 October
+  2026 "Mallorca" is changed to end on Tuesday 13 October 2026 over both
+- **THEN** it is not refused
+- **AND** a roster store opened afterwards at that place holds "Gym" due on Wednesday 14 October 2026
+  and on neither Tuesday 13 nor Thursday 15 October 2026
+- **AND** once "Mallorca" is removed through that screen, the removal confirmed, one holds "Gym" due on
+  Tuesday 13 and Wednesday 14 October 2026 and on none of Thursday 15 through Monday 19 October 2026
+
+#### Scenario: days away moved past a later stop of a commitment taken up again inside them, and back again, give it back the days between its take-up and that stop
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on schedules listing all seven weekdays
+  and kept from 1 January 2026, are taken on at a roster place; days away named "Mallorca" from
+  Tuesday 13 through Sunday 18 October 2026 are said over both through a commitments screen opened at
+  that roster place as of Monday 12 October 2026; "Gym" is stopped, the stop confirmed, through one
+  opened there as of Thursday 15 October 2026; through one opened there as of Friday 16 October 2026
+  "Gym" is taken up again and "Mallorca" is changed to run from Saturday 17 through Sunday 18 October
+  2026 over both; "Gym" is stopped again, the stop confirmed, through one opened there as of Sunday
+  25 October 2026; and through one opened there as of Monday 26 October 2026 "Mallorca" is changed to
+  end on Friday 30 October 2026 over both, and then to end on Sunday 18 October 2026 over both
+- **THEN** neither change is refused
+- **AND** after the first, a roster store opened at that place holds "Gym" due on Wednesday 14 October
+  2026 and on neither Monday 19 nor Saturday 24 October 2026
+- **AND** after the second, that screen lists "Mallorca" as past over "Gym" and "Run", and one holds
+  "Gym" due on Wednesday 14, Monday 19 and Saturday 24 October 2026 and on none of Thursday 15, Sunday
+  18 and Sunday 25 October 2026
+
+#### Scenario: a take-up after days away that a change then covers comes back to its own day when they move back
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on schedules listing all seven weekdays
+  and kept from 1 January 2026, are taken on at a roster place; days away named "Flu" from Thursday
+  1 through Saturday 3 October 2026 are said over both through a commitments screen opened at that
+  roster place as of Thursday 1 October 2026; "Gym" is stopped, the stop confirmed, through one opened
+  there as of Monday 5 October 2026, and taken up again through one opened there as of Thursday
+  8 October 2026; and through one opened there as of Monday 12 October 2026 "Flu" is changed to end
+  on Saturday 10 October 2026 over both, and then to end on Saturday 3 October 2026 over both
+- **THEN** neither is refused
+- **AND** after the first, a roster store opened at that place holds "Gym" due on Sunday 11 October
+  2026 and on neither Thursday 8 nor Saturday 10 October 2026
+- **AND** after the second, one holds "Gym" due on Sunday 4, Thursday 8 and Saturday 10 October 2026
+  and on neither Monday 5 nor Wednesday 7 October 2026
+
 ### Requirement: A commitments screen takes a commitment up again on a day inside days away over it from the day after their last day
 
 A commitments screen asked to take up again a stopped commitment on a day inside days away over it
 SHALL take it up again on the day after their last day, instead of on the day it was handed, on the
-rhythm, range and target it had, an every-N-days count beginning there, as a change made while away
-holds from that day. Those days away SHALL stay over it and SHALL keep remembering the day its stop
-kept it until. A later change moving their last day, earlier or later, SHALL move that take-up to
-the day after the new last day; a change moving only their first day, and a removal, SHALL leave it
-where it is. Every other take-up-again SHALL be as it was.
+rhythm, range and target it had, an every-N-days count beginning there. Those days away SHALL stay
+over it, remembering the stop as taken up there. A later change moving their last day, earlier or
+later, SHALL move that take-up to the day after the new last day, even to a day no later than the day
+after its stop, where the commitment then owes every day from it as though never stopped. A change
+moving only their first day or their name, an untick and a removal SHALL leave it where it is. Every
+other take-up-again SHALL be as it was.
 
 #### Scenario: a commitment taken up again inside days away over it is taken up on the day after their last day, and stays remembered by them
 
@@ -543,17 +613,84 @@ where it is. Every other take-up-again SHALL be as it was.
 - **AND** changed again through that screen to end on Tuesday 20 October 2026, one holds "Gym" due on
   Wednesday 21 October 2026 and on none of Saturday 17 through Tuesday 20 October 2026
 
+#### Scenario: days away renamed leave the take-up of a commitment taken up again inside them where it was
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on schedules listing all seven weekdays
+  and kept from 1 January 2026, are taken on at a roster place; days away named "Mallorca" from
+  Tuesday 13 through Sunday 18 October 2026 are said over both through a commitments screen opened at
+  that roster place as of Monday 12 October 2026; "Gym" is stopped, the stop confirmed, through one
+  opened there as of Thursday 15 October 2026; and through one opened there as of Friday 16 October
+  2026 "Gym" is taken up again and "Mallorca" is changed to the name "Majorca", from Tuesday 13
+  through Sunday 18 October 2026, over both
+- **THEN** nothing is refused, and that screen lists "Majorca" over "Gym" and "Run"
+- **AND** a roster store opened afterwards at that place holds "Gym" due on Monday 19 October 2026 and
+  on none of Tuesday 13 through Sunday 18 October 2026
+
+#### Scenario: a commitment taken up again inside days away and then unticked from them owes its days up to its stop and from its take-up
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on schedules listing all seven weekdays
+  and kept from 1 January 2026, are taken on at a roster place; days away named "Mallorca" from
+  Tuesday 13 through Sunday 18 October 2026 are said over both through a commitments screen opened at
+  that roster place as of Monday 12 October 2026; "Gym" is stopped, the stop confirmed, through one
+  opened there as of Thursday 15 October 2026; and through one opened there as of Friday 16 October
+  2026 "Gym" is taken up again and "Mallorca" is changed over "Run" alone
+- **THEN** nothing is refused, and that screen lists "Mallorca" over "Run" alone
+- **AND** a roster store opened afterwards at that place holds "Gym" due on Tuesday 13, Wednesday 14
+  and Monday 19 October 2026, and on none of Thursday 15 through Sunday 18 October 2026
+
+#### Scenario: days away moved to end before the stop of a commitment taken up again inside them take it up again on their new day back
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on schedules listing all seven weekdays
+  and kept from 1 January 2026, are taken on at a roster place; days away named "Mallorca" from
+  Tuesday 13 through Sunday 18 October 2026 are said over both through a commitments screen opened at
+  that roster place as of Monday 12 October 2026; "Gym" is stopped, the stop confirmed, through one
+  opened there as of Thursday 15 October 2026; and through one opened there as of Friday 16 October
+  2026 "Gym" is taken up again and "Mallorca" is changed to end on Tuesday 13 October 2026 over both
+- **THEN** nothing is refused
+- **AND** a roster store opened afterwards at that place holds "Gym" due on Wednesday 14 October 2026
+  and on each of Thursday 15 through Monday 19 October 2026, and not on Tuesday 13 October 2026
+
+#### Scenario: days away moved wholly before the stop of a commitment taken up again inside them take it up again on their new day back, and moved back give it back its stop
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on schedules listing all seven weekdays
+  and kept from 1 January 2026, are taken on at a roster place; days away named "Mallorca" from
+  Tuesday 13 through Sunday 18 October 2026 are said over both through a commitments screen opened at
+  that roster place as of Monday 12 October 2026; "Gym" is stopped, the stop confirmed, through one
+  opened there as of Thursday 15 October 2026; and through one opened there as of Friday 16 October
+  2026 "Gym" is taken up again, "Mallorca" is changed to run from Monday 5 through Saturday 10 October
+  2026 over both, then changed to run from Tuesday 13 through Sunday 18 October 2026 over both, and
+  is then removed, the removal confirmed
+- **THEN** nothing is refused
+- **AND** after the first change, a roster store opened at that place holds "Gym" due on Sunday
+  11 October 2026 and on each of Thursday 15 through Monday 19 October 2026, and on neither Monday 5
+  nor Saturday 10 October 2026
+- **AND** after the removal, one holds "Gym" due on Tuesday 13, Wednesday 14 and Monday 19 October 2026
+  and on none of Thursday 15 through Sunday 18 October 2026
+
+#### Scenario: days away moved past the take-up of a commitment taken up again inside them leave it owing the same days whether moved in one change or two
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on schedules listing all seven weekdays
+  and kept from 1 January 2026, are taken on at each of two roster places; at each, days away named
+  "Mallorca" from Tuesday 13 through Sunday 18 October 2026 are said over both through a commitments
+  screen opened there as of Monday 12 October 2026, "Gym" is stopped, the stop confirmed, through one
+  opened there as of Thursday 15 October 2026, and "Gym" is taken up again through one opened there as
+  of Friday 16 October 2026; and through that Friday screen "Mallorca" is changed at the first to run
+  from Tuesday 20 through Sunday 25 October 2026 over both, and at the second to end on Sunday
+  25 October 2026 over both and then to begin on Tuesday 20 October 2026 over both
+- **THEN** nothing is refused
+- **AND** a roster store opened afterwards at each place holds "Gym" due on Tuesday 13, Wednesday 14
+  and Monday 26 October 2026 and on none of Thursday 15 through Sunday 25 October 2026
+
 ### Requirement: A roster store keeps what days away remember, reads a roster kept before they remembered as remembering the later of their last day and the last day kept, and refuses what no roster could remember
 
-A roster store SHALL keep what each days away remember across the app being closed and opened
-again. A roster in the form written before days away remembered a stop
-SHALL be read as remembering, for each stopped commitment days away are over, the later of their
-last day and the last day it was kept, and reading it MUST NOT change what is at its place. A store
-in the forms written since SHALL say of every days away what it remembers, empty where nothing; a
-store saying so where its form does not, or not where it does, SHALL be refused as content that is
-not a roster store. So SHALL a store whose days away remember a commitment they are not over or one
-twice, a day before the day before their first day for a stopped commitment, or nothing for a
-stopped commitment they are over.
+A roster store SHALL keep what each days away remember across the app being closed and opened again.
+A roster in the form before days away remembered a stop SHALL be read as remembering, for each stopped
+commitment they are over, a stop not taken up on the later of their last day and its last day kept,
+and reading it MUST NOT change its place. A store saying what days away remember where its
+form does not, or not where it does, SHALL be refused as content that is not a roster store. So SHALL
+a store whose days away remember a stop of a commitment they are not over, two stops of one
+commitment on one day or out of day order, a stop not taken up before another of it, or
+a take-up on or before its stop's day; nothing else they remember SHALL be refused.
 
 #### Scenario: a roster kept before days away remembered a stop is read as remembering the later of their last day and the last day kept
 
@@ -574,16 +711,56 @@ stopped commitment they are over.
 
 #### Scenario: a roster store whose days away remember what no roster could is refused
 
-- **WHEN** a roster store is opened at each of seven places, each holding a roster whose commitments
+- **WHEN** a roster store is opened at each of nine places, each holding a roster whose commitments
   are "Gym", stopped, kept from 1 January until Wednesday 30 September 2026, and "Run", kept, and
   whose one days away run from Thursday 1 through Saturday 3 October 2026, one place each: in the form
-  this app writes now, over "Run" alone, remembering Saturday 3 October 2026 for "Gym"; over both,
-  remembering that day for "Gym" twice; over both, remembering Tuesday 29 September 2026 for "Gym";
-  over both, remembering nothing; over both, saying nothing of what they remember; in the form used
-  before days away remembered a stop, over both, remembering Saturday 3 October 2026 for "Gym"; and,
-  as a control, in the form this app writes now, over both, remembering that day for "Gym"
-- **THEN** each of the first six is refused as content that is not a roster store
-- **AND** the seventh opens without error
+  this app writes now, over "Run" alone, remembering a stop of "Gym" on Saturday 3 October 2026 not
+  taken up; over both, remembering two stops of "Gym" on that day, the first taken up on Thursday
+  8 October 2026; over both, remembering a stop of "Gym" on Monday 5 October 2026 taken up on
+  Thursday 8 October 2026 and then one on Saturday 3 October 2026; over both, remembering a stop of
+  "Gym" on Saturday 3 October 2026 not taken up and then one on Monday 12 October 2026; over both,
+  remembering a stop of "Gym" on Saturday 3 October 2026 taken up on that day; over both, saying
+  nothing of what they remember; in the form used before days away remembered a stop, over both,
+  remembering a stop of "Gym" on Saturday 3 October 2026; and, as controls, in the form this app
+  writes now, over both, remembering a stop of "Gym" on Tuesday 29 September 2026 taken up on the day
+  after their last day and then one on Saturday 10 October 2026 not taken up, and over both,
+  remembering nothing
+- **THEN** each of the first seven is refused as content that is not a roster store
+- **AND** the eighth and the ninth open without error
+
+### Requirement: Every roster a commitments screen keeps is one a roster store reads
+
+Every roster a commitments screen keeps at its roster place SHALL be read without error by a roster
+store opened there afterwards, whatever sequence of days away said, changed or removed, commitments
+stopped, taken up again, changed or deleted, and copies restored, through commitments screens opened
+as of any days, made it. No stop or take-up confirmed through a commitments screen SHALL be refused
+for what days away remember, and none SHALL leave days away remembering what a roster store refuses.
+
+#### Scenario: a commitment stopped, taken up again and stopped again around days away over it leaves a roster a roster store reads, and stays over them through a later change
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on schedules listing all seven weekdays
+  and kept from 1 January 2026, are taken on at each of three roster places; at the first, days away
+  named "Mallorca" from Tuesday 13 through Sunday 18 October 2026 are said over both through a
+  commitments screen opened there as of Monday 12 October 2026, "Gym" is stopped, the stop confirmed,
+  through one opened there as of Thursday 15 October 2026, "Gym" is taken up again and "Mallorca" is
+  changed to run from Saturday 17 through Sunday 18 October 2026 over both through one opened there as
+  of Friday 16 October 2026, and "Gym" is stopped, the stop confirmed, through one opened there as of
+  Sunday 25 October 2026; at the second, days away named "Flu" from Thursday 1 through Saturday
+  3 October 2026 are said over both through one opened there as of Thursday 1 October 2026, "Gym" is
+  stopped, the stop confirmed, through one opened there as of Monday 5 October 2026, "Flu" is changed
+  to end on Wednesday 7 October 2026, "Gym" is taken up again and "Flu" is changed to begin on Tuesday
+  6 October 2026 through one opened there as of Monday 12 October 2026, and "Gym" is stopped, the stop
+  confirmed, through one opened there as of Tuesday 20 October 2026; and at the third, "Mallorca" is
+  said as at the first, and "Gym" is stopped, the stop confirmed, taken up again, and stopped again,
+  the stop confirmed, through one opened there as of Thursday 15 October 2026
+- **THEN** nothing is refused, and a roster store opened at each place afterwards opens without error
+- **AND** a commitments screen opened at the first as of Monday 26 October 2026 lists "Mallorca" as
+  past over "Gym" and "Run", and "Gym" as stopped; and "Mallorca" changed through it to the name
+  "Majorca", from Saturday 17 through Sunday 18 October 2026, over both, is not refused and is listed
+  over "Gym" and "Run"
+- **AND** once "Mallorca" is removed at the third through that Thursday screen, the removal
+  confirmed, a roster store opened there holds "Gym" due on Tuesday 13 and Wednesday 14 October 2026
+  and on neither Thursday 15 nor Monday 19 October 2026
 
 ### Requirement: A commitments screen refuses days away ending before they begin, over nothing, or clashing with what it holds, and keeps nothing of them
 
@@ -712,10 +889,10 @@ A commitments screen SHALL offer removing every days away it lists, and SHALL re
 asked and confirmed. Being asked SHALL change nothing but hold which days away await removal,
 replacing any change awaiting confirmation; being asked to stop or delete a commitment SHALL leave
 none awaiting removal. A cancel, and an ask about days away it does not list, SHALL change nothing.
-A confirmed removal SHALL be kept at the roster place before the list says so, and SHALL leave every
-commitment the days away were over as though never said, past days and a first day kept through
+A confirmed removal SHALL be kept at the roster place before the list says so, and SHALL leave each
+commitment they were over as though never said, past days and a first day kept through
 included, an every-N-days count running on through their days, a change made since standing from
-the day its era is kept from, and a stop they remember standing. A removal the roster place cannot
+the day its era is kept from, and no remembered stop's gap owed. A removal the roster place cannot
 keep SHALL be refused as a roster that could not be written, still listed.
 
 #### Scenario: asking to remove days away changes nothing until it is confirmed, and a cancel changes nothing
@@ -843,8 +1020,8 @@ removes days away, and removes any it lists as though they had never been said*.
 ### Requirement: A stop through a commitments screen takes a commitment out of days away not begun, a deletion out of every days away, and days away left over none go
 
 A stop confirmed through a commitments screen SHALL take the commitment out of every days away it is
-over that have not begun. Days away begun, under way or past, SHALL keep it and remember the day the
-stop kept it until; where they are under way, the commitment SHALL stay kept until the day it was
+over that have not begun. Days away begun, under way or past, SHALL keep it, remembering the stop;
+where they are under way, the commitment SHALL stay kept until the day it was
 kept until before them. A deletion confirmed through it SHALL take the commitment out of every days
 away it is over, those whose last day has passed included. Days away a stop or a deletion leaves
 over no commitment SHALL go from the roster. What a stop or a deletion does to days away SHALL be

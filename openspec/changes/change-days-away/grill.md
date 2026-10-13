@@ -70,6 +70,13 @@ answers 2 and 6 settle it as the days a span newly takes, never the days it retu
     2026-10-13, after the fourth review found a moved first day losing the stop day and a shortened
     span not moving the take-up. Asked as refuse the take-up, fix, or leave a gap; the owner chose
     fix over refusing a take-up inside days away.*
+18. **What days away remember of a commitment's stops and take-ups is redesigned as a whole**, not
+    patched: one state model saying what a span stores for every stop and take-up of a commitment it
+    is over, and how every saying, change, stop, take-up, removal, copy and store read uses it, with
+    every probe the reviews found written in as a scenario before any code. Settled 16 and 17 stand
+    as the outcomes it must deliver. *Decided at G7, 2026-10-13, after the fifth review found a stop
+    after a take-up writing a roster the app cannot read, and two take-up moves going wrong; asked
+    as simplify, redesign or patch, the owner chose redesign over taking the mechanism back out.*
 
 Carried from #401 and the G1 grill, not re-asked: an every-N-days count begins again on the day back,
 wherever it moves, and runs on unbroken when the span is erased and the eras either side are alike;

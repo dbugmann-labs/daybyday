@@ -296,10 +296,12 @@ and the day, while it would put under days away a day already holding a record o
 picked — save a first day that is today, which keeps that commitment through it as before. A
 commitment changed while away keeps its new rhythm from the day back, wherever the day back moves.
 A stop made once a span has begun no longer takes the commitment out of it: the span keeps it and
-remembers the day the stop kept it until, wherever the span later moves, so removing, unticking or
-moving the span never makes it owe a day between its stop and its take-up, and a span moved back
-past the stop gives those days back. A commitment taken up again while away is taken up on the day
-back, as a change made while away is, and moves with it either way. Settled at G7 the same day.
+remembers that stop, and every stop and take-up of it made since or that the span's days come to
+cover, wherever the span later moves, so removing, unticking or moving the span, in any order, never
+makes it owe a day between a stop and its take-up, and a span moved back gives back what a move took.
+A commitment taken up again while away is taken up on the day back, as a change made while away is,
+and moves with it either way — to a day before its stop too, which then undoes the stop. Settled at
+G7 the same day, and made one model at the next.
 
 **Resume** — the person's word, and the stopped row's swipe label, for **taking a stopped commitment
 up again**, which is what the specs call it; the two name one act. A resume is made on the day it is
