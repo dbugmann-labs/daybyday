@@ -597,23 +597,12 @@ public final class DayScreen {
         public let earliest: CalendarDate
     }
 
-    /// The reach of this screen's day picker: the day it opens on is the day being shown, and
-    /// the earliest day it reaches is the earlier of the earliest day anything on this screen's
-    /// roster is kept from — or, where the roster answers none, the today this screen was last
-    /// handed — and the day being shown.
+    /// The reach of this screen's day picker: it opens on the day being shown, and reaches back
+    /// to the calendar's first date, 1 January 1583, whatever the roster, the record and the
+    /// one-offs hold. `openspec/specs/day-screen/spec.md` § *A day screen's day picker opens on
+    /// the day it is showing and reaches back to the first supported date*.
     public var dayPickerReach: Reach {
-        Reach(opensOn: shownDay, earliest: reachEarliest(asIfShown: shownDay))
-    }
-
-    /// The day picker's own earliest day, read as though `day` were the day being shown rather
-    /// than `shownDay` — the earlier of the roster's own floor and `day` itself. Shared by
-    /// `dayPickerReach` (`day == shownDay`) and by `weekStrip(asIfShown:)`, whose neighbour
-    /// strips (`previousWeekStrip`, `nextWeekStrip`) read it against the day a page there would
-    /// land on rather than the day actually shown — `design.md` § *One landing rule, read by the
-    /// page and by the strip beside it*.
-    private func reachEarliest(asIfShown day: CalendarDate) -> CalendarDate {
-        let floor = roster.earliestKeptFrom ?? today
-        return day.days(until: floor) < 0 ? floor : day
+        Reach(opensOn: shownDay, earliest: Self.firstSupportedDate)
     }
 
     /// One day of this screen's week strip: its letter, its date where the calendar supports one,
@@ -630,11 +619,15 @@ public final class DayScreen {
         public let isShown: Bool
         /// Whether this is the today the screen was last handed.
         public let isToday: Bool
-        /// Whether a tap on this day is offered: it holds a date, it is not the day being shown,
-        /// and it is not earlier than the day picker's reach.
+        /// Whether a tap on this day is offered: it holds a date and it is not the day being
+        /// shown.
         public let isOffered: Bool
         /// Whether some days away its roster holds includes this day, whatever is recorded on it.
         public let isAway: Bool
+        /// Whether this is the earliest day anything on the roster is kept from, as the roster
+        /// itself answers it: stopped commitments count, deleted ones do not, and a roster that
+        /// holds nothing or cannot be read marks no day.
+        public let isEarliestKeptFrom: Bool
     }
 
     /// The English letter this capability says for the day `mondayOffset` days after a Monday,
@@ -661,7 +654,7 @@ public final class DayScreen {
 
     /// This screen's week strip: the seven days of the week `shownDay` lies in, Monday first,
     /// each carrying its own marks and its own offer. Computed fresh at every read, from
-    /// `shownDay`, `today` and `dayPickerReach` alone, and never stored — `design.md` § *Seven
+    /// `shownDay`, `today` and the roster alone, and never stored — `design.md` § *Seven
     /// values, each saying everything the shell draws*: it follows every move, every
     /// `shown(asOf:)` and every roster read without a line of its own in any of them, and reads
     /// neither the record nor the roster's rows. A day past either end of the calendar keeps its
@@ -679,16 +672,15 @@ public final class DayScreen {
     /// at all — `openspec/specs/day-screen/spec.md` § *A day screen says the week strip a page
     /// either way would give, marking no day as shown*: two capsules filled at once, the shown
     /// day's own and the day a page would land on, read as two days chosen (`grill.md` 15). The
-    /// landing day still comes out offered rather than faded, since it is never earlier than
-    /// `reachEarliest(asIfShown:)` reads for it — `weekPageLanding(_:)` never lands anywhere else.
+    /// landing day still comes out offered rather than faded: every day holding a date is offered
+    /// but the one shown.
     private func weekStrip(asIfShown day: CalendarDate, markShown: Bool) -> [WeekStripDay] {
         let offset = Self.mondayOffset(of: day.weekday)
-        let earliest = reachEarliest(asIfShown: day)
         return (0..<7).map { position in
             let date = day.adding(days: position - offset)
             let isShown = markShown && date == day
             let isToday = date == today
-            let isOffered = date != nil && !isShown && date!.days(until: earliest) <= 0
+            let isOffered = date != nil && !isShown
             return WeekStripDay(
                 letter: Self.weekStripLetters[position], date: date, isShown: isShown,
                 isToday: isToday, isOffered: isOffered,
@@ -696,7 +688,8 @@ public final class DayScreen {
                     roster.daysAway.contains { daysAway in
                         daysAway.firstDay.days(until: day) >= 0 && day.days(until: daysAway.lastDay) >= 0
                     }
-                } ?? false)
+                } ?? false,
+                isEarliestKeptFrom: date != nil && date == roster.earliestKeptFrom)
         }
     }
 
@@ -1641,14 +1634,10 @@ public final class DayScreen {
         dayView = dayViewOfShownDay()
     }
 
-    /// Shows `day`, the day picked on this screen's day picker, where it is not earlier than
-    /// `dayPickerReach.earliest`; leaves the screen exactly as it was, with nothing formed again
-    /// and nothing said about it, where it is earlier. Does not move the today, and does not read
-    /// the roster or the record again.
+    /// Shows `day`, the day picked on this screen's day picker. A pick is never refused: the
+    /// picker reaches the calendar's first date, and a day it holds is a day this screen can
+    /// show. Does not move the today, and does not read the roster or the record again.
     public func showDay(_ day: CalendarDate) {
-        guard day.days(until: dayPickerReach.earliest) <= 0 else {
-            return
-        }
         if shownDay != day {
             notice = nil
             nameRefusal = nil
@@ -1669,29 +1658,25 @@ public final class DayScreen {
     /// the page and by the strip beside it*: the one function `showPreviousWeek()`,
     /// `showNextWeek()`, `previousWeekStrip` and `nextWeekStrip` all read, so none of the four can
     /// disagree with another. `openspec/specs/day-screen/spec.md` § *A day screen pages to the
-    /// week before and the week after, keeping the weekday it is showing* and § *A page to the
-    /// week before lands on no day earlier than the day picker reaches*.
+    /// week before and the week after, keeping the weekday it is showing*.
     ///
     /// The plain landing is `shownDay` itself, seven days either way — the same weekday, a week
-    /// being seven days long. Two things move it off that day: paging after, past the calendar's
-    /// last date, lands on that date instead where the target week holds a date of its own
-    /// (`Self.lastSupportedDate`); paging before, below the day picker's reach as it stood before
-    /// the page, lands on the reach's own earliest day instead where the target week holds a day
-    /// at or after it. Neither reads `today` — the spec's own words are "SHALL read neither place
+    /// being seven days long. Two things move it off that day, one each way: paging after, past
+    /// the calendar's last date, lands on that date instead where the target week holds a date
+    /// of its own (`Self.lastSupportedDate`); paging before, past its first date, lands on that
+    /// date instead (`Self.firstSupportedDate`) where the target week holds it. Neither reads `today` — the spec's own words are "SHALL read neither place
     /// again nor move the today", with no exception carved out for the week the today lies in
     /// (`grill.md` 13, replacing 7).
     ///
     /// Works entirely in day counts from `shownDay` rather than forming the target week's own
     /// `CalendarDate`s, because a week's Monday, or even its Sunday, can fall outside the
-    /// calendar's supported range while a day later in that same week — or `dayPickerReach`'s own
-    /// `earliest` — still falls inside it (the earliest supported date, 1 January 1583, is itself
-    /// a Saturday); `CalendarDate.adding(days:)` answers `nil` for exactly that case, so a bound
+    /// calendar's supported range while a day later in that same week still falls inside it (the
+    /// earliest supported date, 1 January 1583, is itself a Saturday); `CalendarDate.adding(days:)` answers `nil` for exactly that case, so a bound
     /// built from a Monday that may not exist would lose exactly the cases the spec's "or lies
     /// outside the calendar" clause draws. `mondayOffset` and `sundayOffset` are the target
     /// week's own Monday and Sunday, each as a count of days from `shownDay` — negative for a
     /// week before it, positive for one after — and `earliestOffset`'s own count follows the same
-    /// reckoning, read once as `dayPickerReach.earliest` stood before the page, per that same
-    /// requirement's "read off the reach as it stands before the page".
+    /// reckoning.
     private func weekPageLanding(_ direction: WeekPageDirection) -> CalendarDate? {
         let offset = Self.mondayOffset(of: shownDay.weekday)
         let weekOffset = direction == .before ? -7 : 7
@@ -1712,23 +1697,22 @@ public final class DayScreen {
             return Self.lastSupportedDate
 
         case .before:
-            let earliestReach = dayPickerReach.earliest
-            if let candidate = shownDay.adding(days: weekOffset),
-                candidate.days(until: earliestReach) <= 0
-            {
-                // The same weekday exists and is not earlier than the reach.
-                return candidate
+            if let landing = shownDay.adding(days: weekOffset) {
+                return landing
             }
-            // The same weekday does not exist or is earlier than the reach. Land on the reach's
-            // own earliest day instead, where the target week holds it; otherwise this week has
-            // nowhere to land.
-            let earliestOffset = shownDay.days(until: earliestReach)
+            // The same weekday lies before the calendar's first date. Land on that date instead
+            // where the target week holds it; otherwise this week has nowhere to land.
+            let earliestOffset = shownDay.days(until: Self.firstSupportedDate)
             guard earliestOffset >= mondayOffset, earliestOffset <= sundayOffset else {
                 return nil
             }
-            return earliestReach
+            return Self.firstSupportedDate
         }
     }
+
+    /// The calendar's own first supported date, 1 January 1583: the earliest day the day picker
+    /// reaches, whatever the roster holds.
+    private static let firstSupportedDate = CalendarDate(year: 1583, month: 1, day: 1)!
 
     /// The calendar's own last supported date, 31 December 9999 (`CalendarDate.init?(year:month:
     /// day:)`'s own documented bound) — restated here as the day a page after lands on where the
@@ -1736,14 +1720,13 @@ public final class DayScreen {
     private static let lastSupportedDate = CalendarDate(year: 9999, month: 12, day: 31)!
 
     /// Pages to the week before the one the day being shown lies in — to that week's day of the
-    /// same weekday, or, where `weekPageLanding(_:)` lands there instead, no earlier than the day
-    /// picker's reach — leaving the screen exactly as it was where that week holds neither.
+    /// same weekday, or, where `weekPageLanding(_:)` lands there instead, the calendar's first date
+    /// — leaving the screen exactly as it was where that week holds neither.
     /// Applies the landing `weekPageLanding(.before)` answers exactly as `showPreviousDay()`
     /// applies its own step: clears what is told, moves the day, forms the day view of the day
     /// landed on. Reads neither the roster nor the record again, and does not move the today.
     /// `openspec/specs/day-screen/spec.md` § *A day screen pages to the week before and the week
-    /// after, keeping the weekday it is showing* and § *A page to the week before lands on no day
-    /// earlier than the day picker reaches*.
+    /// after, keeping the weekday it is showing*.
     public func showPreviousWeek() {
         guard let landing = weekPageLanding(.before) else {
             return
@@ -1757,8 +1740,7 @@ public final class DayScreen {
     /// Pages to the week after the one the day being shown lies in — to that week's day of the
     /// same weekday, or, where that day falls past the calendar's last date, to that last date
     /// itself — leaving the screen exactly as it was where the calendar holds no date at all in
-    /// that week. The same as `showPreviousWeek()`, the other direction; never bound by the day
-    /// picker's reach, which only bounds a page back.
+    /// that week. The same as `showPreviousWeek()`, the other direction.
     public func showNextWeek() {
         guard let landing = weekPageLanding(.after) else {
             return

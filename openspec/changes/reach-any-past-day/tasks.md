@@ -11,39 +11,39 @@ and that edit is red before the code it needs.
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 13 new scenarios uncovered and no other
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 13 new scenarios uncovered and no other
 
 ## 2. The seam and the sweep
 
-- [ ] 2.1 `WeekStripDay.isEarliestKeptFrom` exists with the signature in `design.md` § *The seam*, and 5.1 is red before it does more than compile
-- [ ] 2.2 The tests named for the scenarios this delta withdraws are deleted and listed by title in the PR body: two from *A day screen shows a day picked on its day picker*, three from *A day screen's reach bounds its day picker*, one from the one-offs requirement, seven from *says the day its day picker opens on*, three from *offers every day it can show*, four from *A page to the week before lands on no day earlier*, and two from *the week strip a page either way would give*. That is 22 in all, and any other deletion is a stop
+- [x] 2.1 `WeekStripDay.isEarliestKeptFrom` exists with the signature in `design.md` § *The seam*, and 5.1 is red before it does more than compile
+- [x] 2.2 The tests named for the scenarios this delta withdraws are deleted and listed by title in the PR body: two from *A day screen shows a day picked on its day picker*, three from *A day screen's reach bounds its day picker*, one from the one-offs requirement, seven from *says the day its day picker opens on*, three from *offers every day it can show*, four from *A page to the week before lands on no day earlier*, and two from *the week strip a page either way would give*. That is 22 in all, and any other deletion is a stop
 
 ## 3. The day picker
 
-- [ ] 3.1 a day screen's day picker reaches back to the first supported date whatever its roster holds (catches the roster's answer or the today left as a floor)
-- [ ] 3.2 *Rewritten:* a day screen's day picker reaches back to the first supported date and opens on the last
-- [ ] 3.3 a day screen shows a day picked earlier than anything on its roster is kept from (catches `showDay` keeping its guard)
-- [ ] 3.4 *Rewritten:* a day screen shows the earliest day its day picker reaches when that day is picked
-- [ ] 3.5 *Rewritten:* a day screen offers the way back to today once a day other than that today is picked (its last AND is gone)
+- [x] 3.1 a day screen's day picker reaches back to the first supported date whatever its roster holds (catches the roster's answer or the today left as a floor)
+- [x] 3.2 *Rewritten:* a day screen's day picker reaches back to the first supported date and opens on the last
+- [x] 3.3 a day screen shows a day picked earlier than anything on its roster is kept from (catches `showDay` keeping its guard)
+- [x] 3.4 *Rewritten:* a day screen shows the earliest day its day picker reaches when that day is picked
+- [x] 3.5 *Rewritten:* a day screen offers the way back to today once a day other than that today is picked (its last AND is gone)
 
 ## 4. The week strip's offers and pages
 
-- [ ] 4.1 a day screen's week strip offers the days of its week before anything on its roster is kept from (catches `isOffered` keeping the floor)
-- [ ] 4.2 a day screen's week strip offers no day outside the calendar (catches the floor's removal dropping the date check)
-- [ ] 4.3 a day screen paged to the week before passes the earliest day anything on its roster is kept from, keeping the weekday (catches a page landing on the kept-from day)
-- [ ] 4.4 *Rewritten:* a day screen's week strip either side holds the week a page there would land in and marks no day as shown
-- [ ] 4.5 *Rewritten:* a day screen says no week strip either side where a page there would leave it as it was
+- [x] 4.1 a day screen's week strip offers the days of its week before anything on its roster is kept from (catches `isOffered` keeping the floor)
+- [x] 4.2 a day screen's week strip offers no day outside the calendar (catches the floor's removal dropping the date check)
+- [x] 4.3 a day screen paged to the week before passes the earliest day anything on its roster is kept from, keeping the weekday (catches a page landing on the kept-from day)
+- [x] 4.4 *Rewritten:* a day screen's week strip either side holds the week a page there would land in and marks no day as shown
+- [x] 4.5 *Rewritten:* a day screen says no week strip either side where a page there would leave it as it was
 
 ## 5. The mark
 
-- [ ] 5.1 a day screen's week strip marks the earliest day anything on its roster is kept from, though nothing is due on it (catches a due day read for a kept-from day)
-- [ ] 5.2 a day screen's week strip marks the earliest day kept from where it lies after the today
-- [ ] 5.3 a day screen's week strip marks the earliest day kept from where it is the day shown and the today (catches the mark suppressed under the capsule)
-- [ ] 5.4 a day screen's week strip marks the earliest day kept from on the week strip a page either way would give (catches the neighbour strips left unmarked)
-- [ ] 5.5 a day screen's week strip marks the earliest day kept from of a commitment its roster has stopped keeping, and not of one it has deleted
-- [ ] 5.6 a day screen whose roster holds nothing or cannot be read marks no day as the earliest kept from (catches the today as a stand-in)
-- [ ] 5.7 a day screen's week strip follows the earliest day kept from once its roster is read again (catches a mark stored at opening)
-- [ ] 5.8 a day screen's week strip marks the earliest day kept from whatever its record and its one-offs hold
+- [x] 5.1 a day screen's week strip marks the earliest day anything on its roster is kept from, though nothing is due on it (catches a due day read for a kept-from day)
+- [x] 5.2 a day screen's week strip marks the earliest day kept from where it lies after the today
+- [x] 5.3 a day screen's week strip marks the earliest day kept from where it is the day shown and the today (catches the mark suppressed under the capsule)
+- [x] 5.4 a day screen's week strip marks the earliest day kept from on the week strip a page either way would give (catches the neighbour strips left unmarked)
+- [x] 5.5 a day screen's week strip marks the earliest day kept from of a commitment its roster has stopped keeping, and not of one it has deleted
+- [x] 5.6 a day screen whose roster holds nothing or cannot be read marks no day as the earliest kept from (catches the today as a stand-in)
+- [x] 5.7 a day screen's week strip follows the earliest day kept from once its roster is read again (catches a mark stored at opening)
+- [x] 5.8 a day screen's week strip marks the earliest day kept from whatever its record and its one-offs hold
 
 ## 6. The shell (ADR-1019: no rule the Kit does not state)
 
