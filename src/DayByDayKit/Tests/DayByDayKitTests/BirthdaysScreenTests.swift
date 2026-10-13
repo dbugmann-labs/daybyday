@@ -901,3 +901,199 @@ func aConfirmedDeletionRemovesTheIdeaWhereItStoodAndItsLinesCountDropsAtOnce() a
     let reopenedKate = try #require(reopened.lines.first)
     #expect(reopened.ideas(of: reopenedKate).map(\.text) == ["Hiking socks, size 38"])
 }
+
+@MainActor
+@Test(
+    "an idea marked given through a Birthdays screen is kept given past its contact's birthday, and its line's count drops at once"
+)
+func anIdeaMarkedGivenThroughABirthdaysScreenIsKeptGivenPastItsContactsBirthdayAndItsLinesCountDropsAtOnce()
+    async throws
+{
+    let place = try ideaPlace(
+        holding: [
+            ("kate", idea("Ceramics class voucher")), ("kate", idea("Hiking socks, size 38")),
+            ("kate", idea("Book voucher")),
+        ])
+    let fake = FakeCalendar(handing: [kateBirthday])
+    let screen = await kateScreen(at: place, calendarFake: fake)
+    let kate = try #require(screen.lines.first)
+
+    #expect(screen.markIdea(0, of: kate, given: true) == nil)
+    let marked = try #require(screen.lines.first)
+    #expect(marked.ideasInWords == "2 ideas")
+    #expect(screen.ideas(of: marked).last?.text == "Ceramics class voucher")
+    #expect(screen.ideas(of: marked).last?.isGiven == true)
+    #expect(fake.asks.count == 1)
+
+    let nextYear = FakeCalendar(handing: [
+        birthday("kate", "Kate Bell's 49th Birthday", date(2027, 11, 14))
+    ])
+    let later = await kateScreen(at: place, calendarFake: nextYear, today: date(2026, 11, 16))
+    let laterKate = try #require(later.lines.first)
+    #expect(later.ideas(of: laterKate).last?.text == "Ceramics class voucher")
+    #expect(later.ideas(of: laterKate).last?.isGiven == true)
+    #expect(laterKate.ideasInWords == "2 ideas")
+}
+
+@MainActor
+@Test(
+    "taking back an idea's mark through a Birthdays screen returns it where it was added, and its line's count rises at once"
+)
+func takingBackAnIdeasMarkThroughABirthdaysScreenReturnsItWhereItWasAddedAndItsLinesCountRisesAtOnce()
+    async throws
+{
+    let place = try ideaPlace(
+        holding: [("kate", idea("Ceramics class voucher")), ("kate", idea("Book voucher"))],
+        given: [0])
+    let screen = await kateScreen(at: place)
+    let kate = try #require(screen.lines.first)
+
+    #expect(screen.markIdea(1, of: kate, given: false) == nil)
+    let back = try #require(screen.lines.first)
+    #expect(back.ideasInWords == "2 ideas")
+    #expect(screen.ideas(of: back).map(\.text) == ["Ceramics class voucher", "Book voucher"])
+    #expect(screen.ideas(of: back).map(\.isGiven) == [false, false])
+
+    #expect(screen.markIdea(1, of: back, given: true) == nil)
+    let before = try Data(contentsOf: place)
+    #expect(screen.markIdea(1, of: back, given: true) == nil)
+    #expect(screen.markIdea(0, of: back, given: false) == nil)
+    #expect(try Data(contentsOf: place) == before)
+
+    let reopened = await kateScreen(at: place)
+    let reopenedKate = try #require(reopened.lines.first)
+    #expect(reopened.ideas(of: reopenedKate).map(\.text) == ["Ceramics class voucher", "Book voucher"])
+    #expect(reopened.ideas(of: reopenedKate).map(\.isGiven) == [false, true])
+}
+
+@MainActor
+@Test("a change, deletion or mark a Birthdays screen cannot keep is refused as not kept and not held")
+func aChangeDeletionOrMarkABirthdaysScreenCannotKeepIsRefusedAsNotKeptAndNotHeld() async throws {
+    let place = try ideaPlace(
+        holding: [("kate", idea("Ceramics class voucher")), ("kate", idea("Book voucher"))],
+        given: [1])
+    let screen = await kateScreen(at: place)
+    let kate = try #require(screen.lines.first)
+    let folder = place.deletingLastPathComponent()
+    try FileManager.default.setAttributes([.posixPermissions: 0o555], ofItemAtPath: folder.path)
+    defer {
+        try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: folder.path)
+    }
+
+    #expect(screen.changeIdea(0, of: kate, text: "Hiking socks", link: "") == .notKept)
+    #expect(screen.markIdea(0, of: kate, given: true) == .notKept)
+    #expect(screen.markIdea(1, of: kate, given: false) == .notKept)
+    screen.askToDeleteIdea(0, of: kate)
+    #expect(screen.confirmDeletingIdea() == .notKept)
+
+    let held = try #require(screen.lines.first)
+    #expect(screen.ideas(of: held).map(\.text) == ["Ceramics class voucher", "Book voucher"])
+    #expect(screen.ideas(of: held).map(\.isGiven) == [false, true])
+    #expect(held.ideasInWords == "1 idea")
+
+    let reopened = await kateScreen(at: place)
+    let reopenedKate = try #require(reopened.lines.first)
+    #expect(reopened.ideas(of: reopenedKate) == screen.ideas(of: held))
+}
+
+@MainActor
+@Test("a change or mark naming no idea of a line is refused as not kept and writes nothing")
+func aChangeOrMarkNamingNoIdeaOfALineIsRefusedAsNotKeptAndWritesNothing() async throws {
+    let place = try ideaPlace(holding: [("kate", idea("Book voucher"))])
+    let before = try Data(contentsOf: place)
+    let screen = await kateScreen(at: place)
+    let kate = try #require(screen.lines.first)
+
+    #expect(screen.changeIdea(1, of: kate, text: "Hiking socks", link: "") == .notKept)
+    #expect(screen.markIdea(1, of: kate, given: true) == .notKept)
+    #expect(try Data(contentsOf: place) == before)
+
+    let unreadable = freshIdeaPlace()
+    try FileManager.default.createDirectory(
+        at: unreadable.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not a store".utf8).write(to: unreadable)
+    let junk = try Data(contentsOf: unreadable)
+    let blind = await kateScreen(at: unreadable)
+    let blindKate = try #require(blind.lines.first)
+    #expect(blind.changeIdea(0, of: blindKate, text: "Hiking socks", link: "") == .notKept)
+    #expect(blind.markIdea(0, of: blindKate, given: true) == .notKept)
+    blind.askToDeleteIdea(0, of: blindKate)
+    #expect(blind.ideaAwaitingDeletion == nil)
+    #expect(try Data(contentsOf: unreadable) == junk)
+}
+
+@MainActor
+@Test("a Birthdays screen line counts only its contact's ideas not given")
+func aBirthdaysScreenLineCountsOnlyItsContactsIdeasNotGiven() async throws {
+    let place = try ideaPlace(
+        holding: [
+            ("kate", idea("Ceramics class voucher")), ("kate", idea("Hiking socks, size 38")),
+            ("kate", idea("Book voucher")), ("john", idea("Scarf")),
+        ], given: [1, 3])
+    let screen = await kateScreen(
+        at: place,
+        calendarFake: FakeCalendar(handing: [
+            kateBirthday, birthday("john", "John Appleseed's 40th Birthday", date(2027, 6, 5)),
+        ]))
+    #expect(screen.lines.map(\.ideasInWords) == ["2 ideas", nil])
+}
+
+@MainActor
+@Test("a Birthdays screen gives back a line's ideas not given in the order added, then those given")
+func aBirthdaysScreenGivesBackALinesIdeasNotGivenInTheOrderAddedThenThoseGiven() async throws {
+    let place = try ideaPlace(
+        holding: [
+            ("kate", idea("Ceramics class voucher")), ("kate", idea("Hiking socks, size 38")),
+            ("kate", idea("Book voucher")),
+        ], given: [0])
+    let screen = await kateScreen(at: place)
+    let kate = try #require(screen.lines.first)
+    #expect(
+        screen.ideas(of: kate).map(\.text)
+            == ["Hiking socks, size 38", "Book voucher", "Ceramics class voucher"])
+    #expect(screen.ideas(of: kate).map(\.isGiven) == [false, false, true])
+
+    screen.addIdea(text: "Scarf", link: "", to: kate)
+    #expect(
+        screen.ideas(of: kate).map(\.text)
+            == ["Hiking socks, size 38", "Book voucher", "Scarf", "Ceramics class voucher"])
+
+    screen.markIdea(3, of: kate, given: false)
+    #expect(
+        screen.ideas(of: kate).map(\.text)
+            == ["Ceramics class voucher", "Hiking socks, size 38", "Book voucher", "Scarf"])
+    #expect(screen.ideas(of: kate).map(\.isGiven) == [false, false, false, false])
+}
+
+@MainActor
+@Test(
+    "what a Birthdays screen tells about a refused change, deletion or mark ends with the next one not refused"
+)
+func whatABirthdaysScreenTellsAboutARefusedChangeDeletionOrMarkEndsWithTheNextOneNotRefused()
+    async throws
+{
+    func refusedScreen() async throws -> (BirthdaysScreen, BirthdaysScreen.Line) {
+        let place = try ideaPlace(
+            holding: [("kate", idea("Ceramics class voucher")), ("kate", idea("Book voucher"))])
+        let screen = await kateScreen(at: place)
+        let kate = try #require(screen.lines.first)
+        screen.changeIdea(0, of: kate, text: "", link: "")
+        screen.askToDeleteIdea(0, of: kate)
+        screen.cancelDeletingIdea()
+        return (screen, kate)
+    }
+
+    let (screen, kate) = try await refusedScreen()
+    #expect(screen.ideaRefusal == .saysNothing)
+    #expect(screen.markIdea(1, of: kate, given: true) == nil)
+    #expect(screen.ideaRefusal == nil)
+    #expect(screen.markIdea(2, of: kate, given: true) == .notKept)
+    #expect(screen.ideaRefusal == .notKept)
+    screen.ideaFieldEdited()
+    #expect(screen.ideaRefusal == nil)
+
+    let (deleting, deletingKate) = try await refusedScreen()
+    deleting.askToDeleteIdea(0, of: deletingKate)
+    deleting.confirmDeletingIdea()
+    #expect(deleting.ideaRefusal == nil)
+}
