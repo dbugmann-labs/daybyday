@@ -231,7 +231,6 @@ struct CommitmentsView: View {
     @State private var sheetTarget: SheetTarget?
     @State private var happeningSheetTarget: HappeningSheetTarget?
     @State private var sayingDaysAway = false
-    @State private var removalRefusal: CommitmentsScreen.Refusal?
     /// Bumped in `.sheet(item:onDismiss:)`'s `onDismiss`, and read by `body` where the lists are
     /// built, so a dismissed sheet always leaves this view's `List` re-evaluated against
     /// `screen.kept`/`keptGroups`/`stopped` — `tasks.md` § 14.4. A rename or a rhythm change kept
@@ -494,14 +493,18 @@ struct CommitmentsView: View {
                     }
                 }
                 Button("New days away") {
-                    removalRefusal = nil
+                    // Whatever the screen said about days away ends as the sheet opens.
+                    screen.daysAwaySheetEdited()
                     sayingDaysAway = true
                 }
             } header: {
                 Text("Days away")
             } footer: {
-                if let removalRefusal {
-                    refusalText(removalRefusal)
+                // The screen's own refusal, a removal that could not be saved, drawn here while
+                // the sheet is not up; the sheet draws its own at its foot. One source, so
+                // showing the app again, which clears it on the screen, clears it here.
+                if !sayingDaysAway, let refusal = screen.daysAwayRefusal {
+                    refusalText(refusal)
                 }
             }
 
@@ -676,10 +679,7 @@ struct CommitmentsView: View {
             presenting: screen.daysAwayAwaitingRemoval
         ) { _ in
             Button("Remove", role: .destructive) {
-                // A removal that cannot be saved is said here, under the list it failed on,
-                // and not left held for the next days away sheet to draw at its foot.
-                removalRefusal = screen.confirmRemovingDaysAway()
-                screen.daysAwaySheetClosed()
+                screen.confirmRemovingDaysAway()
                 listRevision += 1
             }
             Button("Cancel", role: .cancel) {
