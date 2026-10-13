@@ -11,7 +11,8 @@
   the era a commitment is taken up on moves with the day back. A span moved past a stop moves it to
   the day before the span in the eras, and — settled at G7, because the eras store that and a stop
   the day after a span alike — every begun span keeping a stopped commitment remembers the day the
-  stop kept it until, in roster form 11, a stop under way included. § *Decision* and
+  stop kept it until, in roster form 11, a stop under way included, through every later change of
+  the span; a take-up made inside it moves with the day back. § *Decision* and
   § *Consequences* are changed in place to say so; the decision stands.
 
 ## Context
@@ -53,8 +54,9 @@ the roster form as written and keeps its own form.
   an every-N-days count runs on unbroken, and a change made since stands from the day it was made.
 - **A span remembers a stop, not a first day kept through.** A first day a commitment was kept
   through lives only in its eras, so a change keeps it only while the first day stays. The day a
-  stop kept a commitment until is remembered by every begun span keeping it, so removing, unticking
-  or moving a span gives back no day after it, and a span moved back past it gives the days back.
+  stop kept a commitment until is remembered by every begun span keeping it, wherever the span then
+  moves, so removing, unticking or moving a span makes it owe no day between its stop and its
+  take-up, and a span moved back past the stop gives the days back.
 - **The span and the gaps cannot drift apart at rest**, since one write carries both. What keeps them
   agreeing is that every act that moves either forms the other with it.
 

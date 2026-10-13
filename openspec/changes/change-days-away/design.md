@@ -61,9 +61,10 @@ ADR-1069 is amended for this and for settled 16.
 
 Settled 16. `Roster.Span` gains, per commitment, the day a stop kept it until, in roster form 11.
 `confirmStopKeeping` sets it on every begun span keeping the commitment, never over a day already
-there; a change and a take-up-again keep it; a deletion drops it. Every give-back — removal, untick,
-either end moved, a move wholly past — gives back no day after it, so the fix round's guard in
-`fillGap`'s `(behind, nil)` branch goes. The eras still carry a stop a span reaches past as the day
+there; a change, wherever it moves the span, and a take-up-again keep it, so the store's bound of
+the day before the first day reads stopped commitments alone (settled 17); a deletion drops it.
+Every give-back — removal, untick, either end moved, a move wholly past — gives back no day after
+it and before the take-up, so the fix round's guard in `fillGap`'s `(behind, nil)` branch goes. The eras still carry a stop a span reaches past as the day
 before it (settled 12), so a roster's answer for a day stays the eras'.
 - *Guard (the fix round):* rejected — a stop the day after a span then lost its days on removal.
 - *No guard, no memory:* rejected — the eras store that case and a span moved past a stop alike.
@@ -86,7 +87,8 @@ before it (settled 12), so a roster's answer for a day stays the eras'.
 - **Settled 16's "every stopped commitment they are over" takes in a stop under way**: the span
   keeps it, remembered, rather than #401's take-out. *Open Questions*, settled.
 - **A take-up-again inside a span over the commitment holds from the day after it**, as settled 11
-  has a change made while away do; the day it was made is not remembered either.
+  has a change made while away do; the day it was made is not remembered either. It moves with the
+  day back both ways, and a first-day move or a removal leaves it (settled 17).
 - **Past spans**: by first day, latest first; sharing one, the last said first — the reverse of the
   upcoming order.
 - **The three requirements that lose a scenario are REMOVED and re-ADDED** under new or carried

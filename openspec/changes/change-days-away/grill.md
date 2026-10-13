@@ -64,6 +64,12 @@ answers 2 and 6 settle it as the days a span newly takes, never the days it retu
     as removal, guard or remember; the owner chose remember, "make it right entirely", over a
     roster form bump. It reverses the first G4's reading that a span moved back does not restore a
     stop it moved.*
+17. **A commitment stopped and taken up again inside days away keeps its real stop day through every
+    later change of them**, and its take-up moves with the day back in both directions. No change,
+    move back or removal makes it owe a day between its stop and its take-up. *Decided at G7,
+    2026-10-13, after the fourth review found a moved first day losing the stop day and a shortened
+    span not moving the take-up. Asked as refuse the take-up, fix, or leave a gap; the owner chose
+    fix over refusing a take-up inside days away.*
 
 Carried from #401 and the G1 grill, not re-asked: an every-N-days count begins again on the day back,
 wherever it moves, and runs on unbroken when the span is erased and the eras either side are alike;
