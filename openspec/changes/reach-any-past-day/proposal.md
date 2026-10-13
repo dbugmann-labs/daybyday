@@ -25,7 +25,7 @@ None.
 
 ### Modified Capabilities
 
-- `day-screen`: two ADDED, six MODIFIED, three REMOVED.
+- `day-screen`: six ADDED, two MODIFIED, seven REMOVED.
 
 ## Impact
 

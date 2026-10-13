@@ -418,10 +418,10 @@ Monday first and Sunday last. Each day SHALL say its letter, "M", "T", "W", "T",
 that order, and its date; a day outside the calendar the screen supports SHALL keep its letter and
 hold no date. The letters SHALL be this capability's own English and MUST NOT come from the device's
 language, region, locale or calendar. The strip SHALL mark the day being shown as shown and the
-today last handed where that week holds it, and nothing but days away and the earliest kept-from
-day. It SHALL
-follow the day being shown and the today, read no clock and take no day from the caller, and what it
-holds and marks MUST NOT depend on the record or on the rows of any day.
+today last handed where that week holds it, and SHALL mark nothing else but days away and the
+earliest kept-from day. It SHALL follow the day being shown and the today, read no clock and take
+no day from the caller, and what it holds and marks MUST NOT depend on the record or on the rows of
+any day.
 
 #### Scenario: a day screen says the seven days of its week, Monday first, each by its letter
 
