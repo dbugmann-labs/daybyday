@@ -153,3 +153,39 @@ func aCopyHoldingDaysAwayRestoredPutsThemAndTheirGapsBackAtTheRosterPlace() thro
     #expect(isDue("Gym", on: date(2026, 10, 19)))
     #expect(isDue("Run", on: date(2026, 10, 19)))
 }
+
+@MainActor
+@Test("days away changed on a commitments screen write a copy at the copy place")
+func daysAwayChangedOnACommitmentsScreenWriteACopyAtTheCopyPlace() throws {
+    let places = Places()
+    let gym = commitment("Gym")
+    try RosterStore(at: places.roster).add(gym)
+    let copyPlace = CopyPlace(
+        at: places.copyState, keepingRecordAt: places.record, keepingRosterAt: places.roster,
+        keepingOneOffsAt: places.oneOffs, keepingBirthdayTicksAt: places.birthday,
+        keepingHappeningsAt: places.happenings,
+        asking: laterMinuteEachTime(from: Moment(on: monday12, hour: 14, minute: 32)!))
+    let screen = places.screen(copyingTo: copyPlace)
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    screen.givenAsCopyPlace(directory)
+    screen.sayDaysAway(
+        named: "Mallorca", from: date(2026, 10, 13), through: date(2026, 10, 18), over: [gym])
+    let mallorca = try #require(screen.daysAway.first)
+
+    let changed = screen.changeDaysAway(
+        mallorca, named: "Mallorca", from: date(2026, 10, 13), through: date(2026, 10, 16),
+        over: [gym])
+    let refused = screen.changeDaysAway(
+        try #require(screen.daysAway.first), named: "Mallorca", from: date(2026, 10, 13),
+        through: monday12, over: [gym])
+
+    #expect(changed == nil)
+    #expect(refused == .lastDayBeforeFirstDay)
+    let copy = try copyHeld(in: directory)
+    #expect(copy.moment == Moment(on: monday12, hour: 14, minute: 34)!)
+    #expect(copy.roster.daysAway.map(\.title) == ["Mallorca"])
+    #expect(copy.roster.daysAway.first?.lastDay == date(2026, 10, 16))
+    #expect(copy.roster.daysAway.first?.commitments.map(\.name) == ["Gym"])
+    #expect(copyPlace.lastCopy == Moment(on: monday12, hour: 14, minute: 34)!)
+}

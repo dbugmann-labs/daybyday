@@ -157,6 +157,7 @@ public final class CommitmentsScreen {
         daysAwayRefusal = nil
         endedByAChangeOrByBeingShown()
         refreshLists(from: rosterStore)
+        copyPlace?.keptAChange()
         return nil
     }
 

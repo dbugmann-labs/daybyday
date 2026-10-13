@@ -71,7 +71,7 @@ the next.
 
 ## 10. `restore`
 
-- [ ] 10.1 days away changed on a commitments screen write a copy at the copy place — catches `copyPlace?.keptAChange()` left out of the change
+- [x] 10.1 days away changed on a commitments screen write a copy at the copy place — catches `copyPlace?.keptAChange()` left out of the change
 
 ## 11. The shell (ADR-1019: no rule the Kit does not state)
 
