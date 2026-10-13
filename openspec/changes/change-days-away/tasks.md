@@ -45,7 +45,7 @@ the next.
 
 ## 6. `commitment` — a recorded day
 
-- [x] 6.1 days away said over a day holding any record of a commitment picked are refused, naming it and the day — catches a kind left out of the read, or the commitment named in picked order
+- [ ] 6.1 days away said over a day holding any record of a commitment picked are refused, naming it and the day — catches a kind left out of the read, or the commitment named in the screen's category order rather than the roster's
 - [x] 6.2 a commitment ticked onto days away over a day holding its record is refused, naming it and the day
 - [x] 6.3 days away moved over a recorded day are refused, and days they give back or already hold are not judged — catches the whole span judged again
 - [x] 6.4 a first day moved onto the day handed keeps through it a commitment holding a record there
@@ -56,6 +56,8 @@ the next.
 - [x] 7.1 a stopped commitment in days away already past stays picked through a change, and unticked has their days back up to its stop
 - [x] 7.2 days away moved past the last day a stopped commitment was kept keep it until the day before them
 - [x] 7.3 days away moved wholly past the last day a stopped commitment was kept leave it out, and are refused where it was all they were over
+- [ ] 7.4 a stopped commitment kept until the day before days away stays picked through a later change of them, owing no day after its stop — catches a stop moved by 7.2 read as wholly past on the next change
+- [ ] 7.5 days away over nothing but a commitment stopped the day after them are renamed, and moved earlier, still over it — catches a rename refused as over no commitment
 
 ## 8. `commitment` — listing and removing
 
@@ -88,7 +90,7 @@ the next.
 - [x] 13.1 `openspec validate change-days-away --strict` exits 0, and `pnpm run checks` is clean but for any `check:budgets` warning the carried requirements already drew
 - [x] 13.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing, its count and one on `origin/main` both read off runs and given in the PR body
 - [ ] 13.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
-- [ ] 13.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked, W.7 included, and the walk comment's URL is in W.8. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `commitment` and `restore` move, gaining this delta's 26 new scenarios and losing the three retired in § 1.2, and no other spec file does. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
+- [ ] 13.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked, W.7 included, and the walk comment's URL is in W.8. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `commitment` and `restore` move, gaining this delta's 28 new scenarios and losing the three retired in § 1.2, and no other spec file does. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 

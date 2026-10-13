@@ -69,8 +69,10 @@ ADR-1069 is amended for this and for what a span cannot remember.
 - **Kept through the first day survives only while the first day stays**; moved, settled 6 judges
   the old first day like any other.
 - **Settled 12, read in eras**: a stopped commitment the span reaches past is kept until the day
-  before its first day — its stop moves there, as a stop under way already does; one moved wholly
-  past leaves the span, and a span left over nothing is refused as over nothing.
+  before its first day — its stop moves there, as a stop under way already does. Only a change moving
+  the first day later than the day after its stop takes it out, so a stop already moved to the day
+  before is never read as wholly past by a later change, and a span left over nothing is refused as
+  over nothing.
 - **Past spans**: by first day, latest first; sharing one, the last said first — the reverse of the
   upcoming order.
 - **The three requirements that lose a scenario are REMOVED and re-ADDED** under new or carried
