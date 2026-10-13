@@ -249,7 +249,7 @@ months later.
   has no stop. ADR-1048's one reason, "a run of empty years", was wrong: those days are where a
   one-off of something done and an older happening's occurrence are entered, and birthdays are drawn
   there. The strip, not the picker, **marks the earliest day anything on the roster is kept from**,
-  stopped and removed commitments counted, against the conductor's recommendation of no mark; the
+  stopped commitments counted and deleted ones not, against the conductor's recommendation of no mark; the
   stock SwiftUI picker cannot mark a day, and replacing it with a `UICalendarView` was declined.
   *Reach* is retired with no new term, and ADR-1048 is amended in place, not superseded, per
   `docs/adr/README.md` (corrected at #419's grill). How the mark sits beside the
