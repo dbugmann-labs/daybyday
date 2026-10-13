@@ -670,10 +670,10 @@ public final class DayScreen {
     /// land the screen on. `design.md` § *One landing rule, read by the page and by the strip
     /// beside it*. `markShown` is `false` for a neighbour strip because it marks no day as shown
     /// at all — `openspec/specs/day-screen/spec.md` § *A day screen says the week strip a page
-    /// either way would give, marking no day as shown*: two capsules filled at once, the shown
-    /// day's own and the day a page would land on, read as two days chosen (`grill.md` 15). The
-    /// landing day still comes out offered rather than faded: every day holding a date is offered
-    /// but the one shown.
+    /// either way would give, of the week that page would land in*: two capsules filled at once,
+    /// the shown day's own and the day a page would land on, read as two days chosen (`grill.md`
+    /// 15). The landing day still comes out offered: every day holding a date is offered but the
+    /// one shown.
     private func weekStrip(asIfShown day: CalendarDate, markShown: Bool) -> [WeekStripDay] {
         let offset = Self.mondayOffset(of: day.weekday)
         return (0..<7).map { position in
@@ -698,7 +698,7 @@ public final class DayScreen {
     /// `weekPageLanding(_:)`, the same landing rule `showPreviousWeek()` applies — so the page and
     /// this can never disagree — and reads neither the record nor the roster's rows.
     /// `openspec/specs/day-screen/spec.md` § *A day screen says the week strip a page either way
-    /// would give, marking no day as shown*.
+    /// would give, of the week that page would land in*.
     public var previousWeekStrip: [WeekStripDay]? {
         weekPageLanding(.before).map { weekStrip(asIfShown: $0, markShown: false) }
     }
