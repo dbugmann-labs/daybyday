@@ -436,3 +436,38 @@ func aCommitmentTickedOntoDaysAwayTakesItsGapAndOneUntickedIsLeftAsThoughItHadNe
     }
     #expect(!isDue("Nails", on: date(2026, 10, 19), in: kept))
 }
+
+@MainActor
+private func keptRows(on day: CalendarDate, at places: Places) -> [String: Bool] {
+    let rows = DayScreen(
+        startingFrom: [], asOf: day, keepingRecordAt: places.record, keepingRosterAt: places.roster,
+        keepingOneOffsAt: places.oneOffs
+    ).dayView.rows
+    return Dictionary(uniqueKeysWithValues: rows.map { ($0.name, $0.isKept) })
+}
+
+@MainActor
+@Test(
+    "a commitment kept through a first day it holds a record on stays kept through it while the first day does not move"
+)
+func aCommitmentKeptThroughAFirstDayItHoldsARecordOnStaysKeptThroughItWhileTheFirstDayDoesNotMove()
+    throws
+{
+    let places = Places()
+    let creatine = commitment("Creatine")
+    let magnesium = commitment("Magnesium")
+    try takeOn([creatine, magnesium], at: places)
+    try RecordStore(at: places.record).add(Tick(creatine, on: monday12)!)
+    screen(places).sayDaysAway(
+        named: "", from: monday12, through: date(2026, 10, 14), over: [creatine, magnesium])
+    let tuesday = screen(places, asOf: date(2026, 10, 13))
+    let said = try #require(tuesday.daysAway.first)
+
+    let refusal = tuesday.changeDaysAway(
+        said, named: "", from: monday12, through: date(2026, 10, 16), over: [creatine, magnesium])
+
+    #expect(refusal == nil)
+    #expect(keptRows(on: monday12, at: places) == ["Creatine": true])
+    #expect(keptRows(on: date(2026, 10, 15), at: places).isEmpty)
+    #expect(Set(keptRows(on: date(2026, 10, 17), at: places).keys) == ["Creatine", "Magnesium"])
+}

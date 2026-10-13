@@ -143,3 +143,29 @@ func aRosterStoreWhoseShapeAndDeclaredFormDisagreeAboutDaysAwayIsRefused() throw
     let now = try opened(rosterJSON(version: 10, daysAway: nil))
     #expect(throws: RosterStoreError.notAStore(at: now.place)) { try now.result.get() }
 }
+
+@Test("days away removed fill their days from the day after a first day a commitment was kept through")
+func daysAwayRemovedFillTheirDaysFromTheDayAfterAFirstDayACommitmentWasKeptThrough() {
+    let everyDay = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let old = Commitment(name: "Creatine", schedule: everyDay, keptFrom: date(2026, 1, 1), kind: .tick)!
+    let resumed = Commitment(
+        era: old, schedule: everyDay, keptFrom: date(2026, 10, 15), kind: .tick)!
+    let span = Roster.Span(
+        identity: .minted(), name: nil, firstDay: date(2026, 10, 12), lastDay: date(2026, 10, 14),
+        commitments: [old.identity])
+    var held = Roster()
+    held.entries = [
+        Roster.Entry(commitment: resumed, keptUntil: nil, category: nil, usualAmounts: []),
+        Roster.Entry(commitment: old, keptUntil: date(2026, 10, 12), category: nil, usualAmounts: []),
+    ]
+    held.spans = [span]
+
+    held.removeDaysAway(span.identity)
+
+    #expect(held.eras(of: old).count == 1)
+    for due in [date(2026, 10, 12), date(2026, 10, 13), date(2026, 10, 14), date(2026, 10, 15)] {
+        #expect(held.groups(on: due).flatMap(\.commitments).contains { $0.isDue(on: due) })
+    }
+}

@@ -1029,10 +1029,12 @@ extension Roster {
             fillGap(of: commitment, from: old.firstDay, through: old.lastDay)
         }
         for commitment in picked {
+            let keptThrough =
+                keptThroughFirstDay.contains(commitment)
+                || (first == old.firstDay && holdsAsLastDay(first, commitment))
+                ? first : (first.adding(days: -1) ?? first)
             guard old.commitments.contains(commitment) else {
-                cutGap(
-                    of: commitment,
-                    keptThrough: (first.adding(days: -1) ?? first), through: last)
+                cutGap(of: commitment, keptThrough: keptThrough, through: last)
                 continue
             }
             if last.days(until: old.lastDay) > 0 {
@@ -1046,12 +1048,20 @@ extension Roster {
                     through: Self.earlier(first.adding(days: -1) ?? first, old.lastDay))
             }
             if first.days(until: old.firstDay) > 0 || old.lastDay.days(until: last) > 0 {
-                cutGap(
-                    of: commitment, keptThrough: (first.adding(days: -1) ?? first), through: last)
+                cutGap(of: commitment, keptThrough: keptThrough, through: last)
             }
         }
         spans[index] = Span(
             identity: identity, name: name, firstDay: first, lastDay: last, commitments: picked)
+    }
+
+    /// Whether an era of `identity` is kept until `day`, having begun on or before it: the commitment
+    /// is kept through the first day of days away that begin there.
+    private func holdsAsLastDay(_ day: CalendarDate, _ identity: Commitment.Identity) -> Bool {
+        entries.contains {
+            $0.commitment.identity == identity && $0.keptUntil == day
+                && $0.commitment.keptFrom.days(until: day) >= 0
+        }
     }
 
     /// Gives back the days from `from` through the last day of `old` that a change of days away no
@@ -1187,13 +1197,18 @@ extension Roster {
     }
 
     private mutating func fillGap(
-        of identity: Commitment.Identity, from first: CalendarDate, through last: CalendarDate
+        of identity: Commitment.Identity, from firstDay: CalendarDate, through last: CalendarDate
     ) {
         guard let start = entries.firstIndex(where: { $0.commitment.identity == identity }) else {
             return
         }
         let length = entries[start...].prefix { $0.commitment.identity == identity }.count
         var run = Array(entries[start..<(start + length)])
+        // A first day the commitment was kept through is not part of the gap: it fills from the day
+        // after.
+        let first =
+            firstDay.days(until: last) > 0 && holdsAsLastDay(firstDay, identity)
+            ? (firstDay.adding(days: 1) ?? firstDay) : firstDay
         guard !run.contains(where: { $0.holds(first) || $0.holds(last) }) else {
             return
         }
