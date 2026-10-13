@@ -242,6 +242,17 @@ One line per entry that has left, newest first. This is the dedup index: `/atlas
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-10-13 — reach any past day from the day picker and the week strip, not only by swiping
+  (B-082) → Story #419 `reach-any-past-day` under `FEAT: day-screen` (#27), reopened under Epic #1.
+  The **reach**'s floor goes: the picker and the strip reach every past day to the calendar's end, as
+  the day swipe already does, so a day before the first kept-from is no longer faded and paging back
+  has no stop. ADR-1048's one reason, "a run of empty years", was wrong: those days are where a
+  one-off of something done and an older happening's occurrence are entered, and birthdays are drawn
+  there. The strip, not the picker, **marks the earliest day anything on the roster is kept from**,
+  stopped and removed commitments counted, against the conductor's recommendation of no mark; the
+  stock SwiftUI picker cannot mark a day, and replacing it with a `UICalendarView` was declined.
+  *Reach* is retired with no new term, and ADR-1048 is superseded. How the mark sits beside the
+  days-away dot is the Story grill's layout round.
 - 2026-10-12 — see how much *Take back last* will remove before tapping it (B-081) → Story #413
   `say-the-last-addition` under `FEAT: day-screen` (#27), reopened under Epic #1. Captured and
   groomed in one session, one question over one round, one fact agent. The last amount only: the
@@ -1574,4 +1585,17 @@ found nothing.
     line above has what the grill settled. No G1, and presented at G2 by the conductor without
     `/to-tickets`, one Story under an existing Feature as B-056 was. Built after #401 and #407,
     whose worktrees were already cut.
+  - **Not re-judged** — B-041, B-066, B-069, B-072, B-077; a targeted pass holds one entry.
+- 2026-10-13 — targeted pass over B-082 (`/atlas backlog B-082`, typed as `/atlas feature B-082`),
+  groomed on `chore/backlog` (PR #417) in the session that captured it, `origin/main` at e990240.
+  - **Sweep** — no silence. Since the B-081 pass `main` gained #411, #414, #415 and #416 (#405's create, swept
+    with it at the B-081 pass); #414 added one
+    known gap to `docs/open-questions.md` (two days away with one identity read without complaint),
+    a covering Story's and not a want.
+  - **Promoted** — B-082 → #419 under #27, no blocking edges; the Decided line above has what the
+    grill settled. Eight questions over five rounds and three fact agents; every answer as
+    recommended except the mark. Asked first what the owner was reaching for, per B-052's lesson:
+    entering a one-off and older happenings, which the specs already allow on any past day. No G1,
+    and presented at G2 by the conductor without `/to-tickets`, one Story under an existing
+    Feature as B-081 was.
   - **Not re-judged** — B-041, B-066, B-069, B-072, B-077; a targeted pass holds one entry.
