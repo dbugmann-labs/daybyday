@@ -123,7 +123,21 @@ struct RosterDocument: Codable {
             else {
                 return nil
             }
-            if version < Self.remembersIntroducedInVersion {
+            if version >= Self.remembersIntroducedInVersion {
+                // What days away remember: a commitment they are over, once, no earlier than the day
+                // before their first day, and a day for each stopped commitment they are over.
+                let earliest = span.firstDay.adding(days: -1) ?? span.firstDay
+                guard span.remembers.count == record.remembers?.count,
+                    span.remembers.allSatisfy({ span.commitments.contains($0.key) }),
+                    span.remembers.allSatisfy({ earliest.days(until: $0.value) >= 0 }),
+                    span.commitments.allSatisfy({ commitment in
+                        entries.first(where: { $0.commitment.identity == commitment })?.keptUntil == nil
+                            || span.remembers[commitment] != nil
+                    })
+                else {
+                    return nil
+                }
+            } else {
                 // A form written before days away remembered a stop: for each stopped commitment they
                 // are over, the later of their last day and the last day it was kept.
                 for commitment in span.commitments {

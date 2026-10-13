@@ -119,7 +119,11 @@ public final class RosterStore {
         let daysAwayKeyAgrees =
             (document.daysAway != nil)
             == (document.version >= RosterDocument.daysAwayIntroducedInVersion)
+        let remembersKeyAgrees = (document.daysAway ?? []).allSatisfy {
+            ($0.remembers != nil) == (document.version >= RosterDocument.remembersIntroducedInVersion)
+        }
         return entriesAgree && emptiedKeyAgrees && emptiedConsistent && daysAwayKeyAgrees
+            && remembersKeyAgrees
     }
 
     /// Exactly what is kept at `place`.
