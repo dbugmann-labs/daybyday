@@ -432,11 +432,12 @@ func aCommitmentsScreenListsDaysAwayByNameOrAwayWithTheirDaysInWordsAndTheirComm
         commitments.daysAway.map { $0.commitments.map(\.name) } == [
             ["Gym 🏋️", "Run"], ["Creatine"], ["Creatine"],
         ])
+    #expect(commitments.pastDaysAway.isEmpty)
 }
 
 @MainActor
-@Test("days away leave the list once their last day has passed and stay at the roster place")
-func daysAwayLeaveTheListOnceTheirLastDayHasPassedAndStayAtTheRosterPlace() throws {
+@Test("days away move to the past list once their last day has passed, latest first, and stay at the roster place")
+func daysAwayMoveToThePastListOnceTheirLastDayHasPassedLatestFirstAndStayAtTheRosterPlace() throws {
     let places = Places()
     let gym = commitment("Gym")
     let creatine = commitment("Creatine")
@@ -449,11 +450,17 @@ func daysAwayLeaveTheListOnceTheirLastDayHasPassedAndStayAtTheRosterPlace() thro
 
     commitments.shown(asOf: date(2026, 10, 18))
     #expect(commitments.daysAway.map(\.title) == ["Mallorca", "Away"])
+    #expect(commitments.pastDaysAway.isEmpty)
     commitments.shown(asOf: date(2026, 10, 19))
     #expect(commitments.daysAway.map(\.title) == ["Away"])
+    #expect(commitments.pastDaysAway.map(\.title) == ["Mallorca"])
     commitments.shown(asOf: date(2026, 10, 21))
+    commitments.sayDaysAway(
+        named: "Flu", from: date(2026, 10, 13), through: date(2026, 10, 14), over: [creatine])
     #expect(commitments.daysAway.isEmpty)
-    #expect(try RosterStore(at: places.roster).roster.daysAway.map(\.title) == ["Mallorca", "Away"])
+    #expect(commitments.pastDaysAway.map(\.title) == ["Away", "Flu", "Mallorca"])
+    #expect(
+        try RosterStore(at: places.roster).roster.daysAway.map(\.title) == ["Mallorca", "Flu", "Away"])
 }
 
 @MainActor
@@ -467,6 +474,7 @@ func aCommitmentsScreenThatCannotReadItsRosterListsNoDaysAway() throws {
     let commitments = screen(places)
 
     #expect(commitments.daysAway.isEmpty)
+    #expect(commitments.pastDaysAway.isEmpty)
     #expect(commitments.rosterState == .notKept)
 }
 
