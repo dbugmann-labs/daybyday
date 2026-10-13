@@ -762,3 +762,142 @@ func aBirthdaysScreenThatCouldNotReadItsPresentIdeaPlaceReadsItAgainWhenShown() 
     #expect(screen.ideas(of: keptKate) == [idea("Book voucher")])
     #expect(screen.presentIdeaState == .kept)
 }
+
+/// A present-idea place holding `ideas` against their contacts, those at the `given` offsets of
+/// `ideas` marked given.
+private func ideaPlace(
+    holding ideas: [(contact: String, idea: PresentIdea)], given: Set<Int>
+) throws -> URL {
+    let place = freshIdeaPlace()
+    let store = try PresentIdeaStore(at: place)
+    var counts: [String: Int] = [:]
+    for (offset, entry) in ideas.enumerated() {
+        try store.add(entry.idea, to: entry.contact)
+        if given.contains(offset) {
+            try store.mark(counts[entry.contact, default: 0], of: entry.contact, given: true)
+        }
+        counts[entry.contact, default: 0] += 1
+    }
+    return place
+}
+
+@MainActor
+private func kateScreen(
+    at place: URL, calendarFake: FakeCalendar? = nil, today: CalendarDate = date(2026, 10, 13)
+) async -> BirthdaysScreen {
+    BirthdaysScreen(
+        asOf: today,
+        readingBirthdaysFrom: calendar(calendarFake ?? FakeCalendar(handing: [kateBirthday])),
+        whileOn: await onSwitch(), keepingPresentIdeasAt: place)
+}
+
+@MainActor
+@Test("an idea changed through a Birthdays screen is kept where it stands, its mark with it")
+func anIdeaChangedThroughABirthdaysScreenIsKeptWhereItStandsItsMarkWithIt() async throws {
+    let place = try ideaPlace(
+        holding: [
+            ("kate", idea("Ceramics class voucher")), ("kate", idea("Hiking socks")),
+            ("kate", idea("Book voucher")),
+        ], given: [2])
+    let screen = await kateScreen(at: place)
+    let kate = try #require(screen.lines.first)
+
+    #expect(screen.changeIdea(1, of: kate, text: "Hiking socks, size 38", link: "bergzeit.ch/socks") == nil)
+    let changed = screen.ideas(of: kate)
+    #expect(changed.map(\.text) == ["Ceramics class voucher", "Hiking socks, size 38", "Book voucher"])
+    #expect(changed[1].link == "https://bergzeit.ch/socks")
+    #expect(changed.map(\.isGiven) == [false, false, true])
+
+    #expect(screen.changeIdea(2, of: kate, text: "Book voucher, hardback", link: "") == nil)
+    let again = try #require(screen.lines.first)
+    #expect(screen.ideas(of: again).last?.text == "Book voucher, hardback")
+    #expect(screen.ideas(of: again).last?.isGiven == true)
+    #expect(again.ideasInWords == "2 ideas")
+
+    let reopened = await kateScreen(at: place)
+    let reopenedKate = try #require(reopened.lines.first)
+    #expect(reopened.ideas(of: reopenedKate) == screen.ideas(of: again))
+}
+
+@MainActor
+@Test(
+    "a change whose text and link both say nothing, or whose link is not a web address, is refused and leaves the idea as it was"
+)
+func aChangeWhoseTextAndLinkBothSayNothingOrWhoseLinkIsNotAWebAddressIsRefusedAndLeavesTheIdeaAsItWas()
+    async throws
+{
+    let place = try ideaPlace(
+        holding: [("kate", idea("Ceramics class voucher", "https://amazon.de/xyz"))])
+    let before = try Data(contentsOf: place)
+    let screen = await kateScreen(at: place)
+    let kate = try #require(screen.lines.first)
+
+    #expect(screen.changeIdea(0, of: kate, text: "   ", link: "") == .saysNothing)
+    #expect(
+        screen.changeIdea(0, of: kate, text: "Ceramics class voucher", link: "ask Anna")
+            == .linkIsNotAWebAddress)
+    #expect(try Data(contentsOf: place) == before)
+    #expect(
+        screen.ideas(of: kate) == [idea("Ceramics class voucher", "https://amazon.de/xyz")])
+}
+
+@MainActor
+@Test("asking to delete an idea changes nothing until it is confirmed, and a cancel changes nothing")
+func askingToDeleteAnIdeaChangesNothingUntilItIsConfirmedAndACancelChangesNothing() async throws {
+    let place = try ideaPlace(
+        holding: [("kate", idea("Ceramics class voucher")), ("kate", idea("Book voucher"))])
+    let screen = await kateScreen(at: place)
+    let kate = try #require(screen.lines.first)
+    let before = try Data(contentsOf: place)
+
+    screen.askToDeleteIdea(1, of: kate)
+    #expect(screen.ideaAwaitingDeletion == idea("Book voucher"))
+    #expect(screen.ideas(of: kate).count == 2)
+    #expect(kate.ideasInWords == "2 ideas")
+    #expect(screen.lines.first?.ideasInWords == "2 ideas")
+
+    screen.cancelDeletingIdea()
+    #expect(screen.ideaAwaitingDeletion == nil)
+
+    screen.askToDeleteIdea(1, of: kate)
+    screen.shown(asOf: date(2026, 10, 13))
+    #expect(screen.ideaAwaitingDeletion == nil)
+    #expect(screen.confirmDeletingIdea() == nil)
+    #expect(screen.ideas(of: kate).count == 2)
+
+    screen.askToDeleteIdea(2, of: kate)
+    #expect(screen.ideaAwaitingDeletion == nil)
+    #expect(try Data(contentsOf: place) == before)
+}
+
+@MainActor
+@Test("a confirmed deletion removes the idea where it stood, and its line's count drops at once")
+func aConfirmedDeletionRemovesTheIdeaWhereItStoodAndItsLinesCountDropsAtOnce() async throws {
+    let place = try ideaPlace(
+        holding: [
+            ("kate", idea("Ceramics class voucher")), ("kate", idea("Hiking socks, size 38")),
+            ("kate", idea("Book voucher")),
+        ], given: [2])
+    let fake = FakeCalendar(handing: [kateBirthday])
+    let screen = await kateScreen(at: place, calendarFake: fake)
+    let kate = try #require(screen.lines.first)
+
+    screen.askToDeleteIdea(0, of: kate)
+    #expect(screen.confirmDeletingIdea() == nil)
+    #expect(screen.ideaAwaitingDeletion == nil)
+    let after = try #require(screen.lines.first)
+    #expect(screen.ideas(of: after).map(\.text) == ["Hiking socks, size 38", "Book voucher"])
+    #expect(screen.ideas(of: after).map(\.isGiven) == [false, true])
+    #expect(after.ideasInWords == "1 idea")
+    #expect(fake.asks.count == 1)
+
+    screen.askToDeleteIdea(1, of: after)
+    #expect(screen.confirmDeletingIdea() == nil)
+    let last = try #require(screen.lines.first)
+    #expect(screen.ideas(of: last).map(\.text) == ["Hiking socks, size 38"])
+    #expect(last.ideasInWords == "1 idea")
+
+    let reopened = await kateScreen(at: place)
+    let reopenedKate = try #require(reopened.lines.first)
+    #expect(reopened.ideas(of: reopenedKate).map(\.text) == ["Hiking socks, size 38"])
+}

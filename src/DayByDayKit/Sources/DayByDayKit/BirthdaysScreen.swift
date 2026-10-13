@@ -42,9 +42,11 @@ public final class BirthdaysScreen {
             .appendingPathComponent("present-ideas.json")
     }
 
-    /// The ideas held against `line`'s contact, in the order added.
+    /// The ideas held against `line`'s contact: those not given in the order added, then those
+    /// given in the order added.
     public func ideas(of line: Line) -> [PresentIdea] {
-        ideaStore?.ideas(of: line.contact) ?? []
+        let held = ideaStore?.ideas(of: line.contact) ?? []
+        return held.filter { !$0.isGiven } + held.filter(\.isGiven)
     }
 
     /// Adds an idea made from `text` and `link` to `line`'s contact, last, kept at the present-idea
@@ -65,27 +67,88 @@ public final class BirthdaysScreen {
         return nil
     }
 
+    /// Changes the idea standing at `position` among those `ideas(of: line)` gives back to one made
+    /// from `text` and `link`, keeping its mark and its place. `nil` where it is kept; otherwise
+    /// why not, and nothing written.
     @discardableResult
     public func changeIdea(
         _ position: Int, of line: Line, text: String, link: String
     ) -> PresentIdeaRefusal? {
-        nil
+        let idea: PresentIdea
+        do {
+            idea = try PresentIdea(text: text, link: link)
+        } catch {
+            return refuseIdea(error)
+        }
+        guard let store = ideaStore, let stored = storePosition(of: position, in: line),
+            (try? store.change(stored, of: line.contact, to: idea)) == true
+        else {
+            return refuseIdea(.notKept)
+        }
+        return keptIdea()
     }
 
+    /// Marks given, or takes back the mark of, the idea standing at `position` among those
+    /// `ideas(of: line)` gives back. One already so is kept as it is, and not refused.
     @discardableResult
     public func markIdea(_ position: Int, of line: Line, given: Bool) -> PresentIdeaRefusal? {
-        nil
+        guard let store = ideaStore, let stored = storePosition(of: position, in: line),
+            (try? store.mark(stored, of: line.contact, given: given)) != nil
+        else {
+            return refuseIdea(.notKept)
+        }
+        return keptIdea()
     }
 
+    /// The idea asked to be deleted, awaiting `confirmDeletingIdea()`.
     public private(set) var ideaAwaitingDeletion: PresentIdea?
+    private var deletionAwaited: (contact: String, position: Int)?
 
-    public func askToDeleteIdea(_ position: Int, of line: Line) {}
+    /// Holds the idea at `position` among those `ideas(of: line)` gives back awaiting deletion,
+    /// replacing any other; none where `position` names no idea. Changes nothing else.
+    public func askToDeleteIdea(_ position: Int, of line: Line) {
+        guard let stored = storePosition(of: position, in: line) else {
+            ideaAwaitingDeletion = nil
+            deletionAwaited = nil
+            return
+        }
+        ideaAwaitingDeletion = ideaStore?.ideas(of: line.contact)[stored]
+        deletionAwaited = (line.contact, stored)
+    }
 
-    public func cancelDeletingIdea() {}
+    public func cancelDeletingIdea() {
+        ideaAwaitingDeletion = nil
+        deletionAwaited = nil
+    }
 
+    /// Deletes the idea awaiting deletion, kept at the present-idea place before this returns.
+    /// Nothing awaiting does nothing.
     @discardableResult
     public func confirmDeletingIdea() -> PresentIdeaRefusal? {
-        nil
+        guard let awaited = deletionAwaited else {
+            return nil
+        }
+        cancelDeletingIdea()
+        guard let store = ideaStore,
+            (try? store.delete(awaited.position, of: awaited.contact)) == true
+        else {
+            return refuseIdea(.notKept)
+        }
+        return keptIdea()
+    }
+
+    private func keptIdea() -> PresentIdeaRefusal? {
+        ideaRefusal = nil
+        lines = listed.map(withIdeas)
+        return nil
+    }
+
+    /// Where the idea at `position` among those `ideas(of: line)` gives back stands among the
+    /// ideas the store holds in the order added, or `nil` where it names none.
+    private func storePosition(of position: Int, in line: Line) -> Int? {
+        let held = ideaStore?.ideas(of: line.contact) ?? []
+        let order = held.indices.filter { !held[$0].isGiven } + held.indices.filter { held[$0].isGiven }
+        return order.indices.contains(position) ? order[position] : nil
     }
 
     /// A field of the idea sheet was edited: what was told about the last add ends.
@@ -125,7 +188,7 @@ public final class BirthdaysScreen {
     }
 
     private func wordsForIdeas(of contact: String) -> String? {
-        switch ideaStore?.ideas(of: contact).count ?? 0 {
+        switch ideaStore?.ideas(of: contact).filter({ !$0.isGiven }).count ?? 0 {
         case 0: nil
         case 1: "1 idea"
         case let count: "\(count) ideas"
@@ -146,6 +209,7 @@ public final class BirthdaysScreen {
     public func shown(asOf today: CalendarDate) {
         birthdaySwitch.shown()
         ideaRefusal = nil
+        cancelDeletingIdea()
         readIdeas()
         form(asOf: today)
     }
