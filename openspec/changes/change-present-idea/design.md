@@ -131,7 +131,9 @@ A · Swipe actions  (recommended)
 ## Risks / Trade-offs
 
 - **The likeliest wrong code hands the screen's offset straight to the store.** → The take-back
-  scenario takes back the second idea the page gives back, which is the first added.
+  scenario takes back the second idea the page gives back, which is the first added; the change and
+  confirmed-deletion scenarios hold a given idea first, so each changes or deletes the page's first
+  idea, which is the second added.
 - **A swipe that writes but leaves the page as drawn**, since the store is not observed. → § *The
   shell*'s bump, and W.2 shows the row moved without leaving the page.
 - **A carried later-form fixture left at 2 turns red once form 2 ships.** → Tasks 2.2 names both.
