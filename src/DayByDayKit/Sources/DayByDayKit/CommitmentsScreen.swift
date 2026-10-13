@@ -544,10 +544,12 @@ public final class CommitmentsScreen {
                 let oneOffsNotRead = read.notRead.filter { $0.store == .oneOffs }
                 let birthdayTicksNotRead = read.notRead.filter { $0.store == .birthdayTicks }
                 let happeningsNotRead = read.notRead.filter { $0.store == .happenings }
+                let presentIdeasNotRead = read.notRead.filter { $0.store == .presentIdeas }
                 return (
                     nil, .notKept, nil, false,
                     recordNotRead + [StoreNotRead(store: .roster, cause: .couldNotBeRead)]
-                        + oneOffsNotRead + birthdayTicksNotRead + happeningsNotRead)
+                        + oneOffsNotRead + birthdayTicksNotRead + happeningsNotRead
+                        + presentIdeasNotRead)
             }
         }
 
@@ -2017,8 +2019,9 @@ public final class CommitmentsScreen {
         let namedAs: Copy.Store?
     }
 
-    /// The seven files a take-out reaches for, in the fixed order this screen answers a take-out
-    /// in: the record, the roster, the one-offs, the birthday ticks, the happenings, a save in
+    /// The eight files a take-out reaches for, in the fixed order this screen answers a take-out
+    /// in: the record, the roster, the one-offs, the birthday ticks, the happenings, the present
+    /// ideas, a save in
     /// progress and a restore in progress, the last two each named as the record. `openspec/specs/restore/spec.md` § *A
     /// take-out is the files at the five places exactly as they lie*.
     private var takeOutCandidates: [TakeOutCandidate] {
@@ -2028,6 +2031,7 @@ public final class CommitmentsScreen {
             TakeOutCandidate(source: oneOffPlace, namedAs: .oneOffs),
             TakeOutCandidate(source: birthdayPlace, namedAs: .birthdayTicks),
             TakeOutCandidate(source: happeningPlace, namedAs: .happenings),
+            TakeOutCandidate(source: presentIdeaPlace, namedAs: .presentIdeas),
             TakeOutCandidate(
                 source: Self.saveInProgressPlace(besideRecordAt: recordPlace), namedAs: .record),
             TakeOutCandidate(

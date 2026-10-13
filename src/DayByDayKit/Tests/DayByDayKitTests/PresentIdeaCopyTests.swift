@@ -832,3 +832,198 @@ func anIdeaAddedWhereTheCopyPlaceCannotBeWrittenIsKeptAndIsNotRefused() async th
     #expect(
         copyPlace.stopped == CopyPlace.Stopped(stop: .folderCannotBeWritten, since: moment(14, 32)))
 }
+
+@MainActor
+@Test(
+    "a take-out hands out the file at the present-idea place byte-for-byte under the name it lies under"
+)
+func aTakeOutHandsOutTheFileAtThePresentIdeaPlaceByteForByteUnderTheNameItLiesUnder() throws {
+    let places = Places()
+    try PresentIdeaStore(at: places.presentIdeas).add(idea("Book voucher"), to: "kate")
+    try write(Data("not a record".utf8), to: places.record)
+    let screen = places.commitmentsScreen()
+
+    let result = screen.takeOut(writingInto: freshDirectory())
+
+    guard case .success(let urls) = result else {
+        Issue.record("expected a take-out to be made")
+        return
+    }
+    #expect(urls.map(\.lastPathComponent).sorted() == ["present-ideas.json", "record.json"])
+    let handed = try #require(urls.first { $0.lastPathComponent == "present-ideas.json" })
+    #expect(try Data(contentsOf: handed) == Data(contentsOf: places.presentIdeas))
+}
+
+@MainActor
+@Test(
+    "a commitments screen offers a take-out over present ideas that cannot be read, naming them after the happenings"
+)
+func aCommitmentsScreenOffersATakeOutOverPresentIdeasThatCannotBeReadNamingThemAfterTheHappenings()
+    throws
+{
+    let places = Places()
+    try write(notAPresentIdeaStore, to: places.presentIdeas)
+    let screen = places.commitmentsScreen()
+
+    #expect(screen.offersATakeOut)
+    let presentIdeasNotRead = [
+        CommitmentsScreen.StoreNotRead(store: .presentIdeas, cause: .couldNotBeRead)
+    ]
+    #expect(screen.storesNotRead == presentIdeasNotRead)
+    #expect(places.commitmentsScreen(whileOn: offSwitch()).storesNotRead == presentIdeasNotRead)
+
+    let both = Places()
+    try write(notAPresentIdeaStore, to: both.presentIdeas)
+    try write(Data("not what happenings are written as".utf8), to: both.happenings)
+    #expect(
+        both.commitmentsScreen().storesNotRead
+            == [
+                CommitmentsScreen.StoreNotRead(store: .happenings, cause: .couldNotBeRead),
+                CommitmentsScreen.StoreNotRead(store: .presentIdeas, cause: .couldNotBeRead),
+            ])
+
+    let later = Places()
+    try write(laterPresentIdeaBytes(), to: later.presentIdeas)
+    let laterScreen = later.commitmentsScreen()
+    #expect(laterScreen.offersATakeOut)
+    #expect(
+        laterScreen.storesNotRead
+            == [CommitmentsScreen.StoreNotRead(store: .presentIdeas, cause: .writtenByALaterVersion)])
+
+    // A restore in progress that could not be undone names the first three alone where the
+    // present-idea place holds "Book voucher", and the present ideas after them where it holds
+    // bytes.
+    func notRead(
+        whereThePresentIdeaPlaceHolds bytes: Data?
+    ) throws -> [CommitmentsScreen.StoreNotRead] {
+        let stuck = Places()
+        try RosterStore(at: stuck.roster).add(gym)
+        if let bytes {
+            try write(bytes, to: stuck.presentIdeas)
+        } else {
+            try PresentIdeaStore(at: stuck.presentIdeas).add(idea("Book voucher"), to: "kate")
+        }
+        try write(
+            Data("not a restore in progress".utf8),
+            to: RestoreInProgress.place(besideRecordAt: stuck.record))
+        return stuck.commitmentsScreen().storesNotRead
+    }
+    let firstThree = [
+        CommitmentsScreen.StoreNotRead(store: .record, cause: .couldNotBeRead),
+        CommitmentsScreen.StoreNotRead(store: .roster, cause: .couldNotBeRead),
+        CommitmentsScreen.StoreNotRead(store: .oneOffs, cause: .couldNotBeRead),
+    ]
+    #expect(try notRead(whereThePresentIdeaPlaceHolds: nil) == firstThree)
+    #expect(
+        try notRead(whereThePresentIdeaPlaceHolds: notAPresentIdeaStore)
+            == firstThree + presentIdeasNotRead)
+}
+
+@MainActor
+@Test(
+    "a commitments screen that cannot erase a removed commitment's records names the present ideas it cannot read too"
+)
+func aCommitmentsScreenThatCannotEraseARemovedCommitmentsRecordsNamesThePresentIdeasItCannotReadToo()
+    throws
+{
+    // `readPlaces` rebuilds `storesNotRead` by hand once the erase the migration owes at open
+    // fails; the present ideas must not be dropped by that rebuild.
+    let places = Places()
+    let gymIdentity = "11111111-1111-1111-1111-111111111111"
+    let days = #"["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]"#
+    try write(
+        Data(
+            """
+            {"version":5,"commitments":[{"commitment":{"name":"Gym",\
+            "keptFrom":{"year":2026,"month":1,"day":1},"schedule":{"weekdays":\(days)},\
+            "identity":"\(gymIdentity)"},"keptUntil":{"year":2026,"month":8,"day":30},\
+            "removed":true,"category":null}]}
+            """.utf8), to: places.roster)
+    let removed = Commitment(
+        identity: Commitment.Identity(gymIdentity)!, name: "Gym", schedule: allWeekdays,
+        keptFrom: date(2026, 1, 1), kind: .tick)!
+    let recordDirectory = freshDirectory()
+    let record = recordDirectory.appendingPathComponent("record.json")
+    try RecordStore(at: record).add(Tick(removed, on: date(2026, 8, 3))!)
+    try FileManager.default.setAttributes(
+        [.posixPermissions: 0o500], ofItemAtPath: recordDirectory.path)
+    defer {
+        try? FileManager.default.setAttributes(
+            [.posixPermissions: 0o700], ofItemAtPath: recordDirectory.path)
+    }
+    try write(notAPresentIdeaStore, to: places.presentIdeas)
+
+    let screen = CommitmentsScreen(
+        asOf: tuesday, keepingRosterAt: places.roster, keepingRecordAt: record,
+        keepingOneOffsAt: places.oneOffs, keepingBirthdayTicksAt: places.birthday,
+        keepingHappeningsAt: places.happenings, keepingPresentIdeasAt: places.presentIdeas)
+
+    #expect(
+        screen.storesNotRead == [
+            CommitmentsScreen.StoreNotRead(store: .roster, cause: .couldNotBeRead),
+            CommitmentsScreen.StoreNotRead(store: .presentIdeas, cause: .couldNotBeRead),
+        ])
+}
+
+@MainActor
+@Test(
+    "a commitments screen asked for a take-out answers the present ideas' file after the happenings' and before a save in progress"
+)
+func aCommitmentsScreenAskedForATakeOutAnswersThePresentIdeasFileAfterTheHappeningsAndBeforeASaveInProgress()
+    throws
+{
+    let places = Places()
+    try RosterStore(at: places.roster).add(gym)
+    let kopfweh = try #require(Happening(name: "Kopfweh"))
+    try HappeningStore(at: places.happenings).add(kopfweh)
+    try PresentIdeaStore(at: places.presentIdeas).add(idea("Book voucher"), to: "kate")
+    try write(
+        Data("not a save in progress".utf8),
+        to: SaveInProgress.place(besideRecordAt: places.record))
+    let screen = places.commitmentsScreen()
+
+    let result = screen.takeOut(writingInto: freshDirectory())
+
+    guard case .success(let urls) = result else {
+        Issue.record("expected a take-out to be made")
+        return
+    }
+    #expect(
+        urls.map(\.lastPathComponent)
+            == ["roster.json", "happenings.json", "present-ideas.json", "save-in-progress.json"])
+    let directory = try #require(urls.first).deletingLastPathComponent()
+    #expect(
+        Set(try FileManager.default.contentsOfDirectory(atPath: directory.path))
+            == Set(urls.map(\.lastPathComponent)))
+}
+
+@MainActor
+@Test(
+    "a take-out refused over the present-idea place names the present ideas and hands out none of the others"
+)
+func aTakeOutRefusedOverThePresentIdeaPlaceNamesThePresentIdeasAndHandsOutNoneOfTheOthers() throws {
+    let places = Places()
+    try write(Data("not a roster".utf8), to: places.roster)
+    let rosterBytes = try Data(contentsOf: places.roster)
+    try FileManager.default.createDirectory(
+        at: places.presentIdeas, withIntermediateDirectories: true)
+    let screen = places.commitmentsScreen()
+    let directory = freshDirectory()
+
+    let result = screen.takeOut(writingInto: directory)
+
+    guard case .failure(let refusal) = result else {
+        Issue.record("expected a take-out to be refused")
+        return
+    }
+    #expect(refusal == .storeCouldNotBeRead)
+    #expect(screen.refusedChange == .takingOut(.presentIdeas, .storeCouldNotBeRead))
+    if FileManager.default.fileExists(atPath: directory.path) {
+        #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path).isEmpty)
+    }
+    #expect(try Data(contentsOf: places.roster) == rosterBytes)
+    var isDirectory: ObjCBool = false
+    #expect(
+        FileManager.default.fileExists(atPath: places.presentIdeas.path, isDirectory: &isDirectory))
+    #expect(isDirectory.boolValue)
+}
