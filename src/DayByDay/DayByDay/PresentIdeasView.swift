@@ -13,7 +13,6 @@ struct PresentIdeasView: View {
     @State private var addingIdea = false
     /// Bumped when the sheet is dismissed, so this page is drawn again from what the Kit now holds.
     @State private var sheetsClosed = 0
-    @Environment(\.openURL) private var openURL
 
     var body: some View {
         let _ = sheetsClosed
@@ -64,19 +63,23 @@ struct PresentIdeasView: View {
                 Text(text)
             }
             if let link = idea.link {
-                Text(link)
-                    .font(idea.text == nil ? .body : .subheadline)
-                    .foregroundStyle(.tint)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+                linkLabel(link, hasText: idea.text != nil, opens: idea.opens)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .contentShape(Rectangle())
-        .onTapGesture {
-            if let opens = idea.opens {
-                openURL(opens)
-            }
+    }
+
+    @ViewBuilder
+    private func linkLabel(_ link: String, hasText: Bool, opens: URL?) -> some View {
+        let label = Text(link)
+            .font(hasText ? .subheadline : .body)
+            .foregroundStyle(.tint)
+            .lineLimit(1)
+            .truncationMode(.tail)
+        if let opens {
+            Link(destination: opens) { label }
+        } else {
+            label
         }
     }
 

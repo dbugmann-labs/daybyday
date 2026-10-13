@@ -2,11 +2,13 @@ import Foundation
 
 /// The screen that lists the birthdays the phone's calendar hands over for the coming year,
 /// soonest first. See this change's `design.md` § *The seam*. It takes the calendar and the switch
-/// a day screen takes and nothing else: no place, so it reads no tick and writes nothing.
+/// a day screen takes, and a place for present ideas: it reads no tick, and writes only an idea
+/// added through it, to that place.
 @MainActor
 @Observable
 public final class BirthdaysScreen {
-    /// One birthday as this screen says it: the calendar's words, and its day in words.
+    /// One birthday as this screen says it: the calendar's words, its day in words, and how many
+    /// present ideas are held against its contact, or nil where that cannot be said.
     public struct Line: Hashable, Sendable {
         public let contact: String
         public let words: String

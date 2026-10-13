@@ -575,11 +575,11 @@ func anIdeaAddedThroughABirthdaysScreenIsKeptAgainstItsLinesContactLastAndItsCou
     let screen = BirthdaysScreen(
         asOf: date(2026, 10, 13), readingBirthdaysFrom: calendar(fake),
         whileOn: await onSwitch(), keepingPresentIdeasAt: place)
-    let kateBefore = screen.lines[0]
-    let john = screen.lines[1]
+    let kateBefore = try #require(screen.lines.first)
+    let john = try #require(screen.lines.dropFirst().first)
 
     #expect(screen.addIdea(text: "Hiking socks, size 38", link: "bergzeit.ch/socks", to: kateBefore) == nil)
-    let kate = screen.lines[0]
+    let kate = try #require(screen.lines.first)
     let two = [
         idea("Ceramics class voucher"), idea("Hiking socks, size 38", "https://bergzeit.ch/socks"),
     ]
@@ -589,7 +589,8 @@ func anIdeaAddedThroughABirthdaysScreenIsKeptAgainstItsLinesContactLastAndItsCou
     #expect(fake.asks.count == 1)
 
     #expect(screen.addIdea(text: "", link: "amazon.de/xyz", to: john) == nil)
-    #expect(screen.lines[1].ideasInWords == "1 idea")
+    let johnAfter = try #require(screen.lines.dropFirst().first)
+    #expect(johnAfter.ideasInWords == "1 idea")
 
     let reopened = BirthdaysScreen(
         asOf: date(2026, 10, 13), readingBirthdaysFrom: calendar(fake),
@@ -612,12 +613,13 @@ func anAddWhoseTextAndLinkBothSayNothingOrWhoseLinkIsNotAWebAddressIsRefusedAndW
         asOf: date(2026, 10, 13),
         readingBirthdaysFrom: calendar(FakeCalendar(handing: [kateBirthday])),
         whileOn: await onSwitch(), keepingPresentIdeasAt: place)
-    let kate = screen.lines[0]
+    let kate = try #require(screen.lines.first)
 
     #expect(screen.addIdea(text: "   ", link: "", to: kate) == .saysNothing)
     #expect(screen.addIdea(text: "Book voucher", link: "ask Anna", to: kate) == .linkIsNotAWebAddress)
     #expect(try Data(contentsOf: place) == before)
-    #expect(screen.lines[0].ideasInWords == "1 idea")
+    let keptKate = try #require(screen.lines.first)
+    #expect(keptKate.ideasInWords == "1 idea")
 }
 
 @MainActor
@@ -630,17 +632,19 @@ func anIdeaABirthdaysScreenCannotKeepIsRefusedAsNotKeptAndNotHeld() async throws
         asOf: date(2026, 10, 13),
         readingBirthdaysFrom: calendar(FakeCalendar(handing: [kateBirthday])),
         whileOn: await onSwitch(), keepingPresentIdeasAt: place)
-    let kate = screen.lines[0]
+    let kate = try #require(screen.lines.first)
 
     #expect(screen.addIdea(text: "Book voucher", link: "", to: kate) == .notKept)
-    #expect(screen.ideas(of: screen.lines[0]).isEmpty)
-    #expect(screen.lines[0].ideasInWords == nil)
+    let heldKate = try #require(screen.lines.first)
+    #expect(screen.ideas(of: heldKate).isEmpty)
+    #expect(heldKate.ideasInWords == nil)
 
     let reopened = BirthdaysScreen(
         asOf: date(2026, 10, 13),
         readingBirthdaysFrom: calendar(FakeCalendar(handing: [kateBirthday])),
         whileOn: await onSwitch(), keepingPresentIdeasAt: place)
-    #expect(reopened.ideas(of: reopened.lines[0]).isEmpty)
+    let reopenedKate = try #require(reopened.lines.first)
+    #expect(reopened.ideas(of: reopenedKate).isEmpty)
 }
 
 @MainActor
@@ -648,33 +652,33 @@ func anIdeaABirthdaysScreenCannotKeepIsRefusedAsNotKeptAndNotHeld() async throws
     "what a Birthdays screen tells about a present idea ends when a field is edited, the sheet closes or the screen is shown again"
 )
 func whatABirthdaysScreenTellsAboutAPresentIdeaEndsWhenAFieldIsEditedTheSheetClosesOrTheScreenIsShownAgain()
-    async
+    async throws
 {
-    func refusedScreen() async -> (BirthdaysScreen, BirthdaysScreen.Line) {
+    func refusedScreen() async throws -> (BirthdaysScreen, BirthdaysScreen.Line) {
         let screen = BirthdaysScreen(
             asOf: date(2026, 10, 13),
             readingBirthdaysFrom: calendar(FakeCalendar(handing: [kateBirthday])),
             whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace())
-        let kate = screen.lines[0]
+        let kate = try #require(screen.lines.first)
         screen.addIdea(text: "", link: "", to: kate)
         return (screen, kate)
     }
 
-    let (edited, kate) = await refusedScreen()
+    let (edited, kate) = try await refusedScreen()
     _ = edited.ideas(of: kate)
     #expect(edited.ideaRefusal == .saysNothing)
     edited.ideaFieldEdited()
     #expect(edited.ideaRefusal == nil)
 
-    let (closed, _) = await refusedScreen()
+    let (closed, _) = try await refusedScreen()
     closed.ideaSheetClosed()
     #expect(closed.ideaRefusal == nil)
 
-    let (shown, _) = await refusedScreen()
+    let (shown, _) = try await refusedScreen()
     shown.shown(asOf: date(2026, 10, 13))
     #expect(shown.ideaRefusal == nil)
 
-    let (replaced, replacedKate) = await refusedScreen()
+    let (replaced, replacedKate) = try await refusedScreen()
     replaced.addIdea(text: "Book voucher", link: "ask Anna", to: replacedKate)
     #expect(replaced.ideaRefusal == .linkIsNotAWebAddress)
     replaced.addIdea(text: "Book voucher", link: "", to: replacedKate)
@@ -704,7 +708,8 @@ func aBirthdaysScreenThatCannotReadItsPresentIdeaPlaceListsEveryBirthdayWithNoCo
                 contact: "kate", words: "Kate Bell's 48th Birthday", dayInWords: "Sat 14 November",
                 ideasInWords: nil)
         ])
-    #expect(screen.ideas(of: screen.lines[0]).isEmpty)
+    let listedKate = try #require(screen.lines.first)
+    #expect(screen.ideas(of: listedKate).isEmpty)
     #expect(screen.presentIdeaState == .notKept)
 
     let off = BirthdaysScreen(
@@ -713,7 +718,7 @@ func aBirthdaysScreenThatCannotReadItsPresentIdeaPlaceListsEveryBirthdayWithNoCo
         whileOn: offSwitch(), keepingPresentIdeasAt: place)
     #expect(off.presentIdeaState == .notKept)
 
-    #expect(screen.addIdea(text: "Book voucher", link: "", to: screen.lines[0]) == .notKept)
+    #expect(screen.addIdea(text: "Book voucher", link: "", to: listedKate) == .notKept)
     #expect(try Data(contentsOf: place) == before)
 }
 
@@ -753,6 +758,7 @@ func aBirthdaysScreenThatCouldNotReadItsPresentIdeaPlaceReadsItAgainWhenShown() 
     screen.shown(asOf: date(2026, 10, 13))
 
     #expect(screen.lines.map(\.ideasInWords) == ["1 idea"])
-    #expect(screen.ideas(of: screen.lines[0]) == [idea("Book voucher")])
+    let keptKate = try #require(screen.lines.first)
+    #expect(screen.ideas(of: keptKate) == [idea("Book voucher")])
     #expect(screen.presentIdeaState == .kept)
 }
