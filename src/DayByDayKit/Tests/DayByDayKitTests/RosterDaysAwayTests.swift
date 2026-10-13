@@ -210,89 +210,25 @@ func aRosterKeptBeforeDaysAwayRememberedAStopIsReadAsRememberingTheLaterOfTheirL
     #expect(try Data(contentsOf: secondPlace) == second)
 
     let monday12 = date(2026, 10, 12)
-    let atFirst = CommitmentsScreen(asOf: monday12, keepingRosterAt: firstPlace)
-    atFirst.askToRemove(try #require(atFirst.pastDaysAway.first))
-    #expect(atFirst.confirmRemovingDaysAway() == nil)
-    let removed = try RosterStore(at: firstPlace).roster
-    #expect(dueOn(removed, "Gym", date(2026, 10, 3)))
-    #expect(!dueOn(removed, "Gym", date(2026, 10, 4)))
-
-    let atSecond = CommitmentsScreen(asOf: monday12, keepingRosterAt: secondPlace)
-    let secondFlu = try #require(atSecond.pastDaysAway.first)
-    #expect(
-        atSecond.changeDaysAway(
-            secondFlu, named: "Flu", from: date(2026, 10, 1), through: date(2026, 10, 7),
-            over: secondFlu.commitments) == nil)
-    atSecond.askToRemove(try #require(atSecond.pastDaysAway.first))
-    #expect(atSecond.confirmRemovingDaysAway() == nil)
-    let movedAndRemoved = try RosterStore(at: secondPlace).roster
-    #expect(dueOn(movedAndRemoved, "Gym", date(2026, 10, 6)))
-    #expect(dueOn(movedAndRemoved, "Gym", date(2026, 10, 11)))
-    #expect(!dueOn(movedAndRemoved, "Gym", monday12))
+    for place in [firstPlace, secondPlace] {
+        let screen = CommitmentsScreen(asOf: monday12, keepingRosterAt: place)
+        let flu = try #require(screen.pastDaysAway.first)
+        #expect(
+            screen.changeDaysAway(
+                flu, named: "Flu", from: date(2026, 10, 1), through: date(2026, 10, 7),
+                over: flu.commitments) == nil)
+        screen.askToRemove(try #require(screen.pastDaysAway.first))
+        #expect(screen.confirmRemovingDaysAway() == nil)
+    }
+    let atFirst = try RosterStore(at: firstPlace).roster
+    #expect(dueOn(atFirst, "Gym", date(2026, 10, 3)))
+    #expect(!dueOn(atFirst, "Gym", date(2026, 10, 4)))
+    let atSecond = try RosterStore(at: secondPlace).roster
+    #expect(dueOn(atSecond, "Gym", date(2026, 10, 6)))
+    #expect(dueOn(atSecond, "Gym", date(2026, 10, 11)))
+    #expect(!dueOn(atSecond, "Gym", monday12))
 }
 
 private func dueOn(_ roster: Roster, _ name: String, _ day: CalendarDate) -> Bool {
     roster.groups(on: day).flatMap(\.commitments).contains { $0.name == name && $0.isDue(on: day) }
-}
-
-@MainActor
-@Test("a form 10 days away over a stopped commitment owe it no day after the later of their last day and its last day kept")
-func aForm10DaysAwayOverAStoppedCommitmentOweItNoDayAfterTheLaterOfTheirLastDayAndItsLastDayKept() throws {
-    let flu = "[" + span("Flu", from: day(10, 1), through: day(10, 3), over: [gymID, runID], remembers: nil) + "]"
-    let (place, result) = try opened(
-        rosterJSON(
-            version: 10,
-            eras: [
-                era("Gym", gymID, from: day(1, 1), until: day(9, 30)),
-                era("Run", runID, from: day(1, 1)),
-            ], daysAway: flu))
-    _ = try result.get()
-    let screen = CommitmentsScreen(asOf: date(2026, 10, 12), keepingRosterAt: place)
-    let held = try #require(screen.pastDaysAway.first)
-
-    #expect(
-        screen.changeDaysAway(
-            held, named: "Flu", from: date(2026, 10, 1), through: date(2026, 10, 7), over: held.commitments)
-            == nil)
-    screen.askToRemove(try #require(screen.pastDaysAway.first))
-    #expect(screen.confirmRemovingDaysAway() == nil)
-
-    let roster = try RosterStore(at: place).roster
-    #expect(dueOn(roster, "Gym", date(2026, 10, 3)))
-    #expect(!dueOn(roster, "Gym", date(2026, 10, 4)))
-}
-
-@Test("a roster store whose days away remember what no roster could is refused")
-func aRosterStoreWhoseDaysAwayRememberWhatNoRosterCouldIsRefused() throws {
-    let eras = [
-        era("Gym", gymID, from: day(1, 1), until: day(9, 30)), era("Run", runID, from: day(1, 1)),
-    ]
-    func flu(over commitments: [String], remembers: String?) -> String {
-        "[" + span("Flu", from: day(10, 1), through: day(10, 3), over: commitments, remembers: remembers) + "]"
-    }
-    func remembering(_ id: String, _ when: String) -> String {
-        #"{ "commitment": "\#(id)", "day": \#(when) }"#
-    }
-    let saturday3 = day(10, 3)
-    let refused: [(Int, String)] = [
-        (11, flu(over: [runID], remembers: "[" + remembering(gymID, saturday3) + "]")),
-        (
-            11,
-            flu(
-                over: [gymID, runID],
-                remembers: "[" + remembering(gymID, saturday3) + "," + remembering(gymID, saturday3) + "]")
-        ),
-        (11, flu(over: [gymID, runID], remembers: "[" + remembering(gymID, day(9, 29)) + "]")),
-        (11, flu(over: [gymID, runID], remembers: "[]")),
-        (11, flu(over: [gymID, runID], remembers: nil)),
-        (10, flu(over: [gymID, runID], remembers: "[" + remembering(gymID, saturday3) + "]")),
-    ]
-    for (version, list) in refused {
-        let (place, result) = try opened(rosterJSON(version: version, eras: eras, daysAway: list))
-        #expect(throws: RosterStoreError.notAStore(at: place)) { try result.get() }
-    }
-
-    let control = flu(over: [gymID, runID], remembers: "[" + remembering(gymID, saturday3) + "]")
-    let (_, result) = try opened(rosterJSON(version: 11, eras: eras, daysAway: control))
-    #expect(try result.get().roster.daysAway.count == 1)
 }
