@@ -467,6 +467,21 @@ kept it until. Every other take-up-again SHALL be as it was.
   Tuesday 13, Wednesday 14 and Monday 19 October 2026, and on none of Thursday 15 through Sunday
   18 October 2026
 
+#### Scenario: a commitment taken up again inside days away stays picked through a later change moving their first day past its stop
+
+- **WHEN** commitments named "Gym", "Run" and "Yoga", each on a schedule listing all seven weekdays and
+  kept from 1 January 2026, are taken on at a roster place; days away named "Mallorca" from Tuesday 13
+  through Sunday 18 October 2026 over "Gym" and "Run", and days away named "Lisbon" over those days
+  over "Yoga" alone, are said through a commitments screen opened at that roster place as of Monday
+  12 October 2026; "Gym" and "Yoga" are stopped, each stop confirmed, through one opened there as of
+  Thursday 15 October 2026; and through one opened there as of Friday 16 October 2026 "Gym" and
+  "Yoga" are taken up again, "Mallorca" is changed to run from Saturday 17 through Sunday 18 October
+  2026 over "Gym" and "Run", and "Lisbon" is changed to those days over "Yoga"
+- **THEN** nothing is refused, and that screen lists "Mallorca", "Sat 17 Oct – Sun 18 Oct", over "Gym"
+  and "Run", and "Lisbon", "Sat 17 Oct – Sun 18 Oct", over "Yoga"
+- **AND** a roster store opened afterwards at that place holds "Gym" and "Yoga" each due on Tuesday 13,
+  Wednesday 14 and Monday 19 October 2026, and on none of Thursday 15 through Sunday 18 October 2026
+
 ### Requirement: A roster store keeps what days away remember, reads a roster kept before they remembered as remembering the later of their last day and the last day kept, and refuses what no roster could remember
 
 A roster store SHALL keep what each days away remember across the app being closed and opened
