@@ -10,7 +10,7 @@ import Foundation
 struct RosterDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 9
+    static let currentVersion = 10
 
     /// The form a commitment record first carried an `identity` key at: forms at or after this
     /// one carry it on every entry's commitment, forms before it never do, on the same footing as
@@ -50,8 +50,17 @@ struct RosterDocument: Codable {
     /// are read as holding none.
     static let shiftsIntroducedInVersion = 8
 
+    /// The form `daysAway` was introduced at: forms at or after this one carry the top-level list
+    /// once, of the whole roster — an empty list where it holds none — and forms before it never
+    /// do, and are read as holding none. ADR-1069.
+    static let daysAwayIntroducedInVersion = 10
+
     var version: Int
     var commitments: [RosterEntryRecord]
+
+    /// Present exactly at forms at or after `daysAwayIntroducedInVersion`, in the order the roster
+    /// holds them.
+    var daysAway: [DaysAwayRecord]?
 
     /// Whether the roster this document represents is **emptied** — present exactly at forms at
     /// or after `emptiedIntroducedInVersion`, `true` only where `commitments` is empty.
@@ -72,6 +81,43 @@ struct RosterDocument: Codable {
                     .sorted { $0.from < $1.from })
         }
         emptied = roster.emptied
+        daysAway = roster.spans.map(DaysAwayRecord.init)
+    }
+
+    /// The days away this document holds, formed: none in a form before
+    /// `daysAwayIntroducedInVersion`, and `nil` where the form carries them and these say
+    /// something no roster could hold — over no commitment, over one `held` does not hold or one
+    /// twice, named with what says nothing, or sharing a day and a commitment with other days away.
+    private func formSpans(holding held: Set<Commitment.Identity>) -> [Roster.Span]? {
+        guard version >= Self.daysAwayIntroducedInVersion else {
+            return []
+        }
+        guard let records = daysAway else {
+            return nil
+        }
+        var formed: [Roster.Span] = []
+        for record in records {
+            guard let span = record.span(),
+                !span.commitments.isEmpty, Set(span.commitments).count == span.commitments.count,
+                span.commitments.allSatisfy(held.contains),
+                span.name.map({ !Blank.saysNothing($0) }) ?? true
+            else {
+                return nil
+            }
+            let sharesADay = { (other: Roster.Span) in
+                span.firstDay.days(until: other.lastDay) >= 0
+                    && other.firstDay.days(until: span.lastDay) >= 0
+            }
+            guard
+                !formed.contains(where: { other in
+                    sharesADay(other) && !Set(other.commitments).isDisjoint(with: span.commitments)
+                })
+            else {
+                return nil
+            }
+            formed.append(span)
+        }
+        return formed
     }
 
     /// What `formRoster()` answers with: the roster itself, and the identity of every commitment
@@ -194,8 +240,13 @@ struct RosterDocument: Codable {
             return nil
         }
 
+        guard let spans = formSpans(holding: Set(entries.map(\.commitment.identity))) else {
+            return nil
+        }
+
         var roster = Roster()
         roster.entries = entries
+        roster.spans = spans
         roster.emptied = (emptied ?? false) || (!commitments.isEmpty && entries.isEmpty)
         return Formed(roster: roster, erased: erased)
     }
@@ -460,6 +511,65 @@ struct RosterDocument: Codable {
         // roster, not the file's absence* and § *Migration* — "the fold's output included."
         roster.emptied = !commitments.isEmpty && roster.entries.isEmpty
         return Fold(roster: roster, identities: identities)
+    }
+}
+
+/// One days away as a roster document writes it: its identity, its name or `null`, its first and
+/// last day, and the identities of the commitments it is over. ADR-1069.
+struct DaysAwayRecord: Codable, Equatable {
+    var identity: String
+    var name: String?
+    var firstDay: DateRecord
+    var lastDay: DateRecord
+    var commitments: [String]
+
+    init(_ span: Roster.Span) {
+        identity = span.identity.uuidString
+        name = span.name
+        firstDay = DateRecord(span.firstDay)
+        lastDay = DateRecord(span.lastDay)
+        commitments = span.commitments.map(\.uuidString)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case identity, name, firstDay, lastDay, commitments
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        identity = try container.decode(String.self, forKey: .identity)
+        name = try container.decodeIfPresent(String.self, forKey: .name)
+        firstDay = try container.decode(DateRecord.self, forKey: .firstDay)
+        lastDay = try container.decode(DateRecord.self, forKey: .lastDay)
+        commitments = try container.decode([String].self, forKey: .commitments)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(identity, forKey: .identity)
+        try container.encode(name, forKey: .name)
+        try container.encode(firstDay, forKey: .firstDay)
+        try container.encode(lastDay, forKey: .lastDay)
+        try container.encode(commitments, forKey: .commitments)
+    }
+
+    /// The span this record says, or `nil` where an identity or a day does not read, or the last
+    /// day is before the first.
+    func span() -> Roster.Span? {
+        guard let identity = DaysAway.Identity(identity), let first = firstDay.calendarDate(),
+            let last = lastDay.calendarDate(), first.days(until: last) >= 0
+        else {
+            return nil
+        }
+        var identities: [Commitment.Identity] = []
+        for text in commitments {
+            guard let commitment = Commitment.Identity(text) else {
+                return nil
+            }
+            identities.append(commitment)
+        }
+        return Roster.Span(
+            identity: identity, name: name, firstDay: first, lastDay: last, commitments: identities)
     }
 }
 

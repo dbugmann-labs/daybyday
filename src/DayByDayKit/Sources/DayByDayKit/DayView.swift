@@ -112,6 +112,9 @@ public struct DayView: Hashable, Sendable {
         struct WeekStanding: Hashable, Sendable {
             let kept: Int
             let owed: Int
+            /// The days of the row's week from its date through the Sunday that the commitment's
+            /// chain holds: a gap of days away is no day left.
+            let daysLeft: Int
         }
 
         let weekStanding: WeekStanding?
@@ -192,8 +195,7 @@ public struct DayView: Hashable, Sendable {
             guard let weekStanding, date == today, !isKept else {
                 return false
             }
-            let daysLeft = 7 - WeekQuota.monday(of: date).days(until: date)
-            return weekStanding.owed - weekStanding.kept == daysLeft
+            return weekStanding.owed - weekStanding.kept == weekStanding.daysLeft
         }
 
         /// The tick this row makes, or `nil` when the row's date is later than `today`.
@@ -476,6 +478,19 @@ public struct DayView: Hashable, Sendable {
         return formed
     }
 
+    /// A line for each days away that holds this day view's date, by the days away's title, in the
+    /// order of their first days. `[]` from every initializer.
+    public private(set) var daysAwayInWords: [String] = []
+
+    /// This day view with a line for each of `roster`'s days away that holds its date.
+    func withDaysAway(of roster: Roster) -> DayView {
+        var formed = self
+        formed.daysAwayInWords = roster.daysAway.filter { daysAway in
+            daysAway.firstDay.days(until: date) >= 0 && date.days(until: daysAway.lastDay) >= 0
+        }.map(\.title)
+        return formed
+    }
+
     /// Every row this day view holds, read across `groups` in the order the groups are drawn —
     /// the same rows `groups` holds and each exactly once.
     public var rows: [Row] { groups.flatMap(\.rows) }
@@ -562,7 +577,9 @@ public struct DayView: Hashable, Sendable {
                             WeekQuota.standing(
                                 monday: monday, links: links, history: history, keptThrough: date)
                             ?? (kept: 0, owed: 0)
-                        weekStanding = Row.WeekStanding(kept: standing.kept, owed: standing.owed)
+                        weekStanding = Row.WeekStanding(
+                            kept: standing.kept, owed: standing.owed,
+                            daysLeft: WeekQuota.daysHeld(from: date, links: links))
                     } else {
                         weekStanding = nil
                     }

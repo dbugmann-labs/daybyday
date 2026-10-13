@@ -27,6 +27,10 @@ public struct Roster: Hashable, Sendable {
 
     var entries: [Entry]
 
+    /// The days away this roster holds, in the order they were said. `daysAway` reads them in the
+    /// order of their first days. ADR-1069.
+    var spans: [Span] = []
+
     /// Whether deleting left this roster holding nothing. `false` for a roster given no
     /// commitment at all — the two are not the same roster. Set by `delete` when the last entry
     /// goes, cleared by any `add`. `design.md` § *Emptied is a mark on the roster, not the file's
@@ -897,8 +901,13 @@ public struct Roster: Hashable, Sendable {
 
         let bar = day.days(until: anchor) > 0 ? anchor : day
         let laterShift = shifts.contains { bar.days(until: $0.key) > 0 || bar.days(until: $0.value) > 0 }
+        // The era begun the day after days away begins its own count whatever a shift before did, so
+        // it does not stand in the way. `say-days-away` design.md § *Open Questions*.
+        let takenUpAfterDaysAway = spans.filter { $0.commitments.contains(commitment.identity) }
+            .compactMap { $0.lastDay.adding(days: 1) }
         let laterEra = entries.contains {
             $0.commitment.identity == commitment.identity && bar.days(until: $0.commitment.keptFrom) > 0
+                && !takenUpAfterDaysAway.contains($0.commitment.keptFrom)
         }
         guard !laterShift, !laterEra else {
             return false
@@ -941,5 +950,203 @@ public struct Roster: Hashable, Sendable {
 
             return date.days(until: keptUntil) >= 0 ? entry.commitment : nil
         }
+    }
+}
+
+extension Roster {
+    /// One days away as the roster holds it: an identity of its own, a name or none, a first and a
+    /// last day, and the identities of the commitments it is over. ADR-1069.
+    struct Span: Hashable, Sendable {
+        let identity: DaysAway.Identity
+        let name: String?
+        let firstDay: CalendarDate
+        let lastDay: CalendarDate
+        let commitments: [Commitment.Identity]
+    }
+
+    /// The days away this roster holds, in the order of their first days, days away sharing a
+    /// first day in the order they were said.
+    public var daysAway: [DaysAway] {
+        spans.enumerated().sorted { lhs, rhs in
+            let apart = lhs.element.firstDay.days(until: rhs.element.firstDay)
+            return apart != 0 ? apart > 0 : lhs.offset < rhs.offset
+        }.map { daysAway(of: $0.element) }
+    }
+
+    /// `span` as a `DaysAway`, its commitments read at their newest era in the order this roster
+    /// holds them.
+    func daysAway(of span: Span) -> DaysAway {
+        var seen: Set<Commitment.Identity> = []
+        var commitments: [Commitment] = []
+        for entry in entries where span.commitments.contains(entry.commitment.identity) {
+            if seen.insert(entry.commitment.identity).inserted {
+                commitments.append(entry.commitment)
+            }
+        }
+        return DaysAway(
+            identity: span.identity, name: span.name, firstDay: span.firstDay,
+            lastDay: span.lastDay, commitments: commitments)
+    }
+
+    /// Says days away over `commitments`, each kept until the day before `first` — or through
+    /// `first` where its identity is among `keptThroughFirstDay` — and taken up again on the day
+    /// after `last` on its rhythm, range and target, an every-N-days count beginning there. Holds
+    /// the days away beside them. The caller has judged every refusal.
+    mutating func sayDaysAway(
+        named name: String?, from first: CalendarDate, through last: CalendarDate,
+        over commitments: [Commitment], keptThroughFirstDay: Set<Commitment.Identity>
+    ) {
+        let dayBefore = first.adding(days: -1) ?? first
+        for commitment in commitments {
+            let keptThrough = keptThroughFirstDay.contains(commitment.identity) ? first : dayBefore
+            cutGap(of: commitment.identity, keptThrough: keptThrough, through: last)
+        }
+        spans.append(
+            Span(
+                identity: .minted(), name: name, firstDay: first, lastDay: last,
+                commitments: commitments.map(\.identity)))
+    }
+
+    /// Takes the days after `keptThrough` and through `last` out of the eras of `identity`: an era
+    /// holding days either side is split, one beginning inside is cut to begin the day after, one
+    /// holding nothing else goes. What begins the day after `last` begins its every-N-days count
+    /// there, and the whole identity is mended.
+    private mutating func cutGap(
+        of identity: Commitment.Identity, keptThrough: CalendarDate, through last: CalendarDate
+    ) {
+        guard let start = entries.firstIndex(where: { $0.commitment.identity == identity }) else {
+            return
+        }
+        let length = entries[start...].prefix { $0.commitment.identity == identity }.count
+        let gapStart = keptThrough.adding(days: 1)
+        let resume = last.adding(days: 1)
+
+        var cut: [Entry] = []
+        for era in entries[start..<(start + length)] {
+            let from = era.commitment.keptFrom
+            if let until = era.keptUntil, let gapStart, gapStart.days(until: until) < 0 {
+                cut.append(era)
+                continue
+            }
+            if last.days(until: from) > 0 {
+                cut.append(era)
+                continue
+            }
+            if let resume, era.keptUntil.map({ last.days(until: $0) > 0 }) ?? true {
+                cut.append(
+                    Entry(
+                        commitment: Self.restarted(era.commitment, on: resume), keptUntil: era.keptUntil,
+                        category: era.category, usualAmounts: era.usualAmounts))
+            }
+            if from.days(until: keptThrough) >= 0 {
+                cut.append(
+                    Entry(
+                        commitment: era.commitment, keptUntil: keptThrough, category: era.category,
+                        usualAmounts: era.usualAmounts))
+            }
+        }
+        guard !cut.isEmpty else {
+            return
+        }
+        entries.replaceSubrange(start..<(start + length), with: Self.mended(cut))
+    }
+
+    /// Cuts the gap of days away from `first` through `last` out of the eras of `commitment` again,
+    /// after an era put on has erased it: kept until the day before `first`, taken up again on the
+    /// day after `last`. The days away themselves are held already.
+    mutating func cutDaysAwayGap(of commitment: Commitment, from first: CalendarDate, through last: CalendarDate) {
+        cutGap(of: commitment.identity, keptThrough: first.adding(days: -1) ?? first, through: last)
+    }
+
+    /// Takes `commitment` out of every days away it is over whose last day is `day` or later — every
+    /// one where `day` is `nil` — and drops the days away that are left over no commitment. Touches
+    /// no era: a stop or a deletion has already formed those.
+    mutating func leaveDaysAway(of commitment: Commitment, endingOnOrAfter day: CalendarDate?) {
+        spans = spans.compactMap { span in
+            guard span.commitments.contains(commitment.identity),
+                day.map({ $0.days(until: span.lastDay) >= 0 }) ?? true
+            else {
+                return span
+            }
+            let left = span.commitments.filter { $0 != commitment.identity }
+            guard !left.isEmpty else {
+                return nil
+            }
+            return Span(
+                identity: span.identity, name: span.name, firstDay: span.firstDay,
+                lastDay: span.lastDay, commitments: left)
+        }
+    }
+
+    /// `commitment` kept from `day`, an every-N-days count beginning there.
+    private static func restarted(_ commitment: Commitment, on day: CalendarDate) -> Commitment {
+        var schedule = commitment.schedule
+        if case .everyNDays(let interval, from: _) = schedule {
+            schedule = .everyNDays(interval, from: day)
+        }
+        return Commitment(era: commitment, schedule: schedule, keptFrom: day, kind: commitment.kind)!
+    }
+
+    /// Removes the days away `identity` names, leaving every commitment it was over as though it
+    /// had never been said: the era in force before runs through its days, and the era begun the
+    /// day after goes where it runs the same rhythm — an every-N-days count running on — unless
+    /// other days away begin there. A commitment with no gap on those days is left as it is.
+    mutating func removeDaysAway(_ identity: DaysAway.Identity) {
+        guard let index = spans.firstIndex(where: { $0.identity == identity }) else {
+            return
+        }
+        let span = spans.remove(at: index)
+        for commitment in span.commitments {
+            fillGap(of: commitment, from: span.firstDay, through: span.lastDay)
+        }
+    }
+
+    private mutating func fillGap(
+        of identity: Commitment.Identity, from first: CalendarDate, through last: CalendarDate
+    ) {
+        guard let start = entries.firstIndex(where: { $0.commitment.identity == identity }) else {
+            return
+        }
+        let length = entries[start...].prefix { $0.commitment.identity == identity }.count
+        var run = Array(entries[start..<(start + length)])
+        guard !run.contains(where: { $0.holds(first) || $0.holds(last) }) else {
+            return
+        }
+
+        let before = first.adding(days: -1)
+        let after = last.adding(days: 1)
+        let behind = before.flatMap { day in run.firstIndex { $0.keptUntil == day } }
+        let ahead = after.flatMap { day in run.firstIndex { $0.commitment.keptFrom == day } }
+
+        switch (behind, ahead) {
+        case let (behind?, ahead?):
+            let b = run[behind]
+            let a = run[ahead]
+            if Rhythm(b.commitment.schedule) == Rhythm(a.commitment.schedule),
+                b.commitment.kind == a.commitment.kind
+            {
+                run[behind] = Entry(
+                    commitment: b.commitment, keptUntil: a.keptUntil, category: a.category,
+                    usualAmounts: b.usualAmounts)
+                run.remove(at: ahead)
+            } else {
+                run[behind] = Entry(
+                    commitment: b.commitment, keptUntil: last, category: b.category,
+                    usualAmounts: b.usualAmounts)
+            }
+        case let (behind?, nil):
+            let b = run[behind]
+            run[behind] = Entry(
+                commitment: b.commitment, keptUntil: last, category: b.category,
+                usualAmounts: b.usualAmounts)
+        case let (nil, ahead?):
+            let a = run[ahead]
+            run[ahead] = Entry(
+                commitment: Self.restarted(a.commitment, on: first), keptUntil: a.keptUntil,
+                category: a.category, usualAmounts: a.usualAmounts)
+        default:
+            return
+        }
+        entries.replaceSubrange(start..<(start + length), with: Self.mended(run))
     }
 }

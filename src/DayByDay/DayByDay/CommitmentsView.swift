@@ -130,6 +130,20 @@ func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
             Text("Five usual amounts at most.")
         case .shiftedDayAhead:
             Text("Shift its day back first.")
+        case .firstDayHasPassed:
+            Text("The first day has passed.")
+        case .lastDayBeforeFirstDay:
+            Text("The last day is before the first.")
+        case .overNoCommitment:
+            Text("Pick a commitment.")
+        case .shiftOnDaysAway(let name):
+            Text("\(name) has a day shifted into these days.")
+        case .overlapsDaysAway(let daysAway):
+            Text("These days overlap \(daysAway.title), \(daysAway.daysInWords).")
+        case .keptFromMovedIntoDaysAway(let daysAway):
+            Text("That day falls in \(daysAway.title).")
+        case .keptFromFirstDayOrLater(let name):
+            Text("\(name) is kept from their first day or later.")
         case .nameAlreadyInUse(let name):
             // The sheet's own wording — a define and a rename alike, `grill.md` § *Settled* 6 —
             // naming the collision and the field to fix, unlike the old foot-of-sheet caption it
@@ -216,6 +230,12 @@ struct CommitmentsView: View {
 
     @State private var sheetTarget: SheetTarget?
     @State private var happeningSheetTarget: HappeningSheetTarget?
+    @State private var sayingDaysAway = false
+    /// True from the tap that opens the days away sheet until `onDismiss`, which runs after the
+    /// dismissal animation ends. `sayingDaysAway` goes false the instant a dismissal starts, so
+    /// it cannot say whether the sheet is still on screen; this does, and the footer under the
+    /// list waits on it so a refusal the sheet raised is never drawn there while it slides away.
+    @State private var daysAwaySheetStillShown = false
     /// Bumped in `.sheet(item:onDismiss:)`'s `onDismiss`, and read by `body` where the lists are
     /// built, so a dismissed sheet always leaves this view's `List` re-evaluated against
     /// `screen.kept`/`keptGroups`/`stopped` — `tasks.md` § 14.4. A rename or a rhythm change kept
@@ -258,158 +278,65 @@ struct CommitmentsView: View {
         return (owningGroup ?? screen.keptGroups.last) == group ? refusal : nil
     }
 
-    var body: some View {
-        List {
-            if screen.keptGroups.isEmpty {
-                Section("Kept") {
-                    Text("Nothing is being kept.")
-                }
-            }
-            // A `Section` per group, not one flat list: the category is the section's own
-            // header, and the group with none draws no header. Each section's `ForEach` carries
-            // one `.onMove`, over an offset already counted inside that section's own entries —
-            // `design.md` § *The shell rides this Story*. It passes that offset straight through
-            // to `screen.move` beside the section's own `group.category`: nothing here adds,
-            // subtracts, counts rows or asks where a finger is.
-            //
-            // `.sectionActions` draws two icon buttons below a categorised section's content, the
-            // one documented per-section action surface — `design.md` § *The shell rides this
-            // Story*. Gated on `editMode` below: `grill.md` § *Settled* 6 decided the actions
-            // appear in Edit mode only, and both the appearance and the row re-evaluating on that
-            // transition are confirmed — on the phone (2026-09-09) and by
-            // `zzzScratchVerifyEditGateAndRowHeight`, a throwaway XCUITest run during this fix and
-            // not kept: no `Move up`/`Move down` button exists before `EditButton()` is tapped,
-            // both exist right after. Both sit in one `HStack`, itself the single view the content
-            // closure returns, so the row reads as one item with two separately tappable buttons
-            // rather than two stacked rows — confirmed on the phone: Apple's own documented example
-            // draws a single `Button` and says nothing about two, so this was open until walked.
-            // Each carries the accessibility label the prose in `proposal.md` and `design.md`
-            // names, `Move up` and `Move down`, unchanged by drawing an icon instead of the words.
-            // `groupIndex` is the group's own position in
-            // `screen.keptGroups`, which is `screen.categoriesInUse`'s position too: the group
-            // under no category, where there is one, is always last, so every categorised group
-            // sits at the same index in both. Up is `groupIndex - 1`, down is `groupIndex + 2`,
-            // and each is drawn only where that offset is one `screen.categoriesInUse` has, so no
-            // tap can reach a refusal; nothing here counts rows or asks where a finger is.
-            ForEach(Array(screen.keptGroups.enumerated()), id: \.element.category) { groupIndex, group in
-                Section {
-                    // Keyed on the commitment's own value, not its position — as the flat list
-                    // was before this Story's group move started carrying whole blocks through
-                    // this `ForEach`. `.onMove` still takes its offsets from the underlying
-                    // `group.commitments`, whatever the `id:` is keyed on. Redrawing a row whose
-                    // commitment changed in value but not in identity — `tasks.md` § 14.4 — does
-                    // not turn on this key: see `listRevision` on `CommitmentsView`.
-                    ForEach(group.commitments, id: \.self) { commitment in
-                        // `LookBackView(screen:commitment:)` is cheap to construct — two
-                        // references — so building it here, in the trailing closure this
-                        // initializer resolves to, costs nothing on every redraw of every row on
-                        // both lists; `screen.lookBack(at:)`, the day-by-day walk, sits behind
-                        // `LookBackView`'s own `body` and only runs once this row is tapped.
-                        // `design.md:117-119` accepted that walk only because nothing on the
-                        // daily path calls it — this screen redrawing every row's destination was
-                        // the path it missed. G7 finding 2 on #272.
-                        NavigationLink {
-                            LookBackView(screen: screen, commitment: commitment)
-                        } label: {
-                            commitmentLine(
-                                Text(commitment.name), rhythmInWords: commitment.rhythmInWords
-                            )
-                        }
-                        .swipeActions(edge: .leading) {
-                            Button {
-                                sheetTarget = .changing(commitment)
-                            } label: {
-                                Image(systemName: "pencil")
-                            }
-                            .tint(.accentColor)
-                            .accessibilityLabel("Edit")
-                        }
-                        .swipeActions(edge: .trailing) {
-                            Button {
-                                screen.askToStopKeeping(commitment)
-                            } label: {
-                                Image(systemName: "stop.circle")
-                            }
-                            .tint(.orange)
-                            .accessibilityLabel("Stop")
-                            Button(role: .destructive) {
-                                screen.askToDelete(commitment)
-                            } label: {
-                                Image(systemName: "trash")
-                            }
-                            .tint(.red)
-                            .accessibilityLabel("Delete")
-                        }
-                    }
-                    .onMove { source, offset in
-                        guard let rowIndex = source.first else { return }
-                        screen.move(group.commitments[rowIndex], toOffset: offset, under: group.category)
-                    }
-                } header: {
-                    if let category = group.category {
-                        // Same insets as the day screen's category heading, for the same reason
-                        // and off the same measurement — see the comment there. The `Kept` and
-                        // `Stopped` headings below keep the platform's own padding: they divide
-                        // this screen rather than name a group, and the owner's ask was about the
-                        // gap above a category.
-                        Text(category)
-                            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
-                    }
-                } footer: {
-                    if let refusal = keptGroupRefusal(for: group) {
-                        refusalText(refusal)
-                    }
-                }
-                .sectionActions {
-                    if editMode?.wrappedValue.isEditing == true, let category = group.category {
-                        // One `HStack`, so this is one item to `sectionActions` rather than two —
-                        // see the comment above `ForEach(Array(screen.keptGroups.enumerated())…`.
-                        //
-                        // **This row cannot be made thinner than a commitment row from here.**
-                        // Measured 2026-09-09 with `zzzScratchVerifyEditGateAndRowHeight`: a
-                        // `sectionActions` row's own frame reads exactly 52.0pt — identical, to the
-                        // decimal, to a plain commitment row's (`Creatine - Every day`, also
-                        // 52.0pt) — and stays exactly 52.0pt across three separate builds tried in
-                        // turn: `.listRowInsets` alone (below), `.listRowInsets` plus
-                        // `.frame(height: 32)`, and both plus
-                        // `.environment(\.defaultMinListRowHeight, 32)` on the row's own content.
-                        // None moved it by a point. `sectionActions` appears to impose a fixed,
-                        // platform-drawn row height on this SDK (iOS 26.5) that no content-level
-                        // sizing modifier reaches — consistent with the header text above shrinking
-                        // to 28pt off the same `.listRowInsets` this row ignores, so the modifier
-                        // itself works in this file, just not on a `sectionActions` row. Left as
-                        // `.listRowInsets` alone, since the other two measured no different from
-                        // one another and from having neither; not shrinking the icons instead,
-                        // since that would not change what reads as thick — the row.
-                        HStack(spacing: 32) {
-                            if groupIndex > 0 {
-                                Button {
-                                    screen.move(group: category, toOffset: groupIndex - 1)
-                                } label: {
-                                    Image(systemName: "arrow.up")
-                                }
-                                .accessibilityLabel("Move up")
-                            }
-                            if groupIndex + 2 <= screen.categoriesInUse.count {
-                                Button {
-                                    screen.move(group: category, toOffset: groupIndex + 2)
-                                } label: {
-                                    Image(systemName: "arrow.down")
-                                }
-                                .accessibilityLabel("Move down")
-                            }
-                        }
-                        .buttonStyle(.borderless)
-                        .listRowInsets(EdgeInsets(top: 2, leading: 16, bottom: 2, trailing: 16))
-                    }
-                }
-            }
+    /// The list's sections, apart from `list` so the compiler checks them on their own: one
+    /// `body` holding every section, modifier, alert and sheet took 500ms to type-check, and a
+    /// slower machine gave up on it.
+    @ViewBuilder private var rows: some View {
+        keptRows
+        stoppedSection
+        daysAwaySection
+        recordRows
+    }
 
+    @ViewBuilder private var keptRows: some View {
+        if screen.keptGroups.isEmpty {
+            Section("Kept") {
+                Text("Nothing is being kept.")
+            }
+        }
+        // A `Section` per group, not one flat list: the category is the section's own
+        // header, and the group with none draws no header. Each section's `ForEach` carries
+        // one `.onMove`, over an offset already counted inside that section's own entries —
+        // `design.md` § *The shell rides this Story*. It passes that offset straight through
+        // to `screen.move` beside the section's own `group.category`: nothing here adds,
+        // subtracts, counts rows or asks where a finger is.
+        //
+        // `.sectionActions` draws two icon buttons below a categorised section's content, the
+        // one documented per-section action surface — `design.md` § *The shell rides this
+        // Story*. Gated on `editMode` below: `grill.md` § *Settled* 6 decided the actions
+        // appear in Edit mode only, and both the appearance and the row re-evaluating on that
+        // transition are confirmed — on the phone (2026-09-09) and by
+        // `zzzScratchVerifyEditGateAndRowHeight`, a throwaway XCUITest run during this fix and
+        // not kept: no `Move up`/`Move down` button exists before `EditButton()` is tapped,
+        // both exist right after. Both sit in one `HStack`, itself the single view the content
+        // closure returns, so the row reads as one item with two separately tappable buttons
+        // rather than two stacked rows — confirmed on the phone: Apple's own documented example
+        // draws a single `Button` and says nothing about two, so this was open until walked.
+        // Each carries the accessibility label the prose in `proposal.md` and `design.md`
+        // names, `Move up` and `Move down`, unchanged by drawing an icon instead of the words.
+        // `groupIndex` is the group's own position in
+        // `screen.keptGroups`, which is `screen.categoriesInUse`'s position too: the group
+        // under no category, where there is one, is always last, so every categorised group
+        // sits at the same index in both. Up is `groupIndex - 1`, down is `groupIndex + 2`,
+        // and each is drawn only where that offset is one `screen.categoriesInUse` has, so no
+        // tap can reach a refusal; nothing here counts rows or asks where a finger is.
+        ForEach(Array(screen.keptGroups.enumerated()), id: \.element.category) { groupIndex, group in
             Section {
-                if screen.stopped.isEmpty {
-                    Text("Nothing has been stopped.")
-                }
-                ForEach(screen.stopped, id: \.self) { commitment in
+                // Keyed on the commitment's own value, not its position — as the flat list
+                // was before this Story's group move started carrying whole blocks through
+                // this `ForEach`. `.onMove` still takes its offsets from the underlying
+                // `group.commitments`, whatever the `id:` is keyed on. Redrawing a row whose
+                // commitment changed in value but not in identity — `tasks.md` § 14.4 — does
+                // not turn on this key: see `listRevision` on `CommitmentsView`.
+                ForEach(group.commitments, id: \.self) { commitment in
+                    // `LookBackView(screen:commitment:)` is cheap to construct — two
+                    // references — so building it here, in the trailing closure this
+                    // initializer resolves to, costs nothing on every redraw of every row on
+                    // both lists; `screen.lookBack(at:)`, the day-by-day walk, sits behind
+                    // `LookBackView`'s own `body` and only runs once this row is tapped.
+                    // `design.md:117-119` accepted that walk only because nothing on the
+                    // daily path calls it — this screen redrawing every row's destination was
+                    // the path it missed. G7 finding 2 on #272.
                     NavigationLink {
                         LookBackView(screen: screen, commitment: commitment)
                     } label: {
@@ -428,12 +355,12 @@ struct CommitmentsView: View {
                     }
                     .swipeActions(edge: .trailing) {
                         Button {
-                            screen.keepAgain(commitment)
+                            screen.askToStopKeeping(commitment)
                         } label: {
-                            Image(systemName: "play.circle")
+                            Image(systemName: "stop.circle")
                         }
-                        .tint(.accentColor)
-                        .accessibilityLabel("Resume")
+                        .tint(.orange)
+                        .accessibilityLabel("Stop")
                         Button(role: .destructive) {
                             screen.askToDelete(commitment)
                         } label: {
@@ -443,106 +370,256 @@ struct CommitmentsView: View {
                         .accessibilityLabel("Delete")
                     }
                 }
+                .onMove { source, offset in
+                    guard let rowIndex = source.first else { return }
+                    screen.move(group.commitments[rowIndex], toOffset: offset, under: group.category)
+                }
             } header: {
-                Text("Stopped")
+                if let category = group.category {
+                    // Same insets as the day screen's category heading, for the same reason
+                    // and off the same measurement — see the comment there. The `Kept` and
+                    // `Stopped` headings below keep the platform's own padding: they divide
+                    // this screen rather than name a group, and the owner's ask was about the
+                    // gap above a category.
+                    Text(category)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
+                }
             } footer: {
-                if let stoppedRefusal = screen.stoppedRefusal {
-                    stoppedRowRefusalText(stoppedRefusal.refusal)
-                }
-
-                if case .deleting(let deleted, let deletingRefusal) = screen.refusedChange,
-                    screen.stopped.contains(deleted)
-                {
-                    refusalText(deletingRefusal)
+                if let refusal = keptGroupRefusal(for: group) {
+                    refusalText(refusal)
                 }
             }
-
-            switch screen.rosterState {
-            case .kept:
-                EmptyView()
-            case .notKept:
-                Text("The roster could not be read or could not be written.")
-            case .writtenByALaterVersion:
-                Text("The roster was written by a newer version of DayByDay and must not be deleted.")
-            }
-
-            // Decides nothing — `screen.recordsBelongToNoCommitment` already carried back every
-            // record it could and is the one place this is judged, per ADR-1019. `design.md` §
-            // *The shell rides this Story*.
-            if screen.recordsBelongToNoCommitment {
-                Text("Some records belong to no commitment.")
-            }
-
-            Section {
-                switch screen.happeningState {
-                case .kept:
-                    if screen.happenings.isEmpty {
-                        Text("No happenings yet.")
-                    }
-                    ForEach(screen.happenings, id: \.identity) { happening in
-                        NavigationLink {
-                            HappeningLookBackView(screen: screen, happening: happening)
-                        } label: {
-                            if screen.isStopped(happening) {
-                                commitmentLine(Text(happening.name), rhythmInWords: "Stopped")
-                            } else {
-                                Text(happening.name)
-                            }
-                        }
-                        .swipeActions(edge: .leading) {
+            .sectionActions {
+                if editMode?.wrappedValue.isEditing == true, let category = group.category {
+                    // One `HStack`, so this is one item to `sectionActions` rather than two —
+                    // see the comment above `ForEach(Array(screen.keptGroups.enumerated())…`.
+                    //
+                    // **This row cannot be made thinner than a commitment row from here.**
+                    // Measured 2026-09-09 with `zzzScratchVerifyEditGateAndRowHeight`: a
+                    // `sectionActions` row's own frame reads exactly 52.0pt — identical, to the
+                    // decimal, to a plain commitment row's (`Creatine - Every day`, also
+                    // 52.0pt) — and stays exactly 52.0pt across three separate builds tried in
+                    // turn: `.listRowInsets` alone (below), `.listRowInsets` plus
+                    // `.frame(height: 32)`, and both plus
+                    // `.environment(\.defaultMinListRowHeight, 32)` on the row's own content.
+                    // None moved it by a point. `sectionActions` appears to impose a fixed,
+                    // platform-drawn row height on this SDK (iOS 26.5) that no content-level
+                    // sizing modifier reaches — consistent with the header text above shrinking
+                    // to 28pt off the same `.listRowInsets` this row ignores, so the modifier
+                    // itself works in this file, just not on a `sectionActions` row. Left as
+                    // `.listRowInsets` alone, since the other two measured no different from
+                    // one another and from having neither; not shrinking the icons instead,
+                    // since that would not change what reads as thick — the row.
+                    HStack(spacing: 32) {
+                        if groupIndex > 0 {
                             Button {
-                                happeningSheetTarget = .renaming(happening)
+                                screen.move(group: category, toOffset: groupIndex - 1)
                             } label: {
-                                Image(systemName: "pencil")
+                                Image(systemName: "arrow.up")
                             }
-                            .tint(.accentColor)
-                            .accessibilityLabel("Edit")
+                            .accessibilityLabel("Move up")
                         }
-                        .swipeActions(edge: .trailing) {
-                            if screen.isStopped(happening) {
-                                Button {
-                                    screen.resume(happening)
-                                    listRevision += 1
-                                } label: {
-                                    Image(systemName: "play.circle")
-                                }
-                                .tint(.accentColor)
-                                .accessibilityLabel("Resume")
-                            } else {
-                                Button {
-                                    screen.askToStop(happening)
-                                } label: {
-                                    Image(systemName: "stop.circle")
-                                }
-                                .tint(.orange)
-                                .accessibilityLabel("Stop")
-                            }
-                            Button(role: .destructive) {
-                                screen.askToDelete(happening)
+                        if groupIndex + 2 <= screen.categoriesInUse.count {
+                            Button {
+                                screen.move(group: category, toOffset: groupIndex + 2)
                             } label: {
-                                Image(systemName: "trash")
+                                Image(systemName: "arrow.down")
                             }
-                            .tint(.red)
-                            .accessibilityLabel("Delete")
+                            .accessibilityLabel("Move down")
                         }
                     }
-                    Button("New happening") {
-                        happeningSheetTarget = .making
-                    }
-                case .notKept:
-                    Text("The happenings could not be read or could not be written.")
-                case .writtenByALaterVersion:
-                    Text(
-                        "The happenings were written by a newer version of DayByDay and must not be deleted."
+                    .buttonStyle(.borderless)
+                    .listRowInsets(EdgeInsets(top: 2, leading: 16, bottom: 2, trailing: 16))
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var stoppedSection: some View {
+        Section {
+            if screen.stopped.isEmpty {
+                Text("Nothing has been stopped.")
+            }
+            ForEach(screen.stopped, id: \.self) { commitment in
+                NavigationLink {
+                    LookBackView(screen: screen, commitment: commitment)
+                } label: {
+                    commitmentLine(
+                        Text(commitment.name), rhythmInWords: commitment.rhythmInWords
                     )
                 }
-            } header: {
-                Text("Happenings")
-            } footer: {
-                if happeningSheetTarget == nil, let refusal = screen.happeningRefusal {
-                    happeningRefusalText(refusal)
+                .swipeActions(edge: .leading) {
+                    Button {
+                        sheetTarget = .changing(commitment)
+                    } label: {
+                        Image(systemName: "pencil")
+                    }
+                    .tint(.accentColor)
+                    .accessibilityLabel("Edit")
+                }
+                .swipeActions(edge: .trailing) {
+                    Button {
+                        screen.keepAgain(commitment)
+                    } label: {
+                        Image(systemName: "play.circle")
+                    }
+                    .tint(.accentColor)
+                    .accessibilityLabel("Resume")
+                    Button(role: .destructive) {
+                        screen.askToDelete(commitment)
+                    } label: {
+                        Image(systemName: "trash")
+                    }
+                    .tint(.red)
+                    .accessibilityLabel("Delete")
                 }
             }
+        } header: {
+            Text("Stopped")
+        } footer: {
+            if let stoppedRefusal = screen.stoppedRefusal {
+                stoppedRowRefusalText(stoppedRefusal.refusal)
+            }
+
+            if case .deleting(let deleted, let deletingRefusal) = screen.refusedChange,
+                screen.stopped.contains(deleted)
+            {
+                refusalText(deletingRefusal)
+            }
+        }
+    }
+
+    @ViewBuilder private var daysAwaySection: some View {
+        Section {
+            ForEach(screen.daysAway, id: \.self) { daysAway in
+                VStack(alignment: .leading, spacing: 2) {
+                    commitmentLine(Text(daysAway.title), rhythmInWords: daysAway.daysInWords)
+                    Text(daysAway.commitments.map(\.name).joined(separator: ", "))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .swipeActions(edge: .trailing) {
+                    if screen.offersRemoving(daysAway) {
+                        Button(role: .destructive) {
+                            screen.askToRemove(daysAway)
+                        } label: {
+                            Image(systemName: "trash")
+                        }
+                        .tint(.red)
+                        .accessibilityLabel("Remove")
+                    }
+                }
+            }
+            Button("New days away") {
+                // Whatever the screen said about days away ends as the sheet opens.
+                screen.daysAwaySheetEdited()
+                daysAwaySheetStillShown = true
+                sayingDaysAway = true
+            }
+        } header: {
+            Text("Days away")
+        } footer: {
+            // The screen's own refusal, a removal that could not be saved, drawn here while
+            // the sheet is not up; the sheet draws its own at its foot. One source, so
+            // showing the app again, which clears it on the screen, clears it here.
+            if !daysAwaySheetStillShown, let refusal = screen.daysAwayRefusal {
+                refusalText(refusal)
+            }
+        }
+    }
+
+    @ViewBuilder private var recordRows: some View {
+        switch screen.rosterState {
+        case .kept:
+            EmptyView()
+        case .notKept:
+            Text("The roster could not be read or could not be written.")
+        case .writtenByALaterVersion:
+            Text("The roster was written by a newer version of DayByDay and must not be deleted.")
+        }
+
+        // Decides nothing — `screen.recordsBelongToNoCommitment` already carried back every
+        // record it could and is the one place this is judged, per ADR-1019. `design.md` §
+        // *The shell rides this Story*.
+        if screen.recordsBelongToNoCommitment {
+            Text("Some records belong to no commitment.")
+        }
+
+        Section {
+            switch screen.happeningState {
+            case .kept:
+                if screen.happenings.isEmpty {
+                    Text("No happenings yet.")
+                }
+                ForEach(screen.happenings, id: \.identity) { happening in
+                    NavigationLink {
+                        HappeningLookBackView(screen: screen, happening: happening)
+                    } label: {
+                        if screen.isStopped(happening) {
+                            commitmentLine(Text(happening.name), rhythmInWords: "Stopped")
+                        } else {
+                            Text(happening.name)
+                        }
+                    }
+                    .swipeActions(edge: .leading) {
+                        Button {
+                            happeningSheetTarget = .renaming(happening)
+                        } label: {
+                            Image(systemName: "pencil")
+                        }
+                        .tint(.accentColor)
+                        .accessibilityLabel("Edit")
+                    }
+                    .swipeActions(edge: .trailing) {
+                        if screen.isStopped(happening) {
+                            Button {
+                                screen.resume(happening)
+                                listRevision += 1
+                            } label: {
+                                Image(systemName: "play.circle")
+                            }
+                            .tint(.accentColor)
+                            .accessibilityLabel("Resume")
+                        } else {
+                            Button {
+                                screen.askToStop(happening)
+                            } label: {
+                                Image(systemName: "stop.circle")
+                            }
+                            .tint(.orange)
+                            .accessibilityLabel("Stop")
+                        }
+                        Button(role: .destructive) {
+                            screen.askToDelete(happening)
+                        } label: {
+                            Image(systemName: "trash")
+                        }
+                        .tint(.red)
+                        .accessibilityLabel("Delete")
+                    }
+                }
+                Button("New happening") {
+                    happeningSheetTarget = .making
+                }
+            case .notKept:
+                Text("The happenings could not be read or could not be written.")
+            case .writtenByALaterVersion:
+                Text(
+                    "The happenings were written by a newer version of DayByDay and must not be deleted."
+                )
+            }
+        } header: {
+            Text("Happenings")
+        } footer: {
+            if happeningSheetTarget == nil, let refusal = screen.happeningRefusal {
+                happeningRefusalText(refusal)
+            }
+        }
+    }
+
+    private var list: some View {
+        List {
+            rows
         }
         // Apple documents `.default` and `.compact` but publishes no point value for either.
         // Measured directly on device (iPhone 17 simulator, iOS 26.5, this SDK): the platform
@@ -596,6 +673,10 @@ struct CommitmentsView: View {
                 .accessibilityLabel("Define a commitment")
             }
         }
+    }
+
+    private var alerting: some View {
+        list
         .alert(
             "Stop keeping this commitment?",
             isPresented: Binding(
@@ -614,6 +695,28 @@ struct CommitmentsView: View {
             Button("Cancel", role: .cancel) {
                 screen.cancelStopKeeping()
             }
+        }
+        .alert(
+            "Remove days away?",
+            isPresented: Binding(
+                get: { screen.daysAwayAwaitingRemoval != nil },
+                set: { isPresented in
+                    if !isPresented && screen.daysAwayAwaitingRemoval != nil {
+                        screen.cancelRemovingDaysAway()
+                    }
+                }
+            ),
+            presenting: screen.daysAwayAwaitingRemoval
+        ) { _ in
+            Button("Remove", role: .destructive) {
+                screen.confirmRemovingDaysAway()
+                listRevision += 1
+            }
+            Button("Cancel", role: .cancel) {
+                screen.cancelRemovingDaysAway()
+            }
+        } message: { daysAway in
+            Text("\(daysAway.title), \(daysAway.daysInWords)")
         }
         .alert(
             "Stop noting this happening?",
@@ -635,6 +738,10 @@ struct CommitmentsView: View {
                 screen.cancelStoppingHappening()
             }
         }
+    }
+
+    private var sheeting: some View {
+        alerting
         .sheet(
             isPresented: Binding(
                 get: { screen.happeningAwaitingDeletion != nil },
@@ -728,6 +835,10 @@ struct CommitmentsView: View {
                 }
             }
         }
+    }
+
+    var body: some View {
+        sheeting
         // `listRevision`, above: forces this `List` to be rebuilt against
         // `screen.kept`/`keptGroups`/`stopped` fresh whenever the sheet below dismisses.
         .id(listRevision)
@@ -737,7 +848,125 @@ struct CommitmentsView: View {
         .sheet(item: $happeningSheetTarget, onDismiss: { listRevision += 1 }) { target in
             HappeningSheet(screen: screen, renaming: target.happening)
         }
+        .sheet(
+            isPresented: $sayingDaysAway,
+            onDismiss: {
+                // The sheet's own refusal ends with it, before the footer may draw again.
+                screen.daysAwaySheetClosed()
+                daysAwaySheetStillShown = false
+                listRevision += 1
+            }
+        ) {
+            DaysAwaySheet(screen: screen)
+        }
     }
+}
+
+/// The sheet that says days away: an optional name, two days, and the kept commitments to pick
+/// from. A kept ask dismisses; a refused one stays open over its red caption, everything as
+/// typed. Decides nothing — `screen.sayDaysAway` judges, this draws (ADR-1019).
+private struct DaysAwaySheet: View {
+    let screen: CommitmentsScreen
+
+    @State private var name = ""
+    @State private var firstDay: Date
+    @State private var lastDay: Date
+    @State private var picked: [Commitment] = []
+    @Environment(\.dismiss) private var dismiss
+
+    init(screen: CommitmentsScreen) {
+        self.screen = screen
+        _firstDay = State(initialValue: date(from: screen.dayToKeepFrom))
+        _lastDay = State(initialValue: date(from: screen.dayToKeepFrom))
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollViewReader { scroll in
+            Form {
+                Section {
+                    TextField("Name (optional)", text: $name)
+                        .onChange(of: name) { _, _ in screen.daysAwaySheetEdited() }
+                    DatePicker("First day", selection: $firstDay, displayedComponents: [.date])
+                        .onChange(of: firstDay) { _, _ in screen.daysAwaySheetEdited() }
+                    DatePicker("Last day", selection: $lastDay, displayedComponents: [.date])
+                        .onChange(of: lastDay) { _, _ in screen.daysAwaySheetEdited() }
+                }
+                Section {
+                    ForEach(screen.kept, id: \.self) { commitment in
+                        Button {
+                            if let at = picked.firstIndex(of: commitment) {
+                                picked.remove(at: at)
+                            } else {
+                                picked.append(commitment)
+                            }
+                            screen.daysAwaySheetEdited()
+                        } label: {
+                            HStack {
+                                Image(
+                                    systemName: picked.contains(commitment)
+                                        ? "checkmark.circle.fill" : "circle")
+                                commitmentLine(
+                                    Text(commitment.name), rhythmInWords: commitment.rhythmInWords)
+                                Spacer(minLength: 0)
+                            }
+                            .contentShape(Rectangle())
+                            .foregroundStyle(.primary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                } header: {
+                    Text("Commitments to pause")
+                }
+                // The refusal at the foot, a row of its own with no card so a scroll can
+                // reach it: a section footer is not something `scrollTo` can name.
+                if let refusal = screen.daysAwayRefusal {
+                    Section {
+                        refusalText(refusal)
+                            .id("daysAwayRefusal")
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                    }
+                }
+            }
+            .onChange(of: screen.daysAwayRefusal != nil) { _, shown in
+                if shown {
+                    withAnimation { scroll.scrollTo("daysAwayRefusal", anchor: .bottom) }
+                }
+            }
+            }
+            .navigationTitle("Days away")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Add") { add() }
+                        .disabled(picked.isEmpty)
+                }
+            }
+        }
+        .onDisappear {
+            screen.daysAwaySheetClosed()
+        }
+    }
+
+    private func add() {
+        guard let first = calendarDate(from: firstDay), let last = calendarDate(from: lastDay) else {
+            return
+        }
+        // Kept order, as the roster holds them, whatever order they were picked in.
+        let over = screen.kept.filter { picked.contains($0) }
+        if screen.sayDaysAway(named: name, from: first, through: last, over: over) == nil {
+            dismiss()
+        }
+    }
+}
+
+private func calendarDate(from date: Date) -> CalendarDate? {
+    let components = Calendar.current.dateComponents([.year, .month, .day], from: date)
+    return CalendarDate(year: components.year!, month: components.month!, day: components.day!)
 }
 
 /// The one sheet that makes a happening and renames one: a single name field with *Cancel* and

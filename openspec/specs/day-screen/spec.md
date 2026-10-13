@@ -6036,12 +6036,11 @@ what a day screen says about birthdays.
 A day screen SHALL say its week strip: the seven days of the week the day being shown lies in,
 Monday first and Sunday last. Each day SHALL say its letter, "M", "T", "W", "T", "F", "S" and "S" in
 that order, and its date; a day outside the calendar the screen supports SHALL keep its letter and
-hold no date. The letters SHALL be this capability's own English and MUST NOT come from the
-device's language, region, locale or calendar. The strip SHALL mark the day being shown as shown
-and, where the today last handed lies in that week, that day as the today, and SHALL mark nothing
-else. It SHALL follow the day being shown and the today, read no clock and take no day from the
-caller, and what it holds and marks MUST NOT depend on the record or on the rows of
-any day.
+hold no date. The letters SHALL be this capability's own English and MUST NOT come from the device's
+language, region, locale or calendar. The strip SHALL mark the day being shown as shown and the
+today last handed where that week holds it, and SHALL mark nothing else but days away. It SHALL
+follow the day being shown and the today, read no clock and take no day from the caller, and what it
+holds and marks MUST NOT depend on the record or on the rows of any day.
 
 #### Scenario: a day screen says the seven days of its week, Monday first, each by its letter
 
@@ -6976,9 +6975,9 @@ at the record, roster, one-off or birthday place.
 
 Asked about a row of the today it was last handed, a day screen SHALL answer the mark "Needed today"
 exactly where the row's commitment is on a weekly quota, the row says its commitment is not kept,
-whatever its kind, and what the row's week owes, less its standing, equals the number of days from
-the row's date through that week's Sunday, both counted. The owing and the standing SHALL be the
-numbers the row's rhythm words say.
+whatever its kind, and what the row's week owes, less its standing, equals the days from the row's
+date through that week's Sunday, both counted, that an era of the commitment holds. The owing and
+the standing SHALL be the numbers the row's rhythm words say.
 
 It SHALL answer no mark where the week still owes fewer days than are left in it, where it owes
 nothing more, where it owes more days than are left in it, for a row that says its commitment is
@@ -7071,6 +7070,18 @@ screen holds and nothing at any of its places.
   named "Run" on a schedule listing Tuesday, Thursday and Sunday, both kept from 1 January 2026
 - **THEN** its rows say "Every day" and "Tue, Thu, Sun", each not kept
 - **AND** the day screen answers no mark for either
+
+#### Scenario: a weekly-quota row on today owing every day left before days away later in its week is marked Needed today
+
+- **WHEN** a commitment named "Yuno" on a weekly quota of 5 times a week, kept from 1 January 2026, is
+  taken on at a roster place; days away from Friday 16 through Sunday 18 October 2026 are said over
+  it through a commitments screen opened at that roster place as of Monday 12 October 2026; a tick for
+  "Yuno" on that Monday is kept at a record place; and a day screen is opened at those places as of
+  Wednesday 14 October 2026
+- **THEN** its one row says "1/3x a week" and says it is not kept
+- **AND** the day screen answers "Needed today" for it
+- **AND** a day screen opened the same way as of Tuesday 13 October 2026 answers no mark for its row
+  saying "1/3x a week"
 
 ### Requirement: A day screen marks no row of a day other than the today it was last handed
 
@@ -7760,3 +7771,70 @@ taken back.
 - **AND** the row of a day view formed on Wednesday 2 September 2026 from a history holding an
   addition of 30 for "Protein" on that date says none asked as of Monday 31 August 2026, and says
   "Take back last (30)" asked as of Wednesday 2 September 2026
+
+### Requirement: A day view says the days away its date lies in, one line each, by name or Away
+
+A day screen SHALL say, on every day view it forms, the day either side of the one shown included,
+one line for each days away its roster holds whose days include that view's date, in the order of
+their first days, days away sharing a first day in the order they were said. Each line SHALL be the
+name of those days away, or "Away" where they have none, and SHALL name no commitment. The lines SHALL
+be said on every day of those days away, whatever rows that day holds, days before the today
+included and a first day on which a commitment picked is still kept included, and on no other day.
+
+#### Scenario: a day screen says the name of days away on each of their days, and nothing either side
+
+- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday and one named
+  "Creatine" on a schedule listing all seven weekdays, both kept from 1 January 2026, are taken on at
+  a roster place; days away named "Mallorca" from Tuesday 13 through Sunday 18 October 2026 are said
+  over "Gym" through a commitments screen opened at that roster place as of Monday 12 October 2026;
+  and a day screen is opened at that roster place, a record place and a one-off place where nothing
+  has been kept, as of Thursday 15 October 2026
+- **THEN** its day view says one line, "Mallorca", and holds one row, named "Creatine"
+- **AND** the day views it says of the day before and of the day after each say "Mallorca"
+- **AND** a day screen opened the same way as of Monday 12 October 2026, and one as of Monday
+  19 October 2026, says no line
+
+#### Scenario: days away with no name are said as Away, and two on one day in the order of their first days
+
+- **WHEN** commitments named "Gym" and "Creatine" on schedules listing all seven weekdays, kept from
+  1 January 2026, are taken on at a roster place; days away with no name from Thursday 15 through
+  Friday 16 October 2026 over "Creatine", and then days away named "Mallorca" from Tuesday 13 through
+  Sunday 18 October 2026 over "Gym", are said through a commitments screen opened at that roster
+  place as of Monday 12 October 2026; and a day screen is opened at that roster place, a record place
+  and a one-off place where nothing has been kept, as of Thursday 15 October 2026
+- **THEN** its day view says two lines, "Mallorca" and then "Away", and holds no row
+- **AND** a day screen opened the same way as of Saturday 17 October 2026 says "Mallorca" alone
+
+#### Scenario: days away are said on days already gone, and on a first day a commitment is kept through
+
+- **WHEN** commitments named "Creatine" and "Magnesium" on schedules listing all seven weekdays, kept
+  from 1 January 2026, are taken on at a roster place; a tick for "Creatine" on Monday 12 October 2026
+  is kept at a record place; days away from that Monday through Wednesday 14 October 2026 are said
+  over both through a commitments screen opened at those places as of that Monday; and a day screen
+  is opened at those places and a one-off place where nothing has been kept, as of Friday 16 October
+  2026, and moved to the day before three times
+- **THEN** its day view, of Tuesday 13 October 2026, says one line, "Away", and holds no row
+- **AND** moved to the day before once more, its day view says "Away" and holds one row, named
+  "Creatine", saying it is kept
+
+### Requirement: A day screen's week strip marks each day of days away, on every week strip it says
+
+A day screen SHALL mark as away each day of every week strip it says, its own and those a page either
+way would give, that days away its roster holds include, whatever commitments those days away are
+over, and SHALL mark no other day so. The mark SHALL follow the days away its roster holds as last read
+or kept, and MUST NOT depend on the record or on the rows of any day.
+
+#### Scenario: a day screen's week strip marks each day of days away as away, whatever is recorded
+
+- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday and one named
+  "Creatine" on a schedule listing all seven weekdays, both kept from 1 January 2026, are taken on at
+  a roster place; days away named "Mallorca" from Tuesday 13 through Sunday 18 October 2026 are said
+  over "Gym" through a commitments screen opened at that roster place as of Monday 12 October 2026;
+  and a day screen is opened at that roster place, a record place and a one-off place where nothing
+  has been kept, as of that day
+- **THEN** its week strip marks Tuesday 13 to Sunday 18 October 2026 as away, and Monday 12 October
+  2026 not
+- **AND** that week strip is the same once its row named "Creatine" is ticked
+- **AND** a day screen opened the same way as of Wednesday 21 October 2026 says, as the week strip a
+  page to the week before would give, Tuesday 13 to Sunday 18 October 2026 marked as away, and marks
+  no day of its own week strip as away

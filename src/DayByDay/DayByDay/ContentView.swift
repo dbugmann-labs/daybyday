@@ -660,296 +660,306 @@ struct ContentView: View {
         }
     }
 
-    var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                dayControls
-                pagedDayContent
+    /// The day screen's content and its toolbar, apart from `dayStackPresentations` so the
+    /// compiler checks each on its own: one `body` holding all of it took 150ms to type-check.
+    private var dayStackBase: some View {
+        VStack(spacing: 0) {
+            dayControls
+            pagedDayContent
+        }
+        .navigationDestination(isPresented: $showingCommitments) {
+            if let commitmentsScreen {
+                CommitmentsView(
+                    screen: commitmentsScreen, birthdaysScreen: birthdaysScreen,
+                    showingBirthdays: $showingBirthdays,
+                    openBirthdays: {
+                        birthdaysScreen = BirthdaysScreen(
+                            asOf: today(), readingBirthdaysFrom: birthdayCalendar,
+                            whileOn: birthdaySwitch)
+                        showingBirthdays = true
+                    })
             }
-            .navigationDestination(isPresented: $showingCommitments) {
-                if let commitmentsScreen {
-                    CommitmentsView(
-                        screen: commitmentsScreen, birthdaysScreen: birthdaysScreen,
-                        showingBirthdays: $showingBirthdays,
-                        openBirthdays: {
-                            birthdaysScreen = BirthdaysScreen(
-                                asOf: today(), readingBirthdaysFrom: birthdayCalendar,
-                                whileOn: birthdaySwitch)
-                            showingBirthdays = true
-                        })
-                }
-            }
-            // The day is the title: the weekday in full, large, over the date row `dayControls`
-            // draws beneath it. `screen.title` ("Fri") stays the kit's and is no longer drawn.
-            .navigationTitle(weekdayInWords)
-            .navigationBarTitleDisplayMode(.large)
-            // ADR-1045's 2026-09-28 amendment: "one light impact for every change the screen
-            // keeps, and a selection tick when a day turns, never the success haptic". Neither
-            // trigger's value is read — `keeping(_:)` and the day-turn call sites bump a counter
-            // purely to fire these.
-            .sensoryFeedback(.impact(weight: .light), trigger: changesKept)
-            .sensoryFeedback(.selection, trigger: daysTurned)
-            .toolbar {
-                // The way back to today: a plain text button on the toolbar's left, where it
-                // is offered. On today itself, where it is not (§ *Offered*), the slot is empty
-                // and the date row says "Today" in words instead — green is the kept checkmark's
-                // alone (ADR-1045). Still gated on `screen.offersGoingBackToToday` and still
-                // calls exactly what the button under the day row used to.
-                ToolbarItem(placement: .topBarLeading) {
-                    if screen.offersGoingBackToToday {
-                        Button("Today") {
-                            commitFocusedOneOffField(forDeparture: true)
-                            cancelPendingDaySettle()
-                            screen.showToday()
-                        }
+        }
+        // The day is the title: the weekday in full, large, over the date row `dayControls`
+        // draws beneath it. `screen.title` ("Fri") stays the kit's and is no longer drawn.
+        .navigationTitle(weekdayInWords)
+        .navigationBarTitleDisplayMode(.large)
+        // ADR-1045's 2026-09-28 amendment: "one light impact for every change the screen
+        // keeps, and a selection tick when a day turns, never the success haptic". Neither
+        // trigger's value is read — `keeping(_:)` and the day-turn call sites bump a counter
+        // purely to fire these.
+        .sensoryFeedback(.impact(weight: .light), trigger: changesKept)
+        .sensoryFeedback(.selection, trigger: daysTurned)
+        .toolbar {
+            // The way back to today: a plain text button on the toolbar's left, where it
+            // is offered. On today itself, where it is not (§ *Offered*), the slot is empty
+            // and the date row says "Today" in words instead — green is the kept checkmark's
+            // alone (ADR-1045). Still gated on `screen.offersGoingBackToToday` and still
+            // calls exactly what the button under the day row used to.
+            ToolbarItem(placement: .topBarLeading) {
+                if screen.offersGoingBackToToday {
+                    Button("Today") {
+                        commitFocusedOneOffField(forDeparture: true)
+                        cancelPendingDaySettle()
+                        screen.showToday()
                     }
                 }
-                // Commitments and Settings, one trailing group — one capsule.
-                ToolbarItemGroup(placement: .primaryAction) {
+            }
+            // Commitments and Settings, one trailing group — one capsule.
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button {
+                    commitmentsScreen = CommitmentsScreen(
+                        asOf: today(), whileOn: birthdaySwitch, copyingTo: copyPlace)
+                    showingCommitments = true
+                } label: {
+                    Image(systemName: "list.bullet")
+                }
+                .accessibilityLabel("Commitments")
+                Button {
+                    let opened = CommitmentsScreen(asOf: today(), copyingTo: copyPlace)
+                    lastSettingsScreen = opened
+                    settingsScreen = OpenSettings(screen: opened)
+                    birthdaySwitch.shown()
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+                .accessibilityLabel("Settings")
+            }
+            // The green checkmark: shown while any one-off field is focused, and commits and
+            // drops focus exactly as Return does, minus the fresh entry Return leaves focused.
+            // `design.md` § *The shell*. Gated on `oneOffFocusNamesALiveField`, not a bare
+            // `oneOffFocus != nil` — see that property's own doc comment for why.
+            if oneOffFocusNamesALiveField {
+                ToolbarItem(placement: .confirmationAction) {
                     Button {
-                        commitmentsScreen = CommitmentsScreen(
-                            asOf: today(), whileOn: birthdaySwitch, copyingTo: copyPlace)
-                        showingCommitments = true
+                        // `commitFocusedOneOffField()` already drops focus itself once it
+                        // has committed — except where a rename it just made is refused, in
+                        // which case the row stays focused on purpose (grill answer 18): see
+                        // its own doc comment.
+                        commitFocusedOneOffField()
                     } label: {
-                        Image(systemName: "list.bullet")
-                    }
-                    .accessibilityLabel("Commitments")
-                    Button {
-                        let opened = CommitmentsScreen(asOf: today(), copyingTo: copyPlace)
-                        lastSettingsScreen = opened
-                        settingsScreen = OpenSettings(screen: opened)
-                        birthdaySwitch.shown()
-                    } label: {
-                        Image(systemName: "gearshape")
-                    }
-                    .accessibilityLabel("Settings")
-                }
-                // The green checkmark: shown while any one-off field is focused, and commits and
-                // drops focus exactly as Return does, minus the fresh entry Return leaves focused.
-                // `design.md` § *The shell*. Gated on `oneOffFocusNamesALiveField`, not a bare
-                // `oneOffFocus != nil` — see that property's own doc comment for why.
-                if oneOffFocusNamesALiveField {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button {
-                            // `commitFocusedOneOffField()` already drops focus itself once it
-                            // has committed — except where a rename it just made is refused, in
-                            // which case the row stays focused on purpose (grill answer 18): see
-                            // its own doc comment.
-                            commitFocusedOneOffField()
-                        } label: {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(Color.green)
-                        }
+                        Image(systemName: "checkmark")
+                            .foregroundStyle(Color.green)
                     }
                 }
             }
-            .alert(
-                enteringRow?.name ?? "",
-                isPresented: Binding(
-                    get: { enteringRow != nil },
-                    set: { isPresented in
-                        if !isPresented {
-                            enteringRow = nil
-                        }
+        }
+    }
+
+    private var dayStackPresentations: some View {
+        dayStackBase
+        .alert(
+            enteringRow?.name ?? "",
+            isPresented: Binding(
+                get: { enteringRow != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        enteringRow = nil
                     }
-                ),
-                presenting: enteringRow
-            ) { row in
-                TextField(row.numberEntry(asOf: today())?.hint ?? "", text: $enteringText)
-                    .keyboardType(.decimalPad)
-                Button("Save") {
-                    keeping { try screen.enter(enteringText, on: row) }
-                    enteringRow = nil
                 }
-                Button("Cancel", role: .cancel) {
-                    enteringRow = nil
-                }
+            ),
+            presenting: enteringRow
+        ) { row in
+            TextField(row.numberEntry(asOf: today())?.hint ?? "", text: $enteringText)
+                .keyboardType(.decimalPad)
+            Button("Save") {
+                keeping { try screen.enter(enteringText, on: row) }
+                enteringRow = nil
             }
-            .sheet(
-                isPresented: Binding(
-                    get: { enteringNoteRow != nil },
-                    set: { isPresented in
-                        if !isPresented {
-                            enteringNoteRow = nil
-                        }
+            Button("Cancel", role: .cancel) {
+                enteringRow = nil
+            }
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { enteringNoteRow != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        enteringNoteRow = nil
                     }
-                )
-            ) {
-                if let row = enteringNoteRow {
-                    NavigationStack {
-                        ZStack {
-                            Color(.systemGroupedBackground)
-                                .ignoresSafeArea()
-                            NoteEditorField(text: $enteringNoteText)
-                                .padding(8)
-                                .background(
-                                    Color(.secondarySystemGroupedBackground),
-                                    in: RoundedRectangle(cornerRadius: 12)
-                                )
-                                .padding()
-                        }
-                        .navigationTitle(row.name)
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .cancellationAction) {
-                                Button("Cancel") {
-                                    enteringNoteRow = nil
-                                }
-                            }
-                            ToolbarItem(placement: .confirmationAction) {
-                                Button("Save") {
-                                    keeping { try screen.enter(enteringNoteText, on: row) }
-                                    enteringNoteRow = nil
-                                }
+                }
+            )
+        ) {
+            if let row = enteringNoteRow {
+                NavigationStack {
+                    ZStack {
+                        Color(.systemGroupedBackground)
+                            .ignoresSafeArea()
+                        NoteEditorField(text: $enteringNoteText)
+                            .padding(8)
+                            .background(
+                                Color(.secondarySystemGroupedBackground),
+                                in: RoundedRectangle(cornerRadius: 12)
+                            )
+                            .padding()
+                    }
+                    .navigationTitle(row.name)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                enteringNoteRow = nil
                             }
                         }
-                    }
-                }
-            }
-            // The reason sheet, opened from a row's menu: short, its field focused, and one button
-            // that says "Decline" or "Save" by whether the row is declined already. It passes the
-            // field's text as typed; `DayScreen.decline` trims and judges. `decline-a-due-day/design.md`
-            // § *The shell*.
-            .sheet(
-                isPresented: Binding(
-                    get: { decliningRow != nil },
-                    set: { isPresented in
-                        if !isPresented {
-                            decliningRow = nil
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Save") {
+                                keeping { try screen.enter(enteringNoteText, on: row) }
+                                enteringNoteRow = nil
+                            }
                         }
                     }
-                )
-            ) {
-                if let row = decliningRow {
-                    DeclineReasonSheet(
-                        title: row.name, confirmWord: row.isDeclined ? "Save" : "Decline",
-                        text: $decliningText
-                    ) {
-                        keeping { try screen.decline(row, reason: decliningText) }
-                        decliningRow = nil
-                    } cancel: {
-                        decliningRow = nil
-                    }
-                    .presentationDetents([.height(170)])
                 }
             }
-            // A happening is noted in a sheet of its own, opened from the bolt's menu. `DayScreen`
-            // answers the starting time and judges the Save; this draws both. `design.md` § *The shell*.
-            .sheet(item: $notingHappening) { noted in
-                NoteHappeningSheet(
-                    happening: noted.happening,
-                    startingTime: momentNow().flatMap { screen.startingTime(asOf: $0) }
-                ) { time, note in
+        }
+        // The reason sheet, opened from a row's menu: short, its field focused, and one button
+        // that says "Decline" or "Save" by whether the row is declined already. It passes the
+        // field's text as typed; `DayScreen.decline` trims and judges. `decline-a-due-day/design.md`
+        // § *The shell*.
+        .sheet(
+            isPresented: Binding(
+                get: { decliningRow != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        decliningRow = nil
+                    }
+                }
+            )
+        ) {
+            if let row = decliningRow {
+                DeclineReasonSheet(
+                    title: row.name, confirmWord: row.isDeclined ? "Save" : "Decline",
+                    text: $decliningText
+                ) {
+                    keeping { try screen.decline(row, reason: decliningText) }
+                    decliningRow = nil
+                } cancel: {
+                    decliningRow = nil
+                }
+                .presentationDetents([.height(170)])
+            }
+        }
+        // A happening is noted in a sheet of its own, opened from the bolt's menu. `DayScreen`
+        // answers the starting time and judges the Save; this draws both. `design.md` § *The shell*.
+        .sheet(item: $notingHappening) { noted in
+            NoteHappeningSheet(
+                happening: noted.happening,
+                startingTime: momentNow().flatMap { screen.startingTime(asOf: $0) }
+            ) { time, note in
+                guard let now = momentNow() else {
+                    return .notKept
+                }
+                var refusal: DayScreen.OccurrenceRefusal?
+                keeping { refusal = screen.note(noted.happening, at: time, saying: note, asOf: now) }
+                return refusal
+            }
+        }
+        // An occurrence is changed or taken back in the noting sheet filled in. `DayScreen` judges
+        // both; this draws them. `design.md` § *The shell*.
+        .sheet(item: $changingOccurrence) { changed in
+            NoteHappeningSheet(
+                changing: changed.occurrence, named: changed.name,
+                boundedAtNow: momentNow().flatMap { screen.startingTime(asOf: $0) } != nil,
+                save: { time, note in
                     guard let now = momentNow() else {
                         return .notKept
                     }
                     var refusal: DayScreen.OccurrenceRefusal?
-                    keeping { refusal = screen.note(noted.happening, at: time, saying: note, asOf: now) }
+                    keeping {
+                        refusal = screen.change(
+                            changed.occurrence, to: time, saying: note, asOf: now)
+                    }
                     return refusal
-                }
-            }
-            // An occurrence is changed or taken back in the noting sheet filled in. `DayScreen` judges
-            // both; this draws them. `design.md` § *The shell*.
-            .sheet(item: $changingOccurrence) { changed in
-                NoteHappeningSheet(
-                    changing: changed.occurrence, named: changed.name,
-                    boundedAtNow: momentNow().flatMap { screen.startingTime(asOf: $0) } != nil,
-                    save: { time, note in
-                        guard let now = momentNow() else {
-                            return .notKept
-                        }
-                        var refusal: DayScreen.OccurrenceRefusal?
-                        keeping {
-                            refusal = screen.change(
-                                changed.occurrence, to: time, saying: note, asOf: now)
-                        }
-                        return refusal
-                    },
-                    takeBack: {
-                        var refusal: DayScreen.OccurrenceRefusal?
-                        keeping { refusal = screen.takeBack(changed.occurrence) }
-                        return refusal
-                    })
-            }
-            // A total takes an amount in a half-height sheet over the dimmed day: the row's name
-            // with `soFarOfTarget` under it, the amount field focused as it opens so the keyboard is up, the row's usual
-            // amounts under it — a tap adds one and closes — and *Take back last (n)* below, where
-            // `takeBackLastInWords(asOf:)` answers its words. Nothing here decides anything: every word
-            // and every amount is the Kit's, the field's text still goes to `enter(_:on:)` as
-            // typed and a usual amount to `add(_:on:)`. `design.md` § *What the shell draws*.
-            .sheet(
-                isPresented: Binding(
-                    get: { enteringTotalRow != nil },
-                    set: { isPresented in
-                        if !isPresented {
-                            enteringTotalRow = nil
-                        }
+                },
+                takeBack: {
+                    var refusal: DayScreen.OccurrenceRefusal?
+                    keeping { refusal = screen.takeBack(changed.occurrence) }
+                    return refusal
+                })
+        }
+        // A total takes an amount in a half-height sheet over the dimmed day: the row's name
+        // with `soFarOfTarget` under it, the amount field focused as it opens so the keyboard is up, the row's usual
+        // amounts under it — a tap adds one and closes — and *Take back last (n)* below, where
+        // `takeBackLastInWords(asOf:)` answers its words. Nothing here decides anything: every word
+        // and every amount is the Kit's, the field's text still goes to `enter(_:on:)` as
+        // typed and a usual amount to `add(_:on:)`. `design.md` § *What the shell draws*.
+        .sheet(
+            isPresented: Binding(
+                get: { enteringTotalRow != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        enteringTotalRow = nil
                     }
-                )
-            ) {
-                if let row = enteringTotalRow {
-                    let totalEntry = row.totalEntry(asOf: today())
-                    NavigationStack {
-                        Form {
+                }
+            )
+        ) {
+            if let row = enteringTotalRow {
+                let totalEntry = row.totalEntry(asOf: today())
+                NavigationStack {
+                    Form {
+                        Section {
+                            TotalAmountField(text: $enteringTotalText)
+                        }
+                        if let totalEntry, !totalEntry.usualAmounts.isEmpty {
                             Section {
-                                TotalAmountField(text: $enteringTotalText)
-                            }
-                            if let totalEntry, !totalEntry.usualAmounts.isEmpty {
-                                Section {
-                                    ForEach(totalEntry.usualAmounts, id: \.self) { usualAmount in
-                                        Button {
-                                            keeping { try screen.add(usualAmount, on: row) }
-                                            enteringTotalRow = nil
-                                        } label: {
-                                            HStack {
-                                                Text(usualAmount.amount)
-                                                    .frame(minWidth: 56, alignment: .leading)
-                                                if let name = usualAmount.name {
-                                                    Text(name)
-                                                }
-                                                Spacer()
-                                            }
-                                            .contentShape(Rectangle())
-                                        }
-                                        .listRowInsets(
-                                            EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
-                                        )
-                                        .foregroundStyle(.primary)
-                                    }
-                                }
-                            }
-                            if let takeBack = row.takeBackLastInWords(asOf: today()) {
-                                Section {
-                                    Button(takeBack, role: .destructive) {
-                                        keeping { try screen.takeBackLast(on: row) }
+                                ForEach(totalEntry.usualAmounts, id: \.self) { usualAmount in
+                                    Button {
+                                        keeping { try screen.add(usualAmount, on: row) }
                                         enteringTotalRow = nil
+                                    } label: {
+                                        HStack {
+                                            Text(usualAmount.amount)
+                                                .frame(minWidth: 56, alignment: .leading)
+                                            if let name = usualAmount.name {
+                                                Text(name)
+                                            }
+                                            Spacer()
+                                        }
+                                        .contentShape(Rectangle())
                                     }
+                                    .listRowInsets(
+                                        EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+                                    )
+                                    .foregroundStyle(.primary)
                                 }
                             }
                         }
-                        .listSectionSpacing(.compact)
-                        .contentMargins(.top, 0, for: .scrollContent)
-                        .environment(\.defaultMinListRowHeight, 32)
-                        .navigationTitle(row.name)
-                        .navigationSubtitle(totalEntry?.soFarOfTarget ?? "")
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .cancellationAction) {
-                                Button("Cancel") {
-                                    enteringTotalRow = nil
-                                }
-                            }
-                            ToolbarItem(placement: .confirmationAction) {
-                                Button("Save") {
-                                    keeping { try screen.enter(enteringTotalText, on: row) }
+                        if let takeBack = row.takeBackLastInWords(asOf: today()) {
+                            Section {
+                                Button(takeBack, role: .destructive) {
+                                    keeping { try screen.takeBackLast(on: row) }
                                     enteringTotalRow = nil
                                 }
                             }
                         }
                     }
-                    .presentationDetents([.medium])
+                    .listSectionSpacing(.compact)
+                    .contentMargins(.top, 0, for: .scrollContent)
+                    .environment(\.defaultMinListRowHeight, 32)
+                    .navigationTitle(row.name)
+                    .navigationSubtitle(totalEntry?.soFarOfTarget ?? "")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                enteringTotalRow = nil
+                            }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Save") {
+                                keeping { try screen.enter(enteringTotalText, on: row) }
+                                enteringTotalRow = nil
+                            }
+                        }
+                    }
                 }
+                .presentationDetents([.medium])
             }
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            dayStackPresentations
         }
         .onChange(of: scenePhase) { _, phase in
             if phase != .active {
@@ -1600,6 +1610,14 @@ struct ContentView: View {
         .foregroundStyle(textColor)
         .padding(.vertical, 6)
         .frame(maxWidth: .infinity)
+        .overlay(alignment: .bottom) {
+            // The dot under a day the roster holds days away over — `isAway` says it; this draws it.
+            if day.isAway {
+                Circle()
+                    .fill(day.isShown ? textColor : Color.secondary)
+                    .frame(width: 4, height: 4)
+            }
+        }
         .background {
             if day.isShown {
                 Capsule().fill(day.isToday ? Color.accentColor : Color.primary)
@@ -1782,7 +1800,15 @@ struct ContentView: View {
     private func dayList(for dayView: DayView?) -> some View {
         List {
             if let dayView {
-                // The Birthdays group, first of all — `openspec/specs/day-screen/spec.md`'s
+                // Each days away the day falls in, first of all: a bare line, said by the Kit.
+                ForEach(Array(dayView.daysAwayInWords.enumerated()), id: \.offset) { _, line in
+                    Text(line)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                }
+                // The Birthdays group, first of the groups — `openspec/specs/day-screen/spec.md`'s
                 // *A day screen draws the birthdays falling on each day...*: "it SHALL come
                 // before every group of commitments." `nil` while birthdays are off or none
                 // fall on this date (`design.md` § *A group of its own, mirroring the
