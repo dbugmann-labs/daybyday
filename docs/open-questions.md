@@ -197,6 +197,13 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
+- **A roster holding two days away with one identity is read without complaint.** `happening`
+  refuses a file holding two happenings with one identity, but `commitment`'s list of refused roster
+  content, as `say-days-away` (#401) wrote it, says nothing of two days away sharing one. Such a
+  file would list the span twice, and removing it would take out only the first of the two. Only a
+  hand-edited or damaged file can hold one, since every span the app says takes a new identity.
+  Refusing it is a `commitment` delta. Found at #401's G7 on 2026-10-13 and left for a covering
+  Story rather than reopening the delta there.
 - **Stopping, resuming or deleting a happening sends the commitments list back to the top.** A
   stopped happening is read from the happening store, which the commitments screen does not watch,
   and a stop or a resume leaves its list of happenings equal to the one before, so nothing redraws
