@@ -1717,8 +1717,8 @@ given two alike hold one.
 A history SHALL hold additions beside the ticks, numbers and notes it holds, and SHALL answer what a
 commitment has added on a calendar date: the sum of those it holds for it on that date. A day SHALL
 hold every addition made on it, in the order they were made, and a second alike in every way to one
-already there SHALL be held beside it rather than replacing it. A history SHALL give out the sum and
-SHALL NOT give out the additions themselves.
+already there SHALL be held beside it rather than replacing it. A history SHALL give out the sum,
+and SHALL NOT give out any addition but the day's last.
 
 The sum SHALL be zero where the day holds no addition and never nothing, so a history that has taken
 no addition SHALL answer zero, and so SHALL one asked about a commitment whose kind is not a total,
