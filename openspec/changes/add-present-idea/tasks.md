@@ -65,7 +65,7 @@ temporary one of the test's own.
 
 - [x] 7.1 `openspec validate add-present-idea --strict` exits 0, and `pnpm run checks` is clean
 - [x] 7.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with twenty-three more tests than a run on `origin/main` reports, both read off runs
-- [ ] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
+- [x] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 7.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked — W.1–W.4 by the conductor at G7 — and W.5 holds its commit. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/present-idea/spec.md` is created with nine requirements and twenty-three scenarios, `openspec/specs/birthday/spec.md` changes in those two requirements alone, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
