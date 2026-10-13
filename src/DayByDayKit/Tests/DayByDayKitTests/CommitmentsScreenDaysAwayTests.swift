@@ -388,6 +388,14 @@ func aRefusalOfDaysAwayIsToldUntilTheSheetIsEditedOrClosedDaysAwayAreKeptOrTheAp
         named: "", from: date(2026, 10, 13), through: date(2026, 10, 18), over: [gym])
     #expect(commitments.daysAwayRefusal == nil)
     #expect(commitments.daysAway.count == 1)
+
+    sayBackwards()
+    #expect(commitments.daysAwayRefusal == .lastDayBeforeFirstDay)
+    let said = try #require(commitments.daysAway.first)
+    let changed = commitments.changeDaysAway(
+        said, named: "", from: date(2026, 10, 13), through: date(2026, 10, 17), over: [gym])
+    #expect(changed == nil)
+    #expect(commitments.daysAwayRefusal == nil)
 }
 
 @MainActor
@@ -917,4 +925,52 @@ func aRosterShiftsAnEveryNDaysDueDayBeforeDaysAwaySaidOverIt() throws {
     }
     let again = try store.shift(nails, from: date(2026, 10, 18), to: date(2026, 10, 20))
     #expect(!again)
+}
+
+@MainActor
+@Test("days away said over days already gone take their gap there, however far back")
+func daysAwaySaidOverDaysAlreadyGoneTakeTheirGapThereHoweverFarBack() throws {
+    let places = Places()
+    let gym = commitment("Gym")
+    let creatine = commitment("Creatine")
+    try takeOn([gym, creatine], at: places)
+    let commitments = screen(places)
+
+    let sick = commitments.sayDaysAway(
+        named: "Sick", from: date(2026, 10, 5), through: date(2026, 10, 7), over: [gym])
+    let lisbon = commitments.sayDaysAway(
+        named: "Lisbon", from: date(2026, 8, 28), through: date(2026, 8, 31), over: [gym])
+    let nameless = commitments.sayDaysAway(
+        named: "", from: date(2026, 10, 10), through: date(2026, 10, 14), over: [creatine])
+
+    #expect(sick == nil)
+    #expect(lisbon == nil)
+    #expect(nameless == nil)
+    #expect(rows(on: date(2026, 10, 6), at: places) == ["Creatine"])
+    #expect(rows(on: date(2026, 10, 8), at: places) == ["Gym", "Creatine"])
+    #expect(rows(on: monday12, at: places) == ["Gym"])
+    let kept = try RosterStore(at: places.roster).roster
+    #expect(isDue("Gym", on: date(2026, 8, 27), in: kept))
+    #expect(isDue("Gym", on: date(2026, 9, 1), in: kept))
+    #expect(!isDue("Gym", on: date(2026, 8, 29), in: kept))
+}
+
+@MainActor
+@Test("days away ending before they begin, or over nothing, are refused and keep nothing")
+func daysAwayEndingBeforeTheyBeginOrOverNothingAreRefusedAndKeepNothing() throws {
+    let places = Places()
+    let gym = commitment("Gym")
+    try takeOn([gym], at: places)
+    let commitments = screen(places)
+    let before = try Data(contentsOf: places.roster)
+
+    let backwards = commitments.sayDaysAway(
+        named: "", from: date(2026, 10, 14), through: date(2026, 10, 13), over: [gym])
+    let overNothing = commitments.sayDaysAway(
+        named: "", from: date(2026, 10, 13), through: date(2026, 10, 18), over: [])
+
+    #expect(backwards == .lastDayBeforeFirstDay)
+    #expect(overNothing == .overNoCommitment)
+    #expect(commitments.daysAway.isEmpty)
+    #expect(try Data(contentsOf: places.roster) == before)
 }

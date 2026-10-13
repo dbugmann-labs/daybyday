@@ -21,9 +21,9 @@ the next.
 
 ## 3. `commitment` — saying days away
 
-- [ ] 3.1 days away said over days already gone take their gap there, however far back — catches the first-day guard left in
-- [ ] 3.2 days away ending before they begin, or over nothing, are refused and keep nothing
-- [ ] 3.3 a refusal of days away is told until the sheet is edited or closed, days away are kept, or the app is shown again — the carried test gains the change clause; catches `changeDaysAway` leaving `daysAwayRefusal` standing
+- [x] 3.1 days away said over days already gone take their gap there, however far back — catches the first-day guard left in
+- [x] 3.2 days away ending before they begin, or over nothing, are refused and keep nothing
+- [x] 3.3 a refusal of days away is told until the sheet is edited or closed, days away are kept, or the app is shown again — the carried test gains the change clause; catches `changeDaysAway` leaving `daysAwayRefusal` standing
 
 ## 4. `commitment` — changing days away
 
