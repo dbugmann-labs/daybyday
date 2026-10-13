@@ -50,15 +50,15 @@ place a temporary one of the test's own.
 
 - [x] 6.1 `openspec validate change-present-idea --strict` exits 0, and `pnpm run checks` is clean
 - [x] 6.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with fifteen more tests than a run on `origin/main` reports, both read off runs
-- [ ] 6.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
+- [x] 6.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 6.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked — W.1–W.4 by the conductor at G7 — and W.5 holds its commit. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/present-idea/spec.md` gains five requirements and fifteen scenarios, five change in place, two of them renamed — which `/opsx:archive` places after the rest — and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 
 Every step needs birthdays on, so every step is the phone's (`docs/open-questions.md`: no simulator here gets calendar access). Birthdays are turned on in Settings, and one real contact is given three text ideas first.
 
-- [ ] W.1 phone: an idea swiped right — "Change idea" opens with Idea and Link filled in; its link typed as "amazon.de/xyz" and saved — the row shows "https://amazon.de/xyz"; then both fields cleared and *Save* — "Type an idea or a link." under the fields, and back on the page the idea unchanged.
-- [ ] W.2 phone: one of the three ideas swiped left and marked given — it moves to the foot of the card, struck through, the text grey; back on the Birthdays screen the line says "2 ideas"; the mark taken back — it returns to its place and the line says "3 ideas".
-- [ ] W.3 phone: an idea not given swiped left and *Delete* tapped — "Delete this idea?" shows; *Cancel* keeps the idea; asked again, *Delete* removes it and the line's count drops by one.
-- [ ] W.4 phone: an idea marked given, then the app closed from the switcher and opened again — the change from W.1, the mark and the order are all still there.
+- [x] W.1 phone: an idea swiped right — "Change idea" opens with Idea and Link filled in; its link typed as "amazon.de/xyz" and saved — the row shows "https://amazon.de/xyz"; then both fields cleared and *Save* — "Type an idea or a link." under the fields, and back on the page the idea unchanged.
+- [x] W.2 phone: one of the three ideas swiped left and marked given — it moves to the foot of the card, struck through, the text grey; back on the Birthdays screen the line says "2 ideas"; the mark taken back — it returns to its place and the line says "3 ideas".
+- [x] W.3 phone: an idea not given swiped left and *Delete* tapped — "Delete this idea?" shows; *Cancel* keeps the idea; asked again, *Delete* removes it and the line's count drops by one.
+- [x] W.4 phone: an idea marked given, then the app closed from the switcher and opened again — the change from W.1, the mark and the order are all still there.
 - [x] W.5 **The handover** (install `08576f7d6b334f9f39e196605260430074d82a95`) — no step is the simulator's, so `pnpm run walk` is not run and nothing is posted; before hand-back the implementer ticks this on naming, here, the commit the human installs with `cd <this worktree> && pnpm run phone` to walk W.1–W.4 at G7. The conductor ticks W.1–W.4 on the G7 approval.
