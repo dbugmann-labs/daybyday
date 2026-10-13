@@ -33,9 +33,9 @@ private struct Places {
     }
 
     @MainActor
-    func screen(copyingTo copyPlace: CopyPlace? = nil) -> CommitmentsScreen {
+    func screen(asOf day: CalendarDate = monday12, copyingTo copyPlace: CopyPlace? = nil) -> CommitmentsScreen {
         CommitmentsScreen(
-            asOf: monday12, keepingRosterAt: roster, keepingRecordAt: record, keepingOneOffsAt: oneOffs,
+            asOf: day, keepingRosterAt: roster, keepingRecordAt: record, keepingOneOffsAt: oneOffs,
             keepingBirthdayTicksAt: birthday, keepingHappeningsAt: happenings, copyingTo: copyPlace)
     }
 }
@@ -188,4 +188,48 @@ func daysAwayChangedOnACommitmentsScreenWriteACopyAtTheCopyPlace() throws {
     #expect(copy.roster.daysAway.first?.lastDay == date(2026, 10, 16))
     #expect(copy.roster.daysAway.first?.commitments.map(\.name) == ["Gym"])
     #expect(copyPlace.lastCopy == Moment(on: monday12, hour: 14, minute: 34)!)
+}
+
+@MainActor
+@Test("a copy holding days away that remember a stop, restored, gives the stopped commitment back no day after it")
+func aCopyHoldingDaysAwayThatRememberAStopRestoredGivesTheStoppedCommitmentBackNoDayAfterIt() throws {
+    let places = Places()
+    let gym = commitment("Gym")
+    let run = commitment("Run")
+    let store = try RosterStore(at: places.roster)
+    try store.add(gym)
+    try store.add(run)
+    let thursday1 = date(2026, 10, 1)
+    places.screen(asOf: thursday1).sayDaysAway(
+        named: "Flu", from: thursday1, through: date(2026, 10, 3), over: [gym, run])
+    let stopping = places.screen(asOf: date(2026, 10, 5))
+    stopping.askToStopKeeping(gym)
+    stopping.confirmStopKeeping()
+    let screen = places.screen()
+    let flu = try #require(screen.pastDaysAway.first)
+
+    let changed = screen.changeDaysAway(
+        flu, named: "Flu", from: thursday1, through: date(2026, 10, 7), over: [gym, run])
+    let made = screen.makeACopy(
+        asOf: Moment(on: monday12, hour: 14, minute: 32)!,
+        writingInto: FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true))
+    guard case .success(let copyURL) = made else {
+        Issue.record("expected a copy to be made")
+        return
+    }
+    screen.askToRemove(try #require(screen.pastDaysAway.first))
+    let removed = screen.confirmRemovingDaysAway()
+    let asked = screen.askToRestore(from: copyURL)
+    let restored = screen.confirmRestoring()
+    screen.askToRemove(try #require(screen.pastDaysAway.first))
+    let removedAgain = screen.confirmRemovingDaysAway()
+
+    #expect([changed, removed, asked, restored, removedAgain] == [nil, nil, nil, nil, nil])
+    let roster = try RosterStore(at: places.roster).roster
+    func isDue(_ name: String, on day: CalendarDate) -> Bool {
+        roster.groups(on: day).flatMap(\.commitments).contains { $0.name == name && $0.isDue(on: day) }
+    }
+    #expect(isDue("Gym", on: date(2026, 10, 4)))
+    #expect(!isDue("Gym", on: date(2026, 10, 5)))
 }
