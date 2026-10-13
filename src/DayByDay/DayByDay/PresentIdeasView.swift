@@ -27,7 +27,6 @@ struct PresentIdeasView: View {
                         .foregroundStyle(.secondary)
                 }
                 .listRowBackground(Color.clear)
-                .listRowInsets(EdgeInsets())
             }
             Section {
                 if ideas.isEmpty {
