@@ -49,4 +49,4 @@ A fresh install, walked on the simulator on any day, light only. A total named "
 
 - [x] W.1 "35" and then "20" saved in today's "Protein" sheet, and the sheet opened again: "55 of 120" under the name, and "Take back last (20)" in its own section under the field. Dismiss the keyboard first if it covers that section.
 - [x] W.2 That button tapped, the sheet closed, and the sheet opened again: "35 of 120" under the name, and "Take back last (35)" in its own section. Dismiss the keyboard as in W.1.
-- [x] W.3 **The handover**: W.1–W.2, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, never with `gh pr comment --attach`, and this box is ticked on that comment's URL.
+- [x] W.3 **The handover**: W.1–W.2, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, never with `gh pr comment --attach`, and this box is ticked on that comment's URL, https://github.com/dbugmann-labs/daybyday/pull/415#issuecomment-6130541014.
