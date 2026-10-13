@@ -20,7 +20,8 @@ part, and removed whenever, refusing only what would hide a record.
 - Days away remember every stop and take-up of a commitment they are over that is made once they
   have begun, under way included, or that their days come to hide; removing, unticking or moving them,
   in any order, never makes it owe a day between a stop and its take-up, and a move back restores.
-- A stopped commitment taken up again inside days away is taken up the day after them, moving with it.
+- A commitment taken up again inside days away is taken up the day after them, moving with it, but
+  never to a day no later than the day after its stop.
 - The roster form moves to 11 to hold what days away remember, refused only where no roster the app
   writes could hold it; form 10 is read without loss.
 - Every days away is listed: those not over earliest first, then past ones apart, latest first.

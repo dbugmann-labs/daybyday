@@ -79,8 +79,8 @@ the next.
 - [ ] 7.22 a take-up after days away that a change then covers comes back to its own day when they move back — catches a covered take-up left at the day back
 - [ ] 7.23 days away renamed leave the take-up of a commitment taken up again inside them where it was — catches a rename re-forming the eras
 - [ ] 7.24 a commitment taken up again inside days away and then unticked from them owes its days up to its stop and from its take-up — catches an untick reading the take-up at the day back as none
-- [ ] 7.25 days away moved to end before the stop of a commitment taken up again inside them take it up again on their new day back — catches the take-up held at the day after its stop
-- [ ] 7.26 days away moved wholly before the stop of a commitment taken up again inside them take it up again on their new day back, and moved back give it back its stop — catches the take-up left behind when both ends move, or the stop forgotten once undone
+- [ ] 7.25 days away moved to end before the stop of a commitment taken up again inside them keep its take-up on the day back it was taken up for — catches the take-up following the day back to its stop, undoing it
+- [ ] 7.26 days away moved wholly before the stop of a commitment taken up again inside them keep its take-up on the day back it was taken up for, and moved back over it move it with their day back again — catches the take-up turned into a fixed day once it falls back
 - [ ] 7.27 days away moved past the take-up of a commitment taken up again inside them leave it owing the same days whether moved in one change or two — catches the ends given back one at a time
 
 ## 8. `commitment` — listing and removing

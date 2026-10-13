@@ -49,15 +49,16 @@ restarted there (settled 11). `fillGap` fills from the day after a first day kep
 ### What days away remember (settled 18)
 
 A span holds, per commitment it is over, its **stops** in day order: the day kept until and a
-**take-up** — none, **the day back** (the day after the span's last day, wherever it moves), or a
-fixed day. A stop is the person's act and no change moves it; the eras say what the acts come to now.
+**take-up** — none, a fixed day, or **the day back**: the day after the span's last day, wherever it
+moves, save that where that is no later than the day after its stop it falls back to the day back it
+was taken up for, which it keeps. A stop is the person's act and no change moves it; the eras say
+what the acts come to now.
 
 Every write keeps four invariants, and the store refuses exactly their breach: **I1** a stop is of a
 commitment the span is over; **I2** a commitment's stops fall on strictly later days (one on the last
 stop's day undoes its take-up instead); **I3** only the last lacks a take-up; **I4** a fixed take-up
-falls after its stop's day (one that undoes the stop forgets it). A day-back take-up has no bound:
-moved to the day after its stop or before, it undoes it, and moved back it stands (*Questions for
-you* 1). Nothing is checked against the eras: the last design's bound on a stopped commitment's day
+falls after its stop's day, as does a day back's own (a take-up that undoes the stop forgets it).
+Nothing is checked against the eras: the last design's bound on a stopped commitment's day
 was such a check, and it wrote the roster finding 1 could not read.
 - *One remembered day per stopped commitment:* rejected — a stop after a take-up had nowhere to go;
   *gaps derived at read time* is ADR-1069's rejected alternative.
@@ -67,7 +68,8 @@ was such a check, and it wrote the roster finding 1 could not read.
 A commitment's **own life** beside a span, at a day back, is its eras with the span's gap given back
 as removal gives it, the era before running through and the one begun on the day back joining where
 alike — except each remembered stop's gap, from the day after its day kept until to the day before
-its take-up (the given day back for one taken up there), endless where none; a take-up on a given-back
+its take-up (the given day back, or its own where that would not be after the day after the stop),
+endless where none; a take-up on a given-back
 day begins an era on the rhythm held on its stop's day. It touches only the span's days, old and new.
 Removal, untick and take-out set the eras to own life at the span's day back. A change keeping the
 commitment adds each stop of own life at the old day back — a day kept until that no era and no other
@@ -87,7 +89,7 @@ restores (settled 16).
 | Removal, untick, take-out | own life | own life | dropped |
 | Stop, span not begun | — | stopped, as now | it leaves the span |
 | Stop, span begun | — | stopped, as now | added; on its last stop's day, that take-up undone |
-| Take-up inside the span | — | era from its day back, as now | last stop: the day back |
+| Take-up inside the span | — | era from its day back, as now | last stop: the day back, and that day |
 | Take-up elsewhere | — | era from that day, or stop undone | last stop: that day; forgotten where undone |
 | Deletion | — | gone | dropped from every span |
 | Restore | copy | the copy's | the copy's |
@@ -151,19 +153,10 @@ away with one identity are refused; the known gap in `docs/open-questions.md` na
   reads only this span's days, and two spans over one commitment never share one.
 - [Carried tests change; settled 6 refuses a span said ahead over a recorded day] → `tasks.md` § 1.
 
-## Questions for you
-
-1. **Days away moved to end before a stop made inside them.** Gym, stopped as of the 14th inside
-   Mallorca, 13–18 October, is taken up again for the day back; Mallorca moves to 5–10 October. Does
-   the take-up follow to the 11th, undoing the stop so Gym owes every day from it, 15–18 included —
-   or stay on the 19th, so Gym owes up to the 14th and from the 19th?
-   - *Recommended:* follow — settled 17 as written, "in both directions"; moved back, the stop and
-     the 19th return. The fifth review's P4, only the last day moved to the 13th, already follows.
-   - *If you say stay:* the take-up requirement's last-day sentence gains "never to a day no later
-     than the day after its stop"; 7.25 (P4) and 7.26 are rewritten; nothing else moves.
-
 ## Open Questions
 
-`grill.md` § *Left open* is "None."; settled 16–18 are folded in. **Settled**: a stop made while days
-away are under way keeps the commitment in them, remembered, not #401's take-out — the owner's answer,
-2026-10-13. *Questions for you* 1 is outstanding.
+`grill.md` § *Left open* is "None."; settled 16–18 are folded in. **Settled**, both the owner's answers of
+2026-10-13: a stop made while days away are under way keeps the commitment in them, remembered, not
+#401's take-out; and a day-back take-up never moves to a day no later than the day after its stop,
+keeping instead the day back it was taken up for — Gym, stopped as of the 14th inside Mallorca, 13–18
+October, and taken up again, owes up to the 14th and from the 19th when Mallorca moves to 5–10.

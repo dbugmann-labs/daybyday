@@ -11,8 +11,9 @@
   the era a commitment is taken up on moves with the day back. A span moved past a stop moves it to
   the day before the span in the eras, and — settled at G7, because the eras store that and a stop
   the day after a span alike, and made one model at the next G7 — a span remembers, per commitment,
-  every stop made once it has begun or that its days come to hide, each with its take-up: none, the
-  day back wherever it moves, or a day. Every give-back reads those and the eras outside the span,
+  every stop made once it has begun or that its days come to hide, each with its take-up: none, a
+  day, or the day back wherever it moves, falling back to the one it was taken up for where it would
+  come no later than the day after the stop. Every give-back reads those and the eras outside the span,
   never what the last move left, and the store refuses only what no write could produce, checking
   nothing against the eras. § *Decision* and § *Consequences* are changed in place to say so; the
   decision stands.

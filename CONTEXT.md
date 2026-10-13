@@ -300,8 +300,8 @@ remembers that stop, and every stop and take-up of it made since or that the spa
 cover, wherever the span later moves, so removing, unticking or moving the span, in any order, never
 makes it owe a day between a stop and its take-up, and a span moved back gives back what a move took.
 A commitment taken up again while away is taken up on the day back, as a change made while away is,
-and moves with it either way — to a day before its stop too, which then undoes the stop. Settled at
-G7 the same day, and made one model at the next.
+and moves with it either way, but never to a day no later than the day after its stop: there it
+keeps the day back it was taken up for. Settled at G7 the same day, and made one model at the next.
 
 **Resume** — the person's word, and the stopped row's swipe label, for **taking a stopped commitment
 up again**, which is what the specs call it; the two name one act. A resume is made on the day it is
