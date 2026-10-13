@@ -47,12 +47,12 @@ and that edit is red before the code it needs.
 
 ## 6. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 6.1 `ContentView` draws the dash where `isEarliestKeptFrom`, exactly as `design.md` § *The shell* says; the accessibility label and the picker sheet are unchanged
-- [ ] 6.2 `git diff --stat origin/main... -- src/DayByDay/` lists `ContentView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
+- [x] 6.1 `ContentView` draws the dash where `isEarliestKeptFrom`, exactly as `design.md` § *The shell* says; the accessibility label and the picker sheet are unchanged
+- [x] 6.2 `git diff --stat origin/main... -- src/DayByDay/` lists `ContentView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 7. The records
 
-- [ ] 7.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2). `CONTEXT.md` and ADR-1048 are as this folder's PR left them, and neither has been edited since G4
+- [x] 7.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2). `CONTEXT.md` and ADR-1048 are as this folder's PR left them, and neither has been edited since G4
 
 ## 8. The gates and the archive handover
 
