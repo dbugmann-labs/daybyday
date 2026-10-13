@@ -55,6 +55,15 @@ answers 2 and 6 settle it as the days a span newly takes, never the days it retu
     *Asked in the layout round; the designer found the two sheets differ.*
 15. **The sheet opened by Edit is titled "Change <name>"**, and "Change Away" for a span with no
     name, the word the day screen and the list already use for one. Its button reads "Save".
+16. **Days away remember the real last kept day of every stopped commitment they are over**, so
+    removing them, unticking one, or moving either end — back as well as forward — gives each
+    stopped commitment back exactly its own days up to that day, and never a day after it.
+    *Decided at G7, 2026-10-13, after the second review: without it, a stop the day after the span
+    and a span moved past a stop are stored alike, and removal could honour only one of them — the
+    guard broke "I never went", its absence made a stopped commitment owe days after its stop. Asked
+    as removal, guard or remember; the owner chose remember, "make it right entirely", over a
+    roster form bump. It reverses the first G4's reading that a span moved back does not restore a
+    stop it moved.*
 
 Carried from #401 and the G1 grill, not re-asked: an every-N-days count begins again on the day back,
 wherever it moves, and runs on unbroken when the span is erased and the eras either side are alike;

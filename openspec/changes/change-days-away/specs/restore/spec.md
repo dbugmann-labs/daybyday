@@ -10,10 +10,11 @@
 Where a copy place is set, a commitments screen SHALL write a copy there after every days away it
 says, changes or removes and keeps at its roster place, as of the moment its clock answers once the change is
 kept, and that copy SHALL hold every days away the roster place then holds, each with its name or
-none, its days and its commitments. Days away refused, a change refused, a removal asked for or
+none, its days, its commitments and the day it remembers for each. Days away refused, a change refused, a removal asked for or
 cancelled, and a removal refused SHALL write no copy and SHALL leave the last copy as it was. A restore confirmed SHALL make the
-roster place hold exactly the days away the copy holds, and nothing of the days away it held before,
-every commitment holding the gaps the copy's roster holds.
+roster place hold exactly the days away the copy holds, each remembering what it remembers there,
+and nothing of the days away it held before, every commitment holding the gaps the copy's roster
+holds.
 
 #### Scenario: days away said and removed on a commitments screen each write a copy at the copy place
 
@@ -60,3 +61,17 @@ every commitment holding the gaps the copy's roster holds.
   Monday 12 October 2026 at 14:34, holding a roster holding "Mallorca" from Tuesday 13 through Friday
   16 October 2026 over "Gym"
 - **AND** after the second, the last copy made is still Monday 12 October 2026 at 14:34
+
+#### Scenario: a copy holding days away that remember a stop, restored, gives the stopped commitment back no day after it
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on schedules listing all seven weekdays
+  and kept from 1 January 2026, are taken on at a roster place; days away named "Flu" from Thursday
+  1 through Saturday 3 October 2026 are said over both through a commitments screen opened at that
+  roster place as of Thursday 1 October 2026; "Gym" is stopped, the stop confirmed, through one opened
+  there as of Monday 5 October 2026; through one opened there as of Monday 12 October 2026, "Flu" is
+  changed to end on Wednesday 7 October 2026, a copy is made as of that day at 14:32, and "Flu" is
+  removed, the removal confirmed; that screen is asked to restore from that copy and the restore is
+  confirmed; and "Flu" is removed through it again, the removal confirmed
+- **THEN** nothing is refused
+- **AND** a roster store opened afterwards at that place answers with "Gym" when asked what it had not
+  stopped keeping on Sunday 4 October 2026 and not on Monday 5 October 2026

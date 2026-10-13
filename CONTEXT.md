@@ -295,6 +295,11 @@ and open to a record after the fact. Saying or changing a span is refused, namin
 and the day, while it would put under days away a day already holding a record of a commitment
 picked — save a first day that is today, which keeps that commitment through it as before. A
 commitment changed while away keeps its new rhythm from the day back, wherever the day back moves.
+A stop made once a span has begun no longer takes the commitment out of it: the span keeps it and
+remembers the day the stop kept it until, so removing, unticking or moving the span never makes it
+owe a day after its stop, and a span moved back past the stop gives those days back. A commitment
+taken up again while away is taken up on the day back, as a change made while away is. Settled at
+G7 the same day.
 
 **Resume** — the person's word, and the stopped row's swipe label, for **taking a stopped commitment
 up again**, which is what the specs call it; the two name one act. A resume is made on the day it is

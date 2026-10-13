@@ -8,9 +8,11 @@
 - Amended: 2026-10-13 — `change-days-away` (#402): days away can be said over past days, changed in
   every part and removed whenever. A change moves the gap's ends rather than erasing and saying
   again: days given back before the new first day go to the era held the day before the old one, and
-  the era a commitment is taken up on moves with the day back. What a span cannot remember is read
-  from the eras, so a stop it comes to cover moves to the day before it, as a stop under way already
-  does. § *Decision* and § *Consequences* are changed in place to say so; the decision stands.
+  the era a commitment is taken up on moves with the day back. A span moved past a stop moves it to
+  the day before the span in the eras, and — settled at G7, because the eras store that and a stop
+  the day after a span alike — every begun span keeping a stopped commitment remembers the day the
+  stop kept it until, in roster form 11, a stop under way included. § *Decision* and
+  § *Consequences* are changed in place to say so; the decision stands.
 
 ## Context
 
@@ -30,15 +32,18 @@ day they are made.
 ## Decision
 
 **The roster holds each days away beside its commitments, and gives each commitment picked its gap
-as eras.** A days away carries an identity of its own, a name or none, a first and a last day, and
-the identities of the commitments it is over. Saying it ends each picked commitment's era on the day
+as eras.** A days away carries an identity of its own, a name or none, a first and a last day, the
+identities of the commitments it is over, and, for each it kept through a stop, the day that stop
+kept it until. Saying it ends each picked commitment's era on the day
 before the first day and begins a new one on the day after the last; changing it moves those two
 ends, the era begun the day after the last moving with it; removing it, begun or not, re-forms those
 eras as though it had never been said. Saying, removing, a change, a stop and a
 deletion each form the next roster, eras and days away together, and write it in one write.
 
-The roster form moves to 10, adding the list of days away; an earlier form reads as holding none. A
-copy nests the roster form as written and keeps its own form.
+The roster form moves to 10, adding the list of days away; an earlier form reads as holding none.
+Form 11 adds what each days away remembers; form 10 reads as remembering, for each stopped
+commitment a span is over, the later of the span's last day and its own last day kept. A copy nests
+the roster form as written and keeps its own form.
 
 ## Consequences
 
@@ -46,10 +51,10 @@ copy nests the roster form as written and keeps its own form.
   reader that met only past gaps meets one; the change and the interval shift had to learn it.
 - **Removing is a re-forming, not a delete of two eras**: the era before the gap runs through it, so
   an every-N-days count runs on unbroken, and a change made since stands from the day it was made.
-- **A span remembers no more than its days and commitments.** A first day a commitment was kept
-  through, and the day a stopped one was last kept, live only in its eras: a change keeps the first
-  only while the first day stays, and a span moved past a stop moves the stop to the day before it,
-  never to be read back.
+- **A span remembers a stop, not a first day kept through.** A first day a commitment was kept
+  through lives only in its eras, so a change keeps it only while the first day stays. The day a
+  stop kept a commitment until is remembered by every begun span keeping it, so removing, unticking
+  or moving a span gives back no day after it, and a span moved back past it gives the days back.
 - **The span and the gaps cannot drift apart at rest**, since one write carries both. What keeps them
   agreeing is that every act that moves either forms the other with it.
 
