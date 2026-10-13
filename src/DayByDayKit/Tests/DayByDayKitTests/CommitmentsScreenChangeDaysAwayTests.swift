@@ -471,3 +471,45 @@ func aCommitmentKeptThroughAFirstDayItHoldsARecordOnStaysKeptThroughItWhileTheFi
     #expect(keptRows(on: date(2026, 10, 15), at: places).isEmpty)
     #expect(Set(keptRows(on: date(2026, 10, 17), at: places).keys) == ["Creatine", "Magnesium"])
 }
+
+@MainActor
+@Test(
+    "days away said over a day holding any record of a commitment picked are refused, naming it and the day"
+)
+func daysAwaySaidOverADayHoldingAnyRecordOfACommitmentPickedAreRefusedNamingItAndTheDay() throws {
+    let places = Places()
+    let gym = commitment("Gym")
+    let run = commitment("Run")
+    let creatine = commitment("Creatine")
+    let weight = commitment("Weight", kind: .number(range: Commitment.Range(lowest: 40, highest: 150)!))
+    let journal = commitment("Journal", kind: .note)
+    let water = commitment("Water", kind: .total(target: Commitment.Target(120)!))
+    try takeOn([gym, run, creatine, weight, journal, water], at: places)
+    let record = try RecordStore(at: places.record)
+    let tuesday6 = date(2026, 10, 6)
+    try record.add(Tick(run, on: date(2026, 10, 5))!)
+    try record.add(Tick(gym, on: tuesday6)!)
+    try record.add(Tick(gym, on: date(2026, 10, 7))!)
+    try record.add(Number(70.5, for: weight, on: tuesday6)!)
+    try record.add(Note("Slept badly", for: journal, on: tuesday6)!)
+    try record.add(Addition(30, for: water, on: tuesday6)!)
+    try record.add(Decline(for: creatine, on: tuesday6, reason: nil)!)
+    let commitments = screen(places)
+    let before = try Data(contentsOf: places.roster)
+
+    var refusals: [CommitmentsScreen.Refusal?] = []
+    for picked in [[weight], [journal], [water], [creatine], [gym, run]] {
+        refusals.append(
+            commitments.sayDaysAway(
+                named: "", from: date(2026, 10, 5), through: date(2026, 10, 7), over: picked))
+    }
+
+    #expect(
+        refusals == [
+            .recordOnDaysAway(weight, tuesday6), .recordOnDaysAway(journal, tuesday6),
+            .recordOnDaysAway(water, tuesday6), .recordOnDaysAway(creatine, tuesday6),
+            .recordOnDaysAway(gym, tuesday6),
+        ])
+    #expect(commitments.daysAway.isEmpty)
+    #expect(try Data(contentsOf: places.roster) == before)
+}

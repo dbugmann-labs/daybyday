@@ -183,6 +183,10 @@ public final class CommitmentsScreen {
             return refuseDaysAway(refusal)
         }
 
+        if let refusal = recordRefusal(from: firstDay, through: lastDay, over: commitments) {
+            return refuseDaysAway(refusal)
+        }
+
         let history = recordStore?.history
         let keptThroughFirstDay = Set(
             commitments.filter { commitment in
@@ -235,6 +239,32 @@ public final class CommitmentsScreen {
             }
             if held.shifts.contains(where: { from, to in isAmongTheirs(from) || isAmongTheirs(to) }) {
                 return .shiftOnDaysAway(held.name)
+            }
+        }
+        return nil
+    }
+
+    /// The refusal for the first of `commitments`, in the order the roster holds them, whose record
+    /// holds something on a day the days away from `firstDay` through `lastDay` newly put under it,
+    /// naming its earliest such day. A day already under days away `already` is not judged for the
+    /// commitments among them, nor is a first day that is the day this screen was handed: it is kept
+    /// through. `nil` where this screen cannot read its record.
+    private func recordRefusal(
+        from firstDay: CalendarDate, through lastDay: CalendarDate, over commitments: [Commitment],
+        already: DaysAway? = nil
+    ) -> Refusal? {
+        guard let history = recordStore?.history else {
+            return nil
+        }
+        for commitment in (kept + stopped) where commitments.contains(commitment) {
+            let under = already.flatMap { $0.commitments.contains(commitment) ? $0 : nil }
+            let newly = history.datesRecorded(for: commitment).filter { day in
+                firstDay.days(until: day) >= 0 && day.days(until: lastDay) >= 0
+                    && !(firstDay == dayToKeepFrom && day == firstDay)
+                    && !(under.map { $0.firstDay.days(until: day) >= 0 && day.days(until: $0.lastDay) >= 0 } ?? false)
+            }
+            if let earliest = newly.min(by: { $0.days(until: $1) > 0 }) {
+                return .recordOnDaysAway(commitment, earliest)
             }
         }
         return nil

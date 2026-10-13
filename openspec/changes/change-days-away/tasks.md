@@ -45,7 +45,7 @@ the next.
 
 ## 6. `commitment` — a recorded day
 
-- [ ] 6.1 days away said over a day holding any record of a commitment picked are refused, naming it and the day — catches a kind left out of the read, or the commitment named in picked order
+- [x] 6.1 days away said over a day holding any record of a commitment picked are refused, naming it and the day — catches a kind left out of the read, or the commitment named in picked order
 - [ ] 6.2 a commitment ticked onto days away over a day holding its record is refused, naming it and the day
 - [ ] 6.3 days away moved over a recorded day are refused, and days they give back or already hold are not judged — catches the whole span judged again
 - [ ] 6.4 a first day moved onto the day handed keeps through it a commitment holding a record there
