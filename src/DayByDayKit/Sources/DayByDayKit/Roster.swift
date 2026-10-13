@@ -1025,7 +1025,16 @@ extension Roster {
         }
         let old = spans[index]
         let picked = commitments.map(\.identity)
-        for commitment in picked where old.commitments.contains(commitment) {
+        for commitment in old.commitments where !picked.contains(commitment) {
+            fillGap(of: commitment, from: old.firstDay, through: old.lastDay)
+        }
+        for commitment in picked {
+            guard old.commitments.contains(commitment) else {
+                cutGap(
+                    of: commitment,
+                    keptThrough: (first.adding(days: -1) ?? first), through: last)
+                continue
+            }
             if last.days(until: old.lastDay) > 0 {
                 giveBackAfter(
                     of: commitment, from: Self.later(old.firstDay, last.adding(days: 1) ?? last),

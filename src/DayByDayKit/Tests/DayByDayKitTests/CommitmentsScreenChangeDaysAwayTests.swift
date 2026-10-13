@@ -406,3 +406,33 @@ func aCommitmentChangedWhileAwayIsTakenUpOnItsNewRhythmWhereverTheDayBackMovesAn
     #expect(!isDue("Gym", on: date(2026, 10, 15), in: afterRemoval))
     #expect(!isDue("Gym", on: date(2026, 10, 20), in: afterRemoval))
 }
+
+@MainActor
+@Test(
+    "a commitment ticked onto days away takes its gap, and one unticked is left as though it had never been picked"
+)
+func aCommitmentTickedOntoDaysAwayTakesItsGapAndOneUntickedIsLeftAsThoughItHadNeverBeenPicked() throws {
+    let places = Places()
+    let gym = commitment("Gym")
+    let run = commitment("Run")
+    let nails = nails()
+    try takeOn([gym, run, nails], at: places)
+    let commitments = screen(places)
+    commitments.sayDaysAway(
+        named: "Mallorca", from: date(2026, 10, 13), through: date(2026, 10, 18), over: [gym, nails])
+    let mallorca = try #require(commitments.daysAway.first)
+
+    let refusal = commitments.changeDaysAway(
+        mallorca, named: "Mallorca", from: date(2026, 10, 13), through: date(2026, 10, 18),
+        over: [gym, run])
+
+    #expect(refusal == nil)
+    #expect(commitments.daysAway.first?.commitments.map(\.name) == ["Gym", "Run"])
+    let kept = try roster(at: places)
+    #expect(isDue("Run", on: date(2026, 10, 19), in: kept))
+    #expect(!isDue("Run", on: date(2026, 10, 15), in: kept))
+    for day in [13, 17, 21] {
+        #expect(isDue("Nails", on: date(2026, 10, day), in: kept))
+    }
+    #expect(!isDue("Nails", on: date(2026, 10, 19), in: kept))
+}
