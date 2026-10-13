@@ -675,7 +675,8 @@ struct ContentView: View {
                     openBirthdays: {
                         birthdaysScreen = BirthdaysScreen(
                             asOf: today(), readingBirthdaysFrom: birthdayCalendar,
-                            whileOn: birthdaySwitch)
+                            whileOn: birthdaySwitch,
+                            keepingPresentIdeasAt: BirthdaysScreen.presentIdeaPlace)
                         showingBirthdays = true
                     })
             }
