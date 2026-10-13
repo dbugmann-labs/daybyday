@@ -871,12 +871,15 @@ private struct DaysAwaySheet: View {
                     }
                 } header: {
                     Text("Commitments to pause")
-                } footer: {
-                    if let refusal = screen.daysAwayRefusal {
+                }
+                // The refusal at the foot, a row of its own with no card so a scroll can
+                // reach it: a section footer is not something `scrollTo` can name.
+                if let refusal = screen.daysAwayRefusal {
+                    Section {
                         refusalText(refusal)
-                            .font(.caption)
-                            .foregroundStyle(.red)
                             .id("daysAwayRefusal")
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
                     }
                 }
             }
