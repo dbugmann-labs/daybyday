@@ -32,7 +32,7 @@ struct PresentIdeaDocument: Codable {
             }
             var held: [PresentIdea] = []
             for entry in record.ideas {
-                guard let idea = entry.formed() else {
+                guard let idea = entry.formed(readingGiven: version >= 2) else {
                     return nil
                 }
                 held.append(idea)
@@ -60,12 +60,13 @@ struct PresentIdeaRecord: Codable {
     var given: Bool?
 
     /// The idea this record holds, or `nil` where `PresentIdea` would not keep the same parts.
-    func formed() -> PresentIdea? {
+    /// `readingGiven` is false for the first form, which has no mark: a `given` there is ignored.
+    func formed(readingGiven: Bool) -> PresentIdea? {
         guard let idea = try? PresentIdea(text: text ?? "", link: link ?? ""),
             idea.text == text, idea.link == link
         else {
             return nil
         }
-        return idea.marked(given: given == true)
+        return idea.marked(given: readingGiven && given == true)
     }
 }

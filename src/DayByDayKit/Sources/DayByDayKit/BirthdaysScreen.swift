@@ -2,8 +2,8 @@ import Foundation
 
 /// The screen that lists the birthdays the phone's calendar hands over for the coming year,
 /// soonest first. See this change's `design.md` § *The seam*. It takes the calendar and the switch
-/// a day screen takes, and a place for present ideas: it reads no tick, and writes only an idea
-/// added through it, to that place.
+/// a day screen takes, and a place for present ideas: it reads no tick, and writes only to that place:
+/// an idea added, changed, marked or deleted through it.
 @MainActor
 @Observable
 public final class BirthdaysScreen {
@@ -46,7 +46,7 @@ public final class BirthdaysScreen {
     /// given in the order added.
     public func ideas(of line: Line) -> [PresentIdea] {
         let held = ideaStore?.ideas(of: line.contact) ?? []
-        return held.filter { !$0.isGiven } + held.filter(\.isGiven)
+        return pageOrder(of: line.contact).map { held[$0] }
     }
 
     /// Adds an idea made from `text` and `link` to `line`'s contact, last, kept at the present-idea
@@ -62,9 +62,7 @@ public final class BirthdaysScreen {
         guard let store = ideaStore, (try? store.add(idea, to: line.contact)) == true else {
             return refuseIdea(.notKept)
         }
-        ideaRefusal = nil
-        lines = listed.map(withIdeas)
-        return nil
+        return keptIdea()
     }
 
     /// Changes the idea standing at `position` among those `ideas(of: line)` gives back to one made
@@ -146,17 +144,23 @@ public final class BirthdaysScreen {
     /// Where the idea at `position` among those `ideas(of: line)` gives back stands among the
     /// ideas the store holds in the order added, or `nil` where it names none.
     private func storePosition(of position: Int, in line: Line) -> Int? {
-        let held = ideaStore?.ideas(of: line.contact) ?? []
-        let order = held.indices.filter { !held[$0].isGiven } + held.indices.filter { held[$0].isGiven }
+        let order = pageOrder(of: line.contact)
         return order.indices.contains(position) ? order[position] : nil
     }
 
-    /// A field of the idea sheet was edited: what was told about the last add ends.
+    /// The store's positions for `contact` in the order the page gives them back: those not given
+    /// in the order added, then those given in the order added. The one place that order is defined.
+    private func pageOrder(of contact: String) -> [Int] {
+        let held = ideaStore?.ideas(of: contact) ?? []
+        return held.indices.filter { !held[$0].isGiven } + held.indices.filter { held[$0].isGiven }
+    }
+
+    /// A field of the idea sheet was edited: what was told about the last refused add or change ends.
     public func ideaFieldEdited() {
         ideaRefusal = nil
     }
 
-    /// The idea sheet closed: what was told about the last add ends.
+    /// The idea sheet closed: what was told about the last refused add or change ends.
     public func ideaSheetClosed() {
         ideaRefusal = nil
     }

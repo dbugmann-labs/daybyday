@@ -501,16 +501,6 @@ private func idea(_ text: String, _ link: String = "") -> PresentIdea {
     try! PresentIdea(text: text, link: link)
 }
 
-/// A present-idea place holding `ideas` against their contacts.
-private func ideaPlace(holding ideas: [(contact: String, idea: PresentIdea)]) throws -> URL {
-    let place = freshIdeaPlace()
-    let store = try PresentIdeaStore(at: place)
-    for entry in ideas {
-        try store.add(entry.idea, to: entry.contact)
-    }
-    return place
-}
-
 @MainActor
 @Test("a Birthdays screen line says how many present ideas its contact has, and nothing for none")
 func aBirthdaysScreenLineSaysHowManyPresentIdeasItsContactHasAndNothingForNone() async throws {
@@ -766,7 +756,7 @@ func aBirthdaysScreenThatCouldNotReadItsPresentIdeaPlaceReadsItAgainWhenShown() 
 /// A present-idea place holding `ideas` against their contacts, those at the `given` offsets of
 /// `ideas` marked given.
 private func ideaPlace(
-    holding ideas: [(contact: String, idea: PresentIdea)], given: Set<Int>
+    holding ideas: [(contact: String, idea: PresentIdea)], given: Set<Int> = []
 ) throws -> URL {
     let place = freshIdeaPlace()
     let store = try PresentIdeaStore(at: place)
@@ -796,16 +786,16 @@ private func kateScreen(
 func anIdeaChangedThroughABirthdaysScreenIsKeptWhereItStandsItsMarkWithIt() async throws {
     let place = try ideaPlace(
         holding: [
-            ("kate", idea("Ceramics class voucher")), ("kate", idea("Hiking socks")),
-            ("kate", idea("Book voucher")),
-        ], given: [2])
+            ("kate", idea("Book voucher")), ("kate", idea("Hiking socks")),
+            ("kate", idea("Ceramics class voucher")),
+        ], given: [0])
     let screen = await kateScreen(at: place)
     let kate = try #require(screen.lines.first)
 
-    #expect(screen.changeIdea(1, of: kate, text: "Hiking socks, size 38", link: "bergzeit.ch/socks") == nil)
+    #expect(screen.changeIdea(0, of: kate, text: "Hiking socks, size 38", link: "bergzeit.ch/socks") == nil)
     let changed = screen.ideas(of: kate)
-    #expect(changed.map(\.text) == ["Ceramics class voucher", "Hiking socks, size 38", "Book voucher"])
-    #expect(changed[1].link == "https://bergzeit.ch/socks")
+    #expect(changed.map(\.text) == ["Hiking socks, size 38", "Ceramics class voucher", "Book voucher"])
+    #expect(changed[0].link == "https://bergzeit.ch/socks")
     #expect(changed.map(\.isGiven) == [false, false, true])
 
     #expect(screen.changeIdea(2, of: kate, text: "Book voucher, hardback", link: "") == nil)
@@ -865,8 +855,11 @@ func askingToDeleteAnIdeaChangesNothingUntilItIsConfirmedAndACancelChangesNothin
     #expect(screen.confirmDeletingIdea() == nil)
     #expect(screen.ideas(of: kate).count == 2)
 
+    screen.askToDeleteIdea(1, of: kate)
     screen.askToDeleteIdea(2, of: kate)
     #expect(screen.ideaAwaitingDeletion == nil)
+    #expect(screen.confirmDeletingIdea() == nil)
+    #expect(screen.ideas(of: kate).count == 2)
     #expect(try Data(contentsOf: place) == before)
 }
 
@@ -875,14 +868,15 @@ func askingToDeleteAnIdeaChangesNothingUntilItIsConfirmedAndACancelChangesNothin
 func aConfirmedDeletionRemovesTheIdeaWhereItStoodAndItsLinesCountDropsAtOnce() async throws {
     let place = try ideaPlace(
         holding: [
-            ("kate", idea("Ceramics class voucher")), ("kate", idea("Hiking socks, size 38")),
-            ("kate", idea("Book voucher")),
-        ], given: [2])
+            ("kate", idea("Book voucher")), ("kate", idea("Ceramics class voucher")),
+            ("kate", idea("Hiking socks, size 38")),
+        ], given: [0])
     let fake = FakeCalendar(handing: [kateBirthday])
     let screen = await kateScreen(at: place, calendarFake: fake)
     let kate = try #require(screen.lines.first)
 
     screen.askToDeleteIdea(0, of: kate)
+    #expect(screen.ideaAwaitingDeletion == idea("Ceramics class voucher"))
     #expect(screen.confirmDeletingIdea() == nil)
     #expect(screen.ideaAwaitingDeletion == nil)
     let after = try #require(screen.lines.first)

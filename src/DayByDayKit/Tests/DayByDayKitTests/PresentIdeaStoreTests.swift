@@ -227,14 +227,17 @@ func aChangeDeletionOrMarkNamingNoIdeaOrAMarkAlreadySoIsRefusedWithoutAnErrorAnd
 func aPresentIdeaStoreInItsFirstFormIsReadAsHoldingNoIdeaGiven() throws {
     let place = freshPlace()
     try writeRaw(
-        #"{"contacts":[{"contact":"kate","ideas":[{"text":"Book voucher"}]}],"version":1}"#,
+        #"{"contacts":[{"contact":"kate","ideas":[{"text":"Book voucher"},{"given":true,"text":"Scarf"}]}],"version":1}"#,
         at: place)
     let before = try Data(contentsOf: place)
 
     let store = try PresentIdeaStore(at: place)
-    #expect(store.ideas(of: "kate") == [idea("Book voucher")])
+    #expect(store.ideas(of: "kate") == [idea("Book voucher"), idea("Scarf")])
+    #expect(store.ideas(of: "kate").map(\.isGiven) == [false, false])
     #expect(try Data(contentsOf: place) == before)
 
     try store.mark(0, of: "kate", given: true)
-    #expect(try PresentIdeaStore(at: place).ideas(of: "kate").map(\.isGiven) == [true])
+    let reopened = try PresentIdeaStore(at: place).ideas(of: "kate")
+    #expect(reopened.map(\.text) == ["Book voucher", "Scarf"])
+    #expect(reopened.map(\.isGiven) == [true, false])
 }

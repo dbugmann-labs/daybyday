@@ -2,21 +2,24 @@ import SwiftUI
 import DayByDayKit
 
 /// One person's page of present ideas, pushed from a Birthdays line: the line's words as
-/// wrapping heading text over its day, dimmed; one card of the ideas added, in the order added —
-/// text over its link, or a link alone — or "No ideas yet."; and a "New idea" card, replaced by
-/// the line saying why while the place is not kept. `add-present-idea/design.md` § *The shell*.
-/// Decides nothing (ADR-1019): the Kit gives back the ideas and refuses the add.
+/// wrapping heading text over its day, dimmed; one card of the ideas as the Kit gives them back —
+/// those not given in the order added, then those given struck through — each text over its link,
+/// or a link alone, with swipes to change, mark or delete it — or "No ideas yet."; and a "New
+/// idea" card, replaced by the line saying why while the place is not kept. `change-present-idea`
+/// `design.md` § *The shell*. Decides nothing (ADR-1019): the Kit gives back the ideas and
+/// refuses a change.
 struct PresentIdeasView: View {
     let screen: BirthdaysScreen
     let line: BirthdaysScreen.Line
 
     @State private var addingIdea = false
     @State private var changingIdea: Int?
-    /// Bumped when the sheet is dismissed, so this page is drawn again from what the Kit now holds.
-    @State private var sheetsClosed = 0
+    /// Bumped after a sheet closes or a swipe or the alert acts, so this page is drawn again from
+    /// what the Kit now holds.
+    @State private var redrawn = 0
 
     var body: some View {
-        let _ = sheetsClosed
+        let _ = redrawn
         let ideas = screen.ideas(of: line)
         List {
             Section {
@@ -37,26 +40,32 @@ struct PresentIdeasView: View {
                     ForEach(Array(ideas.enumerated()), id: \.offset) { position, idea in
                         row(idea)
                             .swipeActions(edge: .leading) {
-                                Button("Edit", systemImage: "pencil") {
+                                Button {
                                     screen.ideaFieldEdited()
                                     changingIdea = position
+                                } label: {
+                                    Image(systemName: "pencil")
                                 }
                                 .tint(.accentColor)
+                                .accessibilityLabel("Edit")
                             }
                             .swipeActions(edge: .trailing) {
-                                Button("Delete", systemImage: "trash", role: .destructive) {
+                                Button(role: .destructive) {
                                     screen.askToDeleteIdea(position, of: line)
-                                    sheetsClosed += 1
+                                    redrawn += 1
+                                } label: {
+                                    Image(systemName: "trash")
                                 }
                                 .tint(.red)
-                                Button(
-                                    idea.isGiven ? "Take back" : "Mark given",
-                                    systemImage: idea.isGiven ? "arrow.uturn.backward" : "gift"
-                                ) {
+                                .accessibilityLabel("Delete")
+                                Button {
                                     screen.markIdea(position, of: line, given: !idea.isGiven)
-                                    sheetsClosed += 1
+                                    redrawn += 1
+                                } label: {
+                                    Image(systemName: idea.isGiven ? "arrow.uturn.backward" : "gift")
                                 }
                                 .tint(.accentColor)
+                                .accessibilityLabel(idea.isGiven ? "Take back" : "Mark given")
                             }
                     }
                 }
@@ -80,13 +89,13 @@ struct PresentIdeasView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $addingIdea, onDismiss: { sheetsClosed += 1 }) {
+        .sheet(isPresented: $addingIdea, onDismiss: { redrawn += 1 }) {
             NewIdeaSheet(screen: screen, line: line)
         }
         .sheet(
             isPresented: Binding(
                 get: { changingIdea != nil }, set: { if !$0 { changingIdea = nil } }),
-            onDismiss: { sheetsClosed += 1 }
+            onDismiss: { redrawn += 1 }
         ) {
             if let position = changingIdea, ideas.indices.contains(position) {
                 NewIdeaSheet(screen: screen, line: line, changing: position, idea: ideas[position])
@@ -100,7 +109,7 @@ struct PresentIdeasView: View {
         ) {
             Button("Delete", role: .destructive) {
                 screen.confirmDeletingIdea()
-                sheetsClosed += 1
+                redrawn += 1
             }
             Button("Cancel", role: .cancel) {
                 screen.cancelDeletingIdea()
@@ -134,14 +143,6 @@ struct PresentIdeasView: View {
             .foregroundStyle(.tint)
             .lineLimit(1)
             .truncationMode(.tail)
-    }
-
-    private func refusalSentence(_ refusal: PresentIdeaRefusal) -> String {
-        switch refusal {
-        case .saysNothing: "Type an idea or a link."
-        case .linkIsNotAWebAddress: "That link is not a web address."
-        case .notKept: "Not saved. Try again."
-        }
     }
 
     private var notKeptSentence: String {
@@ -220,12 +221,12 @@ private struct NewIdeaSheet: View {
             screen.ideaSheetClosed()
         }
     }
+}
 
-    private func refusalSentence(_ refusal: PresentIdeaRefusal) -> String {
-        switch refusal {
-        case .saysNothing: "Type an idea or a link."
-        case .linkIsNotAWebAddress: "That link is not a web address."
-        case .notKept: "Not saved. Try again."
-        }
+private func refusalSentence(_ refusal: PresentIdeaRefusal) -> String {
+    switch refusal {
+    case .saysNothing: "Type an idea or a link."
+    case .linkIsNotAWebAddress: "That link is not a web address."
+    case .notKept: "Not saved. Try again."
     }
 }
