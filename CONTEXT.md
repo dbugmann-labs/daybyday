@@ -1054,8 +1054,9 @@ carefully, and it is the decision `add-screen-navigation` (#93) already took whe
 `canShowPreviousDay` on the ground that it would answer true on every day anyone will ever look at.
 The chevrons left on 2026-09-28 with `add-week-strip` (#346), and the reading stands. The **week
 strip** reads it the same way: a strip day is offered where the screen can show it, so the day being
-shown and a day earlier than the **reach** are not targets, and nor is a day past an end of the
-calendar, which the strip does know of because it holds no date there.
+shown is not a target, and nor is a day past an end of the calendar, which the strip does know of
+because it holds no date there. A day before anything was **kept from** is a target like any other,
+since `reach-any-past-day` (#419).
 
 **Day view** — what one calendar date asks of you and what you did about it: the commitments due
 on that date, each with whether it is kept, in the order it was handed them. Like due-ness, it is a
@@ -1331,6 +1332,12 @@ The date is the app's to say again, "25 September 2026" and "Today, 25 September
 **today**, in fixed British English words, so the half of the amendment above about the device's
 words no longer holds.
 
+**Amended 2026-10-13**, at the grill of `reach-any-past-day` (#419). The picker reaches back to the
+calendar's first day, 1 January 1583, as **day navigation** does, whatever the **roster** holds, and
+it opens on the day being shown. No pick is refused. It marks no day: it is the stock graphical
+control, which cannot, and the earliest day anything was **kept from** is the **week strip**'s to
+mark. ADR-1048, amended the same day.
+
 **Reach** — what a day screen says about its **day picker**, as one answer rather than as two dates
 anything outside could have worked out: the day the picker opens on, which is the day being shown,
 and the earliest day it reaches. The earliest is the earliest day anything on the **roster** has been
@@ -1345,6 +1352,13 @@ own, and a reach that rises above the day being shown — a commitment edited, a
 leaves that day showing, because a reach never moves a person off the day they are looking at. It is
 answered from what the screen holds, in the way § *Offered* above says the way back to today is.
 Agreed 2026-09-09 at the grill of `add-day-picker` (#176).
+
+**Retired 2026-10-13**, at the B-082 grooming pass and the grill of `reach-any-past-day` (#419). With
+the floor gone, a reach could only ever say "opens on the day shown, reaches the calendar's start",
+so the word names nothing and no new term replaces it. The **day picker** and the **week strip**
+reach every day the calendar holds. The earliest day anything on the roster was kept from survives
+only as the strip's mark, which is described under § *Week strip* and has no name of its own.
+ADR-1048, amended the same day.
 
 **Date row** — the line under the day's name on a day screen that says the date being shown, in
 the app's own words: "28 September 2026", with *Today* in front on the **today**, since that is the
@@ -1389,6 +1403,18 @@ day's: they page weeks, never step one day.
 **Amended 2026-10-12**, while writing the delta of `say-days-away` (#401). The strip marks a third
 thing: each day inside **days away**, by a small dot under its number, as that Story's grill chose.
 It says the person said the day owes nothing, never how a day went, so it is not a streak's mark.
+
+**Amended 2026-10-13**, at the grill of `reach-any-past-day` (#419). No day is faded for being early.
+Every day that holds a date takes a tap, except the day being shown, and a page back keeps its
+weekday as far as the calendar goes, landing on 1 January 1583 where the weekday would fall before
+it. The sentences above about a day earlier than the **reach** are withdrawn. The strip marks a
+fourth thing: the earliest day anything on the **roster** is **kept from**, stopped commitments
+counting and deleted ones not, by a short dash under its number in the dot's slot. The dash is grey,
+or inside the capsule in its text colour where that day is shown. It is drawn wherever that day
+falls, a future day included, and on the week sliding in as well as the week shown. Where the
+roster answers no day, nothing is marked. It says where tracking began, never how a day went, and
+VoiceOver says nothing of it. It never shares a day with the days-away dot, because days away lie
+after a commitment's first day.
 
 **Day screen** — the day view a person is actually looking at, together with what it takes to answer
 and to keep an answer: the **record store** it reads a history from and writes a tick back to, the
@@ -1744,7 +1770,7 @@ file that will not open never takes the record or the roster down with it. A day
 read it draws its commitments as ever, draws no *One-offs* group, says it is keeping no one-offs and
 leaves what is there untouched, naming a file written by a later version as the record does
 (ADR-1021). A one-off change shares the day screen's one **notice**: a refused one replaces a notice
-on any row, and one that lands ends it. It does not move a **reach**, which stays the roster's.
+on any row, and one that lands ends it. It does not move the earliest day the **week strip** marks, which stays the roster's.
 Agreed 2026-09-14 at the grill of `draw-one-offs-on-day-screen` (#243).
 
 **Birthday place** — the one place a day screen keeps its **birthday** ticks at, the **birthday

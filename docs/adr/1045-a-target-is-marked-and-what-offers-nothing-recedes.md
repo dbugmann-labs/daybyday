@@ -4,6 +4,12 @@
   2026-09-09, where that Story dissolved; this record is written by `chore/mark-the-offered-row`,
   which that grill named in its place
 - Date: 2026-09-09
+- Amended: 2026-10-13 — the week strip no longer fades a day for being early. The 2026-09-28
+  amendment's fade on a strip day earlier than the reach is withdrawn with the reach itself: every
+  strip day that holds a date takes a tap and full opacity, except the day being shown, which is
+  marked by its capsule and takes no tap. On the strip, decision 5's opacity now falls only on a
+  slot past an end of the calendar, which holds no date (decision 6). The earliest day kept from is
+  a mark of its own, not a fade, and ADR-1048 holds it. Written by `reach-any-past-day` (#419).
 - Amended: 2026-09-29 — the *Resume* swipe on a stopped row of the commitments screen gives up
   green for the accent: resuming is an act on the roster, like *Edit* beside it, and not a mark of a
   day done. Green is now the checkmark's alone across both screens — the kept row's and the
@@ -209,7 +215,9 @@ you, so it may not fade to the point of not being read.
 
 **6. Category headings do not fade.** Nor does the day title, nor the chevrons either side of it, nor
 the *Today* button. A heading was never a target on any day, and the other three are still targets on
-a day that has not arrived — the fade is about what a row offers, and it belongs to rows.
+a day that has not arrived — the fade is about what a row offers, and it belongs to rows. On the
+**week strip** it belongs to a slot that holds no date, past an end of the calendar, and to nothing
+else there: a strip day with a date is a target however early it is, the day being shown aside.
 
 **7. The circle goes on tick rows only.** Number, note and total rows keep their chevron and get no
 circle. The two marks say different and simultaneously true things: a chevron means the tap opens a
