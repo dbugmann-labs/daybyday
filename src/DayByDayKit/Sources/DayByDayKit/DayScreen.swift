@@ -676,6 +676,7 @@ public final class DayScreen {
     /// one shown.
     private func weekStrip(asIfShown day: CalendarDate, markShown: Bool) -> [WeekStripDay] {
         let offset = Self.mondayOffset(of: day.weekday)
+        let earliestKeptFrom = roster.earliestKeptFrom
         return (0..<7).map { position in
             let date = day.adding(days: position - offset)
             let isShown = markShown && date == day
@@ -689,7 +690,7 @@ public final class DayScreen {
                         daysAway.firstDay.days(until: day) >= 0 && day.days(until: daysAway.lastDay) >= 0
                     }
                 } ?? false,
-                isEarliestKeptFrom: date != nil && date == roster.earliestKeptFrom)
+                isEarliestKeptFrom: date != nil && date == earliestKeptFrom)
         }
     }
 
@@ -1664,16 +1665,17 @@ public final class DayScreen {
     /// being seven days long. Two things move it off that day, one each way: paging after, past
     /// the calendar's last date, lands on that date instead where the target week holds a date
     /// of its own (`Self.lastSupportedDate`); paging before, past its first date, lands on that
-    /// date instead (`Self.firstSupportedDate`) where the target week holds it. Neither reads `today` — the spec's own words are "SHALL read neither place
-    /// again nor move the today", with no exception carved out for the week the today lies in
-    /// (`grill.md` 13, replacing 7).
+    /// date instead (`Self.firstSupportedDate`) where the target week holds it. Neither reads
+    /// `today` — the spec's own words are "SHALL read neither place again nor move the today",
+    /// with no exception carved out for the week the today lies in (`grill.md` 13, replacing 7).
     ///
     /// Works entirely in day counts from `shownDay` rather than forming the target week's own
     /// `CalendarDate`s, because a week's Monday, or even its Sunday, can fall outside the
     /// calendar's supported range while a day later in that same week still falls inside it (the
-    /// earliest supported date, 1 January 1583, is itself a Saturday); `CalendarDate.adding(days:)` answers `nil` for exactly that case, so a bound
-    /// built from a Monday that may not exist would lose exactly the cases the spec's "or lies
-    /// outside the calendar" clause draws. `mondayOffset` and `sundayOffset` are the target
+    /// earliest supported date, 1 January 1583, is itself a Saturday);
+    /// `CalendarDate.adding(days:)` answers `nil` for exactly that case, so a bound built from a
+    /// Monday that may not exist would lose exactly the cases the spec's "or lies outside the
+    /// calendar" clause draws. `mondayOffset` and `sundayOffset` are the target
     /// week's own Monday and Sunday, each as a count of days from `shownDay` — negative for a
     /// week before it, positive for one after — and `earliestOffset`'s own count follows the same
     /// reckoning.

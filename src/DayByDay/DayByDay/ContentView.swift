@@ -1665,8 +1665,8 @@ struct ContentView: View {
     }
 
     /// The day picker, opened from the date row: a graphical calendar in a medium sheet, reaching
-    /// back as far as `screen.dayPickerReach` says, which the shell computes neither end of, per ADR-1019's
-    /// 2026-09-04 amendment. Picking a day commits any focused one-off field as every other day
+    /// back as far as `screen.dayPickerReach` says, which the shell computes neither end of, per
+    /// ADR-1019's 2026-09-04 amendment. Picking a day commits any focused one-off field as every other day
     /// move does, shows that day and closes the sheet.
     private var dayPickerSheet: some View {
         DatePicker(
@@ -2747,8 +2747,8 @@ struct ContentView: View {
 
     /// ADR-1042, carried forward by `design.md` § *What the shell draws*: a horizontal drag on
     /// the day screen moves the day it is showing, calling `showPreviousDay()` and
-    /// `showNextDay()` — never `showDay(_:)`, which a page has no use for: it moves the day by one. The chevrons
-    /// that once sat beside this gesture are gone; the week strip is what depicts it now
+    /// `showNextDay()` — never `showDay(_:)`, which a page has no use for: it moves the day by
+    /// one. The chevrons that once sat beside this gesture are gone; the week strip is what depicts it now
     /// (ADR-1042's 2026-09-28 amendment, `add-week-strip` #346), and the ownership this gesture
     /// claims over the screen is unchanged by that. `minimumDistance` keeps a plain tap
     /// on a row or a button from ever reaching either closure. What is new since the phone walk
