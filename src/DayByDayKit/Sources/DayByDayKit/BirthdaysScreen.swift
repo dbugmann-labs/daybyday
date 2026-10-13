@@ -2,8 +2,8 @@ import Foundation
 
 /// The screen that lists the birthdays the phone's calendar hands over for the coming year,
 /// soonest first. See this change's `design.md` § *The seam*. It takes the calendar and the switch
-/// a day screen takes, and a place for present ideas: it reads no tick, and writes only an idea
-/// added through it, to that place.
+/// a day screen takes, and a place for present ideas: it reads no tick, and writes only to that place:
+/// an idea added, changed, marked or deleted through it.
 @MainActor
 @Observable
 public final class BirthdaysScreen {
@@ -42,9 +42,11 @@ public final class BirthdaysScreen {
             .appendingPathComponent("present-ideas.json")
     }
 
-    /// The ideas held against `line`'s contact, in the order added.
+    /// The ideas held against `line`'s contact: those not given in the order added, then those
+    /// given in the order added.
     public func ideas(of line: Line) -> [PresentIdea] {
-        ideaStore?.ideas(of: line.contact) ?? []
+        let held = ideaStore?.ideas(of: line.contact) ?? []
+        return pageOrder(of: line.contact).map { held[$0] }
     }
 
     /// Adds an idea made from `text` and `link` to `line`'s contact, last, kept at the present-idea
@@ -60,17 +62,105 @@ public final class BirthdaysScreen {
         guard let store = ideaStore, (try? store.add(idea, to: line.contact)) == true else {
             return refuseIdea(.notKept)
         }
+        return keptIdea()
+    }
+
+    /// Changes the idea standing at `position` among those `ideas(of: line)` gives back to one made
+    /// from `text` and `link`, keeping its mark and its place. `nil` where it is kept; otherwise
+    /// why not, and nothing written.
+    @discardableResult
+    public func changeIdea(
+        _ position: Int, of line: Line, text: String, link: String
+    ) -> PresentIdeaRefusal? {
+        let idea: PresentIdea
+        do {
+            idea = try PresentIdea(text: text, link: link)
+        } catch {
+            return refuseIdea(error)
+        }
+        guard let store = ideaStore, let stored = storePosition(of: position, in: line),
+            (try? store.change(stored, of: line.contact, to: idea)) == true
+        else {
+            return refuseIdea(.notKept)
+        }
+        return keptIdea()
+    }
+
+    /// Marks given, or takes back the mark of, the idea standing at `position` among those
+    /// `ideas(of: line)` gives back. One already so is kept as it is, and not refused.
+    @discardableResult
+    public func markIdea(_ position: Int, of line: Line, given: Bool) -> PresentIdeaRefusal? {
+        guard let store = ideaStore, let stored = storePosition(of: position, in: line),
+            (try? store.mark(stored, of: line.contact, given: given)) != nil
+        else {
+            return refuseIdea(.notKept)
+        }
+        return keptIdea()
+    }
+
+    /// The idea asked to be deleted, awaiting `confirmDeletingIdea()`.
+    public private(set) var ideaAwaitingDeletion: PresentIdea?
+    private var deletionAwaited: (contact: String, position: Int)?
+
+    /// Holds the idea at `position` among those `ideas(of: line)` gives back awaiting deletion,
+    /// replacing any other; none where `position` names no idea. Changes nothing else.
+    public func askToDeleteIdea(_ position: Int, of line: Line) {
+        guard let stored = storePosition(of: position, in: line) else {
+            ideaAwaitingDeletion = nil
+            deletionAwaited = nil
+            return
+        }
+        ideaAwaitingDeletion = ideaStore?.ideas(of: line.contact)[stored]
+        deletionAwaited = (line.contact, stored)
+    }
+
+    public func cancelDeletingIdea() {
+        ideaAwaitingDeletion = nil
+        deletionAwaited = nil
+    }
+
+    /// Deletes the idea awaiting deletion, kept at the present-idea place before this returns.
+    /// Nothing awaiting does nothing.
+    @discardableResult
+    public func confirmDeletingIdea() -> PresentIdeaRefusal? {
+        guard let awaited = deletionAwaited else {
+            return nil
+        }
+        cancelDeletingIdea()
+        guard let store = ideaStore,
+            (try? store.delete(awaited.position, of: awaited.contact)) == true
+        else {
+            return refuseIdea(.notKept)
+        }
+        return keptIdea()
+    }
+
+    private func keptIdea() -> PresentIdeaRefusal? {
         ideaRefusal = nil
         lines = listed.map(withIdeas)
         return nil
     }
 
-    /// A field of the idea sheet was edited: what was told about the last add ends.
+    /// Where the idea at `position` among those `ideas(of: line)` gives back stands among the
+    /// ideas the store holds in the order added, or `nil` where it names none.
+    private func storePosition(of position: Int, in line: Line) -> Int? {
+        let order = pageOrder(of: line.contact)
+        return order.indices.contains(position) ? order[position] : nil
+    }
+
+    /// The store's positions for `contact` in the order the page gives them back: those not given
+    /// in the order added, then those given in the order added. The one place that order is defined.
+    private func pageOrder(of contact: String) -> [Int] {
+        let held = ideaStore?.ideas(of: contact) ?? []
+        return held.indices.filter { !held[$0].isGiven } + held.indices.filter { held[$0].isGiven }
+    }
+
+    /// A field of the idea sheet was edited: what was told about the last refused add or change ends.
     public func ideaFieldEdited() {
         ideaRefusal = nil
     }
 
-    /// The idea sheet closed: what was told about the last add ends.
+    /// The idea sheet closed: what was told about the last refused add or change ends.
     public func ideaSheetClosed() {
         ideaRefusal = nil
     }
@@ -102,7 +192,7 @@ public final class BirthdaysScreen {
     }
 
     private func wordsForIdeas(of contact: String) -> String? {
-        switch ideaStore?.ideas(of: contact).count ?? 0 {
+        switch ideaStore?.ideas(of: contact).filter({ !$0.isGiven }).count ?? 0 {
         case 0: nil
         case 1: "1 idea"
         case let count: "\(count) ideas"
@@ -123,6 +213,7 @@ public final class BirthdaysScreen {
     public func shown(asOf today: CalendarDate) {
         birthdaySwitch.shown()
         ideaRefusal = nil
+        cancelDeletingIdea()
         readIdeas()
         form(asOf: today)
     }

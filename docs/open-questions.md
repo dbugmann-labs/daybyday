@@ -197,6 +197,13 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
+- **Nothing tests that a present-idea change, deletion or mark that changes nothing leaves the file
+  unwritten.** `present-idea` says such an edit SHALL write nothing and leave the place untouched,
+  and its scenarios check that by comparing the content byte-for-byte, which a rewrite of identical
+  bytes passes: a mutation that rewrites the file whenever the edit returns `false` passes every
+  test. Checking the file's identity would catch it, since the store's write replaces the file.
+  Found by mutation at #409's G7 on 2026-10-13; the owner left it for a covering Story rather than
+  holding the Story for a rewrite nobody can see.
 - **A roster holding two days away with one identity is read without complaint.** `happening`
   refuses a file holding two happenings with one identity, but `commitment`'s list of refused roster
   content, as `say-days-away` (#401) wrote it, says nothing of two days away sharing one. Such a

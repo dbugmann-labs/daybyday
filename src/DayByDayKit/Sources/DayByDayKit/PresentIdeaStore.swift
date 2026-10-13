@@ -54,6 +54,55 @@ public final class PresentIdeaStore {
         return true
     }
 
+    /// Replaces the idea at `position` among `contact`'s, keeping its mark and its place; kept at
+    /// the place before this returns. `false`, without throwing and without writing, where
+    /// `position` names no idea of `contact`.
+    @discardableResult
+    public func change(_ position: Int, of contact: String, to idea: PresentIdea) throws -> Bool {
+        try replacing(position, of: contact) { held in
+            held[position] = idea.marked(given: held[position].isGiven)
+            return true
+        }
+    }
+
+    /// Removes the idea at `position` among `contact`'s, the others keeping their order.
+    @discardableResult
+    public func delete(_ position: Int, of contact: String) throws -> Bool {
+        try replacing(position, of: contact) { held in
+            held.remove(at: position)
+            return true
+        }
+    }
+
+    /// Marks given, or takes back the mark of, the idea at `position`; `false` where it is
+    /// already so.
+    @discardableResult
+    public func mark(_ position: Int, of contact: String, given: Bool) throws -> Bool {
+        try replacing(position, of: contact) { held in
+            guard held[position].isGiven != given else {
+                return false
+            }
+            held[position] = held[position].marked(given: given)
+            return true
+        }
+    }
+
+    private func replacing(
+        _ position: Int, of contact: String, _ edit: (inout [PresentIdea]) -> Bool
+    ) throws -> Bool {
+        guard !Blank.saysNothing(contact), var ideas = held[contact],
+            ideas.indices.contains(position), edit(&ideas)
+        else {
+            return false
+        }
+        var next = held
+        next[contact] = ideas.isEmpty ? nil : ideas
+        try write(next)
+
+        held = next
+        return true
+    }
+
     private func write(_ next: [String: [PresentIdea]]) throws {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]

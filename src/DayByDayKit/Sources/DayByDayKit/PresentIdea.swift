@@ -4,6 +4,8 @@ import Foundation
 public struct PresentIdea: Hashable, Sendable {
     public let text: String?
     public let link: String?
+    /// Whether it has been given. Every idea `init(text:link:)` makes is not.
+    public let isGiven: Bool
 
     public init(text: String, link: String) throws(PresentIdeaRefusal) {
         let text = Blank.saysNothing(text) ? nil : Blank.trimmed(text)
@@ -16,6 +18,18 @@ public struct PresentIdea: Hashable, Sendable {
         }
         self.text = text
         self.link = link.map(Self.kept)
+        self.isGiven = false
+    }
+
+    private init(text: String?, link: String?, isGiven: Bool) {
+        self.text = text
+        self.link = link
+        self.isGiven = isGiven
+    }
+
+    /// This idea, its text and link as they are, given or not as `isGiven` says.
+    func marked(given isGiven: Bool) -> PresentIdea {
+        PresentIdea(text: text, link: link, isGiven: isGiven)
     }
 
     /// Whether `link` holds no blank space and, after an optional http:// or https:// in any
