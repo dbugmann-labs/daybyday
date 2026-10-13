@@ -251,7 +251,8 @@ months later.
   there. The strip, not the picker, **marks the earliest day anything on the roster is kept from**,
   stopped and removed commitments counted, against the conductor's recommendation of no mark; the
   stock SwiftUI picker cannot mark a day, and replacing it with a `UICalendarView` was declined.
-  *Reach* is retired with no new term, and ADR-1048 is superseded. How the mark sits beside the
+  *Reach* is retired with no new term, and ADR-1048 is amended in place, not superseded, per
+  `docs/adr/README.md` (corrected at #419's grill). How the mark sits beside the
   days-away dot is the Story grill's layout round.
 - 2026-10-12 — see how much *Take back last* will remove before tapping it (B-081) → Story #413
   `say-the-last-addition` under `FEAT: day-screen` (#27), reopened under Epic #1. Captured and
