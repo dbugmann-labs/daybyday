@@ -572,3 +572,44 @@ func daysAwayMovedOverARecordedDayAreRefusedAndDaysTheyGiveBackOrAlreadyHoldAreN
     #expect(renamed == nil)
     #expect(keptRows(on: date(2026, 10, 16), at: places)["Magnesium"] == true)
 }
+
+@MainActor
+@Test(
+    "a first day moved onto the day handed keeps through it a commitment holding a record there"
+)
+func aFirstDayMovedOntoTheDayHandedKeepsThroughItACommitmentHoldingARecordThere() throws {
+    let places = Places()
+    let creatine = commitment("Creatine")
+    let magnesium = commitment("Magnesium")
+    try takeOn([creatine, magnesium], at: places)
+    try RecordStore(at: places.record).add(Tick(creatine, on: monday12)!)
+    let commitments = screen(places)
+    commitments.sayDaysAway(
+        named: "", from: date(2026, 10, 13), through: date(2026, 10, 18), over: [creatine, magnesium])
+    let said = try #require(commitments.daysAway.first)
+
+    let refusal = commitments.changeDaysAway(
+        said, named: "", from: monday12, through: date(2026, 10, 18), over: [creatine, magnesium])
+
+    #expect(refusal == nil)
+    #expect(keptRows(on: monday12, at: places) == ["Creatine": true])
+    #expect(keptRows(on: date(2026, 10, 13), at: places).isEmpty)
+}
+
+@MainActor
+@Test("a commitments screen that cannot read its record refuses no days away for a record")
+func aCommitmentsScreenThatCannotReadItsRecordRefusesNoDaysAwayForARecord() throws {
+    let places = Places()
+    let gym = commitment("Gym")
+    try takeOn([gym], at: places)
+    try Data("not what a record is written as".utf8).write(to: places.record)
+    let commitments = screen(places)
+
+    let refusal = commitments.sayDaysAway(
+        named: "", from: date(2026, 10, 5), through: date(2026, 10, 7), over: [gym])
+
+    #expect(refusal == nil)
+    let kept = try roster(at: places)
+    #expect(!isDue("Gym", on: date(2026, 10, 5), in: kept))
+    #expect(!isDue("Gym", on: date(2026, 10, 7), in: kept))
+}

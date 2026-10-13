@@ -113,7 +113,9 @@ public final class CommitmentsScreen {
             return refuseDaysAway(.notKept)
         }
         guard let listed = (self.daysAway + pastDaysAway).first(where: { $0 == daysAway }),
-            commitments.allSatisfy({ kept.contains($0) || (stopped.contains($0) && listed.commitments.contains($0)) })
+            commitments.allSatisfy({
+                kept.contains($0) || (stopped.contains($0) && listed.commitments.contains($0))
+            })
         else {
             return nil
         }
@@ -137,7 +139,8 @@ public final class CommitmentsScreen {
         var nextRoster = rosterStore.roster
         nextRoster.changeDaysAway(
             daysAway.identity, named: Blank.saysNothing(name) ? nil : Blank.trimmed(name),
-            from: firstDay, through: lastDay, over: commitments, keptThroughFirstDay: [])
+            from: firstDay, through: lastDay, over: commitments,
+            keptThroughFirstDay: recordedOnFirstDay(of: commitments, firstDay: firstDay))
         do {
             try rosterStore.replace(with: nextRoster)
         } catch {
@@ -192,12 +195,7 @@ public final class CommitmentsScreen {
             return refuseDaysAway(refusal)
         }
 
-        let history = recordStore?.history
-        let keptThroughFirstDay = Set(
-            commitments.filter { commitment in
-                firstDay == dayToKeepFrom
-                    && (history?.datesRecorded(for: commitment).contains(firstDay) ?? false)
-            }.map(\.identity))
+        let keptThroughFirstDay = recordedOnFirstDay(of: commitments, firstDay: firstDay)
 
         var nextRoster = roster
         nextRoster.sayDaysAway(
@@ -281,6 +279,19 @@ public final class CommitmentsScreen {
             }
         }
         return nil
+    }
+
+    /// The commitments among `commitments` days away beginning on `firstDay` keep through it: those
+    /// the record holds anything of on that day, where it is the day this screen was handed.
+    private func recordedOnFirstDay(
+        of commitments: [Commitment], firstDay: CalendarDate
+    ) -> Set<Commitment.Identity> {
+        let history = recordStore?.history
+        return Set(
+            commitments.filter { commitment in
+                firstDay == dayToKeepFrom
+                    && (history?.datesRecorded(for: commitment).contains(firstDay) ?? false)
+            }.map(\.identity))
     }
 
     private func refuseDaysAway(_ refusal: Refusal) -> Refusal {
