@@ -1,91 +1,76 @@
-# 1048. A day picker's floor is the earliest day anything was kept from, clamped to the day being shown
+# 1048. A day picker reaches every day the calendar holds, and the week strip marks the earliest day kept from
 
-- Status: accepted — the shape was the owner's at the Story grill of `add-day-picker` (#176) on
-  2026-09-09; this record is written by `condense-day-screen-spec` (#201), the Story that deletes
-  the prose which had been carrying the reasoning
+- Status: accepted. The first shape was the owner's at the Story grill of `add-day-picker` (#176) on
+  2026-09-09, and this record was written by `condense-day-screen-spec` (#201). The present shape
+  is the owner's from the B-082 grooming pass and the grill of `reach-any-past-day` (#419).
 - Date: 2026-09-10
 - Deciders: Diego Bugmann
-- Amended: 2026-09-23 — the removed state is retired (ADR-1060); a deleted commitment no longer
-  counts toward the floor, so deleting the earliest one raises it.
-- Amended: 2026-09-10 — why the aggregate question belongs to the roster rather than to any
-  commitment is added to the decision, by `condense-commitment-spec` (#204), which deletes the
-  `commitment` requirement prose that carried it.
+- Amended: 2026-10-13. The floor is gone. The picker and the week strip reach back to the
+  calendar's first date, as the day swipe does, and the earliest day kept from survives only as a
+  mark on the week strip. By `reach-any-past-day` (#419).
+- Amended: 2026-09-23. The removed state is retired (ADR-1060), so a deleted commitment no longer
+  counts toward the earliest day, and deleting the earliest one raises it.
+- Amended: 2026-09-10. Why the aggregate question belongs to the roster rather than to any
+  commitment is added, by `condense-commitment-spec` (#204).
 
 ## Context
 
 `add-day-picker` (#176) gave the day screen a control that reaches a day without stepping through
-every day between, and bounded it. Its `design.md` § *No ADR is owed* judged that `CONTEXT.md`
-§ *Reach* and § *Day picker* held the bound, the reason for it and the line between the control and
-the screen, so a record here would restate a durable one in a second place that can drift.
+every day between, and bounded it below at the earliest day anything on the roster was kept from.
+Its one reason was that below that day nobody had kept anything, so a picker reaching further would
+offer "a run of empty years". `add-week-strip` (#346) and `page-the-week-strip` (#347) bounded the
+strip's taps and its backward page at the same floor.
 
-Two things have changed since. `CONTEXT.md` says what a reach **is** — it is a definition, and it
-carries the reason for the floor's *shape* rather than the argument for having one, for refusing
-below it, or for never asking whether the picker is offered. Those lived in the requirement prose
-and in an archived change folder, and this Story deletes the first; the second is not where a
-reader looks, because `AGENTS.md` sends them to `docs/adr/`. Four of the rules below also have no
-scenario, so with the prose gone the register would be the only place any of them is stated at all.
+The reason was wrong. A one-off of something already done, and an older happening, can both be
+entered on any past day, and the day screen draws them there. Those days are where such entries go.
+The day swipe had never been bounded, so the floor only stopped the two controls that reach a day
+fastest from reaching days the screen already draws and accepts.
 
 ## Decision
 
-**The floor is the earliest day anything on the roster has been kept from**, counting every
-commitment the roster holds — the ones it has stopped keeping and the ones it has removed included
-(ADR-1035). Their days still hold records that were kept, and a floor that rose when a commitment
-was retired would put a day a person actually kept out of reach. Below that day nobody kept
-anything, so a picker reaching further would offer a run of empty years.
+**The day picker and the week strip reach every day the calendar holds, back to 1 January 1583.**
+A pick is never refused. Every day on the strip that holds a date takes a tap, except the day being
+shown. A page back keeps its weekday as far as the calendar goes, landing on the first date where
+that weekday would fall before it, just as a page forward lands on the last date. There is no floor
+and no horizon:
+- *A horizon*, such as a few years back, was rejected. It re-creates the mismatch with the swipe
+  further back.
+- *A floor at the earliest entry of any kind* was rejected as circular, because the entry it waits
+  for is the one the floor stops a person making.
 
-**The roster answers it and the screen does not work it out.** A commitment reads back its name and
-its kind and deliberately not the day it is kept from, so a screen computing the floor itself would
-be reaching past a commitment for a part this domain does not hand out. The roster gives one
-aggregate instead — where a person's history begins, and nothing about whose.
+**The earliest day anything on the roster is kept from is marked on the week strip**, so that a
+person can tell they have gone back before tracking began. The owner chose this against the
+recommendation of no mark. It is the roster's answer, as it was for the floor: every commitment the
+roster holds counts, a stopped one included, because its days still hold records. A deleted one
+does not count, because its records are erased and the mark would point at nothing. The day is
+marked wherever it falls, a future day included, so it always reads as where tracking begins. It is
+marked on the weeks a page either way would give as well as the one shown, so that it does not pop
+in when a page lands. Where the roster answers no day, because it is empty or cannot be read,
+nothing is marked. Falling back to the today, as the floor did, would mark a day on which nothing
+began.
 
-**The floor clamps to the day being shown.** Day navigation is unbounded, so a person can be
-standing below the floor. A picker opening on a day it declared unreachable would be incoherent, and
-one that could not take them back to where they were would be a trap; the clamp removes both, and
-makes a floor above the day being shown unrepresentable rather than a case to describe. It is
-asymmetric on purpose: pick a later day and the floor rises behind you, with the chevrons the way
-back down. The alternative was a remembered low-water mark, which is state a screen would have to
-carry across being shown.
+**The day picker stays the stock graphical `DatePicker`, and carries no mark.** That control cannot
+mark a day, and replacing it with a `UICalendarView` to do so was declined.
 
-**A pick below the floor is refused, and the screen is left exactly as it was.** Clamping would show
-a day nobody asked for; silence is what the two ends of the calendar already answer with. This does
-not put the seam at odds with `CONTEXT.md` § *Offered*, which lets a screen accept what it does not
-draw as a target: the picker is not a control that stops being worth drawing, it is a control whose
-extent has an end, and a day beyond that end is the same kind of thing as a day outside the
-calendar. A bound the screen would not honour is not a bound.
+**The picker is always offered, and nothing is answered about whether it is.** It opens on the day
+being shown, and it gives out that day and never the today, which is what keeps the way back to today
+from being derived from it (ADR-1045, decision 12).
 
-**The picker is always offered, and nothing is answered about whether it is.** Forward it reaches to
-the last supported date, so there is always another day to pick; a *whether it is offered* answer
-would be yes on every day anyone will ever look at, which is the ground `add-screen-navigation`
-(#93) refused `canShowPreviousDay` on and `add-offered-today-control` (#174) restated.
-
-**Where there is nothing to take an earliest day from** — a roster that cannot be read, one written
-by a later version, or a screen handed no commitments at a place holding nothing — the floor is the
-today the screen was handed, and clamps from there like any other. A first launch is not one of
-those cases: day one is written into the empty roster before the screen answers anything (ADR-1027),
-so the reach is taken from the commitments just taken on.
-
-**Why the roster owns the question, and not any commitment.** A commitment reads back the name it
-was given and the kind its days take and nothing else — the day it is kept from is a part it is made
-of, not a part it hands out — so one aggregate answer from the roster is the only way anything
-outside `commitment` can learn where a person's history begins. That aggregate is the whole of what
-is answered: which day, and nothing about whose commitment it came from. The question is therefore
-about a roster rather than about the thing a screen is drawing, and is asked of the roster even where
-a screen already holds every commitment it is showing.
+**Why the roster owns the question, and not any commitment.** A commitment reads back its name, its
+kind and its rhythm in words, and never the day it is kept from. One aggregate answer from the
+roster is therefore the only way anything outside `commitment` can learn where a person's history
+begins. That answer says which day and nothing about whose commitment it came from, and it is asked
+of the roster even where a screen already holds every commitment it shows.
 
 ## Consequences
 
-- **The reach bounds the control and never the screen.** Day navigation, the swipe and the way back
-  to today go on reaching as far as the calendar does; the requirement forbidding a stop at the
-  earliest kept-from day is what this must never be read as narrowing, and it is stated there.
-- **The floor can move under an open picker** — the roster is read again when the screen is returned
-  to — but it only ever falls or clamps to the day being shown, so nothing a person is looking at
-  becomes unreachable and no pick already made is invalidated.
-- **The picker gives out the day being shown and never the today**, which is what keeps the way back
-  to today underivable from it (ADR-1045, decision 12). Nothing mechanical stops a shell comparing
-  the day being shown against a clock of its own; that is caught at review.
-- **Four of these rules have no scenario** — the reach bounding only the picker, the three narrowings
-  it must not make, saying nothing about being offered, and never giving out the today.
-  `condense-day-screen-spec`'s `design.md` lists them as knowingly untested and one backlog want
-  carries them.
-- **`CONTEXT.md` § *Reach* and § *Day picker* stay the definition** and are untouched by this record,
-  which is the reasoning behind them.
+- The picker's earliest day is a constant. The day screen still says it, so that the shell computes
+  no bound of its own (ADR-1019), and in code the answer keeps the name `Reach`. *Reach* is retired
+  as a domain term in `CONTEXT.md`.
+- The mark moves only when the roster is read again or changed. It never moves the day being shown,
+  and it changes nothing a day offers.
+- The mark and the days-away dot never fall on the same day. Days away are refused over a commitment
+  kept from their first day or later, so every day away lies after the earliest day kept from, and
+  the mark can take the dot's slot.
+- `CONTEXT.md` § *Day picker* and § *Week strip* are the definitions, and this record is the
+  reasoning behind them.
