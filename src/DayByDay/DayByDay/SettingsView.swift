@@ -26,6 +26,8 @@ private func copySectionRefusalText(_ store: Copy.Store?, _ refusal: Commitments
             Text("Your birthday ticks were written by a newer version of DayByDay.")
         case (.happenings, .storeWrittenByALaterVersion):
             Text("Your happenings were written by a newer version of DayByDay.")
+        case (.presentIdeas, .storeWrittenByALaterVersion):
+            Text("Your present ideas were written by a newer version of DayByDay.")
         case (.record, _):
             Text("Your record could not be read.")
         case (.roster, _):
@@ -36,6 +38,8 @@ private func copySectionRefusalText(_ store: Copy.Store?, _ refusal: Commitments
             Text("Your birthday ticks could not be read.")
         case (.happenings, _):
             Text("Your happenings could not be read.")
+        case (.presentIdeas, _):
+            Text("Your present ideas could not be read.")
         case (nil, _):
             refusalText(refusal)
         }
@@ -74,6 +78,10 @@ private func takeOutCausesText(_ storesNotRead: [CommitmentsScreen.StoreNotRead]
                 Text("Your happenings could not be read.")
             case (.happenings, .writtenByALaterVersion):
                 Text("Your happenings were written by a newer version of DayByDay.")
+            case (.presentIdeas, .couldNotBeRead):
+                Text("Your present ideas could not be read.")
+            case (.presentIdeas, .writtenByALaterVersion):
+                Text("Your present ideas were written by a newer version of DayByDay.")
             }
         }
     }
@@ -99,6 +107,8 @@ private func takeOutRefusalText(_ store: Copy.Store?) -> some View {
             Text("The birthday ticks could not be taken out.")
         case .happenings:
             Text("The happenings could not be taken out.")
+        case .presentIdeas:
+            Text("The present ideas could not be taken out.")
         case nil:
             Text("That folder could not be written.")
         }
@@ -140,6 +150,11 @@ private func restoreCountsText(
             Text(
                 "\(counts.happenings ?? 0) happening(s), has stopped \(counts.stoppedHappenings ?? 0)"
             )
+        }
+        if unreadable.contains(.presentIdeas) {
+            Text("Your present ideas could not be read.")
+        } else {
+            Text("\(counts.presentIdeas ?? 0) present idea(s)")
         }
     }
     .font(.caption)
@@ -244,6 +259,8 @@ private func copyPlaceStopText(_ stop: CopyPlace.Stop) -> String {
         "your birthday ticks could not be read"
     case .storeCouldNotBeRead(.happenings):
         "your happenings could not be read"
+    case .storeCouldNotBeRead(.presentIdeas):
+        "your present ideas could not be read"
     case .storeWrittenByALaterVersion(.record):
         "your record was written by a newer version of DayByDay"
     case .storeWrittenByALaterVersion(.roster):
@@ -254,6 +271,8 @@ private func copyPlaceStopText(_ stop: CopyPlace.Stop) -> String {
         "your birthday ticks were written by a newer version of DayByDay"
     case .storeWrittenByALaterVersion(.happenings):
         "your happenings were written by a newer version of DayByDay"
+    case .storeWrittenByALaterVersion(.presentIdeas):
+        "your present ideas were written by a newer version of DayByDay"
     }
 }
 

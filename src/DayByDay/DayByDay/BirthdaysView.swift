@@ -6,7 +6,7 @@ import DayByDayKit
 /// dimmed and never wrapped, and a chevron to the person's page. No tick or cake — it neither
 /// shows nor takes a tick. `add-present-idea/design.md` § *The shell* and § *What the shell
 /// draws*. Decides nothing (ADR-1019): the Kit hands `lines`, `ideasInWords`, `birthdayState` and
-/// `presentIdeaState`, and the sentences for an empty list and an unreadable place are drawn for
+/// `presentIdeaState` and `saysACopyCanBeRestored`, and the sentences for an empty list and an unreadable place are drawn for
 /// the state it hands.
 struct BirthdaysView: View {
     let screen: BirthdaysScreen
@@ -15,8 +15,15 @@ struct BirthdaysView: View {
         List {
             if let notKept = presentIdeasSentence {
                 Section {
-                    Text(notKept)
-                        .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(notKept)
+                            .foregroundStyle(.secondary)
+                        if screen.saysACopyCanBeRestored {
+                            Text("A copy can be restored from Settings")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
             }
             Section {
