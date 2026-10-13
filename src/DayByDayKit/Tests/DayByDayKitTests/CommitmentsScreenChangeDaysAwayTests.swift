@@ -613,3 +613,45 @@ func aCommitmentsScreenThatCannotReadItsRecordRefusesNoDaysAwayForARecord() thro
     #expect(!isDue("Gym", on: date(2026, 10, 5), in: kept))
     #expect(!isDue("Gym", on: date(2026, 10, 7), in: kept))
 }
+
+@MainActor
+private func stopKeeping(_ commitment: Commitment, on screen: CommitmentsScreen) {
+    screen.askToStopKeeping(commitment)
+    screen.confirmStopKeeping()
+}
+
+@MainActor
+@Test(
+    "a stopped commitment in days away already past stays picked through a change, and unticked has their days back up to its stop"
+)
+func aStoppedCommitmentInDaysAwayAlreadyPastStaysPickedThroughAChangeAndUntickedHasTheirDaysBackUpToItsStop()
+    throws
+{
+    let places = Places()
+    let gym = commitment("Gym")
+    let run = commitment("Run")
+    try takeOn([gym, run], at: places)
+    let thursday1 = date(2026, 10, 1)
+    screen(places, asOf: thursday1).sayDaysAway(
+        named: "Flu", from: thursday1, through: date(2026, 10, 3), over: [gym, run])
+    stopKeeping(gym, on: screen(places))
+    let commitments = screen(places)
+    let flu = try #require(commitments.pastDaysAway.first)
+
+    let both = commitments.changeDaysAway(
+        flu, named: "Fever", from: thursday1, through: date(2026, 10, 3), over: [gym, run])
+    #expect(both == nil)
+    #expect(commitments.pastDaysAway.map(\.title) == ["Fever"])
+    #expect(commitments.pastDaysAway.first?.commitments.map(\.name) == ["Gym", "Run"])
+
+    let fever = try #require(commitments.pastDaysAway.first)
+    let one = commitments.changeDaysAway(
+        fever, named: "Fever", from: thursday1, through: date(2026, 10, 3), over: [run])
+    #expect(one == nil)
+    #expect(commitments.pastDaysAway.first?.commitments.map(\.name) == ["Run"])
+
+    #expect(rows(on: date(2026, 10, 2), at: places) == ["Gym"])
+    let store = try RosterStore(at: places.roster)
+    #expect(store.roster.commitments(on: date(2026, 10, 11)).map(\.name).contains("Gym"))
+    #expect(!store.roster.commitments(on: monday12).map(\.name).contains("Gym"))
+}

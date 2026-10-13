@@ -695,7 +695,9 @@ public final class CommitmentsScreen {
         keptGroups = store?.roster.groups ?? []
         kept = keptGroups.flatMap(\.commitments)
         stopped = store.map { Self.stopped(in: $0.roster) } ?? []
-        daysAway = (store?.roster.daysAway ?? []).filter { dayToKeepFrom.days(until: $0.lastDay) >= 0 }
+        let said = store?.roster.daysAway ?? []
+        daysAway = said.filter { dayToKeepFrom.days(until: $0.lastDay) >= 0 }
+        pastDaysAway = said.filter { dayToKeepFrom.days(until: $0.lastDay) < 0 }
     }
 
     /// Ends `refusedChange`, `stoppedRefusal` and `copyRestored`, which last alike: until the
