@@ -36,6 +36,11 @@ public final class BirthdaysScreen {
     public private(set) var presentIdeaState: RosterState = .kept
     public private(set) var ideaRefusal: PresentIdeaRefusal?
 
+    /// Whether this screen says a copy can be restored from Settings: exactly while its present
+    /// ideas could not be read, whether or not birthdays are on, and never where they were written
+    /// by a later version of DayByDay. Words alone; reads no place and changes nothing.
+    public var saysACopyCanBeRestored: Bool { presentIdeaState == .notKept }
+
     public static var presentIdeaPlace: URL {
         let applicationSupport = FileManager.default.urls(
             for: .applicationSupportDirectory, in: .userDomainMask)[0]

@@ -1027,3 +1027,38 @@ func aTakeOutRefusedOverThePresentIdeaPlaceNamesThePresentIdeasAndHandsOutNoneOf
         FileManager.default.fileExists(atPath: places.presentIdeas.path, isDirectory: &isDirectory))
     #expect(isDirectory.boolValue)
 }
+
+@MainActor
+@Test(
+    "a Birthdays screen that cannot read its present ideas says a copy can be restored, and says nothing of it where they were written by a later version"
+)
+func aBirthdaysScreenThatCannotReadItsPresentIdeasSaysACopyCanBeRestoredAndSaysNothingOfItWhereTheyWereWrittenByALaterVersion()
+    async throws
+{
+    let places = Places()
+    try write(notAPresentIdeaStore, to: places.presentIdeas)
+    let screen = await places.birthdaysScreen(copyingTo: nil)
+
+    #expect(screen.presentIdeaState == .notKept)
+    #expect(screen.saysACopyCanBeRestored)
+
+    // Birthdays off says the same.
+    let off = BirthdaysScreen(
+        asOf: tuesday, readingBirthdaysFrom: calendar(), whileOn: offSwitch(),
+        keepingPresentIdeasAt: places.presentIdeas)
+    #expect(off.saysACopyCanBeRestored)
+
+    let later = Places()
+    try write(laterPresentIdeaBytes(), to: later.presentIdeas)
+    #expect(!(await later.birthdaysScreen(copyingTo: nil)).saysACopyCanBeRestored)
+    #expect(!(await Places().birthdaysScreen(copyingTo: nil)).saysACopyCanBeRestored)
+
+    // A day screen of no commitments at all, beside that present-idea place, says nothing.
+    #expect(!places.dayScreen().saysACopyCanBeRestored)
+
+    // Once the content is replaced by a store and the screen is shown again, it says nothing.
+    try FileManager.default.removeItem(at: places.presentIdeas)
+    try PresentIdeaStore(at: places.presentIdeas).add(idea("Book voucher"), to: "kate")
+    screen.shown(asOf: tuesday)
+    #expect(!screen.saysACopyCanBeRestored)
+}
