@@ -513,3 +513,62 @@ func daysAwaySaidOverADayHoldingAnyRecordOfACommitmentPickedAreRefusedNamingItAn
     #expect(commitments.daysAway.isEmpty)
     #expect(try Data(contentsOf: places.roster) == before)
 }
+
+@MainActor
+@Test(
+    "a commitment ticked onto days away over a day holding its record is refused, naming it and the day"
+)
+func aCommitmentTickedOntoDaysAwayOverADayHoldingItsRecordIsRefusedNamingItAndTheDay() throws {
+    let places = Places()
+    let gym = commitment("Gym")
+    let yuno = commitment("Yuno")
+    try takeOn([gym, yuno], at: places)
+    let saturday10 = date(2026, 10, 10)
+    try RecordStore(at: places.record).add(Tick(yuno, on: saturday10)!)
+    let commitments = screen(places)
+    commitments.sayDaysAway(
+        named: "Mallorca", from: saturday10, through: date(2026, 10, 18), over: [gym])
+    let mallorca = try #require(commitments.daysAway.first)
+
+    let refused = commitments.changeDaysAway(
+        mallorca, named: "Mallorca", from: saturday10, through: date(2026, 10, 18), over: [gym, yuno])
+    #expect(refused == .recordOnDaysAway(yuno, saturday10))
+    #expect(commitments.daysAway.first?.commitments.map(\.name) == ["Gym"])
+
+    let kept = commitments.changeDaysAway(
+        mallorca, named: "Mallorca", from: date(2026, 10, 11), through: date(2026, 10, 18),
+        over: [gym, yuno])
+    #expect(kept == nil)
+}
+
+@MainActor
+@Test(
+    "days away moved over a recorded day are refused, and days they give back or already hold are not judged"
+)
+func daysAwayMovedOverARecordedDayAreRefusedAndDaysTheyGiveBackOrAlreadyHoldAreNotJudged() throws {
+    let places = Places()
+    let creatine = commitment("Creatine")
+    let magnesium = commitment("Magnesium")
+    try takeOn([creatine, magnesium], at: places)
+    let record = try RecordStore(at: places.record)
+    try record.add(Tick(creatine, on: monday12)!)
+    screen(places).sayDaysAway(
+        named: "", from: monday12, through: date(2026, 10, 16), over: [creatine, magnesium])
+    try record.add(Tick(magnesium, on: date(2026, 10, 14))!)
+    try record.add(Tick(magnesium, on: date(2026, 10, 16))!)
+    let tuesday = screen(places, asOf: date(2026, 10, 13))
+    let said = try #require(tuesday.daysAway.first)
+
+    let earlier = tuesday.changeDaysAway(
+        said, named: "", from: date(2026, 10, 11), through: date(2026, 10, 16),
+        over: [creatine, magnesium])
+    let shorter = tuesday.changeDaysAway(
+        said, named: "", from: monday12, through: date(2026, 10, 15), over: [creatine, magnesium])
+    let renamed = tuesday.changeDaysAway(
+        said, named: "Flu", from: monday12, through: date(2026, 10, 15), over: [creatine, magnesium])
+
+    #expect(earlier == .recordOnDaysAway(creatine, monday12))
+    #expect(shorter == nil)
+    #expect(renamed == nil)
+    #expect(keptRows(on: date(2026, 10, 16), at: places)["Magnesium"] == true)
+}

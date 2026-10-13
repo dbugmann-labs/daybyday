@@ -1057,7 +1057,7 @@ extension Roster {
 
     /// Whether an era of `identity` is kept until `day`, having begun on or before it: the commitment
     /// is kept through the first day of days away that begin there.
-    private func holdsAsLastDay(_ day: CalendarDate, _ identity: Commitment.Identity) -> Bool {
+    func holdsAsLastDay(_ day: CalendarDate, _ identity: Commitment.Identity) -> Bool {
         entries.contains {
             $0.commitment.identity == identity && $0.keptUntil == day
                 && $0.commitment.keptFrom.days(until: day) >= 0

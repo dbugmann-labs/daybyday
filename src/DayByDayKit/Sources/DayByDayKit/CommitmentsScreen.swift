@@ -129,6 +129,11 @@ public final class CommitmentsScreen {
         {
             return refuseDaysAway(refusal)
         }
+        if let refusal = recordRefusal(
+            from: firstDay, through: lastDay, over: commitments, already: listed)
+        {
+            return refuseDaysAway(refusal)
+        }
         var nextRoster = rosterStore.roster
         nextRoster.changeDaysAway(
             daysAway.identity, named: Blank.saysNothing(name) ? nil : Blank.trimmed(name),
@@ -258,10 +263,18 @@ public final class CommitmentsScreen {
         }
         for commitment in (kept + stopped) where commitments.contains(commitment) {
             let under = already.flatMap { $0.commitments.contains(commitment) ? $0 : nil }
+            // The first day of days away a commitment was kept through stays out of them unless that day
+            // is where the new days away begin.
+            let keptThrough =
+                under.map { rosterStore?.roster.holdsAsLastDay($0.firstDay, commitment.identity) ?? false }
+                ?? false
             let newly = history.datesRecorded(for: commitment).filter { day in
                 firstDay.days(until: day) >= 0 && day.days(until: lastDay) >= 0
                     && !(firstDay == dayToKeepFrom && day == firstDay)
-                    && !(under.map { $0.firstDay.days(until: day) >= 0 && day.days(until: $0.lastDay) >= 0 } ?? false)
+                    && !(under.map {
+                        $0.firstDay.days(until: day) >= 0 && day.days(until: $0.lastDay) >= 0
+                            && !(keptThrough && day == $0.firstDay && firstDay != day)
+                    } ?? false)
             }
             if let earliest = newly.min(by: { $0.days(until: $1) > 0 }) {
                 return .recordOnDaysAway(commitment, earliest)
