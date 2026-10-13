@@ -1042,6 +1042,14 @@ Things that are built, or deliberately not built, in a state someone will trip o
   edit, which #400's carried-test sweep did not allow. Found at #400's G7 on 2026-10-12 and left by
   the owner's reply. The fix is removing the default and passing none in that one test.
 
+- **A `present-idea` requirement gives its own reason.** *A Birthdays screen that cannot read its
+  present-idea place…* says the condition lasts "only until the screen is shown again, since being
+  shown reads the place afresh"; the *since* clause is a reason, which ADR-1047 keeps out of
+  requirement prose, and the rule it leans on is already a SHALL in *A Birthdays screen line says how
+  many present ideas its contact has*. Found at #408's G7 on 2026-10-13 and left by the owner's
+  reply, since cutting it there would have cost a second G4 for prose alone. It goes in the next
+  `present-idea` Story's delta, or an editorial one.
+
 ## Settled
 
 - 2026-09-22 — **ADR-1055 says "the same name and the same kind" where the shipped chain rule said

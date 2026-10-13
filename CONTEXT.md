@@ -1775,6 +1775,15 @@ writes it too, whole or not at all, and a torn restore is undone there with the 
 the five wherever stores are named, and read on its own merits where a torn save or restore cannot
 be undone. A **day screen** that cannot read it says that a copy can be restored.
 
+**Present-idea place** — the one place the **present ideas** are kept at, the **present-idea
+store**'s file, a file of its own beside the other five, so an idea file that will not open never
+takes a record, a roster, the one-offs, the birthday ticks or the happenings down with it. The
+**Birthdays screen** reads it when it is opened and when the app is shown again, whether or not
+birthdays are on, and writes it only when an idea is added. A Birthdays screen that cannot read it
+still lists every birthday, with no count, adds no idea, leaves what is there untouched, and says why
+in one line, naming a file written by a later version as the others do. Agreed 2026-10-13 while
+writing the delta of `add-present-idea` (#408).
+
 **Copy** — one file holding what the **record store**, the **roster store** and the one-off store
 hold at one moment, written for a person to keep somewhere the phone is not: their own files,
 another device, a folder they chose. It is the whole of a history and never part of one — a record
@@ -2118,6 +2127,12 @@ is (ADR-1062), so a deleted contact's ideas are kept unseen and come back with t
 restore onto a phone where the contact is not the same matches nobody, as a tick does. It is carried
 in a **copy**, and kept unseen while birthdays are off. Agreed 2026-10-12 at the Feature grill of
 B-078; the capability is `present-idea`, under `EPIC: Birthdays` (#321).
+
+**Present-idea store** — the store that keeps **present ideas**, each against a contact and in the
+order it was added, and nothing else: no birthday's words, no day and nothing another store holds.
+It is the sixth store, at a place of its own, and it is in no **copy** until
+`carry-present-ideas-in-a-copy` (#410). It refuses whole what it cannot read, as the other five do.
+Agreed 2026-10-13 while writing the delta of `add-present-idea` (#408).
 
 **Happening store** — the store that keeps the **happenings**: each one's identity and name, in the
 order they were made, and nothing another store holds. It is the fifth store, at a place of its own,

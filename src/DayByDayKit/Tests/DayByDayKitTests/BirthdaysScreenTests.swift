@@ -80,6 +80,12 @@ private func offSwitch() -> BirthdaySwitch {
     birthdaySwitch(on: FakePhone(access: .notAsked))
 }
 
+private func freshIdeaPlace() -> URL {
+    FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        .appendingPathComponent("present-ideas.json")
+}
+
 private func date(_ year: Int, _ month: Int, _ day: Int) -> CalendarDate {
     CalendarDate(year: year, month: month, day: day)!
 }
@@ -100,7 +106,7 @@ func aBirthdaysScreenAsksTheCalendarOnceForTheDaysFromItsTodayThroughTheDayBefor
             birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))
         ])
         let screen = BirthdaysScreen(
-            asOf: today, readingBirthdaysFrom: calendar(fake), whileOn: await onSwitch())
+            asOf: today, readingBirthdaysFrom: calendar(fake), whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace())
         _ = screen.lines
         _ = screen.lines
         return fake.asks
@@ -144,7 +150,7 @@ func aBirthdaysScreenListsEachBirthdayHandedInItsSpanAsOftenAsItIsHandedAndNoneH
     func screen(handing handed: [Birthday]) async -> BirthdaysScreen {
         BirthdaysScreen(
             asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(FakeCalendar(handing: handed)),
-            whileOn: await onSwitch())
+            whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace())
     }
 
     let once = await screen(handing: handed)
@@ -159,7 +165,9 @@ func aBirthdaysScreenListsEachBirthdayHandedInItsSpanAsOftenAsItIsHandedAndNoneH
     let another = await screen(
         handing: handed + [birthday("kate-2", "Kate Bell's 48th Birthday", date(2026, 11, 14))])
     #expect(another.lines.count == 3)
-    #expect(Set(another.lines.filter { $0.words == "Kate Bell's 48th Birthday" }).count == 1)
+    let sameWords = another.lines.filter { $0.words == "Kate Bell's 48th Birthday" }
+    #expect(sameWords.count == 2)
+    #expect(sameWords[0] != sameWords[1])
 }
 
 @MainActor
@@ -170,19 +178,19 @@ func aBirthdaysScreenTakesANewTodayOnlyWhenItIsShownAgain() async {
         birthday("john", "John Appleseed's 40th Birthday", date(2026, 10, 13)),
     ])
     let screen = BirthdaysScreen(
-        asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(fake), whileOn: await onSwitch())
+        asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(fake), whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace())
 
     #expect(
         screen.lines == [
-            .init(words: "Anna Haro's Birthday", dayInWords: "Today"),
-            .init(words: "John Appleseed's 40th Birthday", dayInWords: "Tue 13 October"),
+            .init(contact: "anna", words: "Anna Haro's Birthday", dayInWords: "Today", ideasInWords: nil),
+            .init(contact: "john", words: "John Appleseed's 40th Birthday", dayInWords: "Tue 13 October", ideasInWords: nil),
         ])
 
     screen.shown(asOf: date(2026, 10, 13))
     #expect(fake.asks.count == 2)
     #expect(fake.asks[0].first == date(2026, 10, 12) && fake.asks[0].last == date(2027, 10, 11))
     #expect(fake.asks[1].first == date(2026, 10, 13) && fake.asks[1].last == date(2027, 10, 12))
-    #expect(screen.lines == [.init(words: "John Appleseed's 40th Birthday", dayInWords: "Today")])
+    #expect(screen.lines == [.init(contact: "john", words: "John Appleseed's 40th Birthday", dayInWords: "Today", ideasInWords: nil)])
 }
 
 @MainActor
@@ -200,13 +208,13 @@ func aBirthdaysScreenListsTheSoonestBirthdayFirstWhateverOrderTheCalendarHandsTh
     ]
     let forward = BirthdaysScreen(
         asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(FakeCalendar(handing: handed)),
-        whileOn: await onSwitch())
+        whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace())
     #expect(forward.lines.map(\.words) == expected)
 
     let reverse = BirthdaysScreen(
         asOf: date(2026, 10, 12),
         readingBirthdaysFrom: calendar(FakeCalendar(handing: handed.reversed())),
-        whileOn: await onSwitch())
+        whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace())
     #expect(reverse.lines.map(\.words) == expected)
 }
 
@@ -223,7 +231,7 @@ func aBirthdaysScreenListsOneDaysBirthdaysInTheOrderTheirWordsAreCollatedIn() as
         asOf: date(2026, 10, 12),
         readingBirthdaysFrom: calendar(
             FakeCalendar(handing: handed), collatingWith: { $0.lowercased() < $1.lowercased() }),
-        whileOn: await onSwitch())
+        whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace())
     #expect(
         alphabetical.lines.map(\.words) == [
             "anna Haro's Birthday", "Kate Bell's 48th Birthday", "Zoe Adams's Birthday",
@@ -234,7 +242,7 @@ func aBirthdaysScreenListsOneDaysBirthdaysInTheOrderTheirWordsAreCollatedIn() as
         asOf: date(2026, 10, 12),
         readingBirthdaysFrom: calendar(
             FakeCalendar(handing: handed), collatingWith: { $0.lowercased() > $1.lowercased() }),
-        whileOn: await onSwitch())
+        whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace())
     #expect(
         reversed.lines.map(\.words) == [
             "Zoe Adams's Birthday", "Kate Bell's 48th Birthday", "anna Haro's Birthday",
@@ -252,24 +260,24 @@ func aBirthdaysScreenLineSaysTheCalendarsWordsExactlyAndItsDayAsWeekdayDayAndMon
             asOf: date(2026, 10, 12),
             readingBirthdaysFrom: calendar(
                 FakeCalendar(handing: [birthday("kate", words, day)])),
-            whileOn: await onSwitch()
+            whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace()
         ).lines
     }
 
     #expect(
         await line("Kate Bell's 48th Birthday", on: date(2026, 11, 14)) == [
-            .init(words: "Kate Bell's 48th Birthday", dayInWords: "Sat 14 November")
+            .init(contact: "kate", words: "Kate Bell's 48th Birthday", dayInWords: "Sat 14 November", ideasInWords: nil)
         ])
     #expect(
         await line("John Appleseed's 40th Birthday", on: date(2027, 6, 5)) == [
-            .init(words: "John Appleseed's 40th Birthday", dayInWords: "Sat 5 June")
+            .init(contact: "kate", words: "John Appleseed's 40th Birthday", dayInWords: "Sat 5 June", ideasInWords: nil)
         ])
     #expect(
         await line(" Kate Bell's 48th Birthday ", on: date(2026, 11, 14)) == [
-            .init(words: " Kate Bell's 48th Birthday ", dayInWords: "Sat 14 November")
+            .init(contact: "kate", words: " Kate Bell's 48th Birthday ", dayInWords: "Sat 14 November", ideasInWords: nil)
         ])
     #expect(
-        await line("", on: date(2026, 11, 14)) == [.init(words: "", dayInWords: "Sat 14 November")])
+        await line("", on: date(2026, 11, 14)) == [.init(contact: "kate", words: "", dayInWords: "Sat 14 November", ideasInWords: nil)])
 }
 
 @MainActor
@@ -285,7 +293,7 @@ func aBirthdaysScreenLineSaysTodayForABirthdayFallingOnItsTodayAndTheDateForAnyO
                 birthday("john", "John Appleseed's 40th Birthday", date(2026, 10, 13)),
                 birthday("kate", "Kate Bell's 48th Birthday", date(2027, 10, 11)),
             ])),
-        whileOn: await onSwitch())
+        whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace())
     #expect(screen.lines.map(\.dayInWords) == ["Today", "Tue 13 October", "Mon 11 October"])
 }
 
@@ -302,7 +310,7 @@ func aBirthdaysScreenSaysEachMonthByItsOwnName() async {
         readingBirthdaysFrom: calendar(
             FakeCalendar(
                 handing: firsts.enumerated().map { birthday("contact-\($0.offset)", "Words", $0.element) })),
-        whileOn: await onSwitch())
+        whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace())
     #expect(
         screen.lines.map(\.dayInWords) == [
             "Sun 1 November", "Tue 1 December", "Fri 1 January", "Mon 1 February", "Mon 1 March",
@@ -323,7 +331,7 @@ func aBirthdaysScreenOpenedWithBirthdaysOffListsNothingSaysTheyAreOffAndAsksTheC
     let readsBefore = phone.reads
     let screen = BirthdaysScreen(
         asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(fake),
-        whileOn: switchUnderTest)
+        whileOn: switchUnderTest, keepingPresentIdeasAt: freshIdeaPlace())
 
     #expect(screen.lines.isEmpty)
     #expect(screen.birthdayState == .off)
@@ -347,7 +355,7 @@ func aBirthdaysScreenShownAgainAfterThePhoneWithdrawsCalendarAccessListsNothingA
     let switchUnderTest = await onSwitch(on: phone)
     let fake = FakeCalendar(handing: [birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))])
     let screen = BirthdaysScreen(
-        asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(fake), whileOn: switchUnderTest)
+        asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(fake), whileOn: switchUnderTest, keepingPresentIdeasAt: freshIdeaPlace())
     #expect(screen.lines.count == 1)
 
     phone.access = .denied
@@ -361,7 +369,7 @@ func aBirthdaysScreenShownAgainAfterThePhoneWithdrawsCalendarAccessListsNothingA
     let other = BirthdaysScreen(
         asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(FakeCalendar(handing: [
             birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))])),
-        whileOn: otherSwitch)
+        whileOn: otherSwitch, keepingPresentIdeasAt: freshIdeaPlace())
     otherSwitch.turnOff()
     other.shown(asOf: date(2026, 10, 12))
     #expect(other.lines.isEmpty)
@@ -377,7 +385,7 @@ func aBirthdaysScreenWithBirthdaysOnAndNobodyHandedInItsSpanListsNothingAndSaysB
 {
     let empty = BirthdaysScreen(
         asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(FakeCalendar()),
-        whileOn: await onSwitch())
+        whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace())
     #expect(empty.lines.isEmpty)
     #expect(empty.birthdayState == .on)
 
@@ -385,7 +393,7 @@ func aBirthdaysScreenWithBirthdaysOnAndNobodyHandedInItsSpanListsNothingAndSaysB
         asOf: date(2026, 10, 12),
         readingBirthdaysFrom: calendar(
             FakeCalendar(handing: [birthday("kate", "Kate Bell's 48th Birthday", date(2027, 10, 12))])),
-        whileOn: await onSwitch())
+        whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace())
     #expect(outside.lines.isEmpty)
     #expect(outside.birthdayState == .on)
 }
@@ -397,7 +405,7 @@ func aBirthdaysScreenWithBirthdaysOnAndNobodyHandedInItsSpanListsNothingAndSaysB
 func aBirthdaysScreenWhoseCalendarCannotBeReadListsNothingAndSaysBirthdaysCouldNotBeRead() async {
     let fake = FakeCalendar(shouldThrow: true)
     let screen = BirthdaysScreen(
-        asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(fake), whileOn: await onSwitch())
+        asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(fake), whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace())
     #expect(screen.lines.isEmpty)
     #expect(screen.birthdayState == .calendarUnreadable)
 
@@ -405,7 +413,7 @@ func aBirthdaysScreenWhoseCalendarCannotBeReadListsNothingAndSaysBirthdaysCouldN
     fake.handed = [birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))]
     screen.shown(asOf: date(2026, 10, 12))
     #expect(
-        screen.lines == [.init(words: "Kate Bell's 48th Birthday", dayInWords: "Sat 14 November")])
+        screen.lines == [.init(contact: "kate", words: "Kate Bell's 48th Birthday", dayInWords: "Sat 14 November", ideasInWords: nil)])
     #expect(screen.birthdayState == .on)
 }
 
@@ -462,4 +470,295 @@ func aCommitmentsScreenShownAgainAfterThePhoneWithdrawsCalendarAccessOffersNoWay
     phone.access = .full
     screen.shown(asOf: date(2026, 10, 12))
     #expect(!screen.offersGoingToBirthdays)
+}
+
+@MainActor
+@Test(
+    "the present-idea place is a file of the app's own under Application Support, the same every time"
+)
+func thePresentIdeaPlaceIsAFileOfTheAppsOwnUnderApplicationSupportTheSameEveryTime() {
+    let first = BirthdaysScreen.presentIdeaPlace
+    #expect(first == BirthdaysScreen.presentIdeaPlace)
+
+    let applicationSupport = FileManager.default.urls(
+        for: .applicationSupportDirectory, in: .userDomainMask)[0]
+    let directory = first.deletingLastPathComponent()
+    #expect(directory != applicationSupport)
+    #expect(directory.path.hasPrefix(applicationSupport.path))
+
+    let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+    #expect(!first.path.hasPrefix(caches.path))
+    #expect(!first.path.hasPrefix(FileManager.default.temporaryDirectory.path))
+
+    let others: [URL] = [
+        DayScreen.recordPlace, DayScreen.rosterPlace, DayScreen.oneOffPlace,
+        DayScreen.birthdayPlace, DayScreen.happeningPlace, BirthdaySwitch.place,
+    ]
+    #expect(!others.contains(first))
+}
+
+private func idea(_ text: String, _ link: String = "") -> PresentIdea {
+    try! PresentIdea(text: text, link: link)
+}
+
+/// A present-idea place holding `ideas` against their contacts.
+private func ideaPlace(holding ideas: [(contact: String, idea: PresentIdea)]) throws -> URL {
+    let place = freshIdeaPlace()
+    let store = try PresentIdeaStore(at: place)
+    for entry in ideas {
+        try store.add(entry.idea, to: entry.contact)
+    }
+    return place
+}
+
+@MainActor
+@Test("a Birthdays screen line says how many present ideas its contact has, and nothing for none")
+func aBirthdaysScreenLineSaysHowManyPresentIdeasItsContactHasAndNothingForNone() async throws {
+    let place = try ideaPlace(holding: [
+        ("kate", idea("One")), ("kate", idea("Two")), ("kate", idea("Three")),
+        ("john", idea("Four")),
+    ])
+    let kate = birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 13),
+        readingBirthdaysFrom: calendar(
+            FakeCalendar(handing: [
+                birthday("anna", "Anna Haro's Birthday", date(2026, 10, 13)), kate, kate,
+                birthday("john", "John Appleseed's 40th Birthday", date(2027, 6, 5)),
+            ])),
+        whileOn: await onSwitch(), keepingPresentIdeasAt: place)
+
+    #expect(screen.lines.map(\.ideasInWords) == [nil, "3 ideas", "3 ideas", "1 idea"])
+}
+
+@MainActor
+@Test(
+    "ideas against a contact the calendar does not hand are kept, and said once it hands that contact"
+)
+func ideasAgainstAContactTheCalendarDoesNotHandAreKeptAndSaidOnceItHandsThatContact() async throws {
+    let place = try ideaPlace(holding: [("anna", idea("One")), ("anna", idea("Two"))])
+    let before = try Data(contentsOf: place)
+    let fake = FakeCalendar(handing: [
+        birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))
+    ])
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 13), readingBirthdaysFrom: calendar(fake),
+        whileOn: await onSwitch(), keepingPresentIdeasAt: place)
+
+    #expect(screen.lines.map(\.ideasInWords) == [nil])
+    #expect(try Data(contentsOf: place) == before)
+
+    fake.handed.append(birthday("anna", "Anna Haro's Birthday", date(2027, 3, 1)))
+    screen.shown(asOf: date(2026, 10, 13))
+    #expect(screen.lines.map(\.ideasInWords) == [nil, "2 ideas"])
+    #expect(try Data(contentsOf: place) == before)
+
+    let off = BirthdaysScreen(
+        asOf: date(2026, 10, 13), readingBirthdaysFrom: calendar(fake),
+        whileOn: offSwitch(), keepingPresentIdeasAt: place)
+    #expect(off.lines.isEmpty)
+    #expect(try Data(contentsOf: place) == before)
+}
+
+@MainActor
+@Test(
+    "an idea added through a Birthdays screen is kept against its line's contact, last, and its count says so at once"
+)
+func anIdeaAddedThroughABirthdaysScreenIsKeptAgainstItsLinesContactLastAndItsCountSaysSoAtOnce()
+    async throws
+{
+    let place = try ideaPlace(holding: [("kate", idea("Ceramics class voucher"))])
+    let fake = FakeCalendar(handing: [
+        birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14)),
+        birthday("john", "John Appleseed's 40th Birthday", date(2027, 6, 5)),
+    ])
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 13), readingBirthdaysFrom: calendar(fake),
+        whileOn: await onSwitch(), keepingPresentIdeasAt: place)
+    let kateBefore = try #require(screen.lines.first)
+    let john = try #require(screen.lines.dropFirst().first)
+
+    #expect(screen.addIdea(text: "Hiking socks, size 38", link: "bergzeit.ch/socks", to: kateBefore) == nil)
+    let kate = try #require(screen.lines.first)
+    let two = [
+        idea("Ceramics class voucher"), idea("Hiking socks, size 38", "https://bergzeit.ch/socks"),
+    ]
+    #expect(screen.ideas(of: kate) == two)
+    #expect(kate.ideasInWords == "2 ideas")
+    #expect(screen.ideas(of: kateBefore) == two)
+    #expect(fake.asks.count == 1)
+
+    #expect(screen.addIdea(text: "", link: "amazon.de/xyz", to: john) == nil)
+    let johnAfter = try #require(screen.lines.dropFirst().first)
+    #expect(johnAfter.ideasInWords == "1 idea")
+
+    let reopened = BirthdaysScreen(
+        asOf: date(2026, 10, 13), readingBirthdaysFrom: calendar(fake),
+        whileOn: await onSwitch(), keepingPresentIdeasAt: place)
+    #expect(reopened.lines.map { reopened.ideas(of: $0) } == [two, [idea("", "amazon.de/xyz")]])
+}
+
+private let kateBirthday = birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))
+
+@MainActor
+@Test(
+    "an add whose text and link both say nothing, or whose link is not a web address, is refused and writes nothing"
+)
+func anAddWhoseTextAndLinkBothSayNothingOrWhoseLinkIsNotAWebAddressIsRefusedAndWritesNothing()
+    async throws
+{
+    let place = try ideaPlace(holding: [("kate", idea("Ceramics class voucher"))])
+    let before = try Data(contentsOf: place)
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 13),
+        readingBirthdaysFrom: calendar(FakeCalendar(handing: [kateBirthday])),
+        whileOn: await onSwitch(), keepingPresentIdeasAt: place)
+    let kate = try #require(screen.lines.first)
+
+    #expect(screen.addIdea(text: "   ", link: "", to: kate) == .saysNothing)
+    #expect(screen.addIdea(text: "Book voucher", link: "ask Anna", to: kate) == .linkIsNotAWebAddress)
+    #expect(try Data(contentsOf: place) == before)
+    let keptKate = try #require(screen.lines.first)
+    #expect(keptKate.ideasInWords == "1 idea")
+}
+
+@MainActor
+@Test("an idea a Birthdays screen cannot keep is refused as not kept and not held")
+func anIdeaABirthdaysScreenCannotKeepIsRefusedAsNotKeptAndNotHeld() async throws {
+    let blocker = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    try Data("not a directory".utf8).write(to: blocker)
+    let place = blocker.appendingPathComponent("present-ideas.json")
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 13),
+        readingBirthdaysFrom: calendar(FakeCalendar(handing: [kateBirthday])),
+        whileOn: await onSwitch(), keepingPresentIdeasAt: place)
+    let kate = try #require(screen.lines.first)
+
+    #expect(screen.addIdea(text: "Book voucher", link: "", to: kate) == .notKept)
+    let heldKate = try #require(screen.lines.first)
+    #expect(screen.ideas(of: heldKate).isEmpty)
+    #expect(heldKate.ideasInWords == nil)
+
+    let reopened = BirthdaysScreen(
+        asOf: date(2026, 10, 13),
+        readingBirthdaysFrom: calendar(FakeCalendar(handing: [kateBirthday])),
+        whileOn: await onSwitch(), keepingPresentIdeasAt: place)
+    let reopenedKate = try #require(reopened.lines.first)
+    #expect(reopened.ideas(of: reopenedKate).isEmpty)
+}
+
+@MainActor
+@Test(
+    "what a Birthdays screen tells about a present idea ends when a field is edited, the sheet closes or the screen is shown again"
+)
+func whatABirthdaysScreenTellsAboutAPresentIdeaEndsWhenAFieldIsEditedTheSheetClosesOrTheScreenIsShownAgain()
+    async throws
+{
+    func refusedScreen() async throws -> (BirthdaysScreen, BirthdaysScreen.Line) {
+        let screen = BirthdaysScreen(
+            asOf: date(2026, 10, 13),
+            readingBirthdaysFrom: calendar(FakeCalendar(handing: [kateBirthday])),
+            whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace())
+        let kate = try #require(screen.lines.first)
+        screen.addIdea(text: "", link: "", to: kate)
+        return (screen, kate)
+    }
+
+    let (edited, kate) = try await refusedScreen()
+    _ = edited.ideas(of: kate)
+    #expect(edited.ideaRefusal == .saysNothing)
+    edited.ideaFieldEdited()
+    #expect(edited.ideaRefusal == nil)
+
+    let (closed, _) = try await refusedScreen()
+    closed.ideaSheetClosed()
+    #expect(closed.ideaRefusal == nil)
+
+    let (shown, _) = try await refusedScreen()
+    shown.shown(asOf: date(2026, 10, 13))
+    #expect(shown.ideaRefusal == nil)
+
+    let (replaced, replacedKate) = try await refusedScreen()
+    replaced.addIdea(text: "Book voucher", link: "ask Anna", to: replacedKate)
+    #expect(replaced.ideaRefusal == .linkIsNotAWebAddress)
+    replaced.addIdea(text: "Book voucher", link: "", to: replacedKate)
+    #expect(replaced.ideaRefusal == nil)
+}
+
+@MainActor
+@Test(
+    "a Birthdays screen that cannot read its present-idea place lists every birthday with no count and leaves the place as it was"
+)
+func aBirthdaysScreenThatCannotReadItsPresentIdeaPlaceListsEveryBirthdayWithNoCountAndLeavesThePlaceAsItWas()
+    async throws
+{
+    let place = freshIdeaPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not a store".utf8).write(to: place)
+    let before = try Data(contentsOf: place)
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 13),
+        readingBirthdaysFrom: calendar(FakeCalendar(handing: [kateBirthday])),
+        whileOn: await onSwitch(), keepingPresentIdeasAt: place)
+
+    #expect(
+        screen.lines == [
+            .init(
+                contact: "kate", words: "Kate Bell's 48th Birthday", dayInWords: "Sat 14 November",
+                ideasInWords: nil)
+        ])
+    let listedKate = try #require(screen.lines.first)
+    #expect(screen.ideas(of: listedKate).isEmpty)
+    #expect(screen.presentIdeaState == .notKept)
+
+    let off = BirthdaysScreen(
+        asOf: date(2026, 10, 13),
+        readingBirthdaysFrom: calendar(FakeCalendar(handing: [kateBirthday])),
+        whileOn: offSwitch(), keepingPresentIdeasAt: place)
+    #expect(off.presentIdeaState == .notKept)
+
+    #expect(screen.addIdea(text: "Book voucher", link: "", to: listedKate) == .notKept)
+    #expect(try Data(contentsOf: place) == before)
+}
+
+@MainActor
+@Test("a present-idea place written by a later version makes a Birthdays screen that says so")
+func aPresentIdeaPlaceWrittenByALaterVersionMakesABirthdaysScreenThatSaysSo() async throws {
+    let place = freshIdeaPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(#"{"contacts":[],"version":2}"#.utf8).write(to: place)
+    let before = try Data(contentsOf: place)
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 13),
+        readingBirthdaysFrom: calendar(FakeCalendar(handing: [kateBirthday])),
+        whileOn: await onSwitch(), keepingPresentIdeasAt: place)
+
+    #expect(screen.lines.map(\.ideasInWords) == [nil])
+    #expect(screen.presentIdeaState == .writtenByALaterVersion)
+    #expect(try Data(contentsOf: place) == before)
+}
+
+@MainActor
+@Test("a Birthdays screen that could not read its present-idea place reads it again when shown")
+func aBirthdaysScreenThatCouldNotReadItsPresentIdeaPlaceReadsItAgainWhenShown() async throws {
+    let place = freshIdeaPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not a store".utf8).write(to: place)
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 13),
+        readingBirthdaysFrom: calendar(FakeCalendar(handing: [kateBirthday])),
+        whileOn: await onSwitch(), keepingPresentIdeasAt: place)
+    #expect(screen.presentIdeaState == .notKept)
+
+    try FileManager.default.removeItem(at: place)
+    try PresentIdeaStore(at: place).add(idea("Book voucher"), to: "kate")
+    screen.shown(asOf: date(2026, 10, 13))
+
+    #expect(screen.lines.map(\.ideasInWords) == ["1 idea"])
+    let keptKate = try #require(screen.lines.first)
+    #expect(screen.ideas(of: keptKate) == [idea("Book voucher")])
+    #expect(screen.presentIdeaState == .kept)
 }
