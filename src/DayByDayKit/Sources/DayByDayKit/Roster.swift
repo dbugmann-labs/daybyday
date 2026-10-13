@@ -615,6 +615,10 @@ public struct Roster: Hashable, Sendable {
 
     /// The earlier of `lhs` and `rhs` — the one `mended(_:)` needs to cut a day kept until down
     /// to whichever bound is tighter, never widening one already narrower than the fresh cut.
+    private static func later(_ lhs: CalendarDate, _ rhs: CalendarDate) -> CalendarDate {
+        lhs.days(until: rhs) > 0 ? rhs : lhs
+    }
+
     private static func earlier(_ lhs: CalendarDate, _ rhs: CalendarDate) -> CalendarDate {
         lhs.days(until: rhs) < 0 ? rhs : lhs
     }
@@ -1013,14 +1017,65 @@ extension Roster {
     /// roster formed whole, ends moved rather than erase-and-say*.
     mutating func changeDaysAway(
         _ identity: DaysAway.Identity, named name: String?, from first: CalendarDate,
-        through last: CalendarDate, over commitments: [Commitment]
+        through last: CalendarDate, over commitments: [Commitment],
+        keptThroughFirstDay: Set<Commitment.Identity>
     ) {
         guard let index = spans.firstIndex(where: { $0.identity == identity }) else {
             return
         }
+        let old = spans[index]
+        let picked = commitments.map(\.identity)
+        for commitment in picked where old.commitments.contains(commitment) {
+            if last.days(until: old.lastDay) > 0 {
+                giveBackAfter(
+                    of: commitment, from: Self.later(old.firstDay, last.adding(days: 1) ?? last),
+                    through: old.lastDay, of: old)
+            }
+            if old.lastDay.days(until: last) > 0 {
+                cutGap(
+                    of: commitment, keptThrough: (first.adding(days: -1) ?? first), through: last)
+            }
+        }
         spans[index] = Span(
-            identity: identity, name: name, firstDay: first, lastDay: last,
-            commitments: commitments.map(\.identity))
+            identity: identity, name: name, firstDay: first, lastDay: last, commitments: picked)
+    }
+
+    /// Gives back the days from `from` through the last day of `old` that a change of days away no
+    /// longer covers at their end: the era begun the day after `old` is begun again on `from`, an
+    /// every-N-days count beginning there; where none begins then, one is put on from the rhythm held
+    /// the day before `old` began. Where `from` is the first day of `old` the whole of it is given
+    /// back, as a removal gives it.
+    private mutating func giveBackAfter(
+        of identity: Commitment.Identity, from: CalendarDate, through last: CalendarDate, of old: Span
+    ) {
+        guard from != old.firstDay else {
+            fillGap(of: identity, from: old.firstDay, through: last)
+            return
+        }
+        guard let start = entries.firstIndex(where: { $0.commitment.identity == identity }) else {
+            return
+        }
+        let length = entries[start...].prefix { $0.commitment.identity == identity }.count
+        var run = Array(entries[start..<(start + length)])
+        let dayAfter = last.adding(days: 1)
+        if let ahead = dayAfter.flatMap({ day in run.firstIndex { $0.commitment.keptFrom == day } }) {
+            let a = run[ahead]
+            run[ahead] = Entry(
+                commitment: Self.restarted(a.commitment, on: from), keptUntil: a.keptUntil,
+                category: a.category, usualAmounts: a.usualAmounts)
+        } else if let behind = old.firstDay.adding(days: -1).flatMap({ day in
+            run.firstIndex { $0.keptUntil == day }
+        }) {
+            let b = run[behind]
+            run.insert(
+                Entry(
+                    commitment: Self.restarted(b.commitment, on: from), keptUntil: last,
+                    category: b.category, usualAmounts: b.usualAmounts), at: 0)
+            run.sort { $0.commitment.keptFrom.days(until: $1.commitment.keptFrom) < 0 }
+        } else {
+            return
+        }
+        entries.replaceSubrange(start..<(start + length), with: Self.mended(run))
     }
 
     /// Takes the days after `keptThrough` and through `last` out of the eras of `identity`: an era

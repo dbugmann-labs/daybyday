@@ -132,7 +132,7 @@ public final class CommitmentsScreen {
         var nextRoster = rosterStore.roster
         nextRoster.changeDaysAway(
             daysAway.identity, named: Blank.saysNothing(name) ? nil : Blank.trimmed(name),
-            from: firstDay, through: lastDay, over: commitments)
+            from: firstDay, through: lastDay, over: commitments, keptThroughFirstDay: [])
         do {
             try rosterStore.replace(with: nextRoster)
         } catch {

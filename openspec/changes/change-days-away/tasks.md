@@ -36,8 +36,8 @@ the next.
 
 ## 5. `commitment` — what a change does to each commitment
 
-- [ ] 5.1 a last day moved later keeps commitments away through it and takes them up again the day after, an every-N-days count beginning there — catches the old count start carried
-- [ ] 5.2 a last day moved earlier gives its days back, owed again, and takes commitments up again the day after
+- [x] 5.1 a last day moved later keeps commitments away through it and takes them up again the day after, an every-N-days count beginning there — catches the old count start carried
+- [x] 5.2 a last day moved earlier gives its days back, owed again, and takes commitments up again the day after
 - [ ] 5.3 a first day moved earlier takes days already gone, and moved later gives days back on the rhythm held before
 - [ ] 5.4 a commitment changed while away is taken up on its new rhythm wherever the day back moves, and keeps it once the days away are removed — catches a change built as remove-then-say
 - [ ] 5.5 a commitment ticked onto days away takes its gap, and one unticked is left as though it had never been picked — catches the unticked count restarted

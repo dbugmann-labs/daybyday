@@ -246,3 +246,78 @@ func aChangeACommitmentsScreenCannotKeepAtItsRosterPlaceIsRefusedAndTheDaysAwayS
     #expect(commitments.daysAway.map(\.title) == ["Mallorca"])
     #expect(commitments.daysAway.map(\.daysInWords) == ["Tue 13 Oct – Sun 18 Oct"])
 }
+
+private func nails() -> Commitment {
+    commitment(
+        "Nails", .everyNDays(DayInterval(days: 4)!, from: date(2026, 10, 1)),
+        keptFrom: date(2026, 10, 1))
+}
+
+@MainActor
+@Test(
+    "a last day moved later keeps commitments away through it and takes them up again the day after, an every-N-days count beginning there"
+)
+func aLastDayMovedLaterKeepsCommitmentsAwayThroughItAndTakesThemUpAgainTheDayAfterAnEveryNDaysCountBeginningThere()
+    throws
+{
+    let places = Places()
+    let gym = commitment("Gym")
+    let nails = nails()
+    try takeOn([gym, nails], at: places)
+    let commitments = screen(places)
+    commitments.sayDaysAway(
+        named: "Mallorca", from: date(2026, 10, 13), through: date(2026, 10, 18), over: [gym, nails])
+    let mallorca = try #require(commitments.daysAway.first)
+
+    let refusal = commitments.changeDaysAway(
+        mallorca, named: "Mallorca", from: date(2026, 10, 13), through: date(2026, 10, 20),
+        over: [gym, nails])
+
+    #expect(refusal == nil)
+    #expect(commitments.daysAway.map(\.daysInWords) == ["Tue 13 Oct – Tue 20 Oct"])
+    let kept = try roster(at: places)
+    #expect(isDue("Gym", on: date(2026, 10, 21), in: kept))
+    #expect(!isDue("Gym", on: date(2026, 10, 19), in: kept))
+    #expect(!isDue("Gym", on: date(2026, 10, 20), in: kept))
+    #expect(isDue("Nails", on: date(2026, 10, 21), in: kept))
+    #expect(isDue("Nails", on: date(2026, 10, 25), in: kept))
+    #expect(!isDue("Nails", on: date(2026, 10, 19), in: kept))
+    #expect(!isDue("Nails", on: date(2026, 10, 23), in: kept))
+}
+
+@MainActor
+private func rows(on day: CalendarDate, at places: Places) -> [String] {
+    DayScreen(
+        startingFrom: [], asOf: day, keepingRecordAt: places.record, keepingRosterAt: places.roster,
+        keepingOneOffsAt: places.oneOffs
+    ).dayView.rows.map(\.name)
+}
+
+@MainActor
+@Test(
+    "a last day moved earlier gives its days back, owed again, and takes commitments up again the day after"
+)
+func aLastDayMovedEarlierGivesItsDaysBackOwedAgainAndTakesCommitmentsUpAgainTheDayAfter() throws {
+    let places = Places()
+    let gym = commitment("Gym")
+    let nails = nails()
+    try takeOn([gym, nails], at: places)
+    screen(places).sayDaysAway(
+        named: "Mallorca", from: date(2026, 10, 13), through: date(2026, 10, 18), over: [gym, nails])
+    let thursday = screen(places, asOf: date(2026, 10, 15))
+    let mallorca = try #require(thursday.daysAway.first)
+
+    let refusal = thursday.changeDaysAway(
+        mallorca, named: "Mallorca", from: date(2026, 10, 13), through: date(2026, 10, 15),
+        over: [gym, nails])
+
+    #expect(refusal == nil)
+    let kept = try roster(at: places)
+    #expect(isDue("Gym", on: date(2026, 10, 16), in: kept))
+    #expect(isDue("Gym", on: date(2026, 10, 17), in: kept))
+    #expect(!isDue("Gym", on: date(2026, 10, 15), in: kept))
+    #expect(isDue("Nails", on: date(2026, 10, 16), in: kept))
+    #expect(isDue("Nails", on: date(2026, 10, 20), in: kept))
+    #expect(!isDue("Nails", on: date(2026, 10, 19), in: kept))
+    #expect(rows(on: date(2026, 10, 16), at: places) == ["Gym", "Nails"])
+}
