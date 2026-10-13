@@ -26,6 +26,8 @@ public final class BirthdaysScreen {
     private let birthdaySwitch: BirthdaySwitch
     private let ideaPlace: URL
     private var ideaStore: PresentIdeaStore?
+    /// The copy place a kept change writes a copy to, or `nil` where none was handed in.
+    private let copyPlace: CopyPlace?
     /// The lines as the calendar handed them, before what the present-idea place says is added.
     private var listed: [Line] = []
 
@@ -91,11 +93,11 @@ public final class BirthdaysScreen {
     @discardableResult
     public func markIdea(_ position: Int, of line: Line, given: Bool) -> PresentIdeaRefusal? {
         guard let store = ideaStore, let stored = storePosition(of: position, in: line),
-            (try? store.mark(stored, of: line.contact, given: given)) != nil
+            let changed = try? store.mark(stored, of: line.contact, given: given)
         else {
             return refuseIdea(.notKept)
         }
-        return keptIdea()
+        return keptIdea(writingACopy: changed)
     }
 
     /// The idea asked to be deleted, awaiting `confirmDeletingIdea()`.
@@ -135,9 +137,14 @@ public final class BirthdaysScreen {
         return keptIdea()
     }
 
-    private func keptIdea() -> PresentIdeaRefusal? {
+    /// What a change kept at the present-idea place leaves behind: no refusal, the lines as they now
+    /// stand, and a copy at the copy place where one is set and the store changed.
+    private func keptIdea(writingACopy: Bool = true) -> PresentIdeaRefusal? {
         ideaRefusal = nil
         lines = listed.map(withIdeas)
+        if writingACopy {
+            copyPlace?.keptAChange()
+        }
         return nil
     }
 
@@ -201,8 +208,10 @@ public final class BirthdaysScreen {
 
     public init(
         asOf today: CalendarDate, readingBirthdaysFrom calendar: BirthdayCalendar,
-        whileOn birthdaySwitch: BirthdaySwitch, keepingPresentIdeasAt ideaPlace: URL
+        whileOn birthdaySwitch: BirthdaySwitch, keepingPresentIdeasAt ideaPlace: URL,
+        copyingTo copyPlace: CopyPlace? = nil
     ) {
+        self.copyPlace = copyPlace
         self.calendar = calendar
         self.birthdaySwitch = birthdaySwitch
         self.ideaPlace = ideaPlace

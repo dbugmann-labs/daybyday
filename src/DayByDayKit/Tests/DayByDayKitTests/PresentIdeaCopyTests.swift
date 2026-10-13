@@ -718,3 +718,117 @@ func aRestoreStoppedBeforeItWasWholeIsUndoneAtThePresentIdeaPlaceWhenThePlacesAr
     #expect(oldPresentIdeasAfter != oldPresentIdeasBefore)
     #expect(!FileManager.default.fileExists(atPath: oldSnapshotPlace.path))
 }
+
+/// The present ideas the copy standing at `directory` holds.
+@MainActor
+private func presentIdeasCopied(at directory: URL) throws -> [String: [PresentIdea]] {
+    try copyHeld(at: directory.appendingPathComponent(CopyPlace.fileName)).presentIdeas
+}
+
+/// The moment of the copy standing at `directory`.
+@MainActor
+private func momentCopied(at directory: URL) throws -> Moment {
+    try copyHeld(at: directory.appendingPathComponent(CopyPlace.fileName)).moment
+}
+
+extension Places {
+    /// A Birthdays screen on `tuesday` at this present-idea place, birthdays on, handing "kate"'s
+    /// birthday, handed `copyPlace`.
+    @MainActor
+    fileprivate func birthdaysScreen(copyingTo copyPlace: CopyPlace?) async -> BirthdaysScreen {
+        BirthdaysScreen(
+            asOf: tuesday, readingBirthdaysFrom: calendar(), whileOn: await onSwitch(),
+            keepingPresentIdeasAt: presentIdeas, copyingTo: copyPlace)
+    }
+}
+
+@MainActor
+@Test(
+    "an idea added, changed, marked given, unmarked and deleted through a Birthdays screen each write a copy at the copy place"
+)
+func anIdeaAddedChangedMarkedGivenUnmarkedAndDeletedThroughABirthdaysScreenEachWriteACopyAtTheCopyPlace()
+    async throws
+{
+    let places = Places()
+    let copyPlace = places.copyPlace(asking: laterMinuteEachTime(from: moment(14, 32)))
+    let birthdays = await places.birthdaysScreen(copyingTo: copyPlace)
+    let directory = freshDirectory()
+    places.commitmentsScreen(copyingTo: copyPlace).givenAsCopyPlace(directory)
+    let kate = try #require(birthdays.lines.first)
+
+    func theCopyHoldsWhatThePlaceHolds() throws {
+        let expected = try PresentIdeaStore(at: places.presentIdeas).all
+        #expect(try presentIdeasCopied(at: directory) == expected)
+    }
+
+    #expect(birthdays.addIdea(text: "Book voucher", link: "", to: kate) == nil)
+    try theCopyHoldsWhatThePlaceHolds()
+    #expect(try presentIdeasCopied(at: directory)["kate"]?.count == 1)
+
+    #expect(
+        birthdays.changeIdea(0, of: kate, text: "Book voucher", link: "orellfuessli.ch") == nil)
+    try theCopyHoldsWhatThePlaceHolds()
+    #expect(try presentIdeasCopied(at: directory)["kate"]?.first?.link == "https://orellfuessli.ch")
+
+    #expect(birthdays.markIdea(0, of: kate, given: true) == nil)
+    try theCopyHoldsWhatThePlaceHolds()
+    #expect(try presentIdeasCopied(at: directory)["kate"]?.first?.isGiven == true)
+
+    #expect(birthdays.markIdea(0, of: kate, given: false) == nil)
+    try theCopyHoldsWhatThePlaceHolds()
+    #expect(try presentIdeasCopied(at: directory)["kate"]?.first?.isGiven == false)
+
+    birthdays.askToDeleteIdea(0, of: kate)
+    #expect(birthdays.confirmDeletingIdea() == nil)
+    try theCopyHoldsWhatThePlaceHolds()
+    #expect(try presentIdeasCopied(at: directory).isEmpty)
+    #expect(try momentCopied(at: directory) == moment(14, 37))
+}
+
+@MainActor
+@Test("a present-idea change refused, or a mark already so, writes no copy at the copy place")
+func aPresentIdeaChangeRefusedOrAMarkAlreadySoWritesNoCopyAtTheCopyPlace() async throws {
+    let places = Places()
+    try PresentIdeaStore(at: places.presentIdeas).add(idea("Book voucher"), to: "kate")
+    let copyPlace = places.copyPlace(asking: laterMinuteEachTime(from: moment(14, 32)))
+    let birthdays = await places.birthdaysScreen(copyingTo: copyPlace)
+    places.commitmentsScreen(copyingTo: copyPlace).givenAsCopyPlace(freshDirectory())
+    let kate = try #require(birthdays.lines.first)
+    let bytesBefore = try Data(contentsOf: places.presentIdeas)
+    #expect(copyPlace.lastCopy == moment(14, 32))
+
+    #expect(birthdays.addIdea(text: "", link: "", to: kate) == .saysNothing)
+    #expect(birthdays.changeIdea(0, of: kate, text: "Book voucher", link: "ask Anna") != nil)
+    #expect(birthdays.markIdea(2, of: kate, given: true) != nil)
+    #expect(birthdays.markIdea(0, of: kate, given: false) == nil)
+    birthdays.askToDeleteIdea(0, of: kate)
+    birthdays.cancelDeletingIdea()
+
+    #expect(copyPlace.lastCopy == moment(14, 32))
+    #expect(copyPlace.stopped == nil)
+    #expect(try Data(contentsOf: places.presentIdeas) == bytesBefore)
+}
+
+@MainActor
+@Test("an idea added where the copy place cannot be written is kept and is not refused")
+func anIdeaAddedWhereTheCopyPlaceCannotBeWrittenIsKeptAndIsNotRefused() async throws {
+    let places = Places()
+    let copyPlace = places.copyPlace(asking: laterMinuteEachTime(from: moment(14, 32)))
+    let birthdays = await places.birthdaysScreen(copyingTo: copyPlace)
+    let kate = try #require(birthdays.lines.first)
+
+    let directory = freshDirectory()
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    try FileManager.default.setAttributes(
+        [.posixPermissions: 0o500], ofItemAtPath: directory.path)
+    defer {
+        try? FileManager.default.setAttributes(
+            [.posixPermissions: 0o700], ofItemAtPath: directory.path)
+    }
+    places.commitmentsScreen(copyingTo: copyPlace).givenAsCopyPlace(directory)
+
+    #expect(birthdays.addIdea(text: "Book voucher", link: "", to: kate) == nil)
+    #expect(try PresentIdeaStore(at: places.presentIdeas).ideas(of: "kate") == [idea("Book voucher")])
+    #expect(
+        copyPlace.stopped == CopyPlace.Stopped(stop: .folderCannotBeWritten, since: moment(14, 32)))
+}
