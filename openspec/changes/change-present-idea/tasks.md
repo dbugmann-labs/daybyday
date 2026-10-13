@@ -16,7 +16,7 @@ place a temporary one of the test's own.
 ## 2. The seam
 
 - [x] 2.1 `PresentIdea.isGiven` and the `PresentIdeaStore` and `BirthdaysScreen` members exist with the signatures in `design.md` § *The seam*, and 3.1 is red before any of them does more than compile
-- [x] 2.2 The only edits to carried tests are the two later-form fixtures, in `PresentIdeaStoreTests` and `BirthdaysScreenTests`, moved from `"version":2` to `"version":3` with their expected version; every other carried test passes unedited
+- [x] 2.2 The only edits to carried tests are the two later-form fixtures, in `PresentIdeaStoreTests` and `BirthdaysScreenTests`, moved from `"version":2` to `"version":3` with their expected version, and the fixture of "a present-idea store holding what could not be held is refused" moved from `"version":1` to the form this app writes, `"version":2` (G7 re-pass: its scenario says "the form this app writes"); every other carried test passes unedited
 - [x] 2.3 `BirthdaysScreen` writes its present-idea place only in `addIdea`, `changeIdea`, `markIdea` and `confirmDeletingIdea`, and touches no birthday tick
 
 ## 3. The fifteen new scenarios of `present-idea` — one test each
