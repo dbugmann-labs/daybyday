@@ -75,7 +75,7 @@ the next.
 
 ## 11. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 11.1 `CommitmentsView` draws the past card, the Edit swipe, the change sheet, its Stopped section, its discard dialog and the record refusal under its row exactly as `design.md` § *The shell* says, in the words there, the sheet calling `changeDaysAway` alone to change
+- [x] 11.1 `CommitmentsView` draws the past card, the Edit swipe, the change sheet, its Stopped section, its discard dialog and the record refusal under its row exactly as `design.md` § *The shell* says, in the words there, the sheet calling `changeDaysAway` alone to change
 - [ ] 11.2 `git diff --stat origin/main... -- src/DayByDay/` lists `CommitmentsView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 12. The records
