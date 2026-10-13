@@ -414,14 +414,13 @@ stand.
 ### Requirement: A day screen says the week of the day it is showing as its week strip
 
 A day screen SHALL say its week strip: the seven days of the week the day being shown lies in,
-Monday first and Sunday last. Each day SHALL say its letter, "M", "T", "W", "T", "F", "S" and "S" in
-that order, and its date; a day outside the calendar the screen supports SHALL keep its letter and
-hold no date. The letters SHALL be this capability's own English and MUST NOT come from the device's
-language, region, locale or calendar. The strip SHALL mark the day being shown as shown and the
-today last handed where that week holds it, and SHALL mark nothing else but days away and the
-earliest kept-from day. It SHALL follow the day being shown and the today, read no clock and take
-no day from the caller, and what it holds and marks MUST NOT depend on the record or on the rows of
-any day.
+Monday to Sunday. Each day SHALL say its letter, "M", "T", "W", "T", "F", "S" and "S" in that order,
+and its date; a day outside the calendar SHALL keep its letter and hold no date. The letters SHALL
+be this capability's own English and MUST NOT come from the device's language, region, locale or
+calendar. The strip SHALL mark the day being shown as shown and the today last handed where that
+week holds it, and SHALL mark nothing else but days away and the earliest kept-from day. It SHALL
+follow the day being shown and the today, read no clock and take no day from the caller, and what
+it holds and marks MUST NOT depend on the record or on the rows of any day.
 
 #### Scenario: a day screen says the seven days of its week, Monday first, each by its letter
 
@@ -630,24 +629,39 @@ showing*.
 
 ### Requirement: A day screen shows a day picked on its day picker
 
-**Reason**: Its scenarios about the earliest day the day picker reached are withdrawn, which
-`openspec` allows only by removing the requirement; it is carried whole, less those, as *A day screen shows any day picked on its day picker*.
+**Reason**: It left the screen as it was for a day earlier than its day picker reached, and now
+refuses no day; `openspec` withdraws scenarios only by removing the requirement. It is carried as
+*A day screen shows any day picked on its day picker*: its first sentence shows any date and refuses
+none; the scenarios on picking the earliest day reached and a day earlier than it are rewritten to
+show those days; the one on telling across such a pick is withdrawn; and the way-back scenario loses
+its clause on that pick.
 **Migration**: None on disk.
 
 ### Requirement: A day screen draws the one-offs at its one-off place as of the today it was handed
 
-**Reason**: Its scenarios about the earliest day the day picker reached are withdrawn, which
-`openspec` allows only by removing the requirement; it is carried whole, less those, as *A day screen draws the one-offs held at its one-off place as of the today it was handed*.
+**Reason**: Its scenario that the one-offs do not move the earliest day the day picker reached is
+withdrawn, which `openspec` allows only by removing the requirement. It is carried as *A day screen
+draws the one-offs held at its one-off place as of the today it was handed*, less that scenario and
+the sentence it tested; nothing else changes.
 **Migration**: None on disk.
 
 ### Requirement: A day screen's week strip offers every day it can show but the one it is showing
 
-**Reason**: Its scenarios about the earliest day the day picker reached are withdrawn, which
-`openspec` allows only by removing the requirement; it is carried whole, less those, as *A day screen's week strip offers every day holding a date but the one it is showing*.
+**Reason**: Its offers stopped at the earliest day the day picker reached, and now do not;
+`openspec` withdraws scenarios only by removing the requirement. It is carried as *A day screen's
+week strip offers every day holding a date but the one it is showing*: the sentences stopping the
+offers at that day are replaced by one offering the days before anything on the roster is kept
+from, whatever the roster holds; the scenario offering no day earlier than the picker reached is
+rewritten to offer them; the two on a screen moved below, and returned to, its roster's earliest
+day are withdrawn; and one on the calendar's ends is added.
 **Migration**: None on disk.
 
 ### Requirement: A day screen says the week strip a page either way would give, marking no day as shown
 
-**Reason**: Its scenarios about the earliest day the day picker reached are withdrawn, which
-`openspec` allows only by removing the requirement; it is carried whole, less those, as *A day screen says the week strip a page either way would give, of the week that page would land in*.
+**Reason**: Its strips followed the earliest day the day picker reached, which no longer bounds a
+page; `openspec` withdraws scenarios only by removing the requirement. It is carried as *A day
+screen says the week strip a page either way would give, of the week that page would land in*: its
+last sentence follows the roster where it followed the reach; the first scenario's week before now
+offers every day it holds; the scenario on saying no strip is rewritten to the calendar's ends; and
+the two on the reach a page would give and on being returned to are withdrawn.
 **Migration**: None on disk.

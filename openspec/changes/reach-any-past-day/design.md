@@ -77,10 +77,15 @@ answer marks nothing (settled 9). Nothing is stored, so the mark follows every r
 
 ### Four requirements are renamed so that their floor scenarios can go
 
-Four requirements each lose scenarios about the floor: *shows a day picked*, the one-offs, the strip's
-offers, and the neighbour strips. `openspec` refuses that through MODIFIED, so each one is REMOVED and
-then ADDED under a new heading, carried whole less those scenarios. Each lands at the foot of the spec
-file.
+Four requirements each lose scenarios about the floor. `openspec` refuses that through MODIFIED, so
+each one is REMOVED and then ADDED under a new heading, and lands at the foot of the spec file. Only
+the one-offs requirement is carried whole, less its one floor scenario and the sentence it tested.
+The other three also change, and each REMOVED *Reason* says how:
+- *shows a day picked* refuses no day; two scenarios are rewritten, one withdrawn, one trimmed.
+- *the strip's offers* offers the days before the roster's earliest; one scenario is rewritten, two
+  withdrawn, and one on the calendar's ends added.
+- *the neighbour strips* follow the roster in place of the floor; two scenarios are rewritten, two
+  withdrawn.
 
 ### The shell
 
