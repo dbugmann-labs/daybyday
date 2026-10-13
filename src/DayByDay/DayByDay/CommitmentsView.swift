@@ -130,8 +130,8 @@ func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
             Text("Five usual amounts at most.")
         case .shiftedDayAhead:
             Text("Shift its day back first.")
-        case .firstDayHasPassed:
-            Text("The first day has passed.")
+        case .recordOnDaysAway(let commitment, let day):
+            Text("\(commitment.name) has a record on \(DaysAway.dayInWords(day)).")
         case .lastDayBeforeFirstDay:
             Text("The last day is before the first.")
         case .overNoCommitment:

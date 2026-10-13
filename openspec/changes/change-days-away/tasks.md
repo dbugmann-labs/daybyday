@@ -15,7 +15,7 @@ the next.
 
 ## 2. The seam and the roster
 
-- [ ] 2.1 The members in `design.md` § *The seam* exist with those signatures, `firstDayHasPassed` is gone, and 4.1 is red before any does more than compile
+- [x] 2.1 The members in `design.md` § *The seam* exist with those signatures, `firstDayHasPassed` is gone, and 4.1 is red before any does more than compile
 - [ ] 2.2 A change forms the next roster whole — spans and eras — and writes it once, the span keeping its identity and its place in the order said, as `design.md` § *A change is one roster formed whole* says
 - [ ] 2.3 `Roster.fillGap` fills from the day after a first day an era holds, so 8.5 passes without a second path
 
@@ -27,7 +27,7 @@ the next.
 
 ## 4. `commitment` — changing days away
 
-- [ ] 4.1 days away renamed keep their days and commitments and stay the same days away — catches a change minting a new identity
+- [x] 4.1 days away renamed keep their days and commitments and stay the same days away — catches a change minting a new identity
 - [ ] 4.2 a change ending before it begins, or over nothing, is refused and keeps nothing
 - [ ] 4.3 a change is judged against other days away and never against the days away changed — catches the overlap test run over every span
 - [ ] 4.4 a commitment picked by a change is refused where it is kept from their first day or later or has a shift on one of their days, naming it

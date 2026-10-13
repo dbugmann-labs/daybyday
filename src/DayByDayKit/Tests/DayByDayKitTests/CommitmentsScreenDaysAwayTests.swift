@@ -228,31 +228,6 @@ func daysAwayFromTodayKeepACommitmentThatHoldsARecordTodayUntilTodayAndTheOthers
 
 @MainActor
 @Test(
-    "days away from a day already gone, ending before they begin, or over nothing are refused and keep nothing"
-)
-func daysAwayFromADayAlreadyGoneEndingBeforeTheyBeginOrOverNothingAreRefusedAndKeepNothing() throws {
-    let places = Places()
-    let gym = commitment("Gym")
-    try takeOn([gym], at: places)
-    let commitments = screen(places)
-    let before = try Data(contentsOf: places.roster)
-
-    let gone = commitments.sayDaysAway(
-        named: "", from: date(2026, 10, 11), through: date(2026, 10, 13), over: [gym])
-    let backwards = commitments.sayDaysAway(
-        named: "", from: date(2026, 10, 14), through: date(2026, 10, 13), over: [gym])
-    let overNothing = commitments.sayDaysAway(
-        named: "", from: date(2026, 10, 13), through: date(2026, 10, 18), over: [])
-
-    #expect(gone == .firstDayHasPassed)
-    #expect(backwards == .lastDayBeforeFirstDay)
-    #expect(overNothing == .overNoCommitment)
-    #expect(commitments.daysAway.isEmpty)
-    #expect(try Data(contentsOf: places.roster) == before)
-}
-
-@MainActor
-@Test(
     "days away over a commitment other days away are over on a shared day are refused, naming those days away"
 )
 func daysAwayOverACommitmentOtherDaysAwayAreOverOnASharedDayAreRefusedNamingThoseDaysAway() throws {

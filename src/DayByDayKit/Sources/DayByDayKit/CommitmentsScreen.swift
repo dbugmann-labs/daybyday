@@ -95,6 +95,39 @@ public final class CommitmentsScreen {
     /// The days away this screen lists. `openspec/changes/say-days-away/design.md` § *The seam*.
     public private(set) var daysAway: [DaysAway] = []
 
+    /// The days away whose last day has passed, by first day latest first, days away sharing a
+    /// first day the last said first. `openspec/changes/change-days-away/design.md` § *The seam*.
+    public private(set) var pastDaysAway: [DaysAway] = []
+
+    /// Changes `daysAway` to `name`, `firstDay`, `lastDay` and the commitments picked, kept at the
+    /// roster place before the lists say so, the days away staying the same days away. Does nothing,
+    /// answering `nil`, where this screen does not list them or a commitment picked is neither one it
+    /// keeps nor a stopped one they are over. Any refusal keeps nothing and is held in
+    /// `daysAwayRefusal`. `openspec/changes/change-days-away/specs/commitment/spec.md`.
+    @discardableResult
+    public func changeDaysAway(
+        _ daysAway: DaysAway, named name: String, from firstDay: CalendarDate,
+        through lastDay: CalendarDate, over commitments: [Commitment]
+    ) -> Refusal? {
+        guard let rosterStore else {
+            return refuseDaysAway(.notKept)
+        }
+        var nextRoster = rosterStore.roster
+        nextRoster.changeDaysAway(
+            daysAway.identity, named: Blank.saysNothing(name) ? nil : Blank.trimmed(name),
+            from: firstDay, through: lastDay, over: commitments)
+        do {
+            try rosterStore.replace(with: nextRoster)
+        } catch {
+            return refuseDaysAway(.notKept)
+        }
+
+        daysAwayRefusal = nil
+        endedByAChangeOrByBeingShown()
+        refreshLists(from: rosterStore)
+        return nil
+    }
+
     /// The last refusal of days away said or removed through this screen.
     public private(set) var daysAwayRefusal: Refusal?
 
@@ -118,9 +151,6 @@ public final class CommitmentsScreen {
         }
         guard commitments.allSatisfy({ kept.contains($0) }) else {
             return nil
-        }
-        guard dayToKeepFrom.days(until: firstDay) >= 0 else {
-            return refuseDaysAway(.firstDayHasPassed)
         }
         guard firstDay.days(until: lastDay) >= 0 else {
             return refuseDaysAway(.lastDayBeforeFirstDay)
@@ -893,8 +923,9 @@ public final class CommitmentsScreen {
         /// while a shift of the commitment has either day after the day this screen was handed.
         /// `openspec/changes/shift-a-due-day/design.md` § *Settled 7 is read as written*.
         case shiftedDayAhead
-        /// Days away whose first day is before the day the screen was handed.
-        case firstDayHasPassed
+        /// Days away said or changed over a day on which the record holds something of a commitment
+        /// picked, naming it and its earliest such day.
+        case recordOnDaysAway(Commitment, CalendarDate)
         /// Days away whose last day is before their first.
         case lastDayBeforeFirstDay
         /// Days away picked over no commitment.

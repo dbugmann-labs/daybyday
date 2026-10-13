@@ -1007,6 +1007,22 @@ extension Roster {
                 commitments: commitments.map(\.identity)))
     }
 
+    /// Forms the days away `identity` names anew, whole: its name, days and commitments replaced in
+    /// the place it holds in the order said, and every commitment's eras formed for the change in
+    /// one go. The caller has judged every refusal. `change-days-away` design.md § *A change is one
+    /// roster formed whole, ends moved rather than erase-and-say*.
+    mutating func changeDaysAway(
+        _ identity: DaysAway.Identity, named name: String?, from first: CalendarDate,
+        through last: CalendarDate, over commitments: [Commitment]
+    ) {
+        guard let index = spans.firstIndex(where: { $0.identity == identity }) else {
+            return
+        }
+        spans[index] = Span(
+            identity: identity, name: name, firstDay: first, lastDay: last,
+            commitments: commitments.map(\.identity))
+    }
+
     /// Takes the days after `keptThrough` and through `last` out of the eras of `identity`: an era
     /// holding days either side is split, one beginning inside is cut to begin the day after, one
     /// holding nothing else goes. What begins the day after `last` begins its every-N-days count
