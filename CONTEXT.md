@@ -286,6 +286,16 @@ takes a commitment out of its spans, and a span left with none goes; a change to
 rhythm keeps them. Removing a span before it starts leaves every commitment as though it had never
 been said.
 
+**Amended 2026-10-13**, at the grill of `change-days-away` (#402). Days away can be said over days
+already gone, however far back, and every span is listed — those not over earliest first, then the
+past ones latest first — rather than only until its last day passes. Its days, its name and the
+commitments picked can all be changed, and any span can be removed, begun or over; removing one
+always leaves every commitment as though it had never been said, so its past days are owed again
+and open to a record after the fact. Saying or changing a span is refused, naming the commitment
+and the day, while it would put under days away a day already holding a record of a commitment
+picked — save a first day that is today, which keeps that commitment through it as before. A
+commitment changed while away keeps its new rhythm from the day back, wherever the day back moves.
+
 **Resume** — the person's word, and the stopped row's swipe label, for **taking a stopped commitment
 up again**, which is what the specs call it; the two name one act. A resume is made on the day it is
 made and asks for nothing, and it begins a new **era** there unless no day would lie between it and
