@@ -39,8 +39,8 @@ the next.
 
 - [x] 6.1 `openspec validate say-the-last-addition --strict` exits 0, and `pnpm run checks` is clean but for `check:budgets` warnings on the carried requirements
 - [x] 6.2 `pnpm run verify` is green, and `swift test` in `src/DayByDayKit` passes with 6 more tests than a run on `origin/main` reports, both counts read off runs
-- [ ] 6.3 **G7** — the reviewer's findings are answered, and the PR is rebased onto current `main`
-- [ ] 6.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, once every other box is ticked and the walk comment's URL is in W.3. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff. `record` and `day-screen` move, `day-screen` gaining this delta's 6 new scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit**: the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
+- [x] 6.3 **G7** — the reviewer's findings are answered, and the PR is rebased onto current `main`
+- [x] 6.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, once every other box is ticked and the walk comment's URL is in W.3. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff. `record` and `day-screen` move, `day-screen` gaining this delta's 6 new scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit**: the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 
