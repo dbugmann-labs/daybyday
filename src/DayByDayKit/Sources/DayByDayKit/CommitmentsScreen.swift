@@ -112,6 +112,23 @@ public final class CommitmentsScreen {
         guard let rosterStore else {
             return refuseDaysAway(.notKept)
         }
+        guard let listed = (self.daysAway + pastDaysAway).first(where: { $0 == daysAway }),
+            commitments.allSatisfy({ kept.contains($0) || (stopped.contains($0) && listed.commitments.contains($0)) })
+        else {
+            return nil
+        }
+        guard firstDay.days(until: lastDay) >= 0 else {
+            return refuseDaysAway(.lastDayBeforeFirstDay)
+        }
+        guard !commitments.isEmpty else {
+            return refuseDaysAway(.overNoCommitment)
+        }
+        if let refusal = judgeDaysAway(
+            from: firstDay, through: lastDay, over: commitments, in: rosterStore.roster,
+            besides: daysAway.identity)
+        {
+            return refuseDaysAway(refusal)
+        }
         var nextRoster = rosterStore.roster
         nextRoster.changeDaysAway(
             daysAway.identity, named: Blank.saysNothing(name) ? nil : Blank.trimmed(name),
@@ -160,28 +177,10 @@ public final class CommitmentsScreen {
         }
 
         let roster = rosterStore.roster
-        let picked = Set(commitments.map(\.identity))
-        if let clash = roster.spans.first(where: { span in
-            span.commitments.contains(where: picked.contains)
-                && span.firstDay.days(until: lastDay) >= 0 && firstDay.days(until: span.lastDay) >= 0
-        }) {
-            return refuseDaysAway(.overlapsDaysAway(roster.daysAway(of: clash)))
-        }
-        for commitment in commitments {
-            guard let first = roster.keptFrom(of: commitment),
-                let held = roster.eras(of: commitment).first
-            else {
-                continue
-            }
-            if first.days(until: firstDay) <= 0 {
-                return refuseDaysAway(.keptFromFirstDayOrLater(held.name))
-            }
-            let isAmongTheirs = { (day: CalendarDate) in
-                firstDay.days(until: day) >= 0 && day.days(until: lastDay) >= 0
-            }
-            if held.shifts.contains(where: { from, to in isAmongTheirs(from) || isAmongTheirs(to) }) {
-                return refuseDaysAway(.shiftOnDaysAway(held.name))
-            }
+        if let refusal = judgeDaysAway(
+            from: firstDay, through: lastDay, over: commitments, in: roster, besides: nil)
+        {
+            return refuseDaysAway(refusal)
         }
 
         let history = recordStore?.history
@@ -205,6 +204,39 @@ public final class CommitmentsScreen {
         endedByAChangeOrByBeingShown()
         refreshLists(from: rosterStore)
         copyPlace?.keptAChange()
+        return nil
+    }
+
+    /// The refusal days away from `firstDay` through `lastDay` over `commitments` meet in `roster`:
+    /// the first of overlapping other days away — every one but `besides` — a commitment kept from
+    /// their first day or later, and one with a shift on a day of theirs. `nil` where none applies.
+    private func judgeDaysAway(
+        from firstDay: CalendarDate, through lastDay: CalendarDate, over commitments: [Commitment],
+        in roster: Roster, besides: DaysAway.Identity?
+    ) -> Refusal? {
+        let picked = Set(commitments.map(\.identity))
+        if let clash = roster.spans.first(where: { span in
+            span.identity != besides && span.commitments.contains(where: picked.contains)
+                && span.firstDay.days(until: lastDay) >= 0 && firstDay.days(until: span.lastDay) >= 0
+        }) {
+            return .overlapsDaysAway(roster.daysAway(of: clash))
+        }
+        for commitment in commitments {
+            guard let first = roster.keptFrom(of: commitment),
+                let held = roster.eras(of: commitment).first
+            else {
+                continue
+            }
+            if first.days(until: firstDay) <= 0 {
+                return .keptFromFirstDayOrLater(held.name)
+            }
+            let isAmongTheirs = { (day: CalendarDate) in
+                firstDay.days(until: day) >= 0 && day.days(until: lastDay) >= 0
+            }
+            if held.shifts.contains(where: { from, to in isAmongTheirs(from) || isAmongTheirs(to) }) {
+                return .shiftOnDaysAway(held.name)
+            }
+        }
         return nil
     }
 

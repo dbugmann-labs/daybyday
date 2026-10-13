@@ -28,11 +28,11 @@ the next.
 ## 4. `commitment` — changing days away
 
 - [x] 4.1 days away renamed keep their days and commitments and stay the same days away — catches a change minting a new identity
-- [ ] 4.2 a change ending before it begins, or over nothing, is refused and keeps nothing
-- [ ] 4.3 a change is judged against other days away and never against the days away changed — catches the overlap test run over every span
-- [ ] 4.4 a commitment picked by a change is refused where it is kept from their first day or later or has a shift on one of their days, naming it
-- [ ] 4.5 a change asked of days away it does not list, or over a stopped commitment they are not over, does nothing
-- [ ] 4.6 a change a commitments screen cannot keep at its roster place is refused and the days away stay as they were
+- [x] 4.2 a change ending before it begins, or over nothing, is refused and keeps nothing
+- [x] 4.3 a change is judged against other days away and never against the days away changed — catches the overlap test run over every span
+- [x] 4.4 a commitment picked by a change is refused where it is kept from their first day or later or has a shift on one of their days, naming it
+- [x] 4.5 a change asked of days away it does not list, or over a stopped commitment they are not over, does nothing
+- [x] 4.6 a change a commitments screen cannot keep at its roster place is refused and the days away stay as they were
 
 ## 5. `commitment` — what a change does to each commitment
 
