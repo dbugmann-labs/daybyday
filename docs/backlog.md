@@ -236,41 +236,23 @@ confirmed it as a gap rather than saying it unprompted.*
 - **Open** — does the rename sheet lose the place too? It was not measured at #379, and "both
   together" assumes it does.
 
-### B-082 — reach any past day from the day picker and the week strip, not only by swiping
-*Captured 2026-10-13.*
-
-> "I want to be able to reach back to any day in the past, not only by swiping back days, but also
-> from the date picker and the week row"
-
-- **Trigger** — looking for a day earlier than anything on the roster was kept from: the day swipe
-  steps there one day at a time, but the day picker will not offer it and the week strip draws it
-  faded and takes no tap.
-- **Touches** — `day-screen`, and **a reversal of a shipped rule**. The **reach** (`CONTEXT.md`) is
-  floored at the earliest kept-from day on the roster by *A day screen's reach bounds its day picker
-  and is read again whenever its roster is*; the week strip follows it in *A day screen's week strip
-  offers every day it can show but the one it is showing* and *… offers no day earlier than its day
-  picker reaches*; and #347 stops the strip's paging at the reach's week. The swipe was left unbound
-  by that same requirement on purpose. Floored at #176's grill on 2026-09-09; the 2026-09-08 Decided
-  line for the day picker records the floor and not why.
-- **Principle** — tested against *an iPhone, in your hand*: **passes.** Three ways off one screen that
-  disagree about how far back a day goes make the two quicker ones read as broken at exactly the
-  point the slow one still works.
-- **Open** — what is a day before the reach *for*? Nothing was kept from it, so nothing is due on it
-  and every row is empty. If it is only where the swipe already goes, the want may be that the three
-  ways agree rather than that the picker reaches further — which raises the swipe's floor instead.
-- **Open** — "any day" bounded by what? The calendar's own end (1 January 1583, where the strip
-  already stops holding dates), the earliest record of any kind including one-offs and birthdays, or
-  a fixed distance back?
-- **Open** — does the **reach** survive as a term, or do the picker and strip simply lose their
-  floor? 34 shipped `day-screen` scenarios mention what the picker reaches, and #347's paging rule
-  is written against it.
-
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-10-13 — reach any past day from the day picker and the week strip, not only by swiping
+  (B-082) → Story #419 `reach-any-past-day` under `FEAT: day-screen` (#27), reopened under Epic #1.
+  The **reach**'s floor goes: the picker and the strip reach every past day to the calendar's end, as
+  the day swipe already does, so a day before the first kept-from is no longer faded and paging back
+  has no stop. ADR-1048's one reason, "a run of empty years", was wrong: those days are where a
+  one-off of something done and an older happening's occurrence are entered, and birthdays are drawn
+  there. The strip, not the picker, **marks the earliest day anything on the roster is kept from**,
+  stopped and removed commitments counted, against the conductor's recommendation of no mark; the
+  stock SwiftUI picker cannot mark a day, and replacing it with a `UICalendarView` was declined.
+  *Reach* is retired with no new term, and ADR-1048 is superseded. How the mark sits beside the
+  days-away dot is the Story grill's layout round.
 - 2026-10-12 — see how much *Take back last* will remove before tapping it (B-081) → Story #413
   `say-the-last-addition` under `FEAT: day-screen` (#27), reopened under Epic #1. Captured and
   groomed in one session, one question over one round, one fact agent. The last amount only: the
@@ -1603,4 +1585,17 @@ found nothing.
     line above has what the grill settled. No G1, and presented at G2 by the conductor without
     `/to-tickets`, one Story under an existing Feature as B-056 was. Built after #401 and #407,
     whose worktrees were already cut.
+  - **Not re-judged** — B-041, B-066, B-069, B-072, B-077; a targeted pass holds one entry.
+- 2026-10-13 — targeted pass over B-082 (`/atlas backlog B-082`, typed as `/atlas feature B-082`),
+  groomed on `chore/backlog` (PR #417) in the session that captured it, `origin/main` at e990240.
+  - **Sweep** — no silence. Since the B-081 pass `main` gained #411, #414, #415 and #416 (#405's create, swept
+    with it at the B-081 pass); #414 added one
+    known gap to `docs/open-questions.md` (two days away with one identity read without complaint),
+    a covering Story's and not a want.
+  - **Promoted** — B-082 → #419 under #27, no blocking edges; the Decided line above has what the
+    grill settled. Eight questions over five rounds and three fact agents; every answer as
+    recommended except the mark. Asked first what the owner was reaching for, per B-052's lesson:
+    entering a one-off and older happenings, which the specs already allow on any past day. No G1,
+    and presented at G2 by the conductor without `/to-tickets`, one Story under an existing
+    Feature as B-081 was.
   - **Not re-judged** — B-041, B-066, B-069, B-072, B-077; a targeted pass holds one entry.
