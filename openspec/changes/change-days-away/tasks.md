@@ -62,7 +62,7 @@ the next.
 - [x] 8.1 a commitments screen lists days away by name or Away, with their days in words and their commitments, earliest first — the carried test gains "none as past"
 - [x] 8.2 days away move to the past list once their last day has passed, latest first, and stay at the roster place — catches the past list in the upcoming order
 - [x] 8.3 a commitments screen that cannot read its roster lists no days away — the carried test gains "none as past"
-- [ ] 8.4 days away under way or past are offered for removal, and removed leave their days owed again and open to a record
+- [x] 8.4 days away under way or past are offered for removal, and removed leave their days owed again and open to a record
 - [ ] 8.5 days away begun on a first day a commitment was kept through are removed whole — catches `fillGap`'s early return
 
 ## 9. `commitment` — the roster store

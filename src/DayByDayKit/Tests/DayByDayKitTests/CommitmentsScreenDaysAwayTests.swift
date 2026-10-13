@@ -531,8 +531,12 @@ func daysAwayRemovedBeforeTheyBeginLeaveTheirCommitmentsAsThoughNeverSaid() thro
 }
 
 @MainActor
-@Test("days away already begun offer no removal, and asking to remove them does nothing")
-func daysAwayAlreadyBegunOfferNoRemovalAndAskingToRemoveThemDoesNothing() throws {
+@Test(
+    "days away under way or past are offered for removal, and removed leave their days owed again and open to a record"
+)
+func daysAwayUnderWayOrPastAreOfferedForRemovalAndRemovedLeaveTheirDaysOwedAgainAndOpenToARecord()
+    throws
+{
     let places = Places()
     let gym = commitment("Gym")
     let run = commitment("Run")
@@ -540,21 +544,32 @@ func daysAwayAlreadyBegunOfferNoRemovalAndAskingToRemoveThemDoesNothing() throws
     let commitments = screen(places)
     commitments.sayDaysAway(named: "", from: monday12, through: date(2026, 10, 14), over: [gym])
     commitments.sayDaysAway(
-        named: "Mallorca", from: date(2026, 10, 13), through: date(2026, 10, 18), over: [run])
-    let begun = try #require(commitments.daysAway.first)
-    let mallorca = try #require(commitments.daysAway.last)
+        named: "Sick", from: date(2026, 10, 5), through: date(2026, 10, 7), over: [run])
+    let underWay = try #require(commitments.daysAway.first)
+    let sick = try #require(commitments.pastDaysAway.first)
 
-    commitments.askToRemove(begun)
-
-    #expect(!commitments.offersRemoving(begun))
+    #expect(commitments.offersRemoving(underWay))
+    #expect(commitments.offersRemoving(sick))
+    for removing in [underWay, sick] {
+        commitments.askToRemove(removing)
+        #expect(commitments.confirmRemovingDaysAway() == nil)
+    }
+    #expect(commitments.daysAway.isEmpty)
+    #expect(commitments.pastDaysAway.isEmpty)
+    commitments.askToRemove(underWay)
     #expect(commitments.daysAwayAwaitingRemoval == nil)
-    #expect(commitments.offersRemoving(mallorca))
 
-    commitments.shown(asOf: date(2026, 10, 13))
-    commitments.askToRemove(mallorca)
-
-    #expect(!commitments.offersRemoving(mallorca))
-    #expect(commitments.daysAwayAwaitingRemoval == nil)
+    let tuesday6 = DayScreen(
+        startingFrom: [], asOf: date(2026, 10, 6), keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOffs)
+    #expect(tuesday6.dayView.rows.map(\.name) == ["Gym", "Run"])
+    #expect(tuesday6.dayView.rows.allSatisfy { !$0.isKept })
+    try tuesday6.tick(try #require(tuesday6.dayView.rows.first { $0.name == "Run" }))
+    #expect(try RecordStore(at: places.record).history.datesRecorded(for: run) == [date(2026, 10, 6)])
+    let today = DayScreen(
+        startingFrom: [], asOf: monday12, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOffs)
+    #expect(today.dayView.rows.map(\.name) == ["Gym", "Run"])
 }
 
 @MainActor

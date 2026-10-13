@@ -316,10 +316,9 @@ public final class CommitmentsScreen {
         daysAwayRefusal = nil
     }
 
-    /// Whether removing `daysAway` is offered: exactly while this screen lists it and its first
-    /// day is after the day this screen was handed.
+    /// Whether removing `daysAway` is offered: exactly while this screen lists it, in either list.
     public func offersRemoving(_ daysAway: DaysAway) -> Bool {
-        self.daysAway.contains(daysAway) && dayToKeepFrom.days(until: daysAway.firstDay) > 0
+        self.daysAway.contains(daysAway) || pastDaysAway.contains(daysAway)
     }
 
     /// Puts `daysAway` up for removal, replacing whatever was awaiting a stop, a deletion or a
