@@ -115,16 +115,18 @@ func aPresentIdeaStoreWrittenInALaterFormThanThisAppKnowsIsRefused() throws {
 
 @Test("a present-idea store holding what could not be held is refused")
 func aPresentIdeaStoreHoldingWhatCouldNotBeHeldIsRefused() throws {
-    func store(contact: String, idea: String) -> String {
-        #"{"contacts":[{"contact":"\#(contact)","ideas":[\#(idea)]}],"version":1}"#
+    func store(contact: String, idea: String, version: Int) -> String {
+        #"{"contacts":[{"contact":"\#(contact)","ideas":[\#(idea)]}],"version":\#(version)}"#
     }
-    let cases = [
-        store(contact: "  ", idea: #"{"text":"Book voucher"}"#),
-        store(contact: "kate", idea: "{}"),
-        store(contact: "kate", idea: #"{"text":" Book voucher "}"#),
-        store(contact: "kate", idea: #"{"link":"ask Anna"}"#),
-        store(contact: "kate", idea: #"{"link":"amazon.de/xyz"}"#),
-    ]
+    let cases = [1, 2].flatMap { version in
+        [
+            store(contact: "  ", idea: #"{"text":"Book voucher"}"#, version: version),
+            store(contact: "kate", idea: "{}", version: version),
+            store(contact: "kate", idea: #"{"text":" Book voucher "}"#, version: version),
+            store(contact: "kate", idea: #"{"link":"ask Anna"}"#, version: version),
+            store(contact: "kate", idea: #"{"link":"amazon.de/xyz"}"#, version: version),
+        ]
+    }
     for content in cases {
         let place = freshPlace()
         try writeRaw(content, at: place)
