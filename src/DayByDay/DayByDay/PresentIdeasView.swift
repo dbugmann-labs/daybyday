@@ -69,18 +69,16 @@ struct PresentIdeasView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    @ViewBuilder
+    /// The link as one run of text carrying its address, so only the glyphs open it and VoiceOver
+    /// announces it as a link; the rest of the row is not a control.
     private func linkLabel(_ link: String, hasText: Bool, opens: URL?) -> some View {
-        let label = Text(link)
+        var words = AttributedString(link)
+        words.link = opens
+        return Text(words)
             .font(hasText ? .subheadline : .body)
             .foregroundStyle(.tint)
             .lineLimit(1)
             .truncationMode(.tail)
-        if let opens {
-            Link(destination: opens) { label }
-        } else {
-            label
-        }
     }
 
     private var notKeptSentence: String {

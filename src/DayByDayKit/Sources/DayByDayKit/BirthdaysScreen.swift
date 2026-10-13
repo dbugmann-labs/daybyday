@@ -7,8 +7,9 @@ import Foundation
 @MainActor
 @Observable
 public final class BirthdaysScreen {
-    /// One birthday as this screen says it: the calendar's words, its day in words, and how many
-    /// present ideas are held against its contact, or nil where that cannot be said.
+    /// One birthday as this screen says it: the `contact` it belongs to, the calendar's words, its
+    /// day in words, and how many present ideas are held against that contact in words, which is
+    /// nil for a contact with none and where the place cannot be read.
     public struct Line: Hashable, Sendable {
         public let contact: String
         public let words: String
