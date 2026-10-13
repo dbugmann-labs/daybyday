@@ -1060,11 +1060,7 @@ extension Roster {
         }
         spans[index] = Span(
             identity: identity, name: name, firstDay: first, lastDay: last, commitments: picked,
-            // A day remembered before the day before the new first day says nothing of these days and no
-            // roster holds one, so a commitment taken up again since is let go of it.
-            remembers: old.remembers.filter {
-                picked.contains($0.key) && (first.adding(days: -1) ?? first).days(until: $0.value) >= 0
-            })
+            remembers: old.remembers.filter { picked.contains($0.key) })
     }
 
     /// The commitments among `commitments` that stay over the days away `identity` names once they begin
@@ -1097,7 +1093,7 @@ extension Roster {
 
     /// The last day `commitment` was kept, or `nil` where it is kept still or this roster does not
     /// hold it.
-    func lastDayKept(of commitment: Commitment) -> CalendarDate? {
+    private func lastDayKept(of commitment: Commitment) -> CalendarDate? {
         entries.first { $0.commitment.identity == commitment.identity }?.keptUntil
     }
 
@@ -1123,20 +1119,21 @@ extension Roster {
             fillGap(of: identity, from: old.firstDay, through: last, remembered: remembered)
             return
         }
-        // A stop the days away remember owes no day after it.
-        let givenBackThrough = remembered.map { Self.earlier($0, last) } ?? last
-        guard from.days(until: givenBackThrough) >= 0 else {
-            return
-        }
+
         guard let start = entries.firstIndex(where: { $0.commitment.identity == identity }) else {
             return
         }
         let length = entries[start...].prefix { $0.commitment.identity == identity }.count
         var run = Array(entries[start..<(start + length)])
         let dayAfter = last.adding(days: 1)
-        if givenBackThrough == last,
-            let ahead = dayAfter.flatMap({ day in run.firstIndex { $0.commitment.keptFrom == day } })
-        {
+        // An era begun the day after the days away — a take-up again, where they remember a stop — moves
+        // with the day back. Without one, a stop the days away remember owes no day after it.
+        let ahead = dayAfter.flatMap({ day in run.firstIndex { $0.commitment.keptFrom == day } })
+        let givenBackThrough = remembered.map { Self.earlier($0, last) } ?? last
+        if ahead == nil, from.days(until: givenBackThrough) < 0 {
+            return
+        }
+        if let ahead {
             let a = run[ahead]
             run[ahead] = Entry(
                 commitment: Self.restarted(a.commitment, on: from), keptUntil: a.keptUntil,
@@ -1263,7 +1260,7 @@ extension Roster {
     }
 
     /// The day the days away `identity` names remember a stop kept `commitment` until, or `nil`.
-    func remembered(by identity: DaysAway.Identity, of commitment: Commitment) -> CalendarDate? {
+    private func remembered(by identity: DaysAway.Identity, of commitment: Commitment) -> CalendarDate? {
         spans.first { $0.identity == identity }?.remembers[commitment.identity]
     }
 

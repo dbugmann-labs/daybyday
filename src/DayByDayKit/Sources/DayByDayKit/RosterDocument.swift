@@ -132,7 +132,12 @@ struct RosterDocument: Codable {
                 let earliest = span.firstDay.adding(days: -1) ?? span.firstDay
                 guard span.remembers.count == record.remembers?.count,
                     span.remembers.allSatisfy({ span.commitments.contains($0.key) }),
-                    span.remembers.allSatisfy({ earliest.days(until: $0.value) >= 0 }),
+                    span.remembers.allSatisfy({ commitment, day in
+                        // Only a stopped commitment's day is bound: one taken up again keeps the day of
+                        // its stop whatever the first day does.
+                        entries.first(where: { $0.commitment.identity == commitment })?.keptUntil == nil
+                            || earliest.days(until: day) >= 0
+                    }),
                     span.commitments.allSatisfy({ commitment in
                         entries.first(where: { $0.commitment.identity == commitment })?.keptUntil == nil
                             || span.remembers[commitment] != nil
