@@ -321,3 +321,36 @@ func aLastDayMovedEarlierGivesItsDaysBackOwedAgainAndTakesCommitmentsUpAgainTheD
     #expect(!isDue("Nails", on: date(2026, 10, 19), in: kept))
     #expect(rows(on: date(2026, 10, 16), at: places) == ["Gym", "Nails"])
 }
+
+@MainActor
+@Test(
+    "a first day moved earlier takes days already gone, and moved later gives days back on the rhythm held before"
+)
+func aFirstDayMovedEarlierTakesDaysAlreadyGoneAndMovedLaterGivesDaysBackOnTheRhythmHeldBefore() throws {
+    let places = Places()
+    let gym = commitment("Gym", gymSchedule)
+    try takeOn([gym], at: places)
+    let commitments = screen(places)
+    commitments.sayDaysAway(
+        named: "Mallorca", from: date(2026, 10, 13), through: date(2026, 10, 18), over: [gym])
+    let mallorca = try #require(commitments.daysAway.first)
+
+    let earlier = commitments.changeDaysAway(
+        mallorca, named: "Mallorca", from: date(2026, 10, 8), through: date(2026, 10, 18), over: [gym])
+    let afterEarlier = try roster(at: places)
+    let later = commitments.changeDaysAway(
+        mallorca, named: "Mallorca", from: date(2026, 10, 15), through: date(2026, 10, 18),
+        over: [gym])
+    let afterLater = try roster(at: places)
+
+    #expect(earlier == nil)
+    #expect(later == nil)
+    #expect(isDue("Gym", on: date(2026, 10, 7), in: afterEarlier))
+    #expect(!isDue("Gym", on: date(2026, 10, 10), in: afterEarlier))
+    #expect(!isDue("Gym", on: monday12, in: afterEarlier))
+    #expect(isDue("Gym", on: date(2026, 10, 10), in: afterLater))
+    #expect(isDue("Gym", on: monday12, in: afterLater))
+    #expect(isDue("Gym", on: date(2026, 10, 14), in: afterLater))
+    #expect(!isDue("Gym", on: date(2026, 10, 13), in: afterLater))
+    #expect(!isDue("Gym", on: date(2026, 10, 17), in: afterLater))
+}

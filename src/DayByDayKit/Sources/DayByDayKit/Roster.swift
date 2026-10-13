@@ -1031,7 +1031,12 @@ extension Roster {
                     of: commitment, from: Self.later(old.firstDay, last.adding(days: 1) ?? last),
                     through: old.lastDay, of: old)
             }
-            if old.lastDay.days(until: last) > 0 {
+            if old.firstDay.days(until: first) > 0 {
+                fillGap(
+                    of: commitment, from: old.firstDay,
+                    through: Self.earlier(first.adding(days: -1) ?? first, old.lastDay))
+            }
+            if first.days(until: old.firstDay) > 0 || old.lastDay.days(until: last) > 0 {
                 cutGap(
                     of: commitment, keptThrough: (first.adding(days: -1) ?? first), through: last)
             }
