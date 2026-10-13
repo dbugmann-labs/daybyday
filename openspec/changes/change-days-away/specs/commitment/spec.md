@@ -490,13 +490,11 @@ over.
   Sunday 4 until Sunday 11 October 2026
 - **THEN** each opens without error, and the content at each place is byte-for-byte what it was before
   the store was opened
-- **AND** once "Flu" is removed, the removal confirmed, through a commitments screen opened at the
-  first place as of Monday 12 October 2026, a roster store opened there answers with "Gym" when asked
-  what it had not stopped keeping on Saturday 3 October 2026 and not on Sunday 4 October 2026
-- **AND** once "Flu" is changed to end on Wednesday 7 October 2026 and then removed, the removal
-  confirmed, through one opened at the second place as of that Monday, a roster store opened there
-  answers with "Gym" when asked what it had not stopped keeping on Tuesday 6 and on Sunday 11 October
-  2026, and not on Monday 12 October 2026
+- **AND** once, at each place, "Flu" is changed to end on Wednesday 7 October 2026 and then removed,
+  the removal confirmed, through a commitments screen opened there as of Monday 12 October 2026, a
+  roster store opened at the first answers with "Gym" when asked what it had not stopped keeping on
+  Saturday 3 October 2026 and not on Sunday 4 October 2026, and one opened at the second on Tuesday 6
+  and on Sunday 11 October 2026, and not on Monday 12 October 2026
 
 #### Scenario: a roster store whose days away remember what no roster could is refused
 
