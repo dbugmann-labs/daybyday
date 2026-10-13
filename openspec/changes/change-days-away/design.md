@@ -84,7 +84,7 @@ before it (settled 12), so a roster's answer for a day stays the eras'.
   back gives the days up to it back — settled 16 reverses the first G4's reading that it does not.
   A span left over nothing is refused as over nothing.
 - **Settled 16's "every stopped commitment they are over" takes in a stop under way**: the span
-  keeps it, remembered, rather than #401's take-out. *Questions for you* 1.
+  keeps it, remembered, rather than #401's take-out. *Open Questions*, settled.
 - **A take-up-again inside a span over the commitment holds from the day after it**, as settled 11
   has a change made while away do; the day it was made is not remembered either.
 - **Past spans**: by first day, latest first; sharing one, the last said first — the reverse of the
@@ -154,17 +154,9 @@ which only a hand-edited or damaged file can, is now refused on reading; the kno
   `CommitmentsView`'s refusal switch loses a case; `tasks.md` § 1 lists them.
 - [Settled 6 widens #401's saying] → a span said ahead over a day already recorded is now refused.
 
-## Questions for you
-
-1. **A stop made while days away are under way.** #401 takes the commitment out of the span. Keep it
-   in instead, the span remembering the stop as it does for one past?
-   - *Recommended:* keep it — removing the span then gives back the days before the stop, as
-     settled 2 and 16 ask; the span lists the stopped commitment, as a past one already does.
-   - *If you say take out:* the RENAMED stop requirement and its under-way scenario revert to #401's,
-     and the take-up-again scenario is set up by a span moved past a stop; the days before such a
-     stop stay owed nowhere once the span is removed, and ADR-1069 says so.
-
 ## Open Questions
 
-`grill.md` § *Left open* is "None."; settled 16 is folded in above. One question is open, under
-*Questions for you*; every other edge the delta reached is recorded as a reading of a settled answer.
+`grill.md` § *Left open* is "None."; settled 16 is folded in above. **Settled**, the one residual
+question: a stop made while days away are under way keeps the commitment in them, remembered,
+rather than #401's take-out — the owner's answer, 2026-10-13. Every other edge the delta reached is
+recorded as a reading of a settled answer.
