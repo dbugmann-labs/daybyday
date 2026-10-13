@@ -10,7 +10,7 @@ import Foundation
 struct RosterDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 10
+    static let currentVersion = 11
 
     /// The form a commitment record first carried an `identity` key at: forms at or after this
     /// one carry it on every entry's commitment, forms before it never do, on the same footing as
@@ -54,6 +54,11 @@ struct RosterDocument: Codable {
     /// once, of the whole roster — an empty list where it holds none — and forms before it never
     /// do, and are read as holding none. ADR-1069.
     static let daysAwayIntroducedInVersion = 10
+
+    /// The form each days away record first carried `remembers` at: forms at or after this one say,
+    /// of every days away, the day a stop kept each commitment until — an empty list where it
+    /// remembers nothing — and forms before it never do.
+    static let remembersIntroducedInVersion = 11
 
     var version: Int
     var commitments: [RosterEntryRecord]
@@ -524,6 +529,7 @@ struct DaysAwayRecord: Codable, Equatable {
     var firstDay: DateRecord
     var lastDay: DateRecord
     var commitments: [String]
+    var remembers: [RememberedRecord]?
 
     init(_ span: Roster.Span) {
         identity = span.identity.uuidString
@@ -531,10 +537,15 @@ struct DaysAwayRecord: Codable, Equatable {
         firstDay = DateRecord(span.firstDay)
         lastDay = DateRecord(span.lastDay)
         commitments = span.commitments.map(\.uuidString)
+        remembers = span.commitments.compactMap { commitment in
+            span.remembers[commitment].map {
+                RememberedRecord(commitment: commitment.uuidString, day: DateRecord($0))
+            }
+        }
     }
 
     private enum CodingKeys: String, CodingKey {
-        case identity, name, firstDay, lastDay, commitments
+        case identity, name, firstDay, lastDay, commitments, remembers
     }
 
     init(from decoder: Decoder) throws {
@@ -544,6 +555,7 @@ struct DaysAwayRecord: Codable, Equatable {
         firstDay = try container.decode(DateRecord.self, forKey: .firstDay)
         lastDay = try container.decode(DateRecord.self, forKey: .lastDay)
         commitments = try container.decode([String].self, forKey: .commitments)
+        remembers = try container.decodeIfPresent([RememberedRecord].self, forKey: .remembers)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -553,6 +565,7 @@ struct DaysAwayRecord: Codable, Equatable {
         try container.encode(firstDay, forKey: .firstDay)
         try container.encode(lastDay, forKey: .lastDay)
         try container.encode(commitments, forKey: .commitments)
+        try container.encodeIfPresent(remembers, forKey: .remembers)
     }
 
     /// The span this record says, or `nil` where an identity or a day does not read, or the last
@@ -570,9 +583,24 @@ struct DaysAwayRecord: Codable, Equatable {
             }
             identities.append(commitment)
         }
+        var remembered: [Commitment.Identity: CalendarDate] = [:]
+        for record in remembers ?? [] {
+            guard let commitment = Commitment.Identity(record.commitment), let day = record.day.calendarDate()
+            else {
+                return nil
+            }
+            remembered[commitment] = day
+        }
         return Roster.Span(
-            identity: identity, name: name, firstDay: first, lastDay: last, commitments: identities)
+            identity: identity, name: name, firstDay: first, lastDay: last, commitments: identities,
+            remembers: remembered)
     }
+}
+
+/// One day a stop kept a commitment until, as a days away record writes it.
+struct RememberedRecord: Codable, Equatable {
+    var commitment: String
+    var day: DateRecord
 }
 
 /// Reads only `version`, so a later form is told apart from the body before the body is ever

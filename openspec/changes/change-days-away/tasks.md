@@ -10,7 +10,7 @@ the next.
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly the ten scenarios the G7 respec (settled 16) added uncovered — 7.6–7.11, 7.13, 9.2, 9.3, 10.2 — and no other
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly the ten scenarios the G7 respec (settled 16) added uncovered — 7.6–7.11, 7.13, 9.2, 9.3, 10.2 — and no other
 - [ ] 1.2 The carried edits, the only sanctioned ones, each listed with its before and after in the PR body: the tests of "days away from a day already gone, ending before they begin, or over nothing are refused and keep nothing", "days away leave the list once their last day has passed and stay at the roster place" and "days away already begun offer no removal, and asking to remove them does nothing" are deleted; the four tests of § 3.3, § 8.1, § 8.3 and § 9.1 gain the clause their scenario gained; `CommitmentsView`'s `.firstDayHasPassed` case goes. The G7 respec adds: the unscenarioed test "a commitment stopped before days away that is unpicked from them owes no day of them" (`CommitmentsScreenChangeDaysAwayTests.swift`) is deleted, its last assertions reversed by 7.8; the test of 7.12 (`CommitmentsScreenDaysAwayTests.swift`) asserts "over Gym and Run" and gains the removal clause; 9.1's fixtures move to form 11. The tests of 7.1–7.5 stay as they are and green
 
 ## 2. The seam and the roster
@@ -18,7 +18,7 @@ the next.
 - [x] 2.1 The members in `design.md` § *The seam* exist with those signatures, `firstDayHasPassed` is gone, and 4.1 is red before any does more than compile
 - [x] 2.2 A change forms the next roster whole — spans and eras — and writes it once, the span keeping its identity and its place in the order said, as `design.md` § *A change is one roster formed whole* says
 - [x] 2.3 `Roster.fillGap` fills from the day after a first day an era holds, so 8.5 passes without a second path
-- [ ] 2.4 `Roster.Span` remembers the day a stop kept each commitment until, set by `confirmStopKeeping` on every begun span keeping it, as `design.md` § *Days away remember a stop* says; the fix round's guard in `fillGap`'s `(behind, nil)` branch goes, every give-back reading the day remembered instead
+- [x] 2.4 `Roster.Span` remembers the day a stop kept each commitment until, set by `confirmStopKeeping` on every begun span keeping it, as `design.md` § *Days away remember a stop* says; the fix round's guard in `fillGap`'s `(behind, nil)` branch goes, every give-back reading the day remembered instead
 
 ## 3. `commitment` — saying days away
 
@@ -59,13 +59,13 @@ the next.
 - [x] 7.3 days away moved wholly past the last day a stopped commitment was kept leave it out, and are refused where it was all they were over
 - [x] 7.4 a stopped commitment kept until the day before days away stays picked through a later change of them, owing no day after its stop — catches a stop moved by 7.2 read as wholly past on the next change
 - [x] 7.5 days away over nothing but a commitment stopped the day after them are renamed, and moved earlier, still over it — catches a rename refused as over no commitment
-- [ ] 7.6 days away over a commitment stopped the day after them, removed, give it back every day of them — catches the fix round's guard left in
+- [x] 7.6 days away over a commitment stopped the day after them, removed, give it back every day of them — catches the fix round's guard left in
 - [ ] 7.7 days away moved past a stop and then removed give the stopped commitment back its days up to its stop and none after — catches the guard taken out with nothing in its place
 - [ ] 7.8 a stopped commitment unticked from days away moved past its stop has their days back up to its stop and none after
 - [ ] 7.9 days away moved past a stop and then wholly past it give the stopped commitment back its days up to its stop — catches "wholly past" read off the eras
 - [ ] 7.10 days away moved past a stop and back again give the stopped commitment back its days up to its stop
 - [ ] 7.11 a stopped commitment taken up again after days away moved past its stop owes, once they are removed, its days up to its stop and none before it was taken up again — catches the day dropped at a take-up-again
-- [ ] 7.12 a commitment stopped while its days away are under way is kept until the day before them — the carried test of § 1.2; catches `leaveDaysAway` still run on begun days away
+- [x] 7.12 a commitment stopped while its days away are under way is kept until the day before them — the carried test of § 1.2; catches `leaveDaysAway` still run on begun days away
 - [ ] 7.13 a commitment taken up again inside days away over it is taken up on the day after their last day, and stays remembered by them
 
 ## 8. `commitment` — listing and removing

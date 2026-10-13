@@ -125,9 +125,12 @@ public final class CommitmentsScreen {
         guard !commitments.isEmpty else {
             return refuseDaysAway(.overNoCommitment)
         }
-        // A stopped commitment the days away begin later than the day after its last day leaves them.
+        // A stopped commitment the days away begin later than the day after the day they remember it
+        // kept until leaves them.
         let commitments = commitments.filter { commitment in
-            rosterStore.roster.lastDayKept(of: commitment).map { firstDay.days(until: $0) >= -1 } ?? true
+            let remembered = rosterStore.roster.remembered(by: daysAway.identity, of: commitment)
+                ?? rosterStore.roster.lastDayKept(of: commitment)
+            return remembered.map { firstDay.days(until: $0) >= -1 } ?? true
         }
         guard !commitments.isEmpty else {
             return refuseDaysAway(.overNoCommitment)
@@ -1802,7 +1805,7 @@ public final class CommitmentsScreen {
         do {
             var nextRoster = rosterStore.roster
             if nextRoster.retire(commitment, keptUntil: keptUntil) {
-                nextRoster.leaveDaysAway(of: commitment, endingOnOrAfter: dayToKeepFrom)
+                nextRoster.stopDaysAway(of: commitment, keptUntil: keptUntil, begunBy: dayToKeepFrom)
                 try rosterStore.replace(with: nextRoster)
             }
         } catch {
@@ -1918,7 +1921,11 @@ public final class CommitmentsScreen {
         }
 
         do {
-            guard try rosterStore.keepAgain(commitment, from: dayToKeepFrom) else {
+            // Inside days away over it, it is taken up again the day after their last day.
+            let resumeDay =
+                rosterStore.roster.lastDayOfDaysAwayInside(over: commitment, on: dayToKeepFrom)?
+                .adding(days: 1) ?? dayToKeepFrom
+            guard try rosterStore.keepAgain(commitment, from: resumeDay) else {
                 let refusal = Refusal.nameAlreadyInUse(Self.nameAlreadyHeld(commitment.name, among: kept))
                 stoppedRefusal = SheetRefusal(field: nil, refusal: refusal)
                 refusedChange = .keepingAgain(commitment, refusal)

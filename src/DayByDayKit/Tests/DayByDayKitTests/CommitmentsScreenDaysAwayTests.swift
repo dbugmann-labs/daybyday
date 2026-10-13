@@ -754,10 +754,15 @@ func aCommitmentStoppedWhileItsDaysAwayAreUnderWayIsKeptUntilTheDayBeforeThem() 
 
     #expect(refusal == nil)
     #expect(underWay.daysAway.map(\.title) == ["Mallorca"])
-    #expect(underWay.daysAway[0].commitments.map(\.name) == ["Run"])
+    #expect(underWay.daysAway[0].commitments.map(\.name) == ["Gym", "Run"])
     #expect(try notStoppedOn(monday12, at: places).contains("Gym"))
     #expect(try !notStoppedOn(date(2026, 10, 13), at: places).contains("Gym"))
     #expect(try !notStoppedOn(date(2026, 10, 14), at: places).contains("Gym"))
+
+    underWay.askToRemove(underWay.daysAway[0])
+    underWay.confirmRemovingDaysAway()
+    #expect(try notStoppedOn(date(2026, 10, 14), at: places).contains("Gym"))
+    #expect(try !notStoppedOn(date(2026, 10, 15), at: places).contains("Gym"))
 }
 
 @MainActor
