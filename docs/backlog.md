@@ -236,6 +236,35 @@ confirmed it as a gap rather than saying it unprompted.*
 - **Open** — does the rename sheet lose the place too? It was not measured at #379, and "both
   together" assumes it does.
 
+### B-082 — reach any past day from the day picker and the week strip, not only by swiping
+*Captured 2026-10-13.*
+
+> "I want to be able to reach back to any day in the past, not only by swiping back days, but also
+> from the date picker and the week row"
+
+- **Trigger** — looking for a day earlier than anything on the roster was kept from: the day swipe
+  steps there one day at a time, but the day picker will not offer it and the week strip draws it
+  faded and takes no tap.
+- **Touches** — `day-screen`, and **a reversal of a shipped rule**. The **reach** (`CONTEXT.md`) is
+  floored at the earliest kept-from day on the roster by *A day screen's reach bounds its day picker
+  and is read again whenever its roster is*; the week strip follows it in *A day screen's week strip
+  offers every day it can show but the one it is showing* and *… offers no day earlier than its day
+  picker reaches*; and #347 stops the strip's paging at the reach's week. The swipe was left unbound
+  by that same requirement on purpose. Floored at #176's grill on 2026-09-09; the 2026-09-08 Decided
+  line for the day picker records the floor and not why.
+- **Principle** — tested against *an iPhone, in your hand*: **passes.** Three ways off one screen that
+  disagree about how far back a day goes make the two quicker ones read as broken at exactly the
+  point the slow one still works.
+- **Open** — what is a day before the reach *for*? Nothing was kept from it, so nothing is due on it
+  and every row is empty. If it is only where the swipe already goes, the want may be that the three
+  ways agree rather than that the picker reaches further — which raises the swipe's floor instead.
+- **Open** — "any day" bounded by what? The calendar's own end (1 January 1583, where the strip
+  already stops holding dates), the earliest record of any kind including one-offs and birthdays, or
+  a fixed distance back?
+- **Open** — does the **reach** survive as a term, or do the picker and strip simply lose their
+  floor? 34 shipped `day-screen` scenarios mention what the picker reaches, and #347's paging rule
+  is written against it.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
