@@ -445,3 +445,276 @@ func aCopyHoldingPresentIdeasTheAppNeverWritesIsRefusedAsADamagedCopyAndOneWhose
         try askingToRestore(presentIdeas: later, roster: #"{"version":1}"#).0
             == .copyFromALaterVersion)
 }
+
+/// A copy made through `screen` as of 14:32 into a directory of its own, as the file picked to
+/// restore from.
+@MainActor
+private func copyPicked(madeThrough screen: CommitmentsScreen) throws -> URL {
+    let result = screen.makeACopy(asOf: moment(14, 32), writingInto: freshDirectory())
+    guard case .success(let url) = result else {
+        Issue.record("expected a copy to be made")
+        throw CocoaError(.fileWriteUnknown)
+    }
+    return url
+}
+
+@MainActor
+@Test(
+    "a commitments screen asked to restore says how many present ideas the copy and the phone hold, given and not given together"
+)
+func aCommitmentsScreenAskedToRestoreSaysHowManyPresentIdeasTheCopyAndThePhoneHoldGivenAndNotGivenTogether()
+    throws
+{
+    let places = Places()
+    let store = try PresentIdeaStore(at: places.presentIdeas)
+    try store.add(idea("Ceramics class voucher"), to: "kate")
+    try store.add(idea("Hiking socks, size 38"), to: "kate")
+    try store.mark(0, of: "kate", given: true)
+    try store.add(idea("Book voucher"), to: "anna")
+    let screen = places.commitmentsScreen(whileOn: offSwitch())
+    let file = try copyPicked(madeThrough: screen)
+
+    try store.add(idea("Scarf"), to: "john")
+    try store.add(idea("Kite"), to: "john")
+    try store.delete(0, of: "anna")
+    let bytesBefore = try Data(contentsOf: places.presentIdeas)
+
+    #expect(screen.askToRestore(from: file) == nil)
+
+    let awaiting = try #require(screen.awaitingRestore)
+    #expect(awaiting.copy.presentIdeas == 3)
+    #expect(awaiting.phone.presentIdeas == 4)
+    #expect(awaiting.unreadable.isEmpty)
+    #expect(try Data(contentsOf: places.presentIdeas) == bytesBefore)
+}
+
+@MainActor
+@Test(
+    "a commitments screen asked to restore where the present-idea place cannot be read says the present ideas cannot be read in place of their count"
+)
+func aCommitmentsScreenAskedToRestoreWhereThePresentIdeaPlaceCannotBeReadSaysThePresentIdeasCannotBeReadInPlaceOfTheirCount()
+    throws
+{
+    for unreadable in [notAPresentIdeaStore, laterPresentIdeaBytes()] {
+        let places = Places()
+        let screen = places.commitmentsScreen()
+        let file = try copyPicked(madeThrough: screen)
+        try write(unreadable, to: places.presentIdeas)
+
+        #expect(screen.askToRestore(from: file) == nil)
+
+        let awaiting = try #require(screen.awaitingRestore)
+        #expect(awaiting.unreadable == [.presentIdeas])
+        #expect(awaiting.phone.presentIdeas == nil)
+        #expect(awaiting.phone.kept == 0)
+        #expect(awaiting.phone.stopped == 0)
+        #expect(awaiting.phone.oneOffs == 0)
+        #expect(awaiting.phone.happenings == 0)
+        #expect(awaiting.phone.stoppedHappenings == 0)
+        #expect(awaiting.copy.presentIdeas == 0)
+    }
+}
+
+private func birthday(_ contact: String, _ words: String, _ day: CalendarDate) -> Birthday {
+    Birthday(contact: contact, words: words, day: day)!
+}
+
+/// A birthday switch that is on: the phone gives full calendar access.
+@MainActor
+private func onSwitch() async -> BirthdaySwitch {
+    let result = BirthdaySwitch(
+        at: freshDirectory().appendingPathComponent("birthday-switch.json"),
+        readingAccess: { .full }, askingForAccess: {})
+    await result.turnOn()
+    return result
+}
+
+/// A calendar handing the contact "kate"'s birthday on 14 November 2026 and, where `andJohn`,
+/// the contact "john"'s on 5 June 2027.
+@MainActor
+private func calendar(andJohn: Bool = false) -> BirthdayCalendar {
+    var handed = [birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))]
+    if andJohn {
+        handed.append(birthday("john", "John Appleseed's 40th Birthday", date(2027, 6, 5)))
+    }
+    return BirthdayCalendar(reading: { _, _ in handed }, collating: { $0 < $1 })
+}
+
+@MainActor
+@Test(
+    "a restore confirmed makes the present-idea place hold the copy's present ideas, and the ideas there are gone"
+)
+func aRestoreConfirmedMakesThePresentIdeaPlaceHoldTheCopysPresentIdeasAndTheIdeasThereAreGone()
+    async throws
+{
+    let places = Places()
+    try PresentIdeaStore(at: places.presentIdeas).add(idea("Book voucher"), to: "kate")
+    let birthdays = BirthdaysScreen(
+        asOf: tuesday, readingBirthdaysFrom: calendar(andJohn: true), whileOn: await onSwitch(),
+        keepingPresentIdeasAt: places.presentIdeas)
+    let screen = places.commitmentsScreen()
+    let file = try copyPicked(madeThrough: screen)
+
+    let kate = try #require(birthdays.lines.first { $0.contact == "kate" })
+    let john = try #require(birthdays.lines.first { $0.contact == "john" })
+    #expect(birthdays.markIdea(0, of: kate, given: true) == nil)
+    #expect(birthdays.addIdea(text: "Scarf", link: "", to: john) == nil)
+
+    #expect(screen.askToRestore(from: file) == nil)
+    #expect(screen.confirmRestoring() == nil)
+
+    let reference = Places()
+    try PresentIdeaStore(at: reference.presentIdeas).add(idea("Book voucher"), to: "kate")
+    #expect(
+        try Data(contentsOf: places.presentIdeas) == Data(contentsOf: reference.presentIdeas))
+
+    birthdays.shown(asOf: tuesday)
+    #expect(birthdays.lines.first { $0.contact == "kate" }?.ideasInWords == "1 idea")
+    #expect(birthdays.lines.first { $0.contact == "john" }?.ideasInWords == nil)
+
+    // A restore of that copy where the place holds a run of bytes that is not a store.
+    try write(notAPresentIdeaStore, to: places.presentIdeas)
+    let again = places.commitmentsScreen()
+    #expect(again.askToRestore(from: file) == nil)
+    #expect(again.confirmRestoring() == nil)
+    #expect(
+        try Data(contentsOf: places.presentIdeas) == Data(contentsOf: reference.presentIdeas))
+}
+
+/// A path that cannot be written: `name` beneath an ordinary file, so any write through it fails.
+private func blockedPlace(named name: String) throws -> URL {
+    let directory = freshDirectory()
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    return blocker.appendingPathComponent(name)
+}
+
+private let journaling = Commitment(
+    name: "Journaling", schedule: allWeekdays, keptFrom: date(2026, 1, 1))!
+
+/// A file holding a copy of a roster of "Journaling" and the idea "Book voucher" against "kate".
+@MainActor
+private func journalingAndBookVoucherCopy() throws -> URL {
+    let source = Places()
+    try RosterStore(at: source.roster).add(journaling)
+    try PresentIdeaStore(at: source.presentIdeas).add(idea("Book voucher"), to: "kate")
+    return try copyPicked(madeThrough: source.commitmentsScreen())
+}
+
+@MainActor
+@Test(
+    "a restore refused where the present-idea place cannot be written leaves the six places as they were"
+)
+func aRestoreRefusedWhereThePresentIdeaPlaceCannotBeWrittenLeavesTheSixPlacesAsTheyWere() throws {
+    let base = freshDirectory()
+    let roster = base.appendingPathComponent("roster.json")
+    let record = base.appendingPathComponent("record.json")
+    let oneOffs = base.appendingPathComponent("one-offs.json")
+    let birthday = base.appendingPathComponent("birthday-ticks.json")
+    let happenings = base.appendingPathComponent("happenings.json")
+    let presentIdeas = try blockedPlace(named: "present-ideas.json")
+
+    try RosterStore(at: roster).add(gym)
+    try RecordStore(at: record).add(Tick(gym, on: date(2026, 10, 12))!)
+    try OneOffStore(at: oneOffs).add(OneOff(name: "Book dentist", date: date(2026, 10, 25))!)
+    let screen = CommitmentsScreen(
+        asOf: tuesday, keepingRosterAt: roster, keepingRecordAt: record, keepingOneOffsAt: oneOffs,
+        keepingBirthdayTicksAt: birthday, keepingHappeningsAt: happenings,
+        keepingPresentIdeasAt: presentIdeas)
+    let rosterBefore = try Data(contentsOf: roster)
+    let recordBefore = try Data(contentsOf: record)
+    let oneOffsBefore = try Data(contentsOf: oneOffs)
+
+    #expect(screen.askToRestore(from: try journalingAndBookVoucherCopy()) == nil)
+    let refusal = screen.confirmRestoring()
+
+    #expect(refusal == .notKept)
+    #expect(try Data(contentsOf: roster) == rosterBefore)
+    #expect(try Data(contentsOf: record) == recordBefore)
+    #expect(try Data(contentsOf: oneOffs) == oneOffsBefore)
+    #expect(!FileManager.default.fileExists(atPath: birthday.path))
+    #expect(!FileManager.default.fileExists(atPath: happenings.path))
+    #expect(!FileManager.default.fileExists(atPath: presentIdeas.path))
+    #expect(screen.kept.map(\.name) == ["Gym"])
+    #expect(screen.copyRestored == nil)
+    #expect(screen.awaitingRestore == nil)
+}
+
+@MainActor
+@Test(
+    "a restore stopped before it was whole is undone at the present-idea place when the places are next opened"
+)
+func aRestoreStoppedBeforeItWasWholeIsUndoneAtThePresentIdeaPlaceWhenThePlacesAreNextOpened()
+    throws
+{
+    /// Places holding "Gym" and "Book voucher" against "kate", and a restore of "Journaling" and
+    /// "Scarf" against "john" left having written all six, with the restore in progress it left
+    /// standing.
+    func placesWithATornRestore(
+        writing stoppingAfter: Int = 6
+    ) throws -> (places: Places, rosterBefore: Data, presentIdeasBefore: Data) {
+        let places = Places()
+        try RosterStore(at: places.roster).add(gym)
+        try PresentIdeaStore(at: places.presentIdeas).add(idea("Book voucher"), to: "kate")
+        let rosterBefore = try Data(contentsOf: places.roster)
+        let presentIdeasBefore = try Data(contentsOf: places.presentIdeas)
+
+        var roster = Roster()
+        _ = roster.add(journaling)
+        let copy = Copy(
+            moment: moment(9, 0), history: History(), roster: roster, oneOffs: OneOffs(),
+            presentIdeas: ["john": [idea("Scarf")]])
+        try RestoreInProgress.restore(
+            copy, recordAt: places.record, rosterAt: places.roster, oneOffsAt: places.oneOffs,
+            birthdayTicksAt: places.birthday, happeningsAt: places.happenings,
+            presentIdeasAt: places.presentIdeas, stoppingAfter: stoppingAfter)
+        #expect(
+            FileManager.default.fileExists(
+                atPath: RestoreInProgress.place(besideRecordAt: places.record).path))
+        #expect(try Data(contentsOf: places.presentIdeas) != presentIdeasBefore)
+        return (places, rosterBefore, presentIdeasBefore)
+    }
+
+    func expectUndone(_ torn: (places: Places, rosterBefore: Data, presentIdeasBefore: Data)) throws
+    {
+        #expect(try Data(contentsOf: torn.places.roster) == torn.rosterBefore)
+        #expect(try Data(contentsOf: torn.places.presentIdeas) == torn.presentIdeasBefore)
+        #expect(!FileManager.default.fileExists(atPath: torn.places.record.path))
+        #expect(!FileManager.default.fileExists(atPath: torn.places.oneOffs.path))
+        #expect(!FileManager.default.fileExists(atPath: torn.places.birthday.path))
+        #expect(!FileManager.default.fileExists(atPath: torn.places.happenings.path))
+        #expect(
+            !FileManager.default.fileExists(
+                atPath: RestoreInProgress.place(besideRecordAt: torn.places.record).path))
+    }
+
+    let torn = try placesWithATornRestore()
+    #expect(torn.places.commitmentsScreen().kept.map(\.name) == ["Gym"])
+    try expectUndone(torn)
+
+    // A day screen of that commitment opened at those places instead.
+    let instead = try placesWithATornRestore()
+    _ = instead.places.dayScreen()
+    try expectUndone(instead)
+
+    // A restore in progress kept before restores wrote the present-idea place leaves it as it
+    // stands.
+    let old = Places()
+    try RosterStore(at: old.roster).add(gym)
+    try PresentIdeaStore(at: old.presentIdeas).add(idea("Book voucher"), to: "kate")
+    let oldPresentIdeasBefore = try Data(contentsOf: old.presentIdeas)
+    let oldSnapshot = RestoreInProgress(
+        record: nil, roster: try Data(contentsOf: old.roster), oneOffs: nil,
+        saveInProgress: nil, birthdayTicks: nil)
+    let oldSnapshotPlace = RestoreInProgress.place(besideRecordAt: old.record)
+    try write(JSONEncoder().encode(oldSnapshot), to: oldSnapshotPlace)
+    try RosterStore(at: old.roster).add(journaling)
+    try PresentIdeaStore(at: old.presentIdeas).add(idea("Scarf"), to: "john")
+    let oldPresentIdeasAfter = try Data(contentsOf: old.presentIdeas)
+
+    #expect(old.commitmentsScreen().kept.map(\.name) == ["Gym"])
+    #expect(try Data(contentsOf: old.presentIdeas) == oldPresentIdeasAfter)
+    #expect(oldPresentIdeasAfter != oldPresentIdeasBefore)
+    #expect(!FileManager.default.fileExists(atPath: oldSnapshotPlace.path))
+}
