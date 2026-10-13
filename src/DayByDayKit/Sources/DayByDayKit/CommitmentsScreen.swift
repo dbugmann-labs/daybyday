@@ -125,13 +125,8 @@ public final class CommitmentsScreen {
         guard !commitments.isEmpty else {
             return refuseDaysAway(.overNoCommitment)
         }
-        // A stopped commitment the days away begin later than the day after the day they remember it
-        // kept until leaves them.
-        let commitments = commitments.filter { commitment in
-            let remembered = rosterStore.roster.remembered(by: daysAway.identity, of: commitment)
-                ?? rosterStore.roster.lastDayKept(of: commitment)
-            return remembered.map { firstDay.days(until: $0) >= -1 } ?? true
-        }
+        let commitments = rosterStore.roster.commitmentsStayingOver(
+            commitments, changing: daysAway.identity, from: firstDay)
         guard !commitments.isEmpty else {
             return refuseDaysAway(.overNoCommitment)
         }

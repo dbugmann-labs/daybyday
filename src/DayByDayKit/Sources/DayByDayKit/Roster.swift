@@ -1060,7 +1060,26 @@ extension Roster {
         }
         spans[index] = Span(
             identity: identity, name: name, firstDay: first, lastDay: last, commitments: picked,
-            remembers: old.remembers.filter { picked.contains($0.key) })
+            // A day remembered before the day before the new first day says nothing of these days and no
+            // roster holds one, so a commitment taken up again since is let go of it.
+            remembers: old.remembers.filter {
+                picked.contains($0.key) && (first.adding(days: -1) ?? first).days(until: $0.value) >= 0
+            })
+    }
+
+    /// The commitments among `commitments` that stay over the days away `identity` names once they begin
+    /// on `first`: every one kept, and a stopped one unless `first` is later than the day after the day
+    /// those days away remember it kept until — the day it was last kept where they remember none.
+    func commitmentsStayingOver(
+        _ commitments: [Commitment], changing identity: DaysAway.Identity, from first: CalendarDate
+    ) -> [Commitment] {
+        commitments.filter { commitment in
+            guard let lastKept = lastDayKept(of: commitment) else {
+                return true
+            }
+            let until = remembered(by: identity, of: commitment) ?? lastKept
+            return first.days(until: until) >= -1
+        }
     }
 
     /// `commitments` in the order this roster holds them, those it does not hold last.

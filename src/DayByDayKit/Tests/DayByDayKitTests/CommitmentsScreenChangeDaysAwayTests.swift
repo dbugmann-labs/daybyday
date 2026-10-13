@@ -1016,3 +1016,52 @@ func aCommitmentTakenUpAgainInsideDaysAwayOverItIsTakenUpOnTheDayAfterTheirLastD
         #expect(!isDue("Gym", on: date(2026, 10, day), in: removed))
     }
 }
+
+@MainActor
+@Test(
+    "a commitment taken up again inside days away stays picked through a later change moving their first day past its stop"
+)
+func aCommitmentTakenUpAgainInsideDaysAwayStaysPickedThroughALaterChangeMovingTheirFirstDayPastItsStop()
+    throws
+{
+    let places = Places()
+    let gym = commitment("Gym")
+    let run = commitment("Run")
+    let yoga = commitment("Yoga")
+    try takeOn([gym, run, yoga], at: places)
+    let saying = screen(places)
+    saying.sayDaysAway(
+        named: "Mallorca", from: date(2026, 10, 13), through: date(2026, 10, 18), over: [gym, run])
+    saying.sayDaysAway(
+        named: "Lisbon", from: date(2026, 10, 13), through: date(2026, 10, 18), over: [yoga])
+    let stopping = screen(places, asOf: date(2026, 10, 15))
+    stopKeeping(gym, on: stopping)
+    stopKeeping(yoga, on: stopping)
+    let commitments = screen(places, asOf: date(2026, 10, 16))
+    for stopped in commitments.stopped {
+        #expect(commitments.keepAgain(stopped) == nil)
+    }
+    let mallorca = try #require(commitments.daysAway.first { $0.title == "Mallorca" })
+    let lisbon = try #require(commitments.daysAway.first { $0.title == "Lisbon" })
+
+    let first = commitments.changeDaysAway(
+        mallorca, named: "Mallorca", from: date(2026, 10, 17), through: date(2026, 10, 18),
+        over: [gym, run])
+    let second = commitments.changeDaysAway(
+        lisbon, named: "Lisbon", from: date(2026, 10, 17), through: date(2026, 10, 18), over: [yoga])
+
+    #expect(first == nil)
+    #expect(second == nil)
+    #expect(commitments.daysAway.map(\.title) == ["Mallorca", "Lisbon"])
+    #expect(commitments.daysAway.map(\.daysInWords) == ["Sat 17 Oct – Sun 18 Oct", "Sat 17 Oct – Sun 18 Oct"])
+    #expect(commitments.daysAway.map { $0.commitments.map(\.name) } == [["Gym", "Run"], ["Yoga"]])
+    let roster = try RosterStore(at: places.roster).roster
+    for name in ["Gym", "Yoga"] {
+        for day in [13, 14, 19] {
+            #expect(isDue(name, on: date(2026, 10, day), in: roster))
+        }
+        for day in 15...18 {
+            #expect(!isDue(name, on: date(2026, 10, day), in: roster))
+        }
+    }
+}

@@ -67,7 +67,7 @@ the next.
 - [x] 7.11 a stopped commitment taken up again after days away moved past its stop owes, once they are removed, its days up to its stop and none before it was taken up again — catches the day dropped at a take-up-again
 - [x] 7.12 a commitment stopped while its days away are under way is kept until the day before them — the carried test of § 1.2; catches `leaveDaysAway` still run on begun days away
 - [x] 7.13 a commitment taken up again inside days away over it is taken up on the day after their last day, and stays remembered by them
-- [ ] 7.14 a commitment taken up again inside days away stays picked through a later change moving their first day past its stop — catches the change's take-out filter reading any day remembered as a stop, which drops a kept pick or refuses the only one as over no commitment
+- [x] 7.14 a commitment taken up again inside days away stays picked through a later change moving their first day past its stop — catches the change's take-out filter reading any day remembered as a stop, which drops a kept pick or refuses the only one as over no commitment
 
 ## 8. `commitment` — listing and removing
 
@@ -81,7 +81,7 @@ the next.
 
 - [x] 9.1 a roster store holding days away no roster could hold is refused — the carried test gains the place of two days away with one identity, and its fixtures are written in form 11, each days away remembering nothing
 - [x] 9.2 a roster kept before days away remembered a stop is read as remembering the later of their last day and the last day kept — the test gains the first place's change before its removal; catches the form-10 read left out, which the removal alone did not
-- [ ] 9.3 a roster store whose days away remember what no roster could is refused
+- [x] 9.3 a roster store whose days away remember what no roster could is refused
 
 ## 10. `restore`
 
@@ -100,8 +100,8 @@ the next.
 
 ## 13. The gates and the archive handover
 
-- [ ] 13.1 `openspec validate change-days-away --strict` exits 0, and `pnpm run checks` is clean but for any `check:budgets` warning the carried requirements already drew
-- [ ] 13.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing, its count and one on `origin/main` both read off runs and given in the PR body
+- [x] 13.1 `openspec validate change-days-away --strict` exits 0, and `pnpm run checks` is clean but for any `check:budgets` warning the carried requirements already drew
+- [x] 13.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing, its count and one on `origin/main` both read off runs and given in the PR body
 - [ ] 13.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 13.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked, W.7 included, and the walk comment's URL is in W.8. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `commitment` and `restore` move, gaining this delta's 39 new scenarios and losing the three retired in § 1.2, and no other spec file does. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 

@@ -93,7 +93,10 @@ struct RosterDocument: Codable {
     /// `daysAwayIntroducedInVersion`, and `nil` where the form carries them and these say
     /// something no roster could hold — over no commitment, over one `held` does not hold or one
     /// twice, named with what says nothing, sharing an identity with other days away, or sharing a day and
-    /// a commitment with other days away.
+    /// a commitment with other days away; and, from the form that carries what they remember, remembering
+    /// a commitment they are not over or one twice, a day before the day before their first day, or
+    /// nothing for a stopped commitment they are over. A form before it reads a day remembered for each
+    /// stopped commitment instead.
     private func formSpans(over entries: [Roster.Entry]) -> [Roster.Span]? {
         let held = Set(entries.map(\.commitment.identity))
         guard version >= Self.daysAwayIntroducedInVersion else {
