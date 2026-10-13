@@ -49,11 +49,13 @@ form as holding no idea given, writing nothing there on opening.
 #### Scenario: a present-idea store in its first form is read as holding no idea given
 
 - **WHEN** a present-idea store is opened at a place holding a store in the first form, holding the
-  idea "Book voucher" against the contact "kate"
-- **THEN** it opens without error, holding "Book voucher" against "kate", not given
-- **AND** the content at that place is byte-for-byte what it was before it was opened
-- **AND** once "Book voucher" is marked given at it, a store opened again at that place holds it
+  ideas "Book voucher" and "Scarf" against the contact "kate", the record of "Scarf" saying it is
+  given as a later form says so
+- **THEN** it opens without error, holding "Book voucher", then "Scarf", against "kate", neither
   given
+- **AND** the content at that place is byte-for-byte what it was before it was opened
+- **AND** once "Book voucher" is marked given at it, a store opened again at that place holds "Book
+  voucher", given, then "Scarf", not given
 
 ### Requirement: A Birthdays screen changes a line's idea where it stands, keeping its mark
 
@@ -65,14 +67,15 @@ link that is not a web address wherever making that idea is refused so, the idea
 
 #### Scenario: an idea changed through a Birthdays screen is kept where it stands, its mark with it
 
-- **WHEN** a present-idea place holds the ideas "Ceramics class voucher", "Hiking socks" and "Book
-  voucher" against the contact "kate", the last given; a Birthdays screen is opened at it as of
+- **WHEN** a present-idea place holds the ideas "Book voucher", "Hiking socks" and "Ceramics class
+  voucher" against the contact "kate", the first given; a Birthdays screen is opened at it as of
   Tuesday 13 October 2026 with birthdays on and a calendar handing the contact "kate"'s birthday
-  worded "Kate Bell's 48th Birthday" on 14 November 2026; and the second idea Kate's line gives back
-  is changed through it to the text "Hiking socks, size 38" with the link "bergzeit.ch/socks"
+  worded "Kate Bell's 48th Birthday" on 14 November 2026; and the first idea Kate's line gives back,
+  "Hiking socks", is changed through it to the text "Hiking socks, size 38" with the link
+  "bergzeit.ch/socks"
 - **THEN** the change is not refused
-- **AND** Kate's line gives back "Ceramics class voucher", then "Hiking socks, size 38" with the link
-  "https://bergzeit.ch/socks", then "Book voucher", given
+- **AND** Kate's line gives back "Hiking socks, size 38" with the link "https://bergzeit.ch/socks",
+  then "Ceramics class voucher", then "Book voucher", given
 - **AND** the third changed to the text "Book voucher, hardback" with an empty link is not refused,
   and Kate's line then gives back that idea third, given, and says "2 ideas"
 - **AND** a Birthdays screen opened afterwards at that place gives back the same ideas for Kate's
@@ -112,23 +115,24 @@ once, without its calendar being asked again. A confirmation with nothing awaiti
 - **AND** once the deletion is cancelled nothing awaits deletion
 - **AND** asked again and then shown again on that day, nothing awaits deletion, and a confirmation
   then does nothing
-- **AND** asked to delete the third idea Kate's line gives back, nothing awaits deletion
+- **AND** asked to delete the second idea again and then the third idea Kate's line gives back,
+  nothing awaits deletion, and a confirmation then does nothing
 - **AND** the content at that place is byte-for-byte what was read
 
 #### Scenario: a confirmed deletion removes the idea where it stood, and its line's count drops at once
 
-- **WHEN** a present-idea place holds the ideas "Ceramics class voucher", "Hiking socks, size 38" and
-  "Book voucher" against the contact "kate", the last given; a Birthdays screen is opened at it as of
-  Tuesday 13 October 2026 with birthdays on and a calendar that records every ask and hands,
+- **WHEN** a present-idea place holds the ideas "Book voucher", "Ceramics class voucher" and "Hiking
+  socks, size 38" against the contact "kate", the first given; a Birthdays screen is opened at it as
+  of Tuesday 13 October 2026 with birthdays on and a calendar that records every ask and hands,
   whatever it is asked for, the contact "kate"'s birthday worded "Kate Bell's 48th Birthday" on
-  14 November 2026; and it is asked to delete the first idea Kate's line gives back, and the
-  deletion is confirmed
+  14 November 2026; and it is asked to delete the first idea Kate's line gives back, "Ceramics class
+  voucher", and the deletion is confirmed
 - **THEN** the deletion is not refused, and nothing awaits deletion
 - **AND** Kate's line gives back "Hiking socks, size 38", then "Book voucher", given, and says
   "1 idea"
 - **AND** its calendar has been asked once in all
-- **AND** once "Book voucher" is deleted the same way, Kate's line gives back "Hiking socks, size 38"
-  alone and still says "1 idea"
+- **AND** once "Book voucher", the second idea Kate's line then gives back, is deleted the same way,
+  Kate's line gives back "Hiking socks, size 38" alone and still says "1 idea"
 - **AND** a Birthdays screen opened afterwards at that place gives back "Hiking socks, size 38" alone
   for Kate's line
 

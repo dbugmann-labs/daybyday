@@ -23,12 +23,12 @@ place a temporary one of the test's own.
 
 - [x] 3.1 a present-idea store opened again holds each idea as changed, deleted and marked — catches a change that drops the mark, or a deletion that reorders
 - [x] 3.2 a change, deletion or mark the present-idea store cannot keep is refused and not held — catches the held list replaced before the write
-- [x] 3.3 a change, deletion or mark naming no idea, or a mark already so, is refused without an error and leaves the place untouched — catches an out-of-range offset that traps, or a no-op rewrite
-- [x] 3.4 a present-idea store in its first form is read as holding no idea given — catches form 1 refused once form 2 ships, or rewritten on opening
-- [x] 3.5 an idea changed through a Birthdays screen is kept where it stands, its mark with it — catches a change appended last, or a given idea un-given by a typo fix
+- [x] 3.3 a change, deletion or mark naming no idea, or a mark already so, is refused without an error and leaves the place untouched — catches an out-of-range offset that traps, throws or is reported kept, or a write that changes the bytes; not a rewrite of identical bytes (`docs/open-questions.md`)
+- [x] 3.4 a present-idea store in its first form is read as holding no idea given — catches form 1 refused once form 2 ships, rewritten on opening, or its given flag read
+- [x] 3.5 an idea changed through a Birthdays screen is kept where it stands, its mark with it — catches the page's offset handed to the store, a change made as a delete and re-add, or a given idea un-given by a typo fix
 - [x] 3.6 a change whose text and link both say nothing, or whose link is not a web address, is refused and leaves the idea as it was — catches a blank change read as a delete
-- [x] 3.7 asking to delete an idea changes nothing until it is confirmed, and a cancel changes nothing — catches a delete on the ask
-- [x] 3.8 a confirmed deletion removes the idea where it stood, and its line's count drops at once — catches the count left until the next showing
+- [x] 3.7 asking to delete an idea changes nothing until it is confirmed, and a cancel changes nothing — catches a delete on the ask, or an ask naming no idea that leaves the last one awaiting
+- [x] 3.8 a confirmed deletion removes the idea where it stood, and its line's count drops at once — catches the count left until the next showing, or the page's offset deleting at the store
 - [x] 3.9 an idea marked given through a Birthdays screen is kept given past its contact's birthday, and its line's count drops at once — catches a mark cleared at the birthday
 - [x] 3.10 taking back an idea's mark through a Birthdays screen returns it where it was added, and its line's count rises at once — catches the screen's offset handed straight to the store
 - [x] 3.11 a change, deletion or mark a Birthdays screen cannot keep is refused as not kept and not held — catches a failed mark drawn as given
