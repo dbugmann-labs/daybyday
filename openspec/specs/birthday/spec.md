@@ -429,7 +429,7 @@ twice SHALL be listed twice. Reading what it lists SHALL ask nothing.
 - **AND** with Kate's birthday handed twice, it lists three lines, Kate's twice, and those two are
   the same line
 - **AND** with the contact "kate-2"'s birthday worded "Kate Bell's 48th Birthday" on 14 November 2026
-  handed as well, its line is the same line as Kate's
+  handed as well, it lists three lines, and Kate-2's line is not the same line as Kate's
 
 #### Scenario: a Birthdays screen takes a new today only when it is shown again
 
@@ -478,10 +478,10 @@ own to order them. No order of words SHALL put a line before a line of an earlie
 Each line SHALL say its birthday's words exactly as the calendar handed them, empty words included,
 and SHALL say its birthday's day: "Today" where that day is the screen's today, and otherwise the
 three-letter name of its weekday, the day of the month with no leading zero and the month's name in
-full, separated by single spaces and with no year, in this package's own words. A line SHALL be its
-words and its day in words and nothing else, so two lines alike in both SHALL be the same line. A
-line SHALL NOT give back its birthday's contact or whether that birthday is ticked, and a Birthdays
-screen SHALL offer no tick.
+full, separated by single spaces and with no year, in this package's own words. A line SHALL give
+back its birthday's contact, and SHALL be that contact, its words, its day in words and what it says
+of present ideas, and nothing else, so two lines alike in all four SHALL be the same line. A line
+SHALL NOT give back whether its birthday is ticked, and a Birthdays screen SHALL offer no tick.
 
 #### Scenario: a Birthdays screen line says the calendar's words exactly, and its day as weekday, day and month
 
