@@ -682,3 +682,40 @@ func daysAwayMovedPastTheLastDayAStoppedCommitmentWasKeptKeepItUntilTheDayBefore
     #expect(isDue("Run", on: date(2026, 10, 8), in: kept))
     #expect(!isDue("Run", on: date(2026, 10, 5), in: kept))
 }
+
+@MainActor
+@Test(
+    "days away moved wholly past the last day a stopped commitment was kept leave it out, and are refused where it was all they were over"
+)
+func daysAwayMovedWhollyPastTheLastDayAStoppedCommitmentWasKeptLeaveItOutAndAreRefusedWhereItWasAllTheyWereOver()
+    throws
+{
+    let places = Places()
+    let gym = commitment("Gym")
+    let run = commitment("Run")
+    try takeOn([gym, run], at: places)
+    let thursday1 = date(2026, 10, 1)
+    let saying = screen(places, asOf: thursday1)
+    saying.sayDaysAway(named: "Flu", from: thursday1, through: date(2026, 10, 3), over: [gym, run])
+    saying.sayDaysAway(
+        named: "Cold", from: date(2026, 9, 1), through: date(2026, 9, 2), over: [gym])
+    stopKeeping(gym, on: screen(places, asOf: date(2026, 10, 5)))
+    let commitments = screen(places)
+    let flu = try #require(commitments.pastDaysAway.first { $0.title == "Flu" })
+    let cold = try #require(commitments.pastDaysAway.first { $0.title == "Cold" })
+
+    let first = commitments.changeDaysAway(
+        cold, named: "Cold", from: date(2026, 10, 6), through: date(2026, 10, 8), over: [gym])
+    let second = commitments.changeDaysAway(
+        flu, named: "Flu", from: date(2026, 10, 6), through: date(2026, 10, 8), over: [gym, run])
+
+    #expect(first == .overNoCommitment)
+    #expect(second == nil)
+    #expect(commitments.pastDaysAway.map(\.title) == ["Flu", "Cold"])
+    #expect(commitments.pastDaysAway.map(\.daysInWords) == ["Tue 6 Oct – Thu 8 Oct", "Tue 1 Sep – Wed 2 Sep"])
+    #expect(commitments.pastDaysAway.map { $0.commitments.map(\.name) } == [["Run"], ["Gym"]])
+    #expect(rows(on: date(2026, 10, 2), at: places) == ["Gym", "Run"])
+    let kept = try RosterStore(at: places.roster).roster
+    #expect(kept.commitments(on: date(2026, 10, 4)).map(\.name).contains("Gym"))
+    #expect(!kept.commitments(on: date(2026, 10, 5)).map(\.name).contains("Gym"))
+}

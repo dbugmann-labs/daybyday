@@ -1055,6 +1055,12 @@ extension Roster {
             identity: identity, name: name, firstDay: first, lastDay: last, commitments: picked)
     }
 
+    /// The last day `commitment` was kept, or `nil` where it is kept still or this roster does not
+    /// hold it.
+    func lastDayKept(of commitment: Commitment) -> CalendarDate? {
+        entries.first { $0.commitment.identity == commitment.identity }?.keptUntil
+    }
+
     /// Whether an era of `identity` is kept until `day`, having begun on or before it: the commitment
     /// is kept through the first day of days away that begin there.
     func holdsAsLastDay(_ day: CalendarDate, _ identity: Commitment.Identity) -> Bool {

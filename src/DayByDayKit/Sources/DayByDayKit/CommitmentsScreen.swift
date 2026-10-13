@@ -125,6 +125,13 @@ public final class CommitmentsScreen {
         guard !commitments.isEmpty else {
             return refuseDaysAway(.overNoCommitment)
         }
+        // A stopped commitment the days away begin after the last day of leaves them.
+        let commitments = commitments.filter { commitment in
+            rosterStore.roster.lastDayKept(of: commitment).map { firstDay.days(until: $0) >= 0 } ?? true
+        }
+        guard !commitments.isEmpty else {
+            return refuseDaysAway(.overNoCommitment)
+        }
         if let refusal = judgeDaysAway(
             from: firstDay, through: lastDay, over: commitments, in: rosterStore.roster,
             besides: daysAway.identity)
@@ -697,7 +704,7 @@ public final class CommitmentsScreen {
         stopped = store.map { Self.stopped(in: $0.roster) } ?? []
         let said = store?.roster.daysAway ?? []
         daysAway = said.filter { dayToKeepFrom.days(until: $0.lastDay) >= 0 }
-        pastDaysAway = said.filter { dayToKeepFrom.days(until: $0.lastDay) < 0 }
+        pastDaysAway = said.filter { dayToKeepFrom.days(until: $0.lastDay) < 0 }.reversed()
     }
 
     /// Ends `refusedChange`, `stoppedRefusal` and `copyRestored`, which last alike: until the
