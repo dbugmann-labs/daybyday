@@ -728,7 +728,7 @@ func aPresentIdeaPlaceWrittenByALaterVersionMakesABirthdaysScreenThatSaysSo() as
     let place = freshIdeaPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"contacts":[],"version":2}"#.utf8).write(to: place)
+    try Data(#"{"contacts":[],"version":3}"#.utf8).write(to: place)
     let before = try Data(contentsOf: place)
     let screen = BirthdaysScreen(
         asOf: date(2026, 10, 13),

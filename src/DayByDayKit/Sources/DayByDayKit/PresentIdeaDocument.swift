@@ -4,7 +4,7 @@ import Foundation
 /// `BirthdayDocument` is. Contacts are written sorted, each contact's ideas in the order added,
 /// an absent part omitted. `design.md` § *Migration*.
 struct PresentIdeaDocument: Codable {
-    static let currentVersion = 1
+    static let currentVersion = 2
 
     var version: Int
     var contacts: [PresentIdeaContactRecord]
@@ -17,7 +17,7 @@ struct PresentIdeaDocument: Codable {
                 return nil
             }
             return PresentIdeaContactRecord(
-                contact: contact, ideas: held.map { PresentIdeaRecord(text: $0.text, link: $0.link) })
+                contact: contact, ideas: held.map { PresentIdeaRecord(text: $0.text, link: $0.link, given: $0.isGiven ? true : nil) })
         }
     }
 
@@ -56,6 +56,8 @@ struct PresentIdeaContactRecord: Codable {
 struct PresentIdeaRecord: Codable {
     var text: String?
     var link: String?
+    /// Written on a given idea only; absent or `false` reads as not given.
+    var given: Bool?
 
     /// The idea this record holds, or `nil` where `PresentIdea` would not keep the same parts.
     func formed() -> PresentIdea? {
@@ -64,6 +66,6 @@ struct PresentIdeaRecord: Codable {
         else {
             return nil
         }
-        return idea
+        return idea.marked(given: given == true)
     }
 }

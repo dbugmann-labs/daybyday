@@ -65,6 +65,29 @@ public final class BirthdaysScreen {
         return nil
     }
 
+    @discardableResult
+    public func changeIdea(
+        _ position: Int, of line: Line, text: String, link: String
+    ) -> PresentIdeaRefusal? {
+        nil
+    }
+
+    @discardableResult
+    public func markIdea(_ position: Int, of line: Line, given: Bool) -> PresentIdeaRefusal? {
+        nil
+    }
+
+    public private(set) var ideaAwaitingDeletion: PresentIdea?
+
+    public func askToDeleteIdea(_ position: Int, of line: Line) {}
+
+    public func cancelDeletingIdea() {}
+
+    @discardableResult
+    public func confirmDeletingIdea() -> PresentIdeaRefusal? {
+        nil
+    }
+
     /// A field of the idea sheet was edited: what was told about the last add ends.
     public func ideaFieldEdited() {
         ideaRefusal = nil
