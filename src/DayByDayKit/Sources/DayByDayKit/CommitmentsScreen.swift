@@ -125,9 +125,9 @@ public final class CommitmentsScreen {
         guard !commitments.isEmpty else {
             return refuseDaysAway(.overNoCommitment)
         }
-        // A stopped commitment the days away begin after the last day of leaves them.
+        // A stopped commitment the days away begin later than the day after its last day leaves them.
         let commitments = commitments.filter { commitment in
-            rosterStore.roster.lastDayKept(of: commitment).map { firstDay.days(until: $0) >= 0 } ?? true
+            rosterStore.roster.lastDayKept(of: commitment).map { firstDay.days(until: $0) >= -1 } ?? true
         }
         guard !commitments.isEmpty else {
             return refuseDaysAway(.overNoCommitment)
@@ -161,7 +161,7 @@ public final class CommitmentsScreen {
         return nil
     }
 
-    /// The last refusal of days away said or removed through this screen.
+    /// The last refusal of days away said, changed or removed through this screen.
     public private(set) var daysAwayRefusal: Refusal?
 
     /// The days away a removal has been asked for and not yet confirmed or cancelled.
@@ -267,7 +267,7 @@ public final class CommitmentsScreen {
         guard let history = recordStore?.history else {
             return nil
         }
-        for commitment in (kept + stopped) where commitments.contains(commitment) {
+        for commitment in rosterStore?.roster.inRosterOrder(commitments) ?? commitments {
             let under = already.flatMap { $0.commitments.contains(commitment) ? $0 : nil }
             // The first day of days away a commitment was kept through stays out of them unless that day
             // is where the new days away begin.

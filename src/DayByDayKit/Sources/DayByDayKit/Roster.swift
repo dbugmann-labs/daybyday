@@ -613,12 +613,13 @@ public struct Roster: Hashable, Sendable {
         return result
     }
 
-    /// The earlier of `lhs` and `rhs` — the one `mended(_:)` needs to cut a day kept until down
-    /// to whichever bound is tighter, never widening one already narrower than the fresh cut.
+    /// The later of `lhs` and `rhs`.
     private static func later(_ lhs: CalendarDate, _ rhs: CalendarDate) -> CalendarDate {
         lhs.days(until: rhs) > 0 ? rhs : lhs
     }
 
+    /// The earlier of `lhs` and `rhs` — the one `mended(_:)` needs to cut a day kept until down
+    /// to whichever bound is tighter, never widening one already narrower than the fresh cut.
     private static func earlier(_ lhs: CalendarDate, _ rhs: CalendarDate) -> CalendarDate {
         lhs.days(until: rhs) < 0 ? rhs : lhs
     }
@@ -1055,6 +1056,19 @@ extension Roster {
             identity: identity, name: name, firstDay: first, lastDay: last, commitments: picked)
     }
 
+    /// `commitments` in the order this roster holds them, those it does not hold last.
+    func inRosterOrder(_ commitments: [Commitment]) -> [Commitment] {
+        var held: [Commitment.Identity] = []
+        for entry in entries where !held.contains(entry.commitment.identity) {
+            held.append(entry.commitment.identity)
+        }
+        return commitments.enumerated().sorted { lhs, rhs in
+            let l = held.firstIndex(of: lhs.element.identity) ?? held.count
+            let r = held.firstIndex(of: rhs.element.identity) ?? held.count
+            return l != r ? l < r : lhs.offset < rhs.offset
+        }.map(\.element)
+    }
+
     /// The last day `commitment` was kept, or `nil` where it is kept still or this roster does not
     /// hold it.
     func lastDayKept(of commitment: Commitment) -> CalendarDate? {
@@ -1241,9 +1255,14 @@ extension Roster {
                     usualAmounts: b.usualAmounts)
             }
         case let (behind?, nil):
+            // A commitment stopped owes no day after the last day it was kept.
             let b = run[behind]
+            let until = run.first?.keptUntil.map { Self.earlier($0, last) } ?? last
+            guard b.keptUntil.map({ $0.days(until: until) > 0 }) ?? true else {
+                return
+            }
             run[behind] = Entry(
-                commitment: b.commitment, keptUntil: last, category: b.category,
+                commitment: b.commitment, keptUntil: until, category: b.category,
                 usualAmounts: b.usualAmounts)
         case let (nil, ahead?):
             let a = run[ahead]

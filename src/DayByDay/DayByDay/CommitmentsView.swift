@@ -173,17 +173,17 @@ private func stoppedRowRefusalText(_ refusal: CommitmentsScreen.Refusal) -> some
     }
 }
 
-/// Which commitment `CommitmentSheet` is open for — nothing, for a sheet that defines a new one,
-/// or the one it is open to change. `Identifiable` so `.sheet(item:)` can drive it directly, and
-/// so opening a second commitment while one sheet is already open (unreachable from this view
-/// today) still gets a sheet of its own identity rather than the first one's state reused under
-/// it.
 /// The days away the change sheet is opened on.
 private struct DaysAwayTarget: Identifiable {
     let daysAway: DaysAway
     var id: Int { daysAway.hashValue }
 }
 
+/// Which commitment `CommitmentSheet` is open for — nothing, for a sheet that defines a new one,
+/// or the one it is open to change. `Identifiable` so `.sheet(item:)` can drive it directly, and
+/// so opening a second commitment while one sheet is already open (unreachable from this view
+/// today) still gets a sheet of its own identity rather than the first one's state reused under
+/// it.
 private enum SheetTarget: Identifiable {
     case defining
     case changing(Commitment)

@@ -381,10 +381,8 @@ func aCommitmentChangedWhileAwayIsTakenUpOnItsNewRhythmWhereverTheDayBackMovesAn
         mallorca, named: "Mallorca", from: date(2026, 10, 13), through: date(2026, 10, 20),
         over: [gym])
     let afterLater = try roster(at: places)
-    // A screen for a day before they begin, which offers their removal.
-    let monday = screen(places)
-    monday.askToRemove(mallorca)
-    let removed = monday.confirmRemovingDaysAway()
+    thursday.askToRemove(mallorca)
+    let removed = thursday.confirmRemovingDaysAway()
     let afterRemoval = try roster(at: places)
 
     #expect(changed == nil)
@@ -485,6 +483,7 @@ func daysAwaySaidOverADayHoldingAnyRecordOfACommitmentPickedAreRefusedNamingItAn
     let journal = commitment("Journal", kind: .note)
     let water = commitment("Water", kind: .total(target: Commitment.Target(120)!))
     try takeOn([gym, run, creatine, weight, journal, water], at: places)
+    try RosterStore(at: places.roster).put(run, under: "Sport")
     let record = try RecordStore(at: places.record)
     let tuesday6 = date(2026, 10, 6)
     try record.add(Tick(run, on: date(2026, 10, 5))!)
@@ -681,6 +680,102 @@ func daysAwayMovedPastTheLastDayAStoppedCommitmentWasKeptKeepItUntilTheDayBefore
     #expect(!kept.commitments(on: date(2026, 10, 4)).map(\.name).contains("Gym"))
     #expect(isDue("Run", on: date(2026, 10, 8), in: kept))
     #expect(!isDue("Run", on: date(2026, 10, 5), in: kept))
+}
+
+@MainActor
+@Test(
+    "a stopped commitment kept until the day before days away stays picked through a later change of them, owing no day after its stop"
+)
+func aStoppedCommitmentKeptUntilTheDayBeforeDaysAwayStaysPickedThroughALaterChangeOfThemOwingNoDayAfterItsStop()
+    throws
+{
+    let places = Places()
+    let gym = commitment("Gym")
+    let run = commitment("Run")
+    try takeOn([gym, run], at: places)
+    let thursday1 = date(2026, 10, 1)
+    screen(places, asOf: thursday1).sayDaysAway(
+        named: "Flu", from: thursday1, through: date(2026, 10, 3), over: [gym, run])
+    stopKeeping(gym, on: screen(places, asOf: date(2026, 10, 5)))
+    let commitments = screen(places)
+    let flu = try #require(commitments.pastDaysAway.first)
+    #expect(
+        commitments.changeDaysAway(
+            flu, named: "Flu", from: thursday1, through: date(2026, 10, 7), over: [gym, run]) == nil)
+    let moved = try #require(commitments.pastDaysAway.first)
+
+    let renamed = commitments.changeDaysAway(
+        moved, named: "Fever", from: thursday1, through: date(2026, 10, 7), over: [gym, run])
+
+    #expect(renamed == nil)
+    #expect(commitments.pastDaysAway.map(\.title) == ["Fever"])
+    #expect(commitments.pastDaysAway.first?.commitments.map(\.name) == ["Gym", "Run"])
+    #expect(rows(on: date(2026, 10, 5), at: places) == [])
+    let kept = try RosterStore(at: places.roster).roster
+    #expect(kept.commitments(on: date(2026, 9, 30)).map(\.name).contains("Gym"))
+    #expect(!kept.commitments(on: thursday1).map(\.name).contains("Gym"))
+}
+
+@MainActor
+@Test("a commitment stopped before days away that is unpicked from them owes no day of them")
+func aCommitmentStoppedBeforeDaysAwayThatIsUnpickedFromThemOwesNoDayOfThem() throws {
+    let places = Places()
+    let gym = commitment("Gym")
+    let run = commitment("Run")
+    try takeOn([gym, run], at: places)
+    let thursday1 = date(2026, 10, 1)
+    screen(places, asOf: thursday1).sayDaysAway(
+        named: "Flu", from: thursday1, through: date(2026, 10, 3), over: [gym, run])
+    stopKeeping(gym, on: screen(places, asOf: date(2026, 10, 5)))
+    let commitments = screen(places)
+    let flu = try #require(commitments.pastDaysAway.first)
+    #expect(
+        commitments.changeDaysAway(
+            flu, named: "Flu", from: thursday1, through: date(2026, 10, 7), over: [gym, run]) == nil)
+    let moved = try #require(commitments.pastDaysAway.first)
+
+    #expect(
+        commitments.changeDaysAway(
+            moved, named: "Flu", from: thursday1, through: date(2026, 10, 7), over: [run]) == nil)
+
+    let kept = try RosterStore(at: places.roster).roster
+    #expect(kept.commitments(on: date(2026, 9, 30)).map(\.name).contains("Gym"))
+    #expect(!kept.commitments(on: thursday1).map(\.name).contains("Gym"))
+    #expect(rows(on: date(2026, 10, 5), at: places) == [])
+}
+
+@MainActor
+@Test(
+    "days away over nothing but a commitment stopped the day after them are renamed, and moved earlier, still over it"
+)
+func daysAwayOverNothingButACommitmentStoppedTheDayAfterThemAreRenamedAndMovedEarlierStillOverIt()
+    throws
+{
+    let places = Places()
+    let gym = commitment("Gym")
+    try takeOn([gym], at: places)
+    let thursday1 = date(2026, 10, 1)
+    let saturday3 = date(2026, 10, 3)
+    screen(places, asOf: thursday1).sayDaysAway(
+        named: "Flu", from: thursday1, through: saturday3, over: [gym])
+    stopKeeping(gym, on: screen(places, asOf: date(2026, 10, 4)))
+    let commitments = screen(places)
+    let flu = try #require(commitments.pastDaysAway.first)
+
+    let renamed = commitments.changeDaysAway(
+        flu, named: "Fever", from: thursday1, through: saturday3, over: [gym])
+    #expect(renamed == nil)
+    let fever = try #require(commitments.pastDaysAway.first)
+    let earlier = commitments.changeDaysAway(
+        fever, named: "Fever", from: date(2026, 9, 28), through: saturday3, over: [gym])
+
+    #expect(earlier == nil)
+    #expect(commitments.pastDaysAway.map(\.title) == ["Fever"])
+    #expect(commitments.pastDaysAway.map(\.daysInWords) == ["Mon 28 Sep – Sat 3 Oct"])
+    #expect(commitments.pastDaysAway.first?.commitments.map(\.name) == ["Gym"])
+    let kept = try RosterStore(at: places.roster).roster
+    #expect(kept.commitments(on: date(2026, 9, 27)).map(\.name).contains("Gym"))
+    #expect(!kept.commitments(on: date(2026, 9, 28)).map(\.name).contains("Gym"))
 }
 
 @MainActor
