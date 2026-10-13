@@ -279,3 +279,26 @@ func aUsualAmountADayScreenCannotAddOnARowChangesNothingAndTellsNothing() throws
     #expect(blind.notice == nil)
     #expect(try Data(contentsOf: unreadable.record) == Data("not what a record is written as".utf8))
 }
+
+@MainActor
+@Test("a take-back says a usual amount by its amount and never by its name")
+func aTakeBackSaysAUsualAmountByItsAmountAndNeverByItsName() throws {
+    let places = freshPlaces()
+    takeOn(
+        "Protein", target: "120",
+        usual: [Typed(amount: "20", name: ""), Typed(amount: "35", name: "Müesli")],
+        at: places.roster)
+    let screen = dayScreen(places)
+
+    try screen.enter("12", on: try #require(screen.dayView.rows.first))
+    let muesli = try #require(
+        try entry(screen, "Protein").usualAmounts.first { $0.name == "Müesli" })
+    try screen.add(muesli, on: try #require(screen.dayView.rows.first))
+
+    #expect(screen.dayView.rows[0].takeBackLastInWords(asOf: monday) == "Take back last (35)")
+
+    let plain = try #require(try entry(screen, "Protein").usualAmounts.first { $0.name == nil })
+    try screen.add(plain, on: try #require(screen.dayView.rows.first))
+
+    #expect(screen.dayView.rows[0].takeBackLastInWords(asOf: monday) == "Take back last (20)")
+}

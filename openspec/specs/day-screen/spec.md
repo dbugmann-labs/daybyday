@@ -1386,10 +1386,10 @@ A row SHALL offer, when asked as of a calendar date, taking its day's last addit
 where two things hold: it offers a total entry as of that day, and the day it is for holds at least
 one addition. Where either fails it SHALL offer no such thing. The take-back SHALL be a second thing
 the row offers, beside the entry, and MUST NOT be the entry's own gesture. Whether the day holds an
-addition SHALL be read off the day's sum being above zero, and this capability SHALL NOT ask for the
-additions themselves. A row that offers no take-back MUST NOT be hidden, MUST NOT be drawn as kept,
-and MUST NOT be given some other act in its place; it offers a total entry like every other total
-row and says its name, its rhythm and whether the day is kept.
+addition SHALL be read off the day's sum being above zero, and this capability SHALL NOT ask for any
+addition but the day's last. A row that offers no take-back MUST NOT be hidden, MUST NOT be drawn as
+kept, and MUST NOT be given some other act in its place; it offers a total entry like every other
+total row and says its name, its rhythm and whether the day is kept.
 
 #### Scenario: a row whose day holds an addition offers taking the last one back
 
@@ -1969,10 +1969,11 @@ day that due day went to or came from. Two rows SHALL be the same row when all o
 different when any one differs.
 
 Two rows of one commitment on one date SHALL be different rows where their days hold different
-numbers or notes, and SHALL be the same row where their days' additions differ but sum alike, a
-total row holding the day's sum and never its additions. A row SHALL hold only what its commitment's
-kind can put there, and every row but a total's SHALL hold a sum of zero, as a sum rather than
-nothing at all.
+numbers or notes, or additions summing differently or ending in different amounts, and SHALL be the
+same row where their days' additions differ but sum alike and end in the same amount, a total row
+holding the day's sum and its day's last addition and never the additions before it. A row SHALL
+hold only what its commitment's kind can put there, and every row but a total's SHALL hold a sum of
+zero, as a sum rather than nothing at all.
 
 #### Scenario: two rows for the same commitment and date saying the same thing are the same row
 
@@ -2065,10 +2066,26 @@ nothing at all.
 
 - **WHEN** two day views are formed on Monday 31 August 2026, each of a commitment named "Protein"
   of the total kind with a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept
-  from 1 January 2026, the first from a history holding additions of 30 and 30 for that commitment on
-  that date and the second from a history holding one addition of 60 for it on that date
+  from 1 January 2026, the first from a history holding additions of 30 and then 30 for that
+  commitment on that date and the second from a history holding additions of 10, then 20, then 30
+  for it on that date
 - **THEN** the two rows are the same row
 - **AND** the entry each offers says "60 of 120"
+- **AND** each, asked as of that same day, says the take-back words "Take back last (30)"
+
+#### Scenario: two rows whose days hold additions summing alike but ending in different amounts are different rows
+
+- **WHEN** two day views are formed on Monday 31 August 2026, each of a commitment named "Protein"
+  of the total kind with a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept
+  from 1 January 2026, the first from a history holding additions of 30 and then 30 for that
+  commitment on that date and the second from a history holding one addition of 60 for it on that
+  date
+- **THEN** the two rows are different rows
+- **AND** the entry each offers says "60 of 120"
+- **AND** the first, asked as of that same day, says the take-back words "Take back last (30)", and
+  the second "Take back last (60)"
+- **AND** a row formed the same way from a history holding additions of 30 and then 90 is a
+  different row from one formed from a history holding 90 and then 30
 
 #### Scenario: two weekly-quota rows alike in commitment, date and day but differing in standing are different rows
 
@@ -7662,3 +7679,84 @@ staying as it was.
   change could not be kept, naming no cause
 - **AND** declining that row with "Ill" is refused with an error and told on it the same way
 - **AND** its day view still holds the "Gym" row, declined with the reason "Away"
+
+### Requirement: A row says the amount its take-back would remove
+
+A row SHALL say, when asked as of a calendar date, the words of the take-back it offers:
+"Take back last", a space, and the amount of its day's last addition in round brackets, as in
+"Take back last (35)". It SHALL say them exactly where it offers taking its day's last addition
+back as of that day, and SHALL say no such words where it offers none. The amount SHALL be the last
+addition its day holds in the history its day view was formed from, and SHALL be said as its total
+entry says the day's sum, with no digit added and none dropped. The words SHALL name the amount
+alone and MUST NOT name a usual amount's name, and SHALL be this package's own English and no
+locale's. A day view formed again after a take-back SHALL say the addition made before the one
+taken back.
+
+#### Scenario: a row says the amount of its day's last addition in its take-back
+
+- **WHEN** a day view is formed on Monday 31 August 2026, of a commitment named "Protein" of the
+  total kind with a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, from a history holding additions of 35 and then 20 for that commitment on that
+  date, and its one row is asked as of that same day
+- **THEN** that row says the take-back words "Take back last (20)"
+- **AND** a row of a day view formed the same way but from a history holding additions of 20 and
+  then 35 says "Take back last (35)"
+
+#### Scenario: a take-back on a day screen leaves its row saying the addition made before it
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Protein" of the total kind with a target of 120, on a schedule
+  listing Monday, Wednesday and Saturday, kept from 1 January 2026; "35" and then "20" are committed
+  on the row it holds each time; and that row's last addition is then taken back
+- **THEN** the row the day screen then holds, asked as of that same day, says the take-back words
+  "Take back last (35)"
+- **AND** the entry it offers says "35 of 120"
+- **AND** taking back the last addition of the row it then holds leaves a row that says no
+  take-back words, whose entry says "0 of 120"
+- **AND** on a second such day screen at a fresh place, "30" committed twice and the last addition
+  taken back once leaves its row saying "Take back last (30)" and its entry "30 of 120"
+
+#### Scenario: a take-back says a decimal amount as the day's sum says it
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Protein" of the total kind with a target of 120, on a schedule
+  listing Monday, Wednesday and Saturday, kept from 1 January 2026, and "12.5" is committed on its
+  one row
+- **THEN** the row the day screen then holds, asked as of that same day, says the take-back words
+  "Take back last (12.5)", and its entry says "12.5 of 120"
+- **AND** committing "0000030.50" on the row it then holds leaves it saying "Take back last (30.5)"
+  and its entry "43 of 120"
+- **AND** committing "45,5" on the row it then holds leaves it saying "Take back last (45.5)" and
+  its entry "88.5 of 120"
+- **AND** on a second such day screen at a fresh place, a whole number of thirty-eight nines
+  committed leaves its row saying "Take back last (", that whole number of thirty-eight nines, and
+  ")"
+
+#### Scenario: a take-back says a usual amount by its amount and never by its name
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a record place where nothing has
+  been kept and a roster place holding a commitment named "Protein" of the total kind with a target
+  of 120, on a schedule listing all seven weekdays, kept from 1 January 2026, declaring a usual
+  amount of 20 with no name and one of 35 named "Müesli"; "12" is committed on its one row; and the
+  usual amount of 35 named "Müesli" the entry of the row it then holds says is added on that row
+- **THEN** the row the day screen then holds, asked as of that same day, says the take-back words
+  "Take back last (35)"
+- **AND** adding the usual amount of 20 with no name on the row it then holds leaves it saying
+  "Take back last (20)"
+
+#### Scenario: a row that offers no take-back says no take-back words
+
+- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no record,
+  of a commitment named "Protein" of the total kind with a target of 120, on a schedule listing
+  Monday, Wednesday and Saturday, kept from 1 January 2026, and its one row is asked as of that same
+  day
+- **THEN** that row says no take-back words
+- **AND** neither does a row of a day view formed the same way from a history an addition of 30 for
+  that commitment on that date was added to and then taken back from
+- **AND** neither do the rows of a day view formed on that date of a commitment named "Gym" of the
+  tick kind, one named "Weight" of the number kind with a range of 40 to 150 and one named
+  "Journal" of the note kind, alike in schedule and day kept from, from a history holding a tick
+  for "Gym", a number of 70.5 for "Weight" and a note holding "Ran 8k." for "Journal" on that date
+- **AND** the row of a day view formed on Wednesday 2 September 2026 from a history holding an
+  addition of 30 for "Protein" on that date says none asked as of Monday 31 August 2026, and says
+  "Take back last (30)" asked as of Wednesday 2 September 2026

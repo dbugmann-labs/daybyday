@@ -2979,15 +2979,106 @@ func twoRowsWhoseDaysHoldDifferentAdditionsSummingAlikeAreTheSameRow() {
     var historyWithTwoAdditions = History()
     historyWithTwoAdditions.add(Addition(30, for: protein, on: monday)!)
     historyWithTwoAdditions.add(Addition(30, for: protein, on: monday)!)
-    var historyWithOneAddition = History()
-    historyWithOneAddition.add(Addition(60, for: protein, on: monday)!)
+    var historyWithThreeAdditions = History()
+    historyWithThreeAdditions.add(Addition(10, for: protein, on: monday)!)
+    historyWithThreeAdditions.add(Addition(20, for: protein, on: monday)!)
+    historyWithThreeAdditions.add(Addition(30, for: protein, on: monday)!)
 
     let firstView = DayView(of: [protein], on: monday, in: historyWithTwoAdditions)
-    let secondView = DayView(of: [protein], on: monday, in: historyWithOneAddition)
+    let secondView = DayView(of: [protein], on: monday, in: historyWithThreeAdditions)
 
     #expect(firstView.rows[0] == secondView.rows[0])
     #expect(firstView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "60 of 120")
     #expect(secondView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "60 of 120")
+    #expect(firstView.rows[0].takeBackLastInWords(asOf: monday) == "Take back last (30)")
+    #expect(secondView.rows[0].takeBackLastInWords(asOf: monday) == "Take back last (30)")
+}
+
+@Test(
+    "two rows whose days hold additions summing alike but ending in different amounts are different rows"
+)
+func twoRowsWhoseDaysHoldAdditionsSummingAlikeButEndingInDifferentAmountsAreDifferentRows() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    func view(_ amounts: [Decimal]) -> DayView {
+        var history = History()
+        for amount in amounts {
+            history.add(Addition(amount, for: protein, on: monday)!)
+        }
+        return DayView(of: [protein], on: monday, in: history)
+    }
+
+    let twoThirties = view([30, 30])
+    let oneSixty = view([60])
+
+    #expect(twoThirties.rows[0] != oneSixty.rows[0])
+    #expect(twoThirties.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "60 of 120")
+    #expect(oneSixty.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "60 of 120")
+    #expect(twoThirties.rows[0].takeBackLastInWords(asOf: monday) == "Take back last (30)")
+    #expect(oneSixty.rows[0].takeBackLastInWords(asOf: monday) == "Take back last (60)")
+    #expect(view([30, 90]).rows[0] != view([90, 30]).rows[0])
+}
+
+@Test("a row says the amount of its day's last addition in its take-back")
+func aRowSaysTheAmountOfItsDaysLastAdditionInItsTakeBack() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    func view(_ amounts: [Decimal]) -> DayView {
+        var history = History()
+        for amount in amounts {
+            history.add(Addition(amount, for: protein, on: monday)!)
+        }
+        return DayView(of: [protein], on: monday, in: history)
+    }
+
+    #expect(view([35, 20]).rows[0].takeBackLastInWords(asOf: monday) == "Take back last (20)")
+    #expect(view([20, 35]).rows[0].takeBackLastInWords(asOf: monday) == "Take back last (35)")
+}
+
+@Test("a row that offers no take-back says no take-back words")
+func aRowThatOffersNoTakeBackSaysNoTakeBackWords() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule: Schedule = .weekdays([.monday, .wednesday, .saturday])
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 40, highest: 150)!))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+
+    let empty = DayView(of: [protein], on: monday, in: History())
+    #expect(empty.rows[0].takeBackLastInWords(asOf: monday) == nil)
+
+    var taken = History()
+    taken.add(Addition(30, for: protein, on: monday)!)
+    taken.removeLastAddition(for: protein, on: monday)
+    #expect(
+        DayView(of: [protein], on: monday, in: taken).rows[0].takeBackLastInWords(asOf: monday)
+            == nil)
+
+    var others = History()
+    others.add(Tick(gym, on: monday)!)
+    others.add(Number(70.5, for: weight, on: monday)!)
+    others.add(Note("Ran 8k.", for: journal, on: monday)!)
+    let otherRows = DayView(of: [gym, weight, journal], on: monday, in: others).rows
+    #expect(otherRows.count == 3)
+    #expect(otherRows.allSatisfy { $0.takeBackLastInWords(asOf: monday) == nil })
+
+    var later = History()
+    later.add(Addition(30, for: protein, on: wednesday)!)
+    let laterRow = DayView(of: [protein], on: wednesday, in: later).rows[0]
+    #expect(laterRow.takeBackLastInWords(asOf: monday) == nil)
+    #expect(laterRow.takeBackLastInWords(asOf: wednesday) == "Take back last (30)")
 }
 
 @Test("a day view handed commitments with no grouping holds one group with no category")
