@@ -10,7 +10,7 @@ the next.
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 26 new scenarios uncovered and no other
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 26 new scenarios uncovered and no other
 - [ ] 1.2 The carried edits, the only sanctioned ones, each listed with its before and after in the PR body: the tests of "days away from a day already gone, ending before they begin, or over nothing are refused and keep nothing", "days away leave the list once their last day has passed and stay at the roster place" and "days away already begun offer no removal, and asking to remove them does nothing" are deleted; the four tests of § 3.3, § 8.1, § 8.3 and § 9.1 gain the clause their scenario gained; `CommitmentsView`'s `.firstDayHasPassed` case goes
 
 ## 2. The seam and the roster
