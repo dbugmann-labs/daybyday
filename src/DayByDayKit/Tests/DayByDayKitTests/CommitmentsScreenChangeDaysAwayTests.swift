@@ -354,3 +354,55 @@ func aFirstDayMovedEarlierTakesDaysAlreadyGoneAndMovedLaterGivesDaysBackOnTheRhy
     #expect(!isDue("Gym", on: date(2026, 10, 13), in: afterLater))
     #expect(!isDue("Gym", on: date(2026, 10, 17), in: afterLater))
 }
+
+@MainActor
+@Test(
+    "a commitment changed while away is taken up on its new rhythm wherever the day back moves, and keeps it once the days away are removed"
+)
+func aCommitmentChangedWhileAwayIsTakenUpOnItsNewRhythmWhereverTheDayBackMovesAndKeepsItOnceTheDaysAwayAreRemoved()
+    throws
+{
+    let places = Places()
+    let gym = commitment("Gym", gymSchedule)
+    try takeOn([gym], at: places)
+    screen(places).sayDaysAway(
+        named: "Mallorca", from: date(2026, 10, 13), through: date(2026, 10, 18), over: [gym])
+    let thursday = screen(places, asOf: date(2026, 10, 15))
+    let made = try #require(thursday.whatItIsMadeOf(gym))
+    let changed = thursday.change(
+        gym, toName: "Gym", on: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]), keptFrom: made.keptFrom, under: nil)
+    let mallorca = try #require(thursday.daysAway.first)
+
+    let earlier = thursday.changeDaysAway(
+        mallorca, named: "Mallorca", from: date(2026, 10, 13), through: date(2026, 10, 16),
+        over: [gym])
+    let afterEarlier = try roster(at: places)
+    let later = thursday.changeDaysAway(
+        mallorca, named: "Mallorca", from: date(2026, 10, 13), through: date(2026, 10, 20),
+        over: [gym])
+    let afterLater = try roster(at: places)
+    // A screen for a day before they begin, which offers their removal.
+    let monday = screen(places)
+    monday.askToRemove(mallorca)
+    let removed = monday.confirmRemovingDaysAway()
+    let afterRemoval = try roster(at: places)
+
+    #expect(changed == nil)
+    #expect(earlier == nil)
+    #expect(later == nil)
+    #expect(removed == nil)
+    #expect(isDue("Gym", on: date(2026, 10, 17), in: afterEarlier))
+    #expect(isDue("Gym", on: date(2026, 10, 18), in: afterEarlier))
+    #expect(!isDue("Gym", on: date(2026, 10, 15), in: afterEarlier))
+    #expect(!isDue("Gym", on: date(2026, 10, 16), in: afterEarlier))
+    #expect(isDue("Gym", on: date(2026, 10, 21), in: afterLater))
+    #expect(isDue("Gym", on: date(2026, 10, 22), in: afterLater))
+    for day in [17, 18, 19] {
+        #expect(!isDue("Gym", on: date(2026, 10, day), in: afterLater))
+    }
+    for day in [14, 19, 22] {
+        #expect(isDue("Gym", on: date(2026, 10, day), in: afterRemoval))
+    }
+    #expect(!isDue("Gym", on: date(2026, 10, 15), in: afterRemoval))
+    #expect(!isDue("Gym", on: date(2026, 10, 20), in: afterRemoval))
+}
