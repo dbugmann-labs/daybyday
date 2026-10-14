@@ -48,8 +48,8 @@ screen tests go in `DayScreenBirthdayTests.swift` and Birthdays screen tests in
 
 - [x] 6.1 `openspec validate find-a-birthday-from-the-day --strict` exits 0, and `pnpm run checks` is clean
 - [x] 6.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with ten more tests than a run on `origin/main` reports, both read off runs
-- [ ] 6.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
-- [ ] 6.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked — W.3–W.6 by the conductor on the G7 approval — and W.7 holds the walk comment's URL and the commit to install. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/birthday/spec.md` gains five requirements and twelve scenarios, changes one requirement in place and loses the commitments screen's way-in requirement with its two scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
+- [x] 6.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
+- [x] 6.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked — W.3–W.6 by the conductor on the G7 approval — and W.7 holds the walk comment's URL and the commit to install. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/birthday/spec.md` gains five requirements and twelve scenarios, changes one requirement in place and loses the commitments screen's way-in requirement with its two scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 
@@ -59,8 +59,8 @@ them on in Settings first.
 
 - [x] W.1 The day screen on today, birthdays off — the trailing capsule holds Commitments and Settings and no gift.
 - [x] W.2 The commitments screen, birthdays off — no gift left of its ⇅ + capsule.
-- [ ] W.3 phone: the day screen paged a few days back — the gift leads the trailing capsule; tapped, the Birthdays screen lists from today, soonest first, the search field at its foot.
-- [ ] W.4 phone: a few letters of a surname typed, then the same name without its accent where one has one — the list narrows to the lines holding them, each line drawn as before.
-- [ ] W.5 phone: letters nobody's name holds typed — "Nobody matches “…”." in a card, quoting them, the field still at the foot.
-- [ ] W.6 phone: a search typed, a person's line opened and backed out of — the search and the narrowed list still there; the screen left and opened again — the field empty and the whole list.
+- [x] W.3 phone: the day screen paged a few days back — the gift leads the trailing capsule; tapped, the Birthdays screen lists from today, soonest first, the search field at its foot.
+- [x] W.4 phone: a few letters of a surname typed, then the same name without its accent where one has one — the list narrows to the lines holding them, each line drawn as before.
+- [x] W.5 phone: letters nobody's name holds typed — "Nobody matches “…”." in a card, quoting them, the field still at the foot.
+- [x] W.6 phone: a search typed, a person's line opened and backed out of — the search and the narrowed list still there; the screen left and opened again — the field empty and the whole list.
 - [x] W.7 **The handover** — W.1 and W.2, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back; the implementer ticks this on that comment's URL and names here the commit the human installs with `pnpm run phone` from this worktree to walk W.3–W.6 at G7. Posted at https://github.com/dbugmann-labs/daybyday/pull/428#issuecomment-6166985053; install `73ddb7a` with `pnpm run phone` from `/Users/digib/Coding/daybyday-find-a-birthday-from-the-day`.
