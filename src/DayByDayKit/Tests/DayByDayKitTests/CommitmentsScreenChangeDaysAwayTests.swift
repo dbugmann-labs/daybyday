@@ -1426,6 +1426,12 @@ func daysAwayMovedWhollyBeforeTheStopOfACommitmentTakenUpAgainInsideThemKeepItsT
     for day in [5, 10, 15, 16, 17, 18] { #expect(!isDue("Gym", on: date(2026, 10, day), in: afterBefore)) }
     #expect(isDue("Gym", on: date(2026, 10, 21), in: afterThird))
     for day in 15...20 { #expect(!isDue("Gym", on: date(2026, 10, day), in: afterThird)) }
+
+    commitments.askToRemove(try #require(commitments.daysAway.first))
+    #expect(commitments.confirmRemovingDaysAway() == nil)
+    let removed = try RosterStore(at: places.roster).roster
+    for day in [13, 14, 21] { #expect(isDue("Gym", on: date(2026, 10, day), in: removed)) }
+    for day in 15...20 { #expect(!isDue("Gym", on: date(2026, 10, day), in: removed)) }
 }
 
 @MainActor
