@@ -2545,6 +2545,13 @@ time first within a day and those with no time after them, with each note folded
 folds it. A happening with nothing noted says its name and "Nothing noted yet.", with no months and
 no count.
 
+**Amended 2026-10-14**, at the grooming grill of B-083. A number's page and a total's page each say
+one **average** as well as their graph, which takes out "no figure beside it" for a number's page:
+the reason given was that the latest number is the day screen's, and an average is not the latest
+number. Neither page gains a line or a whole. The picker that chooses a month, three months, a year
+or all now decides what the page says as well as what is in view, because the average is of the days
+in view; it still remembers nothing between visits.
+
 **Graph** — what a number commitment's **look-back** draws: one unbroken trace through its
 **points**, a point for each day that holds a number, over a dates axis running from the day it is
 **kept from** through today or through the day it was **kept until**. The days between two points
@@ -2587,6 +2594,15 @@ graph has a **point**, one trend point on each, so it invents nothing on a day n
 each averages the points the graph has in the seven days ending on its day, however few, so the
 first is its own number and one number is a trend. A number the record holds for a day of a **gap**
 is no point, and no trend point takes it in. It is never said as a number, only drawn.
+
+**Average** — the one figure a number or a total commitment's **look-back** says for where it
+usually sits: the values of the **points** its **graph** has among the days in view, summed and
+divided by how many they are. It takes in only what the graph draws as a point, so a day holding no
+number and a total's day with no **addition** are not zeros, and it crosses an **era** boundary the
+way the graph's trace does, because a new range or target does not change what a value means. Said
+in words, never drawn. Not the **trend**, which is a moving average drawn over the graph, one per
+point; the average is one figure for the whole span in view. A tick's, a quota's and a note's pages
+have none. Agreed 2026-10-14 at the grooming grill of B-083.
 
 **Target rule** — the horizontal mark across a total commitment's **graph** at the **target** each
 day was owed, running the whole dates axis, days with no point included, and labelled with that target. It follows the era

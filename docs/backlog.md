@@ -236,12 +236,56 @@ confirmed it as a gap rather than saying it unprompted.*
 - **Open** — does the rename sheet lose the place too? It was not measured at #379, and "both
   together" assumes it does.
 
+### B-084 — open the Birthdays screen from the day screen
+*Captured 2026-10-14.*
+
+> "Birthdays reachable from day screen, not commitments"
+
+- **Trigger** — on the day screen, wanting to see whose birthday is coming, and having to go
+  through Commitments to get there.
+- **Touches** — `birthday`. It reopens a call B-078 made (Decided 2026-10-12): the requirement *A
+  commitments screen offers the way to the Birthdays screen exactly while birthdays are on* puts the
+  way in on the commitments screen, and `CONTEXT.md` § *Birthdays screen* says "reached from the
+  **commitments screen**".
+- **Principle** — tested against *entered where you stand*: **passes.** The Birthdays screen is a
+  screen for looking and takes no tick, so a way in from the day screen puts no second screen into
+  the daily entry. Nothing in it congratulates anyone.
+- **Open** — does the way in move, as "not commitments" reads, or is it added beside the commitments
+  screen's? The day screen's toolbar already holds the ways into Commitments and Settings, so this is
+  a third.
+- **Open** — is it still drawn only while birthdays are on, as the commitments screen's is?
+
+### B-085 — find someone on the Birthdays screen by name
+*Captured 2026-10-14.*
+
+> "Birthdays searchable"
+
+- **Trigger** — on the Birthdays screen, looking for one person without scrolling a year of
+  birthdays in date order.
+- **Touches** — `birthday`, the Birthdays screen's list. No requirement and no want mentions
+  search anywhere.
+- **Principle** — tested against *five percent of seven things*: **fails.** It deepens a screen
+  that was built on 2026-10-12 and makes nothing new possible. Nothing in it congratulates anyone.
+- **Open** — the names only, or the present ideas kept against them as well?
+- **Open** — a search field, or is a list that never reaches a year ahead short enough to scroll?
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-10-14 — see what a number or a total usually comes to, on its look-back (B-083) → Story #424
+  `say-an-average` under `FEAT: look-back` (#271), under Epic #269. Captured and groomed in one
+  session, eight questions over two rounds, one fact agent, every answer as recommended. Taken thin
+  despite failing *five percent of seven things*: one **average**, said in words and never drawn, on
+  a number's page and a total's page, of the values the graph draws as points among the days in
+  view — so a day with no number and a total's day with no addition are not zeros, and the span
+  picker now decides what the page says, not only what is in view. It crosses an era boundary as
+  the trend does. The trend's "numbers only" is not reopened: that declined a total's *trend*, and
+  this is not one. `CONTEXT.md` gained **Average** and the **Look-back** entry lost "no figure beside
+  it". What an empty span says, how many digits, whether a total's average says its target, and the
+  layout are left to the Story grill.
 - 2026-10-13 — reach any past day from the day picker and the week strip, not only by swiping
   (B-082) → Story #419 `reach-any-past-day` under `FEAT: day-screen` (#27), reopened under Epic #1.
   The **reach**'s floor goes: the picker and the strip reach every past day to the calendar's end, as
@@ -249,9 +293,10 @@ months later.
   has no stop. ADR-1048's one reason, "a run of empty years", was wrong: those days are where a
   one-off of something done and an older happening's occurrence are entered, and birthdays are drawn
   there. The strip, not the picker, **marks the earliest day anything on the roster is kept from**,
-  stopped and removed commitments counted, against the conductor's recommendation of no mark; the
+  stopped commitments counted and deleted ones not, against the conductor's recommendation of no mark; the
   stock SwiftUI picker cannot mark a day, and replacing it with a `UICalendarView` was declined.
-  *Reach* is retired with no new term, and ADR-1048 is superseded. How the mark sits beside the
+  *Reach* is retired with no new term, and ADR-1048 is amended in place, not superseded, per
+  `docs/adr/README.md` (corrected at #419's grill). How the mark sits beside the
   days-away dot is the Story grill's layout round.
 - 2026-10-12 — see how much *Take back last* will remove before tapping it (B-081) → Story #413
   `say-the-last-addition` under `FEAT: day-screen` (#27), reopened under Epic #1. Captured and
@@ -1598,4 +1643,15 @@ found nothing.
     entering a one-off and older happenings, which the specs already allow on any past day. No G1,
     and presented at G2 by the conductor without `/to-tickets`, one Story under an existing
     Feature as B-081 was.
+  - **Not re-judged** — B-041, B-066, B-069, B-072, B-077; a targeted pass holds one entry.
+- 2026-10-14 — targeted pass over B-083 (`/atlas backlog B-083`), groomed on `chore/backlog` (PR #422)
+  in the session that captured it, `origin/main` at 7dcc6c2.
+  - **Sweep** — no silence. Since the B-082 pass `main` gained #420, #421 and #423; `present-idea` has
+    create, change and its retire settled, `restore` carries it, and #409's G7 added one known gap to
+    `docs/open-questions.md` (an unchanged present-idea edit is not tested to leave the file
+    unwritten), a covering Story's and not a want.
+  - **Promoted** — B-083 → #424 under #271, no blocking edges, no edge with #403 though both delta
+    `look-back`; whichever is cut second rebases onto the first. The Decided line above has what the
+    grill settled. No G1, and presented at G2 by the conductor without `/to-tickets`, one Story under
+    an existing Feature as B-081 and B-082 were.
   - **Not re-judged** — B-041, B-066, B-069, B-072, B-077; a targeted pass holds one entry.
