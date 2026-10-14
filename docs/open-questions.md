@@ -232,16 +232,21 @@ Things that are built, or deliberately not built, in a state someone will trip o
   back SHALL give back what it took*. The record is never unreadable and nothing is lost; the
   day shows as owed and empty. The cure is the model, not another patch — see *Whether days away
   are laid over a commitment's life rather than cut into it* above. The owner shipped #402 with it.
-- **A take-up made through a screen opened as of an earlier day can leave a day owed under days
-  away.** Taking a commitment up through a screen opened as of a day before its stop forgets the
+- **A stop or take-up made through a screen opened as of an earlier day can leave days away
+  giving back or owing the wrong days.** Taking a commitment up through a screen opened as of a day before its stop forgets the
   stop, which the delta sanctions, but leaves the stop's gap inside days away owed: Mallorca over
   Gym 13–18 Oct, Gym stopped as of the 15th and taken up as of the 12th, shows Gym due 13–18 while
   Mallorca still lists it, and moving Mallorca away and back takes those days off again. The shell
   always opens the screen as of today, so only a clock set back reaches it. `design.md` §
   *Own life* of `change-days-away` also still describes re-forming a commitment's whole life on
   every change, where the code cuts only the days newly hidden, the delta's own words; the two
-  agree while the eras are consistent. Found at #402's seventh G7 on 2026-10-14 and shipped with
-  it, for the same model question.
+  agree while the eras are consistent. A stop made through a screen opened as of a day before the
+  commitment's last take-up does the same: Run stopped as of the 18th, taken up as of the 34th,
+  under days away, then stopped again as of the 31st and a span removed, gains the 27th–30th when
+  another span is moved there and back (#402's property test, sequence 171; 369 is a second). Both
+  need the screen opened as of a day before an act already made, which the phone never does.
+  Found at #402's seventh G7 and in its fix round on 2026-10-14, and shipped with it for the same
+  model question.
 
 - **Nothing tests that a present-idea change, deletion or mark that changes nothing leaves the file
   unwritten.** `present-idea` says such an edit SHALL write nothing and leave the place untouched,
