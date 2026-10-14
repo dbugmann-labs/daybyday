@@ -11,9 +11,11 @@ import DayByDayKit
 struct BirthdaysView: View {
     let screen: BirthdaysScreen
     @FocusState private var searchFocused: Bool
-    /// Whether this screen is the one on top: a keyboard raised while another is drawn over it is
-    /// that screen's own.
-    @State private var shown = false
+    /// The line whose page is open. A line is a `Button` rather than a `NavigationLink` so the
+    /// search can be let go of before the push: a field still focused when this screen is covered
+    /// is handed the keyboard again on the way back, with the field under it and SwiftUI none the
+    /// wiser. The search text is the Kit's and is kept; only the focus is put down.
+    @State private var opened: BirthdaysScreen.Line?
 
     var body: some View {
         List {
@@ -39,48 +41,47 @@ struct BirthdaysView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(Array(screen.lines.enumerated()), id: \.offset) { _, line in
-                        NavigationLink {
-                            PresentIdeasView(screen: screen, line: line)
+                        Button {
+                            searchFocused = false
+                            opened = line
                         } label: {
-                            HStack(alignment: .firstTextBaseline, spacing: 12) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(line.words)
-                                    if let ideasInWords = line.ideasInWords {
-                                        Text(ideasInWords)
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
+                            // Drawn as the platform's own link drew a line: the chevron by hand,
+                            // centred, and the words laid out in a column as wide as the link's
+                            // label was, with the day let out to its right edge.
+                            HStack(spacing: 12) {
+                                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(line.words)
+                                        if let ideasInWords = line.ideasInWords {
+                                            Text(ideasInWords)
+                                                .font(.subheadline)
+                                                .foregroundStyle(.secondary)
+                                        }
                                     }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    Text(line.dayInWords)
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(1)
+                                        .fixedSize(horizontal: true, vertical: false)
+                                        .offset(x: 15)
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                Text(line.dayInWords)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                                    .fixedSize(horizontal: true, vertical: false)
+                                .padding(.trailing, 13)
+                                Image(systemName: "chevron.right")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(Color(.tertiaryLabel))
+                                    .accessibilityHidden(true)
+                                    .padding(.trailing, 2)
                             }
                         }
+                        .foregroundStyle(.primary)
                     }
                 }
             }
         }
         .navigationTitle("Birthdays")
         .navigationBarTitleDisplayMode(.large)
-        .onAppear { shown = true }
-        .onDisappear { shown = false }
-        // Coming back from a person's page, UIKit raises the keyboard again for the search it held
-        // when this screen was covered, yet SwiftUI neither knows the field is focused nor lifts the
-        // `.safeAreaInset` above the keyboard, so the field sat underneath it. A keyboard that
-        // rises while this screen is on top and its own field is not focused is that one: put it
-        // down, leaving the search and the narrowed list as they were. A tap on the field sets
-        // `searchFocused` first, so it is never put down.
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
-            if shown, !searchFocused {
-                // Next turn: resigned inside the notification, the restored responder takes the
-                // keyboard back.
-                DispatchQueue.main.async {
-                    UIApplication.shared.sendAction(
-                        #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                }
-            }
+        .navigationDestination(item: $opened) { line in
+            PresentIdeasView(screen: screen, line: line)
         }
         .safeAreaInset(edge: .bottom, spacing: 2) {
             if screen.offersSearch {

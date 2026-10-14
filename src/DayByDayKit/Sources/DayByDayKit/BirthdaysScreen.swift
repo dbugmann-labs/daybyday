@@ -34,11 +34,11 @@ public final class BirthdaysScreen {
     public private(set) var lines: [Line] = []
     public private(set) var birthdayState: BirthdayState = .off
     /// What has been typed to narrow the lines, as typed. Empty where nothing is typed, and
-    /// emptied by every forming that leaves nothing to search.
+    /// emptied by every forming that leaves nothing in `listed` to search.
     public private(set) var search: String = ""
 
-    /// Takes `text` as the search and narrows `lines` to the ones it matches. Ignored where the
-    /// screen offers no search.
+    /// Takes `text` as the search and forms `lines` again from `listed`, keeping the ones it
+    /// matches — so a shorter search lengthens them. Ignored where the screen offers no search.
     public func searchEdited(to text: String) {
         guard offersSearch else {
             return
@@ -271,8 +271,9 @@ public final class BirthdaysScreen {
         form(asOf: today)
     }
 
-    /// Forms the lines for `today` and, where they leave nothing to search, empties the search
-    /// too — it is held nowhere, so a search with no list under it is not kept.
+    /// Forms the lines for `today` and, where `listed` is left empty, empties the search too — it
+    /// is held nowhere, so a search with no list under it is not kept. A search that matches
+    /// nobody leaves `lines` empty and `listed` not, and is kept.
     private func form(asOf today: CalendarDate) {
         formLines(asOf: today)
         if listed.isEmpty {
