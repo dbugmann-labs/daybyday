@@ -57,10 +57,10 @@ W.1 and W.2 run on the simulator on a fresh install, where birthdays are off. Ev
 birthdays on is the phone's (`docs/open-questions.md`: no simulator here gets calendar access); turn
 them on in Settings first.
 
-- [ ] W.1 The day screen on today, birthdays off — the trailing capsule holds Commitments and Settings and no gift.
-- [ ] W.2 The commitments screen, birthdays off — no gift left of its ⇅ + capsule.
+- [x] W.1 The day screen on today, birthdays off — the trailing capsule holds Commitments and Settings and no gift.
+- [x] W.2 The commitments screen, birthdays off — no gift left of its ⇅ + capsule.
 - [ ] W.3 phone: the day screen paged a few days back — the gift leads the trailing capsule; tapped, the Birthdays screen lists from today, soonest first, the search field at its foot.
 - [ ] W.4 phone: a few letters of a surname typed, then the same name without its accent where one has one — the list narrows to the lines holding them, each line drawn as before.
 - [ ] W.5 phone: letters nobody's name holds typed — "Nobody matches “…”." in a card, quoting them, the field still at the foot.
 - [ ] W.6 phone: a search typed, a person's line opened and backed out of — the search and the narrowed list still there; the screen left and opened again — the field empty and the whole list.
-- [ ] W.7 **The handover** — W.1 and W.2, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back; the implementer ticks this on that comment's URL and names here the commit the human installs with `pnpm run phone` from this worktree to walk W.3–W.6 at G7.
+- [x] W.7 **The handover** — W.1 and W.2, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back; the implementer ticks this on that comment's URL and names here the commit the human installs with `pnpm run phone` from this worktree to walk W.3–W.6 at G7.
