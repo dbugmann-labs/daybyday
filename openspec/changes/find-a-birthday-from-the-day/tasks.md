@@ -35,14 +35,14 @@ screen tests go in `DayScreenBirthdayTests.swift` and Birthdays screen tests in
 
 ## 4. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 4.1 `ContentView` draws the gift first in the trailing capsule exactly while `screen.offersGoingToBirthdays`, opens `screen.birthdaysScreen()` and holds its destination on the day stack, as `design.md` § *The shell* says
-- [ ] 4.2 `CommitmentsView` draws no gift, and carries no Birthdays destination or parameter
-- [ ] 4.3 `BirthdaysView` draws the field at the foot while `screen.offersSearch` and `nobodyMatches` in the lines card, as § *The shell* and § *What the shell draws* say, with no `.searchable`, composing no string but "Search"
-- [ ] 4.4 `git diff --stat origin/main... -- src/DayByDay/` lists those three files alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
+- [x] 4.1 `ContentView` draws the gift first in the trailing capsule exactly while `screen.offersGoingToBirthdays`, opens `screen.birthdaysScreen()` and holds its destination on the day stack, as `design.md` § *The shell* says
+- [x] 4.2 `CommitmentsView` draws no gift, and carries no Birthdays destination or parameter
+- [x] 4.3 `BirthdaysView` draws the field at the foot while `screen.offersSearch` and `nobodyMatches` in the lines card, as § *The shell* and § *What the shell draws* say, with no `.searchable`, composing no string but "Search"
+- [x] 4.4 `git diff --stat origin/main... -- src/DayByDay/` lists those three files alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 5. The records
 
-- [ ] 5.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
+- [x] 5.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
 
 ## 6. The gates and the archive handover
 
