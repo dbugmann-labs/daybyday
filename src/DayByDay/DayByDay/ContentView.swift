@@ -702,7 +702,7 @@ struct ContentView: View {
                     }
                 }
             }
-            // Commitments and Settings, one trailing group — one capsule.
+            // The gift, Commitments and Settings, one trailing group — one capsule.
             ToolbarItemGroup(placement: .primaryAction) {
                 // The way to the Birthdays screen, first in the capsule, drawn exactly while the
                 // Kit offers it. The push sits on the stack above, never on this item: a

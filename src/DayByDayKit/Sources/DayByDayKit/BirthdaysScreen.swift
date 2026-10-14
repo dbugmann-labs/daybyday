@@ -33,7 +33,12 @@ public final class BirthdaysScreen {
 
     public private(set) var lines: [Line] = []
     public private(set) var birthdayState: BirthdayState = .off
+    /// What has been typed to narrow the lines, as typed. Empty where nothing is typed, and
+    /// emptied by every forming that leaves nothing to search.
     public private(set) var search: String = ""
+
+    /// Takes `text` as the search and narrows `lines` to the ones it matches. Ignored where the
+    /// screen offers no search.
     public func searchEdited(to text: String) {
         guard offersSearch else {
             return
@@ -266,9 +271,8 @@ public final class BirthdaysScreen {
         form(asOf: today)
     }
 
-    /// Asks the calendar once, for the days from `today` through the day before the same date a
-    /// year later — through 28 February where `today` is 29 February, and through the last
-    /// supported date where that day would fall past it.
+    /// Forms the lines for `today` and, where they leave nothing to search, empties the search
+    /// too — it is held nowhere, so a search with no list under it is not kept.
     private func form(asOf today: CalendarDate) {
         formLines(asOf: today)
         if listed.isEmpty {
@@ -276,6 +280,9 @@ public final class BirthdaysScreen {
         }
     }
 
+    /// Asks the calendar once, for the days from `today` through the day before the same date a
+    /// year later — through 28 February where `today` is 29 February, and through the last
+    /// supported date where that day would fall past it.
     private func formLines(asOf today: CalendarDate) {
         guard birthdaySwitch.isOn else {
             listed = []

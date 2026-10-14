@@ -1252,6 +1252,7 @@ func aDayScreenOpensTheBirthdaysScreenAsOfItsTodayWhicheverDayItIsShowingAndNone
     #expect(calendar.asks.last?.last == CalendarDate(year: 2027, month: 1, day: 19)!)
     #expect(
         opened?.lines.map { [$0.words, $0.dayInWords] } == [["Kate Bell's 48th Birthday", "Today"]])
+    #expect(screen.dayView.date == CalendarDate(year: 2026, month: 1, day: 19)!)
     #expect(screen.title == "Mon")
     #expect(screen.offersGoingBackToToday)
 
