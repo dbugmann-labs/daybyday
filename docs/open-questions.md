@@ -226,7 +226,9 @@ Things that are built, or deliberately not built, in a state someone will trip o
 - **Days away can make a stopped commitment owe a day inside its stop.** Days away remember only
   the stops they were over when said or changed, so a second span said inside the gap of a stop
   that only the first remembers does not know of that stop: removing it, or moving it there and
-  back, gives the commitment a day it was stopped on. Reproduced at #402's seventh G7 on
+  back, gives the commitment a day it was stopped on. The same holds when the span that remembers
+  the stop is the one moved, its take-up following its last day and stretching the stop's gap over
+  another span's days (#402's property test, sequence 122). Reproduced at #402's seventh G7 on
   2026-10-14: Run stopped on 16 Oct and taken up on 28 Oct, "A" said over 12–18 Oct, then "B" over
   24 Oct and removed, leaves Run owing 24 Oct, against *as though never said* and *a change moved
   back SHALL give back what it took*. The record is never unreadable and nothing is lost; the
