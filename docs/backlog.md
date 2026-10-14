@@ -236,6 +236,29 @@ confirmed it as a gap rather than saying it unprompted.*
 - **Open** — does the rename sheet lose the place too? It was not measured at #379, and "both
   together" assumes it does.
 
+### B-083 — see what a number or a total usually comes to, on its look-back
+*Captured 2026-10-14.*
+
+> "I want it to be possible to see the average of a total and a number commitment in the look-back
+> screen"
+
+- **Trigger** — reading a number's or a total's look-back, wanting one figure for where it usually
+  sits rather than reading it off the graph.
+- **Touches** — `look-back`, beside its **whole** (§ *A look-back says one whole across everything
+  since the day the commitment is kept from*), which a tick, a quota and a note get and a number and
+  a total do not. Not the **trend** (#369, Decided 2026-09-30): that is a moving average drawn over a
+  number's graph, a point per day, and it left totals out "since a total's target rule already says
+  what matters" — this want asks for a total's average by name, so it reopens that call for totals.
+- **Principle** — tested against *five percent of seven things*: **fails.** It deepens the number
+  and total look-backs, which #369's trend has already deepened once, and makes nothing new
+  possible. Nothing in it congratulates anyone.
+- **Open** — one figure across everything since the day it is kept from, as the whole is, or one
+  per month or per span shown?
+- **Open** — what is averaged: the days that hold a value only, or every day counted, a gap and an
+  empty day included? For a total, is an untouched day a zero?
+- **Open** — is it a figure in the text, or a level drawn across the graph as a total's target rule
+  is? And does a number's last trend point already answer it?
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
