@@ -23,6 +23,17 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 ## Open technical decisions
 
+- **Whether days away are laid over a commitment's life rather than cut into it.** Today saying
+  days away cuts a gap in each commitment's eras, and everything a removal or a change must give
+  back is remembered on the span: every stop and take-up it was over (#402, settled 16–18). Only
+  the span that saw a stop knows of it, and seven G7 reviews of #402 each found a hole in that
+  corner, the last one in the model itself (see *Known gaps*). The alternative is to keep each
+  commitment's own life whole and apply days away when the roster is read, so that removing or
+  moving a span cannot give back or take away anything but its own days, by construction. It is a
+  roster form change with a migration, and the every-N-days restart on the day back and a change
+  made while away (#402 settled 11) would be read rather than stored. Worth a Story of its own if
+  either known gap is met in use; the owner chose to ship #402 first on 2026-10-14.
+
 - **When an ADR number is claimed.** Today it is taken at Stage 4, when the file is written,
   and merged at Stage 9 — so two branches open at once can both write the same number and
   neither learns of it until a rebase conflicts in `docs/adr/README.md`. Story #11 hit it twice
@@ -212,6 +223,25 @@ Things that are built, or deliberately not built, in a state someone will trip o
   iPhone SE (3rd generation) the row grew to 2066 pt and the name could not be seen; on an iPhone 17
   Pro Max the name ran one letter per line. It is on `main`, and #425 left the line's
   layout as it was.
+- **Days away can make a stopped commitment owe a day inside its stop.** Days away remember only
+  the stops they were over when said or changed, so a second span said inside the gap of a stop
+  that only the first remembers does not know of that stop: removing it, or moving it there and
+  back, gives the commitment a day it was stopped on. Reproduced at #402's seventh G7 on
+  2026-10-14: Run stopped on 16 Oct and taken up on 28 Oct, "A" said over 12–18 Oct, then "B" over
+  24 Oct and removed, leaves Run owing 24 Oct, against *as though never said* and *a change moved
+  back SHALL give back what it took*. The record is never unreadable and nothing is lost; the
+  day shows as owed and empty. The cure is the model, not another patch — see *Whether days away
+  are laid over a commitment's life rather than cut into it* above. The owner shipped #402 with it.
+- **A take-up made through a screen opened as of an earlier day can leave a day owed under days
+  away.** Taking a commitment up through a screen opened as of a day before its stop forgets the
+  stop, which the delta sanctions, but leaves the stop's gap inside days away owed: Mallorca over
+  Gym 13–18 Oct, Gym stopped as of the 15th and taken up as of the 12th, shows Gym due 13–18 while
+  Mallorca still lists it, and moving Mallorca away and back takes those days off again. The shell
+  always opens the screen as of today, so only a clock set back reaches it. `design.md` §
+  *Own life* of `change-days-away` also still describes re-forming a commitment's whole life on
+  every change, where the code cuts only the days newly hidden, the delta's own words; the two
+  agree while the eras are consistent. Found at #402's seventh G7 on 2026-10-14 and shipped with
+  it, for the same model question.
 
 - **Nothing tests that a present-idea change, deletion or mark that changes nothing leaves the file
   unwritten.** `present-idea` says such an edit SHALL write nothing and leave the place untouched,
