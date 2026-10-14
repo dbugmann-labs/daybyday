@@ -46,7 +46,7 @@ struct LookBackView: View {
     let screen: CommitmentsScreen
     let commitment: Commitment
 
-    @State private var span: Span = .month
+    @State private var span: LookBack.Span = .month
     /// Whether a number's trend is drawn — off on every visit and untouched by a change of span,
     /// `design.md` § *The shell*. The only thing the shell decides about it.
     @State private var showsTrend = false
@@ -97,22 +97,14 @@ struct LookBackView: View {
 
     private var lookBack: LookBack? { screen.lookBack(at: commitment) }
 
-    /// The four spans the picker offers, grill decision 7 — each the longest calendar month,
-    /// quarter and year, so "Month" covers a month whichever month it is, and "All" the whole span
-    /// in the width. Shell drawing state, not a rule: `design.md` § *The shell rides this Story*.
-    private enum Span: String, CaseIterable, Hashable {
-        case month = "Month"
-        case threeMonths = "3 months"
-        case year = "Year"
-        case all = "All"
-
-        var lengthInDays: Int? {
-            switch self {
-            case .month: return 31
-            case .threeMonths: return 92
-            case .year: return 366
-            case .all: return nil
-            }
+    /// The picker's titles for the Kit's four spans — the only thing the shell keeps of them; the
+    /// lengths are `LookBack.Span.lengthInDays`'s. Shell drawing state, not a rule.
+    private func title(of span: LookBack.Span) -> String {
+        switch span {
+        case .month: "Month"
+        case .threeMonths: "3 months"
+        case .year: "Year"
+        case .all: "All"
         }
     }
 
@@ -171,9 +163,7 @@ struct LookBackView: View {
                 dateRow(label: "The whole", value: whole, valueFont: .body.monospacedDigit())
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 6)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
+        .lookBackCard()
     }
 
     @ViewBuilder
@@ -314,17 +304,19 @@ struct LookBackView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// The row above the graph card — grill decisions 6 and 7. The picker of spans shares it with
-    /// the "Trend" toggle, in button style, about 80pt wide beside the narrowed picker; the toggle
-    /// shows only where `graph.trend` is not empty, so a total's picker keeps the full row.
+    /// The section under the head card: the row above the graph card, then the graph card, then the
+    /// average card where the Kit has an average for the span. The picker of spans shares the row
+    /// with the "Trend" toggle (grill decisions 6 and 7 of `look-back-at-a-number`), in button style,
+    /// about 80pt wide beside the narrowed picker; the toggle shows only where `graph.trend` is not
+    /// empty, so a total's picker keeps the full row.
     /// "Month" is selected on opening (`span`'s default), and every span keeps the plot
     /// scrollable sideways. A change of span leaves the toggle as it was.
     @ViewBuilder
     private func graphSection(_ graph: LookBack.Graph) -> some View {
         HStack {
             Picker("Span", selection: $span) {
-                ForEach(Span.allCases, id: \.self) { span in
-                    Text(span.rawValue).tag(span)
+                ForEach(LookBack.Span.allCases, id: \.self) { span in
+                    Text(title(of: span)).tag(span)
                 }
             }
             .pickerStyle(.segmented)
@@ -338,6 +330,15 @@ struct LookBackView: View {
         }
 
         graphCard(graph)
+
+        // The average over the picked span, a card of its own under the graph's, drawn only where
+        // the Kit says one — `design.md` § *What the shell draws*.
+        if let average = graph.averageInWords(over: span) {
+            LookBackDateRow(
+                label: "Average", value: average, valueFont: .body.monospacedDigit()
+            )
+            .lookBackCard()
+        }
     }
 
     /// The graph card: the trace through `graph.points` in the label colour (never the accent,
@@ -1187,5 +1188,15 @@ private struct FoldMeasurer: View {
         // fits exactly at two lines must read as not cut, since folding it would show nothing an
         // opening tap could add.
         onMeasured(fullHeight > twoLineHeight + 1)
+    }
+}
+
+private extension View {
+    /// The card the head's dates and the average share: 16pt across, 6pt down, the grouped
+    /// secondary background in 12pt rounded corners.
+    func lookBackCard() -> some View {
+        padding(.horizontal, 16)
+            .padding(.vertical, 6)
+            .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 }
