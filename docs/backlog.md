@@ -236,45 +236,23 @@ confirmed it as a gap rather than saying it unprompted.*
 - **Open** — does the rename sheet lose the place too? It was not measured at #379, and "both
   together" assumes it does.
 
-### B-084 — open the Birthdays screen from the day screen
-*Captured 2026-10-14.*
-
-> "Birthdays reachable from day screen, not commitments"
-
-- **Trigger** — on the day screen, wanting to see whose birthday is coming, and having to go
-  through Commitments to get there.
-- **Touches** — `birthday`. It reopens a call B-078 made (Decided 2026-10-12): the requirement *A
-  commitments screen offers the way to the Birthdays screen exactly while birthdays are on* puts the
-  way in on the commitments screen, and `CONTEXT.md` § *Birthdays screen* says "reached from the
-  **commitments screen**".
-- **Principle** — tested against *entered where you stand*: **passes.** The Birthdays screen is a
-  screen for looking and takes no tick, so a way in from the day screen puts no second screen into
-  the daily entry. Nothing in it congratulates anyone.
-- **Open** — does the way in move, as "not commitments" reads, or is it added beside the commitments
-  screen's? The day screen's toolbar already holds the ways into Commitments and Settings, so this is
-  a third.
-- **Open** — is it still drawn only while birthdays are on, as the commitments screen's is?
-
-### B-085 — find someone on the Birthdays screen by name
-*Captured 2026-10-14.*
-
-> "Birthdays searchable"
-
-- **Trigger** — on the Birthdays screen, looking for one person without scrolling a year of
-  birthdays in date order.
-- **Touches** — `birthday`, the Birthdays screen's list. No requirement and no want mentions
-  search anywhere.
-- **Principle** — tested against *five percent of seven things*: **fails.** It deepens a screen
-  that was built on 2026-10-12 and makes nothing new possible. Nothing in it congratulates anyone.
-- **Open** — the names only, or the present ideas kept against them as well?
-- **Open** — a search field, or is a list that never reaches a year ahead short enough to scroll?
-
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-10-14 — open the Birthdays screen from the day screen (B-084), and find someone on it by name
+  (B-085) → one Story, #425 `find-a-birthday-from-the-day`, under `FEAT: birthday` (#322), reopened
+  with `EPIC: Birthdays` (#321). Seven questions over two rounds, after two fact agents; every answer
+  as recommended except one Story rather than two. The way in **moves** to the day screen and leaves
+  the commitments screen, drawn under the same rule as before — only while birthdays are on and full
+  calendar access holds. B-078's grill had inherited the commitments screen without a recorded
+  reason. A search matches a line's **words only**, never its present ideas, anywhere in them and
+  whatever the capitals and accents; a search that matches nobody says so with what was typed; it
+  holds across a line's ideas and clears on leaving the screen. B-085 fails *five percent of seven
+  things* and was taken anyway: the list is a year of every contact, uncapped, and a line is where an
+  idea is added. Where the way in sits on the day screen's toolbar is the Story grill's layout round.
 - 2026-10-14 — see what a number or a total usually comes to, on its look-back (B-083) → Story #424
   `say-an-average` under `FEAT: look-back` (#271), under Epic #269. Captured and groomed in one
   session, eight questions over two rounds, one fact agent, every answer as recommended. Taken thin
@@ -1655,3 +1633,14 @@ found nothing.
     grill settled. No G1, and presented at G2 by the conductor without `/to-tickets`, one Story under
     an existing Feature as B-081 and B-082 were.
   - **Not re-judged** — B-041, B-066, B-069, B-072, B-077; a targeted pass holds one entry.
+- 2026-10-14 — pass over 7 wants (B-041, B-066, B-069, B-072, B-077, B-084, B-085), groomed on
+  `chore/backlog`, recreated from `origin/main` 2a5e80e after #422 merged mid-pass.
+  - **Sweep** — no silence. Since the B-083 pass's sweep at 7dcc6c2, `main` gained only graph
+    regenerations.
+  - **Promoted** — **A**, B-084 and B-085 → #425 under #322, no blocking edges; the Decided line above
+    has what the grill settled. No G1, and presented at G2 by the conductor without `/to-tickets`,
+    one Story under an existing Feature as B-081 to B-083 were.
+  - **Not taken** — **B**, B-077: a commitments-screen redraw fix, still to ask for as a chore.
+    **C**, B-069: two weeks of system blue against the one week it waited for; saying blue is fine
+    drops it, and the owner has not said. B-072 a sitting of its own; B-041 waits on the deployment
+    target; B-066 waits for a cause.
