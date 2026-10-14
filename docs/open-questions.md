@@ -224,11 +224,14 @@ Things that are built, or deliberately not built, in a state someone will trip o
   Pro Max the name ran one letter per line. It is on `main`, and #425 left the line's
   layout as it was.
 - **Days away can make a stopped commitment owe a day inside its stop.** Days away remember only
-  the stops they were over when said or changed, so a second span said inside the gap of a stop
-  that only the first remembers does not know of that stop: removing it, or moving it there and
-  back, gives the commitment a day it was stopped on. The same holds when the span that remembers
-  the stop is the one moved, its take-up following its last day and stretching the stop's gap over
-  another span's days (#402's property test, sequence 122). Reproduced at #402's seventh G7 on
+  the stops they were over when said or changed, so wherever a commitment's record holds a stop's
+  gap that the days away over those days do not remember — none of them do, or only others — moving
+  or removing those days away gives the commitment a day it was stopped on. Three routes reach it:
+  a span said inside the gap of a stop that only another remembers; the remembering span moved,
+  its take-up following its last day over another span's days (#402's property test, sequence
+  122); and the remembering span removed, leaving its gap with no span to remember it, after which
+  another span moved onto those days and back gives them to the commitment (sequence 53, with the
+  clock moving forward). Reproduced at #402's seventh G7 on
   2026-10-14: Run stopped on 16 Oct and taken up on 28 Oct, "A" said over 12–18 Oct, then "B" over
   24 Oct and removed, leaves Run owing 24 Oct, against *as though never said* and *a change moved
   back SHALL give back what it took*. The record is never unreadable and nothing is lost; the
