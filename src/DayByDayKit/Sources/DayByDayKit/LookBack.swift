@@ -30,12 +30,45 @@ public struct LookBack: Hashable, Sendable {
         public let text: String
     }
 
+    /// The four spans the look-back's picker offers, and the number of newest days of a graph each
+    /// takes in — `design.md` § *The span crosses the seam*.
+    public enum Span: CaseIterable, Hashable, Sendable {
+        case month, threeMonths, year, all
+
+        public var lengthInDays: Int? {
+            switch self {
+            case .month: 31
+            case .threeMonths: 92
+            case .year: 366
+            case .all: nil
+            }
+        }
+    }
+
     /// A number commitment's numbers over its dates axis — `nil` for every other kind, and for a
     /// number holding none. `design.md` § *The seam*: `day` on a point and a month is a place in
     /// `days`, which says every calendar day of the span in words, so the shell can plot and
     /// scroll on plain integers and label any position without composing a date itself
     /// (ADR-1022).
     public struct Graph: Hashable, Sendable {
+        /// The average of the values of the points among the newest days of `span`, said to one
+        /// decimal place as a number is said — `nil` where the span holds no point. `design.md`
+        /// § *A method on the graph, not a stored figure*.
+        public func averageInWords(over span: Span) -> String? {
+            var among = points
+            if let length = span.lengthInDays {
+                let first = days.count - length
+                among = points.filter { $0.day >= first }
+            }
+            guard !among.isEmpty else {
+                return nil
+            }
+            var mean = among.reduce(0) { $0 + $1.value } / Decimal(among.count)
+            var rounded = Decimal()
+            NSDecimalRound(&rounded, &mean, 1, .plain)
+            return LookBackWords.number(rounded)
+        }
+
         public let days: [String]
         public let months: [Month]
         public let points: [Point]
