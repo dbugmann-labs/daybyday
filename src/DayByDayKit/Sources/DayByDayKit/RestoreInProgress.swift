@@ -1,7 +1,7 @@
 import Foundation
 
 /// The state a restore keeps beside the record place before it writes anything, and undoes if it
-/// stops before it is whole — mirroring `SaveInProgress`'s own place, but spanning all five
+/// stops before it is whole — mirroring `SaveInProgress`'s own place, but spanning all six
 /// places rather than two. `openspec/changes/restore-from-a-copy/design.md` § *Whole or nothing,
 /// across a stop* (ADR-1056): "Before it writes anything, a restore keeps a restore in progress
 /// beside the record place, in one atomic file. It holds the bytes that stood at the three places
@@ -68,10 +68,9 @@ struct RestoreInProgress: Codable {
     /// beside `recordPlace` holding what stood at the six places and at a save in progress, takes
     /// the save in progress away, writes the six places in the forms they write now, and takes
     /// the restore in progress away. Throws where any write fails; the six places and the save
-    /// in progress are then put back as they were,
-    /// and the restore in progress taken away — unless that itself fails, in which case the
-    /// restore in progress stands, for `undoTornRestore` to put right when the places are next
-    /// opened.
+    /// in progress are then put back as they were, and the restore in progress taken away —
+    /// unless that itself fails, in which case the restore in progress stands, for
+    /// `undoTornRestore` to put right when the places are next opened.
     ///
     /// `stoppingAfter` a number of the six writes — record first, then roster, then one-offs,
     /// then the birthday ticks, then the happenings, then the present ideas — stops after that

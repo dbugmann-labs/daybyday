@@ -272,8 +272,8 @@ public final class CopyPlace {
         let notRead: [CommitmentsScreen.StoreNotRead]
 
         /// Which of the six could not be read, in the fixed order record, roster, one-offs,
-        /// birthday ticks, happenings, present ideas — `AwaitingRestore.unreadable` reads off this:
-        /// the restore sheet says a count is missing, not why.
+        /// birthday ticks, happenings, present ideas — `AwaitingRestore.unreadable` reads off
+        /// this: the restore sheet says a count is missing, not why.
         var unreadable: [Copy.Store] { notRead.map(\.store) }
     }
 

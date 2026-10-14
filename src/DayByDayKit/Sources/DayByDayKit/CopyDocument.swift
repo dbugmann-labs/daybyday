@@ -46,11 +46,11 @@ struct CopyDocument: Codable {
     }
 
     /// Re-forms `moment`, and the record, the roster, the one-offs, the birthday ticks and the
-    /// happenings this document holds, through the same re-forming each of their own documents already
-    /// does. `nil` if the moment or any one of the six could not be formed. A document at form 1, from
-    /// before a copy held birthday ticks, forms as holding none — `design.md` § *The copy's form
-    /// moves to 2, and form 1 holds no ticks*; a document at form 2 or later with no birthday
-    /// ticks, or ticks that do not form, forms as `nil`.
+    /// happenings this document holds, through the same re-forming each of their own documents
+    /// already does. `nil` if the moment or any one of the six could not be formed. A document at
+    /// form 1, from before a copy held birthday ticks, forms as holding none — `design.md` §
+    /// *The copy's form moves to 2, and form 1 holds no ticks*; a document at form 2 or later
+    /// with no birthday ticks, or ticks that do not form, forms as `nil`.
     func formCopy() -> Copy? {
         guard let formedMoment = moment.moment() else {
             return nil
