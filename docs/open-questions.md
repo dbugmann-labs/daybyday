@@ -197,6 +197,16 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
+- **Coming back to the day screen with "New one-off" being typed in raises the keyboard over the
+  field.** Tap the field, open a screen the day screen pushes, and come back: UIKit gives the
+  keyboard back to the field, but the field is drawn underneath it, with no checkmark showing. That
+  was measured on an iOS 26.5 simulator at #425's G7 on 2026-10-14, coming back from the Birthdays
+  screen: the field's foot was at y=832 and the keyboard's top at y=583. Commitments raises the
+  keyboard the same way, but where the field sits there was not measured. It is older than #425,
+  and it is the same restore that hid the Birthdays search under the keyboard; #425 fixed that one
+  for its own screen only. The rename field at `ContentView.swift:2442` goes through the same
+  restore and was not tried.
+
 - **Nothing tests that a present-idea change, deletion or mark that changes nothing leaves the file
   unwritten.** `present-idea` says such an edit SHALL write nothing and leave the place untouched,
   and its scenarios check that by comparing the content byte-for-byte, which a rewrite of identical
