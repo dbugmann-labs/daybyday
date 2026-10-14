@@ -305,9 +305,10 @@ struct LookBackView: View {
     }
 
     /// The section under the head card: the row above the graph card, then the graph card, then the
-    /// average card where the Kit has an average for the span — grill decisions 6 and 7. The picker of spans shares it with
-    /// the "Trend" toggle, in button style, about 80pt wide beside the narrowed picker; the toggle
-    /// shows only where `graph.trend` is not empty, so a total's picker keeps the full row.
+    /// average card where the Kit has an average for the span. The picker of spans shares the row
+    /// with the "Trend" toggle (grill decisions 6 and 7 of `look-back-at-a-number`), in button style,
+    /// about 80pt wide beside the narrowed picker; the toggle shows only where `graph.trend` is not
+    /// empty, so a total's picker keeps the full row.
     /// "Month" is selected on opening (`span`'s default), and every span keeps the plot
     /// scrollable sideways. A change of span leaves the toggle as it was.
     @ViewBuilder
