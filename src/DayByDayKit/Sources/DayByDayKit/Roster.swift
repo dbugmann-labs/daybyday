@@ -1439,9 +1439,10 @@ extension Roster {
             }
             var remembering = span
             // Every remembered stop later than this one goes, as every era later than it does: a stop
-            // confirmed is added "not taken up", a roster store refuses stops out of order and a stop not
-            // taken up before another (I2, I3), and a stop is confirmed only of a commitment kept, so
-            // no later stop stays.
+            // confirmed is added "not taken up" (days away remember every stop), a roster store refuses
+            // stops out of order and a stop not taken up before another (I2, I3), and none is refused
+            // (every roster a commitments screen keeps is one a roster store reads), so no later stop
+            // can stay.
             var stops = (span.remembers[commitment.identity] ?? []).filter {
                 day.days(until: $0.day) <= 0
             }
@@ -1660,13 +1661,11 @@ private struct DayRanges {
 
     private init(normalizing stretches: [(first: CalendarDate, last: CalendarDate)]) {
         for stretch in stretches.sorted(by: { $0.first.days(until: $1.first) > 0 }) {
+            // A stretch beginning no later than the day after the last range — or than its own last day
+            // where the calendar holds no day after it — extends that range.
             if let last = ranges.last,
-                let dayAfter = last.last.adding(days: 1), dayAfter.days(until: stretch.first) <= 0
+                (last.last.adding(days: 1) ?? last.last).days(until: stretch.first) <= 0
             {
-                if last.last.days(until: stretch.last) > 0 {
-                    ranges[ranges.count - 1].last = stretch.last
-                }
-            } else if let last = ranges.last, last.last.days(until: stretch.first) <= 0 {
                 if last.last.days(until: stretch.last) > 0 {
                     ranges[ranges.count - 1].last = stretch.last
                 }
