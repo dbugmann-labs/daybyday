@@ -71,7 +71,7 @@ test named for it, watch it fail, make it pass, then the next.
 
 - [x] W.1 Settings with `present-ideas.json` replaced by a run of bytes, after *Make a copy* is tapped — *Your present ideas could not be read.* under it, and *Take out the files* with *Your present ideas could not be read.* as its caption.
 - [x] W.2 Settings' restore sheet for a copy made while `present-ideas.json` held two ideas, opened after a third was planted — *The copy* ends *2 present idea(s)*, *Your phone* ends *3 present idea(s)*.
-- [ ] W.3 phone: add an idea on a person's page, make a copy, delete the idea, restore that copy — the idea is back on the Birthdays screen, its count on its line.
+- [x] W.3 phone: add an idea on a person's page, make a copy, delete the idea, restore that copy — the idea is back on the Birthdays screen, its count on its line.
 - [x] W.4 **The handover** — W.1 and W.2, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL: https://github.com/dbugmann-labs/daybyday/pull/423#issuecomment-6152580505
 
 ## 12. Gates and the archive handover
