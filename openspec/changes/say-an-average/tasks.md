@@ -50,7 +50,7 @@ walk's roster already holds, kept from about six weeks back, holds a number on s
 weeks, the older days several units above the newest month's. A total "Protein", target 120, kept
 from a month back, holds additions on a few days of the last two weeks. The walk shows the card and
 that the span moves the figure; that Year reaches past three months is the kit's to prove, not the
-walk's (G7, finding 1).
+walk's.
 
 - [x] W.1 Weight's look-back at Month: under the graph card, one card saying "AVERAGE" left and a figure of at most one decimal place right.
 - [x] W.2 The same visit after tapping "Year": the average card saying a higher figure than W.1's, the older days now taken in.
