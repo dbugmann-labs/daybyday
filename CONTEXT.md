@@ -2555,6 +2555,10 @@ number. Neither page gains a line or a whole. The picker that chooses a month, t
 or all now decides what the page says as well as what is in view, because the average is of the days
 in view; it still remembers nothing between visits.
 
+**Amended 2026-10-14**, at the grill of `say-an-average` (#424). "In view" is the span's newest
+days, not wherever the graph has been scrolled: a month is the newest thirty-one days ending on the
+last day the look-back counts, and scrolling sideways changes nothing the page says.
+
 **Graph** — what a number commitment's **look-back** draws: one unbroken trace through its
 **points**, a point for each day that holds a number, over a dates axis running from the day it is
 **kept from** through today or through the day it was **kept until**. The days between two points
@@ -2599,13 +2603,22 @@ first is its own number and one number is a trend. A number the record holds for
 is no point, and no trend point takes it in. It is never said as a number, only drawn.
 
 **Average** — the one figure a number or a total commitment's **look-back** says for where it
-usually sits: the values of the **points** its **graph** has among the days in view, summed and
-divided by how many they are. It takes in only what the graph draws as a point, so a day holding no
+usually sits: the values of the **points** its **graph** has among the span's newest days, summed
+and divided by how many they are, and said to one decimal place. It takes in only what the graph draws as a point, so a day holding no
 number and a total's day with no **addition** are not zeros, and it crosses an **era** boundary the
 way the graph's trace does, because a new range or target does not change what a value means. Said
 in words, never drawn. Not the **trend**, which is a moving average drawn over the graph, one per
 point; the average is one figure for the whole span in view. A tick's, a quota's and a note's pages
 have none. Agreed 2026-10-14 at the grooming grill of B-083.
+
+**Span** — what the picker on a number's or a total's **look-back** chooses: a month, the newest
+thirty-one days of its **graph**; three months, the newest ninety-two; a year, the newest 366; or
+all, every day the graph has. It decides which days the graph opens on and which **points** its
+**average** takes in, and it is the same span for both, ending on the last day the look-back counts
+whatever has been scrolled. Opened at a month on every visit and remembering nothing. Not the dates
+a **days away** covers, which are that thing's own and nothing a look-back reads. Agreed 2026-10-14
+in writing the delta of `say-an-average` (#424), on the grill's answer that "in view" is the span's
+newest days.
 
 **Target rule** — the horizontal mark across a total commitment's **graph** at the **target** each
 day was owed, running the whole dates axis, days with no point included, and labelled with that target. It follows the era
