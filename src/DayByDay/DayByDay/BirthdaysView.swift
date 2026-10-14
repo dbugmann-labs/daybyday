@@ -10,6 +10,10 @@ import DayByDayKit
 /// unreadable place are drawn for the state it hands.
 struct BirthdaysView: View {
     let screen: BirthdaysScreen
+    @FocusState private var searchFocused: Bool
+    /// Whether this screen is the one on top: a keyboard raised while another is drawn over it is
+    /// that screen's own.
+    @State private var shown = false
 
     var body: some View {
         List {
@@ -60,6 +64,24 @@ struct BirthdaysView: View {
         }
         .navigationTitle("Birthdays")
         .navigationBarTitleDisplayMode(.large)
+        .onAppear { shown = true }
+        .onDisappear { shown = false }
+        // Coming back from a person's page, UIKit raises the keyboard again for the search it held
+        // when this screen was covered, yet SwiftUI neither knows the field is focused nor lifts the
+        // `.safeAreaInset` above the keyboard, so the field sat underneath it. A keyboard that
+        // rises while this screen is on top and its own field is not focused is that one: put it
+        // down, leaving the search and the narrowed list as they were. A tap on the field sets
+        // `searchFocused` first, so it is never put down.
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            if shown, !searchFocused {
+                // Next turn: resigned inside the notification, the restored responder takes the
+                // keyboard back.
+                DispatchQueue.main.async {
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                }
+            }
+        }
         .safeAreaInset(edge: .bottom, spacing: 2) {
             if screen.offersSearch {
                 searchField
@@ -79,6 +101,7 @@ struct BirthdaysView: View {
                 text: Binding(get: { screen.search }, set: { screen.searchEdited(to: $0) })
             )
             .autocorrectionDisabled()
+            .focused($searchFocused)
             .accessibilityIdentifier("BirthdaysSearch")
         }
         .padding(.horizontal, 14)
