@@ -236,29 +236,6 @@ confirmed it as a gap rather than saying it unprompted.*
 - **Open** — does the rename sheet lose the place too? It was not measured at #379, and "both
   together" assumes it does.
 
-### B-083 — see what a number or a total usually comes to, on its look-back
-*Captured 2026-10-14.*
-
-> "I want it to be possible to see the average of a total and a number commitment in the look-back
-> screen"
-
-- **Trigger** — reading a number's or a total's look-back, wanting one figure for where it usually
-  sits rather than reading it off the graph.
-- **Touches** — `look-back`, beside its **whole** (§ *A look-back says one whole across everything
-  since the day the commitment is kept from*), which a tick, a quota and a note get and a number and
-  a total do not. Not the **trend** (#369, Decided 2026-09-30): that is a moving average drawn over a
-  number's graph, a point per day, and it left totals out "since a total's target rule already says
-  what matters" — this want asks for a total's average by name, so it reopens that call for totals.
-- **Principle** — tested against *five percent of seven things*: **fails.** It deepens the number
-  and total look-backs, which #369's trend has already deepened once, and makes nothing new
-  possible. Nothing in it congratulates anyone.
-- **Open** — one figure across everything since the day it is kept from, as the whole is, or one
-  per month or per span shown?
-- **Open** — what is averaged: the days that hold a value only, or every day counted, a gap and an
-  empty day included? For a total, is an untouched day a zero?
-- **Open** — is it a figure in the text, or a level drawn across the graph as a total's target rule
-  is? And does a number's last trend point already answer it?
-
 ### B-084 — open the Birthdays screen from the day screen
 *Captured 2026-10-14.*
 
@@ -298,6 +275,17 @@ One line per entry that has left, newest first. This is the dedup index: `/atlas
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-10-14 — see what a number or a total usually comes to, on its look-back (B-083) → Story #424
+  `say-an-average` under `FEAT: look-back` (#271), under Epic #269. Captured and groomed in one
+  session, eight questions over two rounds, one fact agent, every answer as recommended. Taken thin
+  despite failing *five percent of seven things*: one **average**, said in words and never drawn, on
+  a number's page and a total's page, of the values the graph draws as points among the days in
+  view — so a day with no number and a total's day with no addition are not zeros, and the span
+  picker now decides what the page says, not only what is in view. It crosses an era boundary as
+  the trend does. The trend's "numbers only" is not reopened: that declined a total's *trend*, and
+  this is not one. `CONTEXT.md` gained **Average** and the **Look-back** entry lost "no figure beside
+  it". What an empty span says, how many digits, whether a total's average says its target, and the
+  layout are left to the Story grill.
 - 2026-10-13 — reach any past day from the day picker and the week strip, not only by swiping
   (B-082) → Story #419 `reach-any-past-day` under `FEAT: day-screen` (#27), reopened under Epic #1.
   The **reach**'s floor goes: the picker and the strip reach every past day to the calendar's end, as
@@ -1655,4 +1643,15 @@ found nothing.
     entering a one-off and older happenings, which the specs already allow on any past day. No G1,
     and presented at G2 by the conductor without `/to-tickets`, one Story under an existing
     Feature as B-081 was.
+  - **Not re-judged** — B-041, B-066, B-069, B-072, B-077; a targeted pass holds one entry.
+- 2026-10-14 — targeted pass over B-083 (`/atlas backlog B-083`), groomed on `chore/backlog` (PR #422)
+  in the session that captured it, `origin/main` at 7dcc6c2.
+  - **Sweep** — no silence. Since the B-082 pass `main` gained #420, #421 and #423; `present-idea` has
+    create, change and its retire settled, `restore` carries it, and #409's G7 added one known gap to
+    `docs/open-questions.md` (an unchanged present-idea edit is not tested to leave the file
+    unwritten), a covering Story's and not a want.
+  - **Promoted** — B-083 → #424 under #271, no blocking edges, no edge with #403 though both delta
+    `look-back`; whichever is cut second rebases onto the first. The Decided line above has what the
+    grill settled. No G1, and presented at G2 by the conductor without `/to-tickets`, one Story under
+    an existing Feature as B-081 and B-082 were.
   - **Not re-judged** — B-041, B-066, B-069, B-072, B-077; a targeted pass holds one entry.
