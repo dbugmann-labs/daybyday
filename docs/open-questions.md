@@ -206,6 +206,12 @@ Things that are built, or deliberately not built, in a state someone will trip o
   and it is the same restore that hid the Birthdays search under the keyboard; #425 fixed that one
   for its own screen only. The rename field at `ContentView.swift:2442` goes through the same
   restore and was not tried.
+- **At the largest text sizes a Birthdays line with a long name beside a long day squeezes the name
+  to nothing.** The line's words and its day share one row at every text size, so at accessibility
+  XL the day takes the width. Measured on an iOS 26.5 simulator at #425's G7 on 2026-10-14: on an
+  iPhone SE (3rd generation) the row grew to 2066 pt and the name could not be seen; on an iPhone 17
+  Pro Max the name ran one letter per line. It is on `main`, and #425 left the line's
+  layout as it was.
 
 - **Nothing tests that a present-idea change, deletion or mark that changes nothing leaves the file
   unwritten.** `present-idea` says such an edit SHALL write nothing and leave the place untouched,
