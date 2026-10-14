@@ -12,11 +12,14 @@ public struct Copy: Hashable, Sendable {
     public let oneOffs: OneOffs
     public let birthdayTicks: BirthdayTicks
     public let happenings: Happenings
+    /// Every present idea the present-idea place holds, given or not, against its contact.
+    public let presentIdeas: [String: [PresentIdea]]
 
     public init(
         moment: Moment, history: History, roster: Roster, oneOffs: OneOffs,
         birthdayTicks: BirthdayTicks = BirthdayTicks(),
-        happenings: Happenings = Happenings()
+        happenings: Happenings = Happenings(),
+        presentIdeas: [String: [PresentIdea]] = [:]
     ) {
         self.moment = moment
         self.history = history
@@ -24,13 +27,14 @@ public struct Copy: Hashable, Sendable {
         self.oneOffs = oneOffs
         self.birthdayTicks = birthdayTicks
         self.happenings = happenings
+        self.presentIdeas = presentIdeas
     }
 
-    /// Which of the five places a copy could not be read from — named on a refused copy so a
+    /// Which of the six places a copy could not be read from — named on a refused copy so a
     /// person is told which store to look at rather than merely that one could not be read.
     /// `openspec/changes/make-a-copy/design.md` § *The refusal is the screen's existing one, with
     /// one new cause*.
     public enum Store: Hashable, Sendable, CaseIterable {
-        case record, roster, oneOffs, birthdayTicks, happenings
+        case record, roster, oneOffs, birthdayTicks, happenings, presentIdeas
     }
 }

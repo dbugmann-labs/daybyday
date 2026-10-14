@@ -142,6 +142,13 @@ public final class DayScreen {
         recordPlace.deletingLastPathComponent().appendingPathComponent("happenings.json")
     }
 
+    /// The place a screen given no present-idea place of its own keeps its present ideas at: one
+    /// file, `present-ideas.json`, beside `recordPlace`. Where `recordPlace` is itself
+    /// `DayScreen.recordPlace`, this equals `BirthdaysScreen.presentIdeaPlace`.
+    nonisolated static func presentIdeaPlace(besideRecordAt recordPlace: URL) -> URL {
+        recordPlace.deletingLastPathComponent().appendingPathComponent("present-ideas.json")
+    }
+
     /// The place a screen given no birthday place of its own keeps its birthday ticks at: one
     /// file, `birthday-ticks.json`, beside `recordPlace` — whatever `recordPlace` is, real or a
     /// test's own temporary one. `design.md` § *A birthday place not given is the one beside the

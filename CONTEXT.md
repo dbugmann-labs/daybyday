@@ -1810,6 +1810,15 @@ still lists every birthday, with no count, adds no idea, leaves what is there un
 in one line, naming a file written by a later version as the others do. Agreed 2026-10-13 while
 writing the delta of `add-present-idea` (#408).
 
+**Amended 2026-10-13**, at the grill of `carry-present-ideas-in-a-copy` (#410). It is written by
+every change a person keeps to an idea — added, changed, deleted, marked given or the mark taken
+back — and each writes a copy at the **copy place**. A **restore** writes it too, whole or not at
+all, and a torn restore is undone there with the rest; a **take-out** carries its file. A Birthdays
+screen that cannot read it says that a copy can be restored, except where the file was written by a
+later version; a person's page does not. The **copy place** reads it beside the **record place**, as
+a torn restore is undone there; it is named last of the six wherever stores are named, and read on
+its own merits where a torn save or restore cannot be undone. Added while writing the delta.
+
 **Copy** — one file holding what the **record store**, the **roster store** and the one-off store
 hold at one moment, written for a person to keep somewhere the phone is not: their own files,
 another device, a folder they chose. It is the whole of a history and never part of one — a record
@@ -2159,6 +2168,11 @@ order it was added, and nothing else: no birthday's words, no day and nothing an
 It is the sixth store, at a place of its own, and it is in no **copy** until
 `carry-present-ideas-in-a-copy` (#410). It refuses whole what it cannot read, as the other five do.
 Agreed 2026-10-13 while writing the delta of `add-present-idea` (#408).
+
+**Amended 2026-10-13**, at the grill of `carry-present-ideas-in-a-copy` (#410). A **copy** now holds
+the present ideas, every one the store holds whether or not it is seen, and is refused whole where the
+**present-idea place** cannot be read, as for the other five; a **restore** puts them back and counts
+them, given and not given together, and a copy made before copies held them restores as holding none.
 
 **Happening store** — the store that keeps the **happenings**: each one's identity and name, in the
 order they were made, and nothing another store holds. It is the fifth store, at a place of its own,

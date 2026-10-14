@@ -1,7 +1,7 @@
 import Foundation
 
 /// The state a restore keeps beside the record place before it writes anything, and undoes if it
-/// stops before it is whole — mirroring `SaveInProgress`'s own place, but spanning all five
+/// stops before it is whole — mirroring `SaveInProgress`'s own place, but spanning all six
 /// places rather than two. `openspec/changes/restore-from-a-copy/design.md` § *Whole or nothing,
 /// across a stop* (ADR-1056): "Before it writes anything, a restore keeps a restore in progress
 /// beside the record place, in one atomic file. It holds the bytes that stood at the three places
@@ -23,6 +23,10 @@ struct RestoreInProgress: Codable {
     /// before restores wrote the happening place at all, told apart from a snapshot of a place
     /// that held nothing. `design.md` § *Migration*.
     var happenings: PlaceSnapshot?
+    /// The present-idea place's own snapshot — `nil` where this restore in progress was written
+    /// before restores wrote the present-idea place at all, told apart from a snapshot of a place
+    /// that held nothing. `design.md` § *Migration*.
+    var presentIdeas: PlaceSnapshot?
 
     /// Wraps a place's bytes, or that nothing stood there, so the outer `Data?` on
     /// `birthdayTicks` and `happenings` can carry a third meaning — "this restore in progress
@@ -59,28 +63,32 @@ struct RestoreInProgress: Codable {
         try bytes.write(to: place, options: .atomic)
     }
 
-    /// Restores `copy` at `recordPlace`, `rosterPlace`, `oneOffPlace`, `birthdayPlace` and `happeningPlace`, whole
-    /// or nothing: keeps a restore in progress beside `recordPlace` holding what stood at the
-    /// five places and at a save in progress, takes the save in progress away, writes the five
-    /// places in the forms they write now, and takes the restore in progress away. Throws where
-    /// any write fails; the five places and the save in progress are then put back as they were,
-    /// and the restore in progress taken away — unless that itself fails, in which case the
-    /// restore in progress stands, for `undoTornRestore` to put right when the places are next
-    /// opened.
+    /// Restores `copy` at `recordPlace`, `rosterPlace`, `oneOffPlace`, `birthdayPlace`,
+    /// `happeningPlace` and `presentIdeaPlace`, whole or nothing: keeps a restore in progress
+    /// beside `recordPlace` holding what stood at the six places and at a save in progress, takes
+    /// the save in progress away, writes the six places in the forms they write now, and takes
+    /// the restore in progress away. Throws where any write fails; the six places and the save
+    /// in progress are then put back as they were, and the restore in progress taken away —
+    /// unless that itself fails, in which case the restore in progress stands, for
+    /// `undoTornRestore` to put right when the places are next opened.
     ///
-    /// `stoppingAfter` a number of the five writes — record first, then roster, then one-offs,
-    /// then the birthday ticks, then the happenings — stops after that many have happened, leaving
-    /// the restore in progress standing and attempting no rollback: the test seam for a restore
-    /// stopped before it was whole, on the same footing `SaveInProgress.keep` is for a save torn mid-change.
-    /// `stoppingAfter: 5` stops with all five written, the restore in progress still standing —
-    /// the crash lands between the last write and the file being taken away.
+    /// `stoppingAfter` a number of the six writes — record first, then roster, then one-offs,
+    /// then the birthday ticks, then the happenings, then the present ideas — stops after that
+    /// many have happened, leaving the restore in progress standing and attempting no rollback:
+    /// the test seam for a restore stopped before it was whole, on the same footing
+    /// `SaveInProgress.keep` is for a save torn mid-change. `stoppingAfter: 6` stops with all six
+    /// written, the restore in progress still standing — the crash lands between the last write
+    /// and the file being taken away.
     static func restore(
         _ copy: Copy, recordAt recordPlace: URL, rosterAt rosterPlace: URL,
         oneOffsAt oneOffPlace: URL, birthdayTicksAt birthdayPlace: URL,
-        happeningsAt happeningPlace: URL? = nil, stoppingAfter writes: Int? = nil
+        happeningsAt happeningPlace: URL? = nil, presentIdeasAt presentIdeaPlace: URL? = nil,
+        stoppingAfter writes: Int? = nil
     ) throws {
         let happeningPlace =
             happeningPlace ?? DayScreen.happeningPlace(besideRecordAt: recordPlace)
+        let presentIdeaPlace =
+            presentIdeaPlace ?? DayScreen.presentIdeaPlace(besideRecordAt: recordPlace)
         let saveInProgressPlace = SaveInProgress.place(besideRecordAt: recordPlace)
         let restoreInProgressPlace = Self.place(besideRecordAt: recordPlace)
 
@@ -88,7 +96,8 @@ struct RestoreInProgress: Codable {
             record: bytes(at: recordPlace), roster: bytes(at: rosterPlace),
             oneOffs: bytes(at: oneOffPlace), saveInProgress: bytes(at: saveInProgressPlace),
             birthdayTicks: PlaceSnapshot(bytes: bytes(at: birthdayPlace)),
-            happenings: PlaceSnapshot(bytes: bytes(at: happeningPlace)))
+            happenings: PlaceSnapshot(bytes: bytes(at: happeningPlace)),
+            presentIdeas: PlaceSnapshot(bytes: bytes(at: presentIdeaPlace)))
 
         do {
             let encoder = JSONEncoder()
@@ -125,6 +134,9 @@ struct RestoreInProgress: Codable {
             try Self.put(try encoder.encode(document.happenings), at: happeningPlace)
 
             guard writes != 5 else { return }
+            try Self.put(try encoder.encode(document.presentIdeas), at: presentIdeaPlace)
+
+            guard writes != 6 else { return }
             try Self.put(nil, at: restoreInProgressPlace)
         } catch {
             do {
@@ -134,6 +146,7 @@ struct RestoreInProgress: Codable {
                 try Self.put(snapshot.saveInProgress, at: saveInProgressPlace)
                 try Self.put(snapshot.birthdayTicks?.bytes, at: birthdayPlace)
                 try Self.put(snapshot.happenings?.bytes, at: happeningPlace)
+                try Self.put(snapshot.presentIdeas?.bytes, at: presentIdeaPlace)
                 try Self.put(nil, at: restoreInProgressPlace)
             } catch {
                 // The restore in progress stands; `undoTornRestore` puts it right when the
@@ -154,10 +167,13 @@ struct RestoreInProgress: Codable {
     /// stands. `design.md` § *Migration*.
     static func undoTornRestore(
         recordAt recordPlace: URL, rosterAt rosterPlace: URL, oneOffsAt oneOffPlace: URL,
-        birthdayTicksAt birthdayPlace: URL, happeningsAt happeningPlace: URL? = nil
+        birthdayTicksAt birthdayPlace: URL, happeningsAt happeningPlace: URL? = nil,
+        presentIdeasAt presentIdeaPlace: URL? = nil
     ) -> Bool {
         let happeningPlace =
             happeningPlace ?? DayScreen.happeningPlace(besideRecordAt: recordPlace)
+        let presentIdeaPlace =
+            presentIdeaPlace ?? DayScreen.presentIdeaPlace(besideRecordAt: recordPlace)
         let place = Self.place(besideRecordAt: recordPlace)
 
         guard FileManager.default.fileExists(atPath: place.path) else {
@@ -183,6 +199,9 @@ struct RestoreInProgress: Codable {
             }
             if let happeningSnapshot = snapshot.happenings {
                 try Self.put(happeningSnapshot.bytes, at: happeningPlace)
+            }
+            if let presentIdeaSnapshot = snapshot.presentIdeas {
+                try Self.put(presentIdeaSnapshot.bytes, at: presentIdeaPlace)
             }
             try Self.put(nil, at: place)
         } catch {
