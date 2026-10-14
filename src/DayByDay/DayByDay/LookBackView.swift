@@ -163,9 +163,7 @@ struct LookBackView: View {
                 dateRow(label: "The whole", value: whole, valueFont: .body.monospacedDigit())
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 6)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
+        .lookBackCard()
     }
 
     @ViewBuilder
@@ -306,7 +304,8 @@ struct LookBackView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// The row above the graph card — grill decisions 6 and 7. The picker of spans shares it with
+    /// The section under the head card: the row above the graph card, then the graph card, then the
+    /// average card where the Kit has an average for the span — grill decisions 6 and 7. The picker of spans shares it with
     /// the "Trend" toggle, in button style, about 80pt wide beside the narrowed picker; the toggle
     /// shows only where `graph.trend` is not empty, so a total's picker keeps the full row.
     /// "Month" is selected on opening (`span`'s default), and every span keeps the plot
@@ -337,10 +336,7 @@ struct LookBackView: View {
             LookBackDateRow(
                 label: "Average", value: average, valueFont: .body.monospacedDigit()
             )
-            .padding(.horizontal, 16)
-            .padding(.vertical, 6)
-            .background(
-                Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
+            .lookBackCard()
         }
     }
 
@@ -1191,5 +1187,15 @@ private struct FoldMeasurer: View {
         // fits exactly at two lines must read as not cut, since folding it would show nothing an
         // opening tap could add.
         onMeasured(fullHeight > twoLineHeight + 1)
+    }
+}
+
+private extension View {
+    /// The card the head's dates and the average share: 16pt across, 6pt down, the grouped
+    /// secondary background in 12pt rounded corners.
+    func lookBackCard() -> some View {
+        padding(.horizontal, 16)
+            .padding(.vertical, 6)
+            .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 }
