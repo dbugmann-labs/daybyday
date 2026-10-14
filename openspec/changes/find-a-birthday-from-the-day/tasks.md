@@ -46,8 +46,8 @@ screen tests go in `DayScreenBirthdayTests.swift` and Birthdays screen tests in
 
 ## 6. The gates and the archive handover
 
-- [ ] 6.1 `openspec validate find-a-birthday-from-the-day --strict` exits 0, and `pnpm run checks` is clean
-- [ ] 6.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with ten more tests than a run on `origin/main` reports, both read off runs
+- [x] 6.1 `openspec validate find-a-birthday-from-the-day --strict` exits 0, and `pnpm run checks` is clean
+- [x] 6.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing with ten more tests than a run on `origin/main` reports, both read off runs
 - [ ] 6.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 6.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked — W.3–W.6 by the conductor on the G7 approval — and W.7 holds the walk comment's URL and the commit to install. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `openspec/specs/birthday/spec.md` gains five requirements and twelve scenarios, changes one requirement in place and loses the commitments screen's way-in requirement with its two scenarios, and no other spec file moves. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
