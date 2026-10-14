@@ -2147,11 +2147,14 @@ of `add-birthday` (#326).
 **Birthdays screen** — the screen that lists everyone the phone's birthday calendars hand, soonest
 first from today and round the year, so that it is where a **birthday** is seen coming: the day
 screen still draws a birthday on its day only, and nothing here notifies. It is reached from the
-**commitments screen**, and it is not drawn at all while birthdays are off, when what it would list
-is kept and nothing is shown. It is where a person's **present ideas** are kept and read, and the
-only place: a birthday row on its day stays a name and a tick. Agreed 2026-10-12 at the Feature
-grill of B-078, cluster B of the twenty-sixth pass; it reads the birthday calendar, so it is the
-`birthday` capability's (#322).
+**day screen**, and only from there, and it is not drawn at all while birthdays are off, when what
+it would list is kept and nothing is shown. It finds a person by name: what is typed is looked for
+anywhere in a line's words, whatever the capitals and accents, and never in the ideas. It is where a
+person's **present ideas** are kept and read, and the only place: a birthday row on its day stays a
+name and a tick. Agreed 2026-10-12 at the Feature grill of B-078, cluster B of the twenty-sixth
+pass; it reads the birthday calendar, so it is the `birthday` capability's (#322). Amended
+2026-10-14 at the grooming grill of B-084 and B-085: the way in moved off the **commitments
+screen**, which is for keeping commitments and not for looking.
 
 **Present idea** — something a person might be given, kept against someone the phone's birthday
 calendars hand: a short text, and a link if there is one. It is typed and read on the **Birthdays
