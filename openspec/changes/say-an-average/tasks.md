@@ -50,7 +50,7 @@ day, kept from about four months back, holds numbers on two or three days of eac
 months several units above the last one. A total "Protein", target 120, kept from a month back, holds
 additions on a few days of the last two weeks.
 
-- [ ] W.1 Weight's look-back at Month: under the graph card, one card saying "AVERAGE" left and a figure of at most one decimal place right.
-- [ ] W.2 The same visit after tapping "Year": the average card saying a higher figure than W.1's, the older months now taken in.
-- [ ] W.3 Protein's look-back at Month: no "Trend" button, the picker across the full row, and the average card saying a figure with no "of" and no target.
-- [ ] W.4 **The handover**: W.1–W.3, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, never with `gh pr comment --attach`, and this box is ticked on that comment's URL.
+- [x] W.1 Weight's look-back at Month: under the graph card, one card saying "AVERAGE" left and a figure of at most one decimal place right.
+- [x] W.2 The same visit after tapping "Year": the average card saying a higher figure than W.1's, the older months now taken in.
+- [x] W.3 Protein's look-back at Month: no "Trend" button, the picker across the full row, and the average card saying a figure with no "of" and no target.
+- [x] W.4 **The handover**: W.1–W.3, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, never with `gh pr comment --attach`, and this box is ticked on that comment's URL.
