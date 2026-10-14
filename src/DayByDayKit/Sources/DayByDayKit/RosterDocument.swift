@@ -130,23 +130,7 @@ struct RosterDocument: Codable {
                 // What days away remember: the stops of commitments they are over, each commitment's
                 // on strictly later days, only the last not taken up, and a take-up, or the day back
                 // it was made for, after its stop's day. Nothing is checked against the eras.
-                guard span.remembers.allSatisfy({ commitment, stops in
-                    span.commitments.contains(commitment)
-                        && stops.indices.allSatisfy { index in
-                            let stop = stops[index]
-                            let later = index == 0 || stops[index - 1].day.days(until: stop.day) > 0
-                            let takenUp = index == stops.count - 1 || stop.takeUp != nil
-                            let after: Bool
-                            switch stop.takeUp {
-                            case nil:
-                                after = true
-                            case .day(let day), .dayBack(madeFor: let day):
-                                after = stop.day.days(until: day) > 0
-                            }
-                            return later && takenUp && after
-                        }
-                })
-                else {
+                guard span.remembersWhatARosterMay else {
                     return nil
                 }
             } else {
