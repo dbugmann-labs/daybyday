@@ -259,6 +259,39 @@ confirmed it as a gap rather than saying it unprompted.*
 - **Open** — is it a figure in the text, or a level drawn across the graph as a total's target rule
   is? And does a number's last trend point already answer it?
 
+### B-084 — open the Birthdays screen from the day screen
+*Captured 2026-10-14.*
+
+> "Birthdays reachable from day screen, not commitments"
+
+- **Trigger** — on the day screen, wanting to see whose birthday is coming, and having to go
+  through Commitments to get there.
+- **Touches** — `birthday`. It reopens a call B-078 made (Decided 2026-10-12): the requirement *A
+  commitments screen offers the way to the Birthdays screen exactly while birthdays are on* puts the
+  way in on the commitments screen, and `CONTEXT.md` § *Birthdays screen* says "reached from the
+  **commitments screen**".
+- **Principle** — tested against *entered where you stand*: **passes.** The Birthdays screen is a
+  screen for looking and takes no tick, so a way in from the day screen puts no second screen into
+  the daily entry. Nothing in it congratulates anyone.
+- **Open** — does the way in move, as "not commitments" reads, or is it added beside the commitments
+  screen's? The day screen's toolbar already holds the ways into Commitments and Settings, so this is
+  a third.
+- **Open** — is it still drawn only while birthdays are on, as the commitments screen's is?
+
+### B-085 — find someone on the Birthdays screen by name
+*Captured 2026-10-14.*
+
+> "Birthdays searchable"
+
+- **Trigger** — on the Birthdays screen, looking for one person without scrolling a year of
+  birthdays in date order.
+- **Touches** — `birthday`, the Birthdays screen's list. No requirement and no want mentions
+  search anywhere.
+- **Principle** — tested against *five percent of seven things*: **fails.** It deepens a screen
+  that was built on 2026-10-12 and makes nothing new possible. Nothing in it congratulates anyone.
+- **Open** — the names only, or the present ideas kept against them as well?
+- **Open** — a search field, or is a list that never reaches a year ahead short enough to scroll?
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
