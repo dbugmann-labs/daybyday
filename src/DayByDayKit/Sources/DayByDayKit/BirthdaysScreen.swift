@@ -38,7 +38,7 @@ public final class BirthdaysScreen {
     public private(set) var search: String = ""
 
     /// Takes `text` as the search and forms `lines` again from `listed`, keeping the ones it
-    /// matches — so a shorter search lengthens them. Ignored where the screen offers no search.
+    /// matches — so a shorter search can lengthen them. Ignored where the screen offers no search.
     public func searchEdited(to text: String) {
         guard offersSearch else {
             return

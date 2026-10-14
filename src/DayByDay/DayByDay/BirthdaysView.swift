@@ -11,11 +11,6 @@ import DayByDayKit
 struct BirthdaysView: View {
     let screen: BirthdaysScreen
     @FocusState private var searchFocused: Bool
-    /// The line whose page is open. A line is a `Button` rather than a `NavigationLink` so the
-    /// search can be let go of before the push: a field still focused when this screen is covered
-    /// is handed the keyboard again on the way back, with the field under it and SwiftUI none the
-    /// wiser. The search text is the Kit's and is kept; only the focus is put down.
-    @State private var opened: BirthdaysScreen.Line?
 
     var body: some View {
         List {
@@ -41,48 +36,36 @@ struct BirthdaysView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(Array(screen.lines.enumerated()), id: \.offset) { _, line in
-                        Button {
-                            searchFocused = false
-                            opened = line
+                        NavigationLink {
+                            // The search is let go of as the page appears: a field still focused
+                            // when this screen is covered is handed the keyboard again on the way
+                            // back, with the field under it and SwiftUI none the wiser. The text is
+                            // the Kit's and is kept; only the focus is put down.
+                            PresentIdeasView(screen: screen, line: line)
+                                .onAppear { searchFocused = false }
                         } label: {
-                            // Drawn as the platform's own link drew a line: the chevron by hand,
-                            // centred, and the words laid out in a column as wide as the link's
-                            // label was, with the day let out to its right edge.
-                            HStack(spacing: 12) {
-                                HStack(alignment: .firstTextBaseline, spacing: 12) {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(line.words)
-                                        if let ideasInWords = line.ideasInWords {
-                                            Text(ideasInWords)
-                                                .font(.subheadline)
-                                                .foregroundStyle(.secondary)
-                                        }
+                            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(line.words)
+                                    if let ideasInWords = line.ideasInWords {
+                                        Text(ideasInWords)
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
                                     }
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    Text(line.dayInWords)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(1)
-                                        .fixedSize(horizontal: true, vertical: false)
-                                        .offset(x: 15)
                                 }
-                                .padding(.trailing, 13)
-                                Image(systemName: "chevron.right")
-                                    .font(.footnote.weight(.semibold))
-                                    .foregroundStyle(Color(.tertiaryLabel))
-                                    .accessibilityHidden(true)
-                                    .padding(.trailing, 2)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                Text(line.dayInWords)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                                    .fixedSize(horizontal: true, vertical: false)
                             }
                         }
-                        .foregroundStyle(.primary)
                     }
                 }
             }
         }
         .navigationTitle("Birthdays")
         .navigationBarTitleDisplayMode(.large)
-        .navigationDestination(item: $opened) { line in
-            PresentIdeasView(screen: screen, line: line)
-        }
         .safeAreaInset(edge: .bottom, spacing: 2) {
             if screen.offersSearch {
                 searchField
