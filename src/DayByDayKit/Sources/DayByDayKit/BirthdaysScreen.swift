@@ -33,6 +33,40 @@ public final class BirthdaysScreen {
 
     public private(set) var lines: [Line] = []
     public private(set) var birthdayState: BirthdayState = .off
+    public private(set) var search: String = ""
+    public func searchEdited(to text: String) {
+        guard offersSearch else {
+            return
+        }
+        search = text
+        lines = matchingLines()
+    }
+
+    /// `listed` with the idea counts added, keeping those whose words hold the search: the search
+    /// with the blank space around it disregarded, capitals and accents ignored, no locale
+    /// consulted. A search that says nothing keeps every line.
+    private func matchingLines() -> [Line] {
+        let wanted = Blank.trimmed(search)
+        return listed
+            .filter {
+                wanted.isEmpty
+                    || $0.words.range(of: wanted, options: [.caseInsensitive, .diacriticInsensitive])
+                        != nil
+            }
+            .map(withIdeas)
+    }
+    /// Whether this screen offers a search: exactly while, holding none, it would list a line.
+    public var offersSearch: Bool { !listed.isEmpty }
+
+    /// What this screen says where its search says something and matches no line, quoting the
+    /// search without the blank space around it; `nil` otherwise.
+    public var nobodyMatches: String? {
+        let wanted = Blank.trimmed(search)
+        guard !wanted.isEmpty, !listed.isEmpty, lines.isEmpty else {
+            return nil
+        }
+        return "Nobody matches “\(wanted)”."
+    }
     public private(set) var presentIdeaState: RosterState = .kept
     public private(set) var ideaRefusal: PresentIdeaRefusal?
 
@@ -146,7 +180,7 @@ public final class BirthdaysScreen {
     /// stand, and a copy at the copy place where one is set and the store changed.
     private func keptIdea(writingACopy: Bool = true) -> PresentIdeaRefusal? {
         ideaRefusal = nil
-        lines = listed.map(withIdeas)
+        lines = matchingLines()
         if writingACopy {
             copyPlace?.keptAChange()
         }
@@ -236,6 +270,13 @@ public final class BirthdaysScreen {
     /// year later — through 28 February where `today` is 29 February, and through the last
     /// supported date where that day would fall past it.
     private func form(asOf today: CalendarDate) {
+        formLines(asOf: today)
+        if listed.isEmpty {
+            search = ""
+        }
+    }
+
+    private func formLines(asOf today: CalendarDate) {
         guard birthdaySwitch.isOn else {
             listed = []
             lines = []
@@ -274,7 +315,7 @@ public final class BirthdaysScreen {
                     dayInWords: $0.day == today ? "Today" : DayTitle.birthdayDayInWords($0.day),
                     ideasInWords: nil)
             }
-        lines = listed.map(withIdeas)
+        lines = matchingLines()
     }
 
     private static func lastDay(ofTheYearFrom today: CalendarDate) -> CalendarDate {

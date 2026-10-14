@@ -32,8 +32,8 @@ public final class CommitmentsScreen {
     /// The place the present ideas are kept at, the sixth place a copy holds. This screen keeps no
     /// present-idea store of its own.
     private let presentIdeaPlace: URL
-    /// The birthday switch a Commitments tap hands in, read live and shown again with the screen;
-    /// `nil` where none was handed in, which offers no way to the Birthdays screen.
+    /// The birthday switch a Commitments tap hands in, shown again with the screen; `nil` where
+    /// none was handed in.
     private let birthdaySwitch: BirthdaySwitch?
     private var rosterStore: RosterStore?
     private var recordStore: RecordStore?
@@ -88,10 +88,6 @@ public final class CommitmentsScreen {
         refreshLists(from: opened.rosterStore)
         readHappenings()
     }
-
-    /// Whether this screen offers the way to the Birthdays screen: exactly while it was handed a
-    /// birthday switch and that switch is on. Asks the phone nothing.
-    public var offersGoingToBirthdays: Bool { birthdaySwitch?.isOn ?? false }
 
     /// The happenings this screen lists, in the order held. `design.md` § *The seam*.
     public private(set) var happenings: [Happening] = []

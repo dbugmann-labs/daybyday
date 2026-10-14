@@ -417,61 +417,6 @@ func aBirthdaysScreenWhoseCalendarCannotBeReadListsNothingAndSaysBirthdaysCouldN
     #expect(screen.birthdayState == .on)
 }
 
-/// A commitments screen opened as of Monday 12 October 2026 at places where nothing has been kept.
-@MainActor
-private func commitmentsScreen(whileOn birthdaySwitch: BirthdaySwitch?) -> CommitmentsScreen {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    return CommitmentsScreen(
-        asOf: date(2026, 10, 12),
-        keepingRosterAt: directory.appendingPathComponent("roster.json"),
-        keepingRecordAt: directory.appendingPathComponent("record.json"),
-        keepingOneOffsAt: directory.appendingPathComponent("one-offs.json"),
-        whileOn: birthdaySwitch)
-}
-
-@MainActor
-@Test(
-    "a commitments screen offers the way to the Birthdays screen while birthdays are on, and none while they are off"
-)
-func aCommitmentsScreenOffersTheWayToTheBirthdaysScreenWhileBirthdaysAreOnAndNoneWhileTheyAreOff()
-    async
-{
-    let phone = FakePhone(access: .full)
-    let switchUnderTest = await onSwitch(on: phone)
-    let readsBefore = phone.reads
-    let screen = commitmentsScreen(whileOn: switchUnderTest)
-    #expect(screen.offersGoingToBirthdays)
-
-    switchUnderTest.turnOff()
-    #expect(!screen.offersGoingToBirthdays)
-
-    #expect(!commitmentsScreen(whileOn: nil).offersGoingToBirthdays)
-    #expect(phone.reads == readsBefore && phone.asks == 0)
-}
-
-@MainActor
-@Test(
-    "a commitments screen shown again after the phone withdraws calendar access offers no way to the Birthdays screen"
-)
-func aCommitmentsScreenShownAgainAfterThePhoneWithdrawsCalendarAccessOffersNoWayToTheBirthdaysScreen()
-    async
-{
-    let phone = FakePhone(access: .full)
-    let switchUnderTest = await onSwitch(on: phone)
-    let screen = commitmentsScreen(whileOn: switchUnderTest)
-    #expect(screen.offersGoingToBirthdays)
-
-    phone.access = .denied
-    screen.shown(asOf: date(2026, 10, 12))
-    #expect(!screen.offersGoingToBirthdays)
-    #expect(!switchUnderTest.isOn)
-
-    phone.access = .full
-    screen.shown(asOf: date(2026, 10, 12))
-    #expect(!screen.offersGoingToBirthdays)
-}
-
 @MainActor
 @Test(
     "the present-idea place is a file of the app's own under Application Support, the same every time"
@@ -1090,4 +1035,208 @@ func whatABirthdaysScreenTellsAboutARefusedChangeDeletionOrMarkEndsWithTheNextOn
     deleting.askToDeleteIdea(0, of: deletingKate)
     deleting.confirmDeletingIdea()
     #expect(deleting.ideaRefusal == nil)
+}
+
+@MainActor
+@Test(
+    "a Birthdays screen with a search lists only the lines whose words hold it, whatever the capitals and accents"
+)
+func aBirthdaysScreenWithASearchListsOnlyTheLinesWhoseWordsHoldItWhateverTheCapitalsAndAccents()
+    async
+{
+    let fake = FakeCalendar(handing: [
+        birthday("anna", "Anna Müller's Birthday", date(2026, 11, 14)),
+        birthday("kate", "Kate Bell's 48th Birthday", date(2026, 12, 1)),
+        birthday("hans", "Hans Muller's Birthday", date(2027, 1, 1)),
+    ])
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(fake), whileOn: await onSwitch(),
+        keepingPresentIdeasAt: freshIdeaPlace())
+    let before = screen.lines
+
+    screen.searchEdited(to: "mul")
+    #expect(screen.lines.map(\.words) == ["Anna Müller's Birthday", "Hans Muller's Birthday"])
+    #expect(screen.lines == [before[0], before[2]])
+
+    screen.searchEdited(to: "MÜL")
+    #expect(screen.lines == [before[0], before[2]])
+
+    screen.searchEdited(to: "bell's 48")
+    #expect(screen.lines == [before[1]])
+
+    screen.searchEdited(to: "birth")
+    #expect(screen.lines == before)
+
+    screen.searchEdited(to: "Bell Kate")
+    #expect(screen.lines.isEmpty)
+
+    #expect(fake.asks.count == 1)
+}
+
+@MainActor
+@Test(
+    "a Birthdays screen's search looks only in a line's words, never in its day, its count of ideas or its ideas"
+)
+func aBirthdaysScreensSearchLooksOnlyInALinesWordsNeverInItsDayItsCountOfIdeasOrItsIdeas()
+    async throws
+{
+    let place = try ideaPlace(holding: [("kate", idea("Scarf"))])
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 12),
+        readingBirthdaysFrom: calendar(
+            FakeCalendar(handing: [birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))])),
+        whileOn: await onSwitch(), keepingPresentIdeasAt: place)
+    #expect(screen.lines.map { [$0.dayInWords, $0.ideasInWords ?? ""] } == [["Sat 14 November", "1 idea"]])
+
+    for search in ["November", "idea", "scarf"] {
+        screen.searchEdited(to: search)
+        #expect(screen.lines.isEmpty)
+    }
+    screen.searchEdited(to: "kate")
+    #expect(screen.lines.map(\.contact) == ["kate"])
+}
+
+@MainActor
+@Test(
+    "a Birthdays screen disregards the spaces before and after its search, and a search of spaces only lists every line"
+)
+func aBirthdaysScreenDisregardsTheSpacesBeforeAndAfterItsSearchAndASearchOfSpacesOnlyListsEveryLine()
+    async
+{
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 12),
+        readingBirthdaysFrom: calendar(
+            FakeCalendar(handing: [
+                birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14)),
+                birthday("zoe", "", date(2026, 12, 1)),
+            ])),
+        whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace())
+
+    screen.searchEdited(to: "  kate ")
+    #expect(screen.lines.map(\.contact) == ["kate"])
+    #expect(screen.search == "  kate ")
+
+    screen.searchEdited(to: "kate bell")
+    #expect(screen.lines.map(\.contact) == ["kate"])
+    screen.searchEdited(to: "kate  bell")
+    #expect(screen.lines.isEmpty)
+
+    screen.searchEdited(to: "   ")
+    #expect(screen.lines.map(\.contact) == ["kate", "zoe"])
+    #expect(screen.lines[1].words == "")
+    screen.searchEdited(to: "")
+    #expect(screen.lines.map(\.contact) == ["kate", "zoe"])
+}
+
+@MainActor
+@Test(
+    "a Birthdays screen whose search matches nobody says so, quoting the search without the spaces around it"
+)
+func aBirthdaysScreenWhoseSearchMatchesNobodySaysSoQuotingTheSearchWithoutTheSpacesAroundIt()
+    async
+{
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 12),
+        readingBirthdaysFrom: calendar(
+            FakeCalendar(handing: [birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))])),
+        whileOn: await onSwitch(), keepingPresentIdeasAt: freshIdeaPlace())
+
+    screen.searchEdited(to: " Kim  ")
+    #expect(screen.lines.isEmpty)
+    #expect(screen.nobodyMatches == "Nobody matches “Kim”.")
+    #expect(screen.birthdayState == .on)
+    #expect(screen.offersSearch)
+
+    screen.searchEdited(to: "kat")
+    #expect(screen.lines.map(\.contact) == ["kate"])
+    #expect(screen.nobodyMatches == nil)
+
+    screen.searchEdited(to: "   ")
+    #expect(screen.lines.map(\.contact) == ["kate"])
+    #expect(screen.nobodyMatches == nil)
+}
+
+@MainActor
+@Test(
+    "a Birthdays screen offers a search only while it lists a line, and holds none while it offers none"
+)
+func aBirthdaysScreenOffersASearchOnlyWhileItListsALineAndHoldsNoneWhileItOffersNone() async {
+    let kate = birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))
+    func opened(
+        handing handed: [Birthday] = [], failing: Bool = false, on birthdaySwitch: BirthdaySwitch
+    ) -> BirthdaysScreen {
+        BirthdaysScreen(
+            asOf: date(2026, 10, 12),
+            readingBirthdaysFrom: calendar(FakeCalendar(handing: handed, shouldThrow: failing)),
+            whileOn: birthdaySwitch, keepingPresentIdeasAt: freshIdeaPlace())
+    }
+
+    #expect(opened(handing: [kate], on: await onSwitch()).offersSearch)
+
+    let nobody = opened(on: await onSwitch())
+    #expect(!nobody.offersSearch)
+    nobody.searchEdited(to: "kate")
+    #expect(nobody.search == "")
+    #expect(nobody.lines.isEmpty)
+    #expect(nobody.nobodyMatches == nil)
+
+    #expect(!opened(handing: [kate], on: offSwitch()).offersSearch)
+    #expect(!opened(handing: [kate], failing: true, on: await onSwitch()).offersSearch)
+}
+
+@MainActor
+@Test(
+    "a Birthdays screen keeps its search when an idea is added and when it is shown again, and one opened afresh holds none"
+)
+func aBirthdaysScreenKeepsItsSearchWhenAnIdeaIsAddedAndWhenItIsShownAgainAndOneOpenedAfreshHoldsNone()
+    async
+{
+    let place = freshIdeaPlace()
+    let fake = FakeCalendar(handing: [
+        birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14)),
+        birthday("john", "John Appleseed's 40th Birthday", date(2026, 12, 1)),
+    ])
+    func opened() async -> BirthdaysScreen {
+        BirthdaysScreen(
+            asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(fake),
+            whileOn: await onSwitch(), keepingPresentIdeasAt: place)
+    }
+    let screen = await opened()
+    screen.searchEdited(to: "kate")
+    #expect(screen.addIdea(text: "Scarf", link: "", to: screen.lines[0]) == nil)
+    #expect(screen.search == "kate")
+    #expect(screen.lines.map(\.contact) == ["kate"])
+    #expect(screen.lines.map(\.ideasInWords) == ["1 idea"])
+
+    screen.shown(asOf: date(2026, 10, 13))
+    #expect(screen.search == "kate")
+    #expect(screen.lines.map(\.contact) == ["kate"])
+    #expect(screen.lines.map(\.ideasInWords) == ["1 idea"])
+
+    let afresh = await opened()
+    #expect(afresh.search == "")
+    #expect(afresh.lines.map(\.contact) == ["kate", "john"])
+}
+
+@MainActor
+@Test("a Birthdays screen shown again listing nobody ends its search")
+func aBirthdaysScreenShownAgainListingNobodyEndsItsSearch() async {
+    let fake = FakeCalendar(handing: [birthday("kate", "Kate Bell's 48th Birthday", date(2026, 11, 14))])
+    let screen = BirthdaysScreen(
+        asOf: date(2026, 10, 12), readingBirthdaysFrom: calendar(fake), whileOn: await onSwitch(),
+        keepingPresentIdeasAt: freshIdeaPlace())
+    screen.searchEdited(to: "kate")
+
+    fake.shouldThrow = true
+    screen.shown(asOf: date(2026, 10, 12))
+    #expect(screen.lines.isEmpty)
+    #expect(screen.birthdayState == .calendarUnreadable)
+    #expect(!screen.offersSearch)
+    #expect(screen.search == "")
+
+    fake.shouldThrow = false
+    screen.shown(asOf: date(2026, 10, 12))
+    #expect(screen.lines.map(\.contact) == ["kate"])
+    #expect(screen.offersSearch)
+    #expect(screen.search == "")
 }

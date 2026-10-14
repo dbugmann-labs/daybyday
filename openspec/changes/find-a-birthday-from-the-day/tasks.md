@@ -11,27 +11,27 @@ screen tests go in `DayScreenBirthdayTests.swift` and Birthdays screen tests in
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports three of this change's fifteen scenarios covered — the modified requirement's, carried — and names 3.1 as the next
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` reports three of this change's fifteen scenarios covered — the modified requirement's, carried — and names 3.1 as the next
 
 ## 2. The seam
 
-- [ ] 2.1 The `DayScreen` and `BirthdaysScreen` members exist with the signatures in `design.md` § *The seam*, and 3.1 is red before any of them does more than compile
-- [ ] 2.2 `CommitmentsScreen.offersGoingToBirthdays` is deleted with the two tests of the removed requirement, its `whileOn:` parameter stays, and every other carried test passes unedited — the three scenarios of the modified requirement included
+- [x] 2.1 The `DayScreen` and `BirthdaysScreen` members exist with the signatures in `design.md` § *The seam*, and 3.1 is red before any of them does more than compile
+- [x] 2.2 `CommitmentsScreen.offersGoingToBirthdays` is deleted with the two tests of the removed requirement, its `whileOn:` parameter stays, and every other carried test passes unedited — the three scenarios of the modified requirement included
 
 ## 3. The twelve new scenarios of `birthday` — one test each
 
-- [ ] 3.1 a day screen offers the way to the Birthdays screen on whichever day it shows while birthdays are on, and none while they are off — catches the way read off the day shown being today, or on with no calendar
-- [ ] 3.2 a day screen whose calendar or birthday ticks cannot be read still offers the way to the Birthdays screen — catches `birthdayState == .on` as the test
-- [ ] 3.3 a day screen shown again after the phone withdraws calendar access offers no way to the Birthdays screen — catches the switch not shown again before forming
-- [ ] 3.4 a day screen opens the Birthdays screen as of its today whichever day it is showing, and none while birthdays are off — catches the day shown handed as the today
-- [ ] 3.5 a Birthdays screen a day screen opens keeps its ideas beside the day screen's record place, and copies to the day screen's copy place — catches `BirthdaysScreen.presentIdeaPlace` or no copy place handed through
-- [ ] 3.6 a Birthdays screen with a search lists only the lines whose words hold it, whatever the capitals and accents — catches a prefix match, or the calendar asked again on each edit
-- [ ] 3.7 a Birthdays screen's search looks only in a line's words, never in its day, its count of ideas or its ideas — catches a match on what the line draws rather than its words
-- [ ] 3.8 a Birthdays screen disregards the spaces before and after its search, and a search of spaces only lists every line — catches the stored search trimmed, or inner spaces collapsed
-- [ ] 3.9 a Birthdays screen whose search matches nobody says so, quoting the search without the spaces around it — catches the sentence quoting the raw text, or said for a blank search
-- [ ] 3.10 a Birthdays screen offers a search only while it lists a line, and holds none while it offers none — catches a search offered over "No birthdays in the coming year."
-- [ ] 3.11 a Birthdays screen keeps its search when an idea is added and when it is shown again, and one opened afresh holds none — catches `keptIdea()` rebuilding `lines` unfiltered
-- [ ] 3.12 a Birthdays screen shown again listing nobody ends its search — catches a search held unseen and coming back unasked
+- [x] 3.1 a day screen offers the way to the Birthdays screen on whichever day it shows while birthdays are on, and none while they are off — catches the way read off the day shown being today, or on with no calendar
+- [x] 3.2 a day screen whose calendar or birthday ticks cannot be read still offers the way to the Birthdays screen — catches `birthdayState == .on` as the test
+- [x] 3.3 a day screen shown again after the phone withdraws calendar access offers no way to the Birthdays screen — catches the switch not shown again before forming
+- [x] 3.4 a day screen opens the Birthdays screen as of its today whichever day it is showing, and none while birthdays are off — catches the day shown handed as the today
+- [x] 3.5 a Birthdays screen a day screen opens keeps its ideas beside the day screen's record place, and copies to the day screen's copy place — catches `BirthdaysScreen.presentIdeaPlace` or no copy place handed through
+- [x] 3.6 a Birthdays screen with a search lists only the lines whose words hold it, whatever the capitals and accents — catches a prefix match, or the calendar asked again on each edit
+- [x] 3.7 a Birthdays screen's search looks only in a line's words, never in its day, its count of ideas or its ideas — catches a match on what the line draws rather than its words
+- [x] 3.8 a Birthdays screen disregards the spaces before and after its search, and a search of spaces only lists every line — catches the stored search trimmed, or inner spaces collapsed
+- [x] 3.9 a Birthdays screen whose search matches nobody says so, quoting the search without the spaces around it — catches the sentence quoting the raw text, or said for a blank search
+- [x] 3.10 a Birthdays screen offers a search only while it lists a line, and holds none while it offers none — catches a search offered over "No birthdays in the coming year."
+- [x] 3.11 a Birthdays screen keeps its search when an idea is added and when it is shown again, and one opened afresh holds none — catches `keptIdea()` rebuilding `lines` unfiltered
+- [x] 3.12 a Birthdays screen shown again listing nobody ends its search — catches a search held unseen and coming back unasked
 
 ## 4. The shell (ADR-1019: no rule the Kit does not state)
 
