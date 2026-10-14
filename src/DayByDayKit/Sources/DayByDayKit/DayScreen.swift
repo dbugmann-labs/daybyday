@@ -230,6 +230,23 @@ public final class DayScreen {
         ).withHappenings(openedHappenings.store?.happenings ?? Happenings())
     }
 
+    /// Whether this screen offers the way to the Birthdays screen: exactly while birthdays are on
+    /// as of the last forming of the day view, whichever day is shown. Asks nothing.
+    public var offersGoingToBirthdays: Bool { birthdayState != .off }
+
+    /// The Birthdays screen this one opens, as of the today it was last handed, whichever day it
+    /// is showing, or `nil` where it offers no way. Keeps present ideas beside the record place
+    /// and copies to this screen's copy place. Leaves the day shown as it was.
+    public func birthdaysScreen() -> BirthdaysScreen? {
+        guard offersGoingToBirthdays, let calendar, let birthdaySwitch else {
+            return nil
+        }
+        return BirthdaysScreen(
+            asOf: today, readingBirthdaysFrom: calendar, whileOn: birthdaySwitch,
+            keepingPresentIdeasAt: Self.presentIdeaPlace(besideRecordAt: recordPlace),
+            copyingTo: copyPlace)
+    }
+
     /// Opens the happening place at `place`, telling apart the one refusal a person can act on
     /// differently, a later form, from every other. Writes nothing.
     private static func openHappenings(at place: URL) -> (store: HappeningStore?, state: RosterState) {

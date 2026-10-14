@@ -57,13 +57,20 @@ private func freshSwitchPlace() -> URL {
 @MainActor
 private final class ControllablePhone {
     var access: CalendarAccess
+    private(set) var reads = 0
+    private(set) var asks = 0
     init(access: CalendarAccess) { self.access = access }
+    func read() -> CalendarAccess {
+        reads += 1
+        return access
+    }
+    func prompt() { asks += 1 }
 }
 
 @MainActor
 private func birthdaySwitch(readingAccessOf phone: ControllablePhone) -> BirthdaySwitch {
     BirthdaySwitch(
-        at: freshSwitchPlace(), readingAccess: { phone.access }, askingForAccess: {})
+        at: freshSwitchPlace(), readingAccess: { phone.read() }, askingForAccess: { phone.prompt() })
 }
 
 /// A birthday switch already on, its phone always giving full access. `design.md`'s scenarios
@@ -1099,4 +1106,211 @@ func aDayScreenReturnedToAfterATornRestoreItCannotUndoReopensItsBirthdayPlaceRat
     // A stale `birthdayStore` would still say kate is ticked; the fresh read this fix owes says
     // she is not (G7 review finding 4).
     #expect(dayScreen.dayView.birthdayGroup?.rows.map(\.isTicked) == [false])
+}
+
+@MainActor
+@Test(
+    "a day screen offers the way to the Birthdays screen on whichever day it shows while birthdays are on, and none while they are off"
+)
+func aDayScreenOffersTheWayToTheBirthdaysScreenOnWhicheverDayItShowsWhileBirthdaysAreOnAndNoneWhileTheyAreOff()
+    async
+{
+    let places = freshFourPlaces()
+    let january20 = CalendarDate(year: 2026, month: 1, day: 20)!
+    let kate = Birthday(contact: "kate", words: "Kate Bell's 48th Birthday", day: january20)!
+    let calendar = FakeCalendar(handing: [kate])
+    let phone = ControllablePhone(access: .full)
+    let switchUnderTest = birthdaySwitch(readingAccessOf: phone)
+    await switchUnderTest.turnOn()
+    let readsBefore = phone.reads
+    let asksBefore = phone.asks
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: january20, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOff,
+        keepingBirthdayTicksAt: places.birthday, readingBirthdaysFrom: fakeCalendar(calendar),
+        whileOn: switchUnderTest)
+    #expect(screen.offersGoingToBirthdays)
+
+    screen.showPreviousDay()
+    #expect(screen.offersGoingToBirthdays)
+    screen.showDay(CalendarDate(year: 2026, month: 1, day: 22)!)
+    #expect(screen.offersGoingToBirthdays)
+
+    let asksOfCalendar = calendar.asks.count
+    #expect(screen.offersGoingToBirthdays)
+    #expect(calendar.asks.count == asksOfCalendar)
+    #expect(phone.reads == readsBefore && phone.asks == asksBefore)
+
+    switchUnderTest.turnOff()
+    screen.returnedTo()
+    #expect(!screen.offersGoingToBirthdays)
+
+    let noCalendarPlaces = freshFourPlaces()
+    let noCalendar = DayScreen(
+        startingFrom: [], asOf: january20, keepingRecordAt: noCalendarPlaces.record,
+        keepingRosterAt: noCalendarPlaces.roster, keepingOneOffsAt: noCalendarPlaces.oneOff,
+        keepingBirthdayTicksAt: noCalendarPlaces.birthday, whileOn: await onSwitch())
+    #expect(!noCalendar.offersGoingToBirthdays)
+
+    let noSwitchPlaces = freshFourPlaces()
+    let noSwitch = DayScreen(
+        startingFrom: [], asOf: january20, keepingRecordAt: noSwitchPlaces.record,
+        keepingRosterAt: noSwitchPlaces.roster, keepingOneOffsAt: noSwitchPlaces.oneOff,
+        keepingBirthdayTicksAt: noSwitchPlaces.birthday,
+        readingBirthdaysFrom: fakeCalendar(calendar))
+    #expect(!noSwitch.offersGoingToBirthdays)
+}
+
+@MainActor
+@Test(
+    "a day screen whose calendar or birthday ticks cannot be read still offers the way to the Birthdays screen"
+)
+func aDayScreenWhoseCalendarOrBirthdayTicksCannotBeReadStillOffersTheWayToTheBirthdaysScreen()
+    async throws
+{
+    let places = freshFourPlaces()
+    try FileManager.default.createDirectory(
+        at: places.birthday.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not birthday ticks".utf8).write(to: places.birthday)
+    let january20 = CalendarDate(year: 2026, month: 1, day: 20)!
+    let calendar = FakeCalendar(shouldThrow: true)
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: january20, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOff,
+        keepingBirthdayTicksAt: places.birthday, readingBirthdaysFrom: fakeCalendar(calendar),
+        whileOn: await onSwitch())
+    #expect(screen.birthdayState == .calendarUnreadable)
+    #expect(screen.offersGoingToBirthdays)
+
+    calendar.shouldThrow = false
+    calendar.handed = [
+        Birthday(contact: "kate", words: "Kate Bell's 48th Birthday", day: january20)!
+    ]
+    screen.returnedTo()
+    #expect(screen.birthdayState == .ticksUnreadable)
+    #expect(screen.offersGoingToBirthdays)
+}
+
+@MainActor
+@Test(
+    "a day screen shown again after the phone withdraws calendar access offers no way to the Birthdays screen"
+)
+func aDayScreenShownAgainAfterThePhoneWithdrawsCalendarAccessOffersNoWayToTheBirthdaysScreen()
+    async
+{
+    let places = freshFourPlaces()
+    let january20 = CalendarDate(year: 2026, month: 1, day: 20)!
+    let calendar = FakeCalendar(handing: [
+        Birthday(contact: "kate", words: "Kate Bell's 48th Birthday", day: january20)!
+    ])
+    let phone = ControllablePhone(access: .full)
+    let switchUnderTest = birthdaySwitch(readingAccessOf: phone)
+    await switchUnderTest.turnOn()
+    let screen = DayScreen(
+        startingFrom: [], asOf: january20, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOff,
+        keepingBirthdayTicksAt: places.birthday, readingBirthdaysFrom: fakeCalendar(calendar),
+        whileOn: switchUnderTest)
+    #expect(screen.offersGoingToBirthdays)
+
+    phone.access = .denied
+    screen.shown(asOf: january20)
+    #expect(!screen.offersGoingToBirthdays)
+    #expect(!switchUnderTest.isOn)
+
+    phone.access = .full
+    screen.shown(asOf: january20)
+    #expect(!screen.offersGoingToBirthdays)
+}
+
+@MainActor
+@Test(
+    "a day screen opens the Birthdays screen as of its today whichever day it is showing, and none while birthdays are off"
+)
+func aDayScreenOpensTheBirthdaysScreenAsOfItsTodayWhicheverDayItIsShowingAndNoneWhileBirthdaysAreOff()
+    async
+{
+    let january20 = CalendarDate(year: 2026, month: 1, day: 20)!
+    let kate = Birthday(contact: "kate", words: "Kate Bell's 48th Birthday", day: january20)!
+    let calendar = FakeCalendar(handing: [kate])
+
+    func dayScreen(switchedBy birthdaySwitch: BirthdaySwitch) -> DayScreen {
+        let places = freshFourPlaces()
+        return DayScreen(
+            startingFrom: [], asOf: january20, keepingRecordAt: places.record,
+            keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOff,
+            keepingBirthdayTicksAt: places.birthday, readingBirthdaysFrom: fakeCalendar(calendar),
+            whileOn: birthdaySwitch)
+    }
+
+    let screen = dayScreen(switchedBy: await onSwitch())
+    screen.showPreviousDay()
+    let opened = screen.birthdaysScreen()
+    #expect(calendar.asks.last?.first == january20)
+    #expect(calendar.asks.last?.last == CalendarDate(year: 2027, month: 1, day: 19)!)
+    #expect(
+        opened?.lines.map { [$0.words, $0.dayInWords] } == [["Kate Bell's 48th Birthday", "Today"]])
+    #expect(screen.dayView.date == CalendarDate(year: 2026, month: 1, day: 19)!)
+    #expect(screen.title == "Mon")
+    #expect(screen.offersGoingBackToToday)
+
+    screen.showDay(CalendarDate(year: 2026, month: 1, day: 22)!)
+    #expect(
+        screen.birthdaysScreen()?.lines.map { [$0.words, $0.dayInWords] }
+            == [["Kate Bell's 48th Birthday", "Today"]])
+
+    #expect(dayScreen(switchedBy: offSwitch()).birthdaysScreen() == nil)
+}
+
+@MainActor
+@Test(
+    "a Birthdays screen a day screen opens keeps its ideas beside the day screen's record place, and copies to the day screen's copy place"
+)
+func aBirthdaysScreenADayScreenOpensKeepsItsIdeasBesideTheDayScreensRecordPlaceAndCopiesToTheDayScreensCopyPlace()
+    async throws
+{
+    let places = freshFourPlaces()
+    let january20 = CalendarDate(year: 2026, month: 1, day: 20)!
+    let calendar = FakeCalendar(handing: [
+        Birthday(contact: "kate", words: "Kate Bell's 48th Birthday", day: january20)!
+    ])
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let copyPlace = CopyPlace(
+        at: directory.appendingPathComponent("state.json"), keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOff,
+        keepingBirthdayTicksAt: places.birthday,
+        asking: { Moment(on: january20, hour: 14, minute: 32) })
+    let copyDirectory = directory.appendingPathComponent("copies", isDirectory: true)
+    let commitmentsScreen = CommitmentsScreen(
+        asOf: january20, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: places.oneOff, keepingBirthdayTicksAt: places.birthday,
+        copyingTo: copyPlace)
+    commitmentsScreen.givenAsCopyPlace(copyDirectory)
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: january20, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOff,
+        keepingBirthdayTicksAt: places.birthday, readingBirthdaysFrom: fakeCalendar(calendar),
+        whileOn: await onSwitch(), copyingTo: copyPlace)
+    let opened = try #require(screen.birthdaysScreen())
+    let refusal = opened.addIdea(text: "Scarf", link: "", to: opened.lines[0])
+    #expect(refusal == nil)
+
+    let ideaPlace = DayScreen.presentIdeaPlace(besideRecordAt: places.record)
+    let later = BirthdaysScreen(
+        asOf: january20, readingBirthdaysFrom: fakeCalendar(calendar), whileOn: await onSwitch(),
+        keepingPresentIdeasAt: ideaPlace)
+    #expect(later.ideas(of: later.lines[0]).map(\.text) == ["Scarf"])
+
+    let copies = try FileManager.default.contentsOfDirectory(
+        at: copyDirectory, includingPropertiesForKeys: nil)
+    let copyFile = try #require(copies.first)
+    guard case .success(let copy) = CopyDocument.read(try Data(contentsOf: copyFile)) else {
+        Issue.record("expected the file to read as a copy")
+        return
+    }
+    #expect(copy.presentIdeas["kate"]?.map(\.text) == ["Scarf"])
 }

@@ -10,6 +10,7 @@ import DayByDayKit
 /// unreadable place are drawn for the state it hands.
 struct BirthdaysView: View {
     let screen: BirthdaysScreen
+    @FocusState private var searchFocused: Bool
 
     var body: some View {
         List {
@@ -27,13 +28,21 @@ struct BirthdaysView: View {
                 }
             }
             Section {
-                if screen.lines.isEmpty {
+                if let nobodyMatches = screen.nobodyMatches {
+                    Text(nobodyMatches)
+                        .foregroundStyle(.secondary)
+                } else if screen.lines.isEmpty {
                     Text(emptySentence)
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(Array(screen.lines.enumerated()), id: \.offset) { _, line in
                         NavigationLink {
+                            // The search is let go of as the page appears: a field still focused
+                            // when this screen is covered is handed the keyboard again on the way
+                            // back, with the field under it and SwiftUI none the wiser. The text is
+                            // the Kit's and is kept; only the focus is put down.
                             PresentIdeasView(screen: screen, line: line)
+                                .onAppear { searchFocused = false }
                         } label: {
                             HStack(alignment: .firstTextBaseline, spacing: 12) {
                                 VStack(alignment: .leading, spacing: 2) {
@@ -57,6 +66,34 @@ struct BirthdaysView: View {
         }
         .navigationTitle("Birthdays")
         .navigationBarTitleDisplayMode(.large)
+        .safeAreaInset(edge: .bottom, spacing: 2) {
+            if screen.offersSearch {
+                searchField
+            }
+        }
+    }
+
+    /// The search at the foot, in the one-off bar's shape: an opaque capsule, a magnifying glass
+    /// leading, the app's own word for a prompt. Not `.searchable`, whose placement on a pushed
+    /// screen is the platform's. The Kit keeps the text and decides what matches.
+    private var searchField: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+            TextField(
+                "Search",
+                text: Binding(get: { screen.search }, set: { screen.searchEdited(to: $0) })
+            )
+            .autocorrectionDisabled()
+            .focused($searchFocused)
+            .accessibilityIdentifier("BirthdaysSearch")
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(Color(.tertiarySystemGroupedBackground), in: .capsule)
+        .overlay(Capsule().strokeBorder(.separator, lineWidth: 0.5))
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
     }
 
     private var presentIdeasSentence: String? {

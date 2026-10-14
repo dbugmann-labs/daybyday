@@ -469,8 +469,8 @@ struct ContentView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showingCommitments = false
     @State private var commitmentsScreen: CommitmentsScreen?
-    // The Birthdays screen the gift on the commitments screen opened: built as of `today()` at the
-    // tap, pushed on the same stack, shown again when the app is shown and dropped on the way back.
+    // The Birthdays screen the gift on the day screen opened: made by `screen.birthdaysScreen()` at
+    // the tap, pushed on the same stack, shown again when the app is shown and dropped on the way back.
     @State private var showingBirthdays = false
     @State private var birthdaysScreen: BirthdaysScreen?
     // Settings builds a Kit screen of its own each time it opens, `add-settings-screen/design.md`
@@ -667,19 +667,14 @@ struct ContentView: View {
             dayControls
             pagedDayContent
         }
+        .navigationDestination(isPresented: $showingBirthdays) {
+            if let birthdaysScreen {
+                BirthdaysView(screen: birthdaysScreen)
+            }
+        }
         .navigationDestination(isPresented: $showingCommitments) {
             if let commitmentsScreen {
-                CommitmentsView(
-                    screen: commitmentsScreen, birthdaysScreen: birthdaysScreen,
-                    showingBirthdays: $showingBirthdays,
-                    openBirthdays: {
-                        birthdaysScreen = BirthdaysScreen(
-                            asOf: today(), readingBirthdaysFrom: birthdayCalendar,
-                            whileOn: birthdaySwitch,
-                            keepingPresentIdeasAt: BirthdaysScreen.presentIdeaPlace,
-                            copyingTo: copyPlace)
-                        showingBirthdays = true
-                    })
+                CommitmentsView(screen: commitmentsScreen)
             }
         }
         // The day is the title: the weekday in full, large, over the date row `dayControls`
@@ -707,8 +702,20 @@ struct ContentView: View {
                     }
                 }
             }
-            // Commitments and Settings, one trailing group — one capsule.
+            // The gift, Commitments and Settings, one trailing group — one capsule.
             ToolbarItemGroup(placement: .primaryAction) {
+                // The way to the Birthdays screen, first in the capsule, drawn exactly while the
+                // Kit offers it. The push sits on the stack above, never on this item: a
+                // destination on an item that vanishes pops the screen it opened.
+                if screen.offersGoingToBirthdays {
+                    Button {
+                        birthdaysScreen = screen.birthdaysScreen()
+                        showingBirthdays = birthdaysScreen != nil
+                    } label: {
+                        Image(systemName: "gift")
+                    }
+                    .accessibilityLabel("Birthdays")
+                }
                 Button {
                     commitmentsScreen = CommitmentsScreen(
                         asOf: today(), whileOn: birthdaySwitch, copyingTo: copyPlace)

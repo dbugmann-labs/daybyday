@@ -221,12 +221,6 @@ private enum HappeningSheetTarget: Identifiable {
 /// changes one already on either list.
 struct CommitmentsView: View {
     let screen: CommitmentsScreen
-    /// The Birthdays screen the gift opened, and whether it is pushed. Held by `ContentView`, which
-    /// builds it as of today when the gift is tapped, shows it when the app is shown and drops it
-    /// on the way back; this view draws the gift and carries the push. `design.md` § *The shell*.
-    let birthdaysScreen: BirthdaysScreen?
-    @Binding var showingBirthdays: Bool
-    let openBirthdays: () -> Void
 
     @State private var sheetTarget: SheetTarget?
     @State private var happeningSheetTarget: HappeningSheetTarget?
@@ -628,27 +622,8 @@ struct CommitmentsView: View {
         // exactly 0 and exactly 20, so the measurement has no hidden offset to account for. 12 is
         // about two thirds of that, per the owner's ask.
         .listSectionSpacing(12)
-        .navigationDestination(isPresented: $showingBirthdays) {
-            if let birthdaysScreen {
-                BirthdaysView(screen: birthdaysScreen)
-            }
-        }
         .navigationTitle("Commitments")
         .toolbar {
-            // The way to the Birthdays screen, in a circle of its own left of the ⇅ + capsule,
-            // drawn exactly while the Kit offers it. The push sits on the list below, never on
-            // this item: a destination on an item that vanishes pops the screen it opened.
-            if screen.offersGoingToBirthdays {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        openBirthdays()
-                    } label: {
-                        Image(systemName: "gift")
-                    }
-                    .accessibilityLabel("Birthdays")
-                }
-                ToolbarSpacer(.fixed, placement: .primaryAction)
-            }
             ToolbarItem(placement: .primaryAction) {
                 Toggle(
                     isOn: Binding(
