@@ -1920,12 +1920,14 @@ public final class CommitmentsScreen {
             let resumeDay =
                 rosterStore.roster.lastDayOfDaysAwayInside(over: commitment, on: dayToKeepFrom)?
                 .adding(days: 1) ?? dayToKeepFrom
-            guard try rosterStore.keepAgain(commitment, from: resumeDay) else {
+            var nextRoster = rosterStore.roster
+            guard nextRoster.keepAgain(commitment, madeOn: dayToKeepFrom, from: resumeDay) else {
                 let refusal = Refusal.nameAlreadyInUse(Self.nameAlreadyHeld(commitment.name, among: kept))
                 stoppedRefusal = SheetRefusal(field: nil, refusal: refusal)
                 refusedChange = .keepingAgain(commitment, refusal)
                 return refusal
             }
+            try rosterStore.replace(with: nextRoster)
         } catch {
             stoppedRefusal = SheetRefusal(field: nil, refusal: .notKept)
             refusedChange = .keepingAgain(commitment, .notKept)

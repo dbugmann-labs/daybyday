@@ -94,9 +94,9 @@ struct RosterDocument: Codable {
     /// something no roster could hold — over no commitment, over one `held` does not hold or one
     /// twice, named with what says nothing, sharing an identity with other days away, or sharing a day and
     /// a commitment with other days away; and, from the form that carries what they remember, remembering
-    /// a commitment they are not over or one twice, a day before the day before their first day, or
-    /// nothing for a stopped commitment they are over. A form before it reads a day remembered for each
-    /// stopped commitment instead.
+    /// a stop of a commitment they are not over, two of one commitment on one day or out of order, a stop
+    /// not taken up before another, or a take-up, or the day back it was made for, on or before its stop's
+    /// day. A form before it reads a stop remembered for each stopped commitment instead.
     private func formSpans(over entries: [Roster.Entry]) -> [Roster.Span]? {
         let held = Set(entries.map(\.commitment.identity))
         guard version >= Self.daysAwayIntroducedInVersion else {
@@ -127,35 +127,43 @@ struct RosterDocument: Codable {
                 return nil
             }
             if version >= Self.remembersIntroducedInVersion {
-                // What days away remember: a commitment they are over, once, no earlier than the day
-                // before their first day, and a day for each stopped commitment they are over.
-                let earliest = span.firstDay.adding(days: -1) ?? span.firstDay
-                guard span.remembers.count == record.remembers?.count,
-                    span.remembers.allSatisfy({ span.commitments.contains($0.key) }),
-                    span.remembers.allSatisfy({ commitment, day in
-                        // Only a stopped commitment's day is bound: one taken up again keeps the day of
-                        // its stop whatever the first day does.
-                        entries.first(where: { $0.commitment.identity == commitment })?.keptUntil == nil
-                            || earliest.days(until: day) >= 0
-                    }),
-                    span.commitments.allSatisfy({ commitment in
-                        entries.first(where: { $0.commitment.identity == commitment })?.keptUntil == nil
-                            || span.remembers[commitment] != nil
-                    })
+                // What days away remember: the stops of commitments they are over, each commitment's
+                // on strictly later days, only the last not taken up, and a take-up, or the day back
+                // it was made for, after its stop's day. Nothing is checked against the eras.
+                guard span.remembers.allSatisfy({ commitment, stops in
+                    span.commitments.contains(commitment)
+                        && stops.indices.allSatisfy { index in
+                            let stop = stops[index]
+                            let later = index == 0 || stops[index - 1].day.days(until: stop.day) > 0
+                            let takenUp = index == stops.count - 1 || stop.takeUp != nil
+                            let after: Bool
+                            switch stop.takeUp {
+                            case nil:
+                                after = true
+                            case .day(let day), .dayBack(madeFor: let day):
+                                after = stop.day.days(until: day) > 0
+                            }
+                            return later && takenUp && after
+                        }
+                })
                 else {
                     return nil
                 }
             } else {
                 // A form written before days away remembered a stop: for each stopped commitment they
-                // are over, the later of their last day and the last day it was kept.
+                // are over, a stop, not taken up, on the later of their last day and the last day it
+                // was kept.
                 for commitment in span.commitments {
                     guard let newest = entries.first(where: { $0.commitment.identity == commitment }),
                         let keptUntil = newest.keptUntil
                     else {
                         continue
                     }
-                    span.remembers[commitment] =
-                        span.lastDay.days(until: keptUntil) > 0 ? keptUntil : span.lastDay
+                    span.remembers[commitment] = [
+                        Roster.Stop(
+                            day: span.lastDay.days(until: keptUntil) > 0 ? keptUntil : span.lastDay,
+                            takeUp: nil)
+                    ]
                 }
             }
             formed.append(span)
@@ -573,9 +581,11 @@ struct DaysAwayRecord: Codable, Equatable {
         firstDay = DateRecord(span.firstDay)
         lastDay = DateRecord(span.lastDay)
         commitments = span.commitments.map(\.uuidString)
-        remembers = span.commitments.compactMap { commitment in
-            span.remembers[commitment].map {
-                RememberedRecord(commitment: commitment.uuidString, day: DateRecord($0))
+        remembers = span.commitments.flatMap { commitment in
+            (span.remembers[commitment] ?? []).map { stop in
+                RememberedRecord(
+                    commitment: commitment.uuidString, day: DateRecord(stop.day),
+                    takeUp: stop.takeUp.map(TakeUpRecord.init))
             }
         }
     }
@@ -619,13 +629,20 @@ struct DaysAwayRecord: Codable, Equatable {
             }
             identities.append(commitment)
         }
-        var remembered: [Commitment.Identity: CalendarDate] = [:]
+        var remembered: [Commitment.Identity: [Roster.Stop]] = [:]
         for record in remembers ?? [] {
             guard let commitment = Commitment.Identity(record.commitment), let day = record.day.calendarDate()
             else {
                 return nil
             }
-            remembered[commitment] = day
+            var takeUp: Roster.TakeUp?
+            if let said = record.takeUp {
+                guard let read = said.takeUp() else {
+                    return nil
+                }
+                takeUp = read
+            }
+            remembered[commitment, default: []].append(Roster.Stop(day: day, takeUp: takeUp))
         }
         return Roster.Span(
             identity: identity, name: name, firstDay: first, lastDay: last, commitments: identities,
@@ -633,10 +650,40 @@ struct DaysAwayRecord: Codable, Equatable {
     }
 }
 
-/// One day a stop kept a commitment until, as a days away record writes it.
+/// One stop of a commitment that days away remember, as a days away record writes it: the day it
+/// was kept until and, where it was taken up, how. Absent for a stop not taken up.
 struct RememberedRecord: Codable, Equatable {
     var commitment: String
     var day: DateRecord
+    var takeUp: TakeUpRecord?
+}
+
+/// How a remembered stop was taken up: on `day`, or on the day after the last day of the days away
+/// that remember it, made for `dayBack`. Exactly one is present.
+struct TakeUpRecord: Codable, Equatable {
+    var day: DateRecord?
+    var dayBack: DateRecord?
+
+    init(_ takeUp: Roster.TakeUp) {
+        switch takeUp {
+        case .day(let day):
+            self.day = DateRecord(day)
+        case .dayBack(let madeFor):
+            dayBack = DateRecord(madeFor)
+        }
+    }
+
+    /// What this record says, or `nil` where it says neither or both, or a day that does not read.
+    func takeUp() -> Roster.TakeUp? {
+        switch (day, dayBack) {
+        case let (day?, nil):
+            return day.calendarDate().map { .day($0) }
+        case let (nil, dayBack?):
+            return dayBack.calendarDate().map { .dayBack(madeFor: $0) }
+        default:
+            return nil
+        }
+    }
 }
 
 /// Reads only `version`, so a later form is told apart from the body before the body is ever

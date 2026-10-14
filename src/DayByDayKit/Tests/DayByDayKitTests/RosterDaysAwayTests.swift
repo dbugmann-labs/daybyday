@@ -241,29 +241,61 @@ func aRosterStoreWhoseDaysAwayRememberWhatNoRosterCouldIsRefused() throws {
     func flu(over commitments: [String], remembers: String?) -> String {
         "[" + span("Flu", from: day(10, 1), through: day(10, 3), over: commitments, remembers: remembers) + "]"
     }
-    func remembering(_ id: String, _ when: String) -> String {
-        #"{ "commitment": "\#(id)", "day": \#(when) }"#
+    /// A stop of `id` on `when`, taken up as `takeUp` says — `"day"` or `"dayBack"` and the day — or not.
+    func remembering(_ id: String, _ when: String, takenUp takeUp: (String, String)? = nil) -> String {
+        let taken = takeUp.map { #", "takeUp": { "\#($0.0)": \#($0.1) }"# } ?? ""
+        return #"{ "commitment": "\#(id)", "day": \#(when)\#(taken) }"#
     }
+    func list(_ stops: String...) -> String { "[" + stops.joined(separator: ",") + "]" }
     let saturday3 = day(10, 3)
+    let thursday8 = day(10, 8)
+    let both = [gymID, runID]
     let refused: [(Int, String)] = [
-        (11, flu(over: [runID], remembers: "[" + remembering(gymID, saturday3) + "]")),
+        (11, flu(over: [runID], remembers: list(remembering(gymID, saturday3)))),
         (
             11,
             flu(
-                over: [gymID, runID],
-                remembers: "[" + remembering(gymID, saturday3) + "," + remembering(gymID, saturday3) + "]")
+                over: both,
+                remembers: list(
+                    remembering(gymID, saturday3, takenUp: ("day", thursday8)),
+                    remembering(gymID, saturday3)))
         ),
-        (11, flu(over: [gymID, runID], remembers: "[" + remembering(gymID, day(9, 29)) + "]")),
-        (11, flu(over: [gymID, runID], remembers: "[]")),
-        (11, flu(over: [gymID, runID], remembers: nil)),
-        (10, flu(over: [gymID, runID], remembers: "[" + remembering(gymID, saturday3) + "]")),
+        (
+            11,
+            flu(
+                over: both,
+                remembers: list(
+                    remembering(gymID, day(10, 5), takenUp: ("day", thursday8)),
+                    remembering(gymID, saturday3)))
+        ),
+        (
+            11,
+            flu(
+                over: both,
+                remembers: list(remembering(gymID, saturday3), remembering(gymID, day(10, 12))))
+        ),
+        (
+            11,
+            flu(over: both, remembers: list(remembering(gymID, saturday3, takenUp: ("day", saturday3))))
+        ),
+        (11, flu(over: both, remembers: nil)),
+        (10, flu(over: both, remembers: list(remembering(gymID, saturday3)))),
     ]
-    for (version, list) in refused {
-        let (place, result) = try opened(rosterJSON(version: version, eras: eras, daysAway: list))
+    for (version, spans) in refused {
+        let (place, result) = try opened(rosterJSON(version: version, eras: eras, daysAway: spans))
         #expect(throws: RosterStoreError.notAStore(at: place)) { try result.get() }
     }
 
-    let control = flu(over: [gymID, runID], remembers: "[" + remembering(gymID, saturday3) + "]")
-    let (_, result) = try opened(rosterJSON(version: 11, eras: eras, daysAway: control))
-    #expect(try result.get().roster.daysAway.count == 1)
+    let controls = [
+        flu(
+            over: both,
+            remembers: list(
+                remembering(gymID, day(9, 29), takenUp: ("dayBack", day(10, 4))),
+                remembering(gymID, day(10, 10)))),
+        flu(over: both, remembers: "[]"),
+    ]
+    for spans in controls {
+        let (_, result) = try opened(rosterJSON(version: 11, eras: eras, daysAway: spans))
+        #expect(try result.get().roster.daysAway.count == 1)
+    }
 }
