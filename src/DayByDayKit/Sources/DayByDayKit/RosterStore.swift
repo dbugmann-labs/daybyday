@@ -119,11 +119,7 @@ public final class RosterStore {
         let daysAwayKeyAgrees =
             (document.daysAway != nil)
             == (document.version >= RosterDocument.daysAwayIntroducedInVersion)
-        let remembersKeyAgrees = (document.daysAway ?? []).allSatisfy {
-            ($0.remembers != nil) == (document.version >= RosterDocument.remembersIntroducedInVersion)
-        }
         return entriesAgree && emptiedKeyAgrees && emptiedConsistent && daysAwayKeyAgrees
-            && remembersKeyAgrees
     }
 
     /// Exactly what is kept at `place`.
@@ -174,11 +170,6 @@ public final class RosterStore {
     /// form on disk* fixes: `.sortedKeys` so a keyed container's keys do not follow Foundation's
     /// per-process hash order, on top of the roster's own order, which is never sorted.
     private func write(_ nextRoster: Roster) throws {
-        // Days away remember what a roster store reads and nothing else: a roster breaching I1–I4 is
-        // refused here, before the place is touched, as one that could not be written.
-        guard nextRoster.spans.allSatisfy(\.remembersWhatARosterMay) else {
-            throw RosterStoreError.cannotWrite(at: place)
-        }
         let document = RosterDocument(nextRoster)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]

@@ -196,6 +196,16 @@ public struct History: Hashable, Sendable {
             || declines.keys.contains { $0.commitment == commitment }
     }
 
+    /// Whether this history holds, for `commitment` on `date`, a tick, a number, a note, an addition
+    /// or a decline — the one question days away ask of the record to know whether a day they cover
+    /// is hidden. Package-internal.
+    func holdsRecord(of commitment: Commitment, on date: CalendarDate) -> Bool {
+        let day = RecordedDay(commitment: commitment, date: date)
+        return numbers[day] != nil || notes[day] != nil || additions[day] != nil
+            || declines[day] != nil
+            || ticks.contains { $0.date == date && $0.commitment == commitment }
+    }
+
     /// The dates this history holds any record of `commitment` on — a tick, a number, a note, an
     /// addition or a decline, each contributing the dates it is held for. Package-internal, the same seam
     /// as `holdsRecords(of:)`.

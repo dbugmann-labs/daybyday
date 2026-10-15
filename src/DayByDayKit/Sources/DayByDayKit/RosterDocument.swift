@@ -55,11 +55,6 @@ struct RosterDocument: Codable {
     /// do, and are read as holding none. ADR-1069.
     static let daysAwayIntroducedInVersion = 10
 
-    /// The form each days away record first carried `remembers` at: forms at or after this one say,
-    /// of every days away, the day a stop kept each commitment until — an empty list where it
-    /// remembers nothing — and forms before it never do.
-    static let remembersIntroducedInVersion = 11
-
     var version: Int
     var commitments: [RosterEntryRecord]
 
@@ -92,13 +87,11 @@ struct RosterDocument: Codable {
     /// The days away this document holds, formed: none in a form before
     /// `daysAwayIntroducedInVersion`, and `nil` where the form carries them and these say
     /// something no roster could hold — over no commitment, over one `held` does not hold or one
-    /// twice, named with what says nothing, sharing an identity with other days away, or sharing a day and
-    /// a commitment with other days away; and, from the form that carries what they remember, remembering
-    /// a stop of a commitment they are not over, two of one commitment on one day or out of order, a stop
-    /// not taken up before another, or a take-up, or the day back it was made for, on or before its stop's
-    /// day. A form before it reads a stop remembered for each stopped commitment instead.
-    private func formSpans(over entries: [Roster.Entry]) -> [Roster.Span]? {
-        let held = Set(entries.map(\.commitment.identity))
+    /// twice, named with what says nothing, sharing an identity with other days away, or sharing a
+    /// day and a commitment with other days away. Nothing is checked against the eras: days away
+    /// are laid over them, and a form that cut a gap into them reads as the stop and take-up it is
+    /// written as.
+    private func formSpans(holding held: Set<Commitment.Identity>) -> [Roster.Span]? {
         guard version >= Self.daysAwayIntroducedInVersion else {
             return []
         }
@@ -107,7 +100,7 @@ struct RosterDocument: Codable {
         }
         var formed: [Roster.Span] = []
         for record in records {
-            guard var span = record.span(),
+            guard let span = record.span(),
                 !span.commitments.isEmpty, Set(span.commitments).count == span.commitments.count,
                 span.commitments.allSatisfy(held.contains),
                 span.name.map({ !Blank.saysNothing($0) }) ?? true,
@@ -125,30 +118,6 @@ struct RosterDocument: Codable {
                 })
             else {
                 return nil
-            }
-            if version >= Self.remembersIntroducedInVersion {
-                // What days away remember: the stops of commitments they are over, each commitment's
-                // on strictly later days, only the last not taken up, and a take-up, or the day back
-                // it was made for, after its stop's day. Nothing is checked against the eras.
-                guard span.remembersWhatARosterMay else {
-                    return nil
-                }
-            } else {
-                // A form written before days away remembered a stop: for each stopped commitment they
-                // are over, a stop, not taken up, on the later of their last day and the last day it
-                // was kept.
-                for commitment in span.commitments {
-                    guard let newest = entries.first(where: { $0.commitment.identity == commitment }),
-                        let keptUntil = newest.keptUntil
-                    else {
-                        continue
-                    }
-                    span.remembers[commitment] = [
-                        Roster.Stop(
-                            day: span.lastDay.days(until: keptUntil) > 0 ? keptUntil : span.lastDay,
-                            takeUp: nil)
-                    ]
-                }
             }
             formed.append(span)
         }
@@ -275,7 +244,7 @@ struct RosterDocument: Codable {
             return nil
         }
 
-        guard let spans = formSpans(over: entries) else {
+        guard let spans = formSpans(holding: Set(entries.map(\.commitment.identity))) else {
             return nil
         }
 
@@ -557,7 +526,6 @@ struct DaysAwayRecord: Codable, Equatable {
     var firstDay: DateRecord
     var lastDay: DateRecord
     var commitments: [String]
-    var remembers: [RememberedRecord]?
 
     init(_ span: Roster.Span) {
         identity = span.identity.uuidString
@@ -565,17 +533,10 @@ struct DaysAwayRecord: Codable, Equatable {
         firstDay = DateRecord(span.firstDay)
         lastDay = DateRecord(span.lastDay)
         commitments = span.commitments.map(\.uuidString)
-        remembers = span.commitments.flatMap { commitment in
-            (span.remembers[commitment] ?? []).map { stop in
-                RememberedRecord(
-                    commitment: commitment.uuidString, day: DateRecord(stop.day),
-                    takeUp: stop.takeUp.map(TakeUpRecord.init))
-            }
-        }
     }
 
     private enum CodingKeys: String, CodingKey {
-        case identity, name, firstDay, lastDay, commitments, remembers
+        case identity, name, firstDay, lastDay, commitments
     }
 
     init(from decoder: Decoder) throws {
@@ -585,7 +546,6 @@ struct DaysAwayRecord: Codable, Equatable {
         firstDay = try container.decode(DateRecord.self, forKey: .firstDay)
         lastDay = try container.decode(DateRecord.self, forKey: .lastDay)
         commitments = try container.decode([String].self, forKey: .commitments)
-        remembers = try container.decodeIfPresent([RememberedRecord].self, forKey: .remembers)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -595,7 +555,6 @@ struct DaysAwayRecord: Codable, Equatable {
         try container.encode(firstDay, forKey: .firstDay)
         try container.encode(lastDay, forKey: .lastDay)
         try container.encode(commitments, forKey: .commitments)
-        try container.encodeIfPresent(remembers, forKey: .remembers)
     }
 
     /// The span this record says, or `nil` where an identity or a day does not read, or the last
@@ -613,60 +572,8 @@ struct DaysAwayRecord: Codable, Equatable {
             }
             identities.append(commitment)
         }
-        var remembered: [Commitment.Identity: [Roster.Stop]] = [:]
-        for record in remembers ?? [] {
-            guard let commitment = Commitment.Identity(record.commitment), let day = record.day.calendarDate()
-            else {
-                return nil
-            }
-            var takeUp: Roster.TakeUp?
-            if let said = record.takeUp {
-                guard let read = said.takeUp() else {
-                    return nil
-                }
-                takeUp = read
-            }
-            remembered[commitment, default: []].append(Roster.Stop(day: day, takeUp: takeUp))
-        }
         return Roster.Span(
-            identity: identity, name: name, firstDay: first, lastDay: last, commitments: identities,
-            remembers: remembered)
-    }
-}
-
-/// One stop of a commitment that days away remember, as a days away record writes it: the day it
-/// was kept until and, where it was taken up, how. Absent for a stop not taken up.
-struct RememberedRecord: Codable, Equatable {
-    var commitment: String
-    var day: DateRecord
-    var takeUp: TakeUpRecord?
-}
-
-/// How a remembered stop was taken up: on `day`, or on the day after the last day of the days away
-/// that remember it, made for `dayBack`. Exactly one is present.
-struct TakeUpRecord: Codable, Equatable {
-    var day: DateRecord?
-    var dayBack: DateRecord?
-
-    init(_ takeUp: Roster.TakeUp) {
-        switch takeUp {
-        case .day(let day):
-            self.day = DateRecord(day)
-        case .dayBack(let madeFor):
-            dayBack = DateRecord(madeFor)
-        }
-    }
-
-    /// What this record says, or `nil` where it says neither or both, or a day that does not read.
-    func takeUp() -> Roster.TakeUp? {
-        switch (day, dayBack) {
-        case let (day?, nil):
-            return day.calendarDate().map { .day($0) }
-        case let (nil, dayBack?):
-            return dayBack.calendarDate().map { .dayBack(madeFor: $0) }
-        default:
-            return nil
-        }
+            identity: identity, name: name, firstDay: first, lastDay: last, commitments: identities)
     }
 }
 

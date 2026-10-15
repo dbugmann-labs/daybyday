@@ -223,8 +223,9 @@ public final class DayScreen {
         // initialized (`dayView` is being assigned right now), so `self.shownDay` cannot be read
         // back. The parameter holds the same value `shownDay` was just set to, two lines up.
         self.dayView = Self.formDayView(
-            of: read.roster.groups(on: today), roster: read.roster, oneOffs: read.oneOffStore,
-            asOf: today, on: today, in: read.recordStore?.history ?? History(),
+            of: read.roster.groups(on: today, recordedIn: read.recordStore?.history), roster: read.roster,
+            oneOffs: read.oneOffStore, asOf: today, on: today,
+            in: read.recordStore?.history ?? History(),
             birthdayGroup: Self.birthdayGroup(
                 on: today, from: reading, calendar: calendar, ticks: openedBirthdays.store?.ticks)
         ).withHappenings(openedHappenings.store?.happenings ?? Happenings())
@@ -1559,7 +1560,8 @@ public final class DayScreen {
     /// day, for three days*.
     private func dayView(on day: CalendarDate) -> DayView {
         Self.formDayView(
-            of: roster.groups(on: day), roster: roster, oneOffs: oneOffStore, asOf: today, on: day,
+            of: roster.groups(on: day, recordedIn: recordStore?.history), roster: roster,
+            oneOffs: oneOffStore, asOf: today, on: day,
             in: recordStore?.history ?? History(),
             birthdayGroup: birthdayGroup(on: day)
         ).withHappenings(heldHappenings)
@@ -1813,8 +1815,8 @@ public final class DayScreen {
         refreshBirthdays(for: shownDay)
 
         self.dayView = Self.formDayView(
-            of: read.roster.groups(on: shownDay), roster: read.roster, oneOffs: read.oneOffStore,
-            asOf: self.today, on: shownDay, in: read.recordStore?.history ?? History(),
+            of: read.roster.groups(on: shownDay, recordedIn: read.recordStore?.history), roster: read.roster,
+            oneOffs: read.oneOffStore, asOf: self.today, on: shownDay, in: read.recordStore?.history ?? History(),
             birthdayGroup: birthdayGroup(on: shownDay)
         ).withHappenings(heldHappenings)
     }
@@ -1905,7 +1907,7 @@ public final class DayScreen {
             self.oneOffState = openedOneOffs.state
             refreshBirthdays(for: shownDay)
             self.dayView = Self.formDayView(
-                of: readOnly.roster.groups(on: shownDay), roster: readOnly.roster,
+                of: readOnly.roster.groups(on: shownDay, recordedIn: nil), roster: readOnly.roster,
                 oneOffs: openedOneOffs.store, asOf: today, on: shownDay, in: History(),
                 birthdayGroup: birthdayGroup(on: shownDay))
             return
@@ -1930,8 +1932,8 @@ public final class DayScreen {
 
         refreshBirthdays(for: shownDay)
         self.dayView = Self.formDayView(
-            of: openedRoster.roster.groups(on: shownDay), roster: openedRoster.roster,
-            oneOffs: openedOneOffs.store, asOf: today, on: shownDay,
+            of: openedRoster.roster.groups(on: shownDay, recordedIn: recordStore?.history),
+            roster: openedRoster.roster, oneOffs: openedOneOffs.store, asOf: today, on: shownDay,
             in: recordStore?.history ?? History(),
             birthdayGroup: birthdayGroup(on: shownDay))
     }
@@ -2013,8 +2015,8 @@ public final class DayScreen {
 
         refreshBirthdays(for: shownDay)
         self.dayView = Self.formDayView(
-            of: openedRoster.roster.groups(on: shownDay), roster: openedRoster.roster,
-            oneOffs: oneOffStore, asOf: today, on: shownDay, in: recordStore?.history ?? History(),
+            of: openedRoster.roster.groups(on: shownDay, recordedIn: recordStore?.history),
+            roster: openedRoster.roster, oneOffs: oneOffStore, asOf: today, on: shownDay, in: recordStore?.history ?? History(),
             birthdayGroup: birthdayGroup(on: shownDay))
     }
 }

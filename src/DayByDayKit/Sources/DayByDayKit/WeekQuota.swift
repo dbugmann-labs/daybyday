@@ -16,10 +16,38 @@ enum WeekQuota {
     struct Link {
         let commitment: Commitment
         let end: CalendarDate?
+        /// The days away laid over this commitment's whole life, which hide days its eras hold.
+        /// `openspec/changes/change-days-away/design.md` § *The model: days away are a mask*.
+        let away: DaysAwayMask
 
-        init(_ commitment: Commitment, end: CalendarDate?) {
+        init(_ commitment: Commitment, end: CalendarDate?, away: DaysAwayMask = .none) {
             self.commitment = commitment
             self.end = end
+            self.away = away
+        }
+
+        /// Whether this link's era holds `day` and days away over the commitment leave it: not
+        /// hidden — covered by them with nothing of the commitment recorded on it in `history`.
+        func holds(_ day: CalendarDate, in history: History?) -> Bool {
+            commitment.keptFrom.days(until: day) >= 0
+                && (end.map { day.days(until: $0) >= 0 } ?? true)
+                && !(away.covers(day) && !(history?.holdsRecord(of: commitment, on: day) ?? false))
+        }
+
+        /// This link's commitment as days away leave it on `day`: an every-N-days count begun
+        /// again on the latest day after days away over it that the era holds, on or before `day`.
+        func commitment(on day: CalendarDate) -> Commitment {
+            guard
+                let counted = away.countedFrom(
+                    on: day,
+                    holds: { after in
+                        commitment.keptFrom.days(until: after) >= 0
+                            && (end.map { after.days(until: $0) >= 0 } ?? true)
+                    })
+            else {
+                return commitment
+            }
+            return commitment.countedAgain(from: counted)
         }
 
         /// This link's own day it is kept from — its commitment's, read here so a caller walking
@@ -29,13 +57,10 @@ enum WeekQuota {
     }
 
     /// The `Link` of `links` holding `day` — the one whose commitment's day kept from is on or
-    /// before `day` and whose `end`, where it has one, is on or after it — or `nil` where none
-    /// does.
-    private static func link(holding day: CalendarDate, in links: [Link]) -> Link? {
-        links.first {
-            $0.commitment.keptFrom.days(until: day) >= 0
-                && ($0.end.map { day.days(until: $0) >= 0 } ?? true)
-        }
+    /// before `day`, whose `end`, where it has one, is on or after it and which days away over the
+    /// commitment do not hide on it — or `nil` where none does.
+    static func link(holding day: CalendarDate, in links: [Link], history: History?) -> Link? {
+        links.first { $0.holds(day, in: history) }
     }
 
     /// The days of the Monday-to-Sunday week starting `monday` kept against a weekly-quota link
@@ -61,7 +86,7 @@ enum WeekQuota {
         var day = monday
 
         for _ in 0..<7 {
-            if let link = Self.link(holding: day, in: links),
+            if let link = Self.link(holding: day, in: links, history: history),
                 case .weeklyQuota(let quota) = link.commitment.schedule
             {
                 hasQuotaDay = true
@@ -85,12 +110,12 @@ enum WeekQuota {
     }
 
     /// How many days of the week from `day` through its Sunday, both counted, some link of `links`
-    /// holds — a day a gap of days away cuts is no day left, as it is no day owed.
-    static func daysHeld(from day: CalendarDate, links: [Link]) -> Int {
+    /// holds — a day days away hide is no day left, as it is no day owed.
+    static func daysHeld(from day: CalendarDate, links: [Link], history: History?) -> Int {
         var held = 0
         var current = day
         while true {
-            if Self.link(holding: current, in: links) != nil {
+            if Self.link(holding: current, in: links, history: history) != nil {
                 held += 1
             }
             guard current.weekday != .sunday, let next = current.adding(days: 1) else {
@@ -127,6 +152,7 @@ enum WeekQuota {
             return [Link(commitment, end: nil)]
         }
 
-        return matching.map { Link($0.commitment, end: $0.keptUntil) }
+        let away = roster.mask(over: commitment.identity)
+        return matching.map { Link($0.commitment, end: $0.keptUntil, away: away) }
     }
 }
