@@ -213,6 +213,20 @@ Things that are built, or deliberately not built, in a state someone will trip o
   Pro Max the name ran one letter per line. It is on `main`, and #425 left the line's
   layout as it was.
 
+- **The scenario for the every-N-days shift bound after days away does not pin it.** `commitment`
+  says an every-N-days due day before days away SHALL be shifted onto none of their days nor the
+  first due day after them, and `change-days-away`'s `design.md` calls that pinned by its scenario
+  ("a roster shifts an every-N-days due day …", days away 11–12 Oct on every 4 days from 1 Oct).
+  It is not: the day after those days away, 13 Oct, is also due on the count before them, so the
+  bound taken out still passes it. A regression test without a scenario, with days away 14–15 Oct,
+  is what fails. The behaviour is right. Found by mutation at #402's tenth G7 on 2026-10-15; the
+  owner kept the regression test as the pin rather than move the signed folder again.
+- **Days away picked over one commitment twice write a roster nothing can read.** Saying or changing
+  days away over `[Gym, Gym, Run]` answers as kept, but the roster store refuses what was written as
+  not a store, and the next screen reads the roster as not kept. The sheet cannot pick one
+  commitment twice, so only a caller of the screen reaches it. It is on `main` for saying, older than
+  #402, which inherited it for a change. Found at #402's tenth G7 on 2026-10-15.
+
 - **Nothing tests that a present-idea change, deletion or mark that changes nothing leaves the file
   unwritten.** `present-idea` says such an edit SHALL write nothing and leave the place untouched,
   and its scenarios check that by comparing the content byte-for-byte, which a rewrite of identical
