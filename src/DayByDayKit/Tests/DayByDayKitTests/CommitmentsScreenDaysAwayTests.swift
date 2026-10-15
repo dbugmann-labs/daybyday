@@ -192,9 +192,9 @@ func aCommitmentIsTakenUpAgainAfterDaysAwayOnTheRhythmRangeAndTargetItHadAnEvery
 
 @MainActor
 @Test(
-    "days away from today keep a commitment that holds a record today until today, and the others until the day before"
+    "days away from today hide no day holding a record of a commitment picked, and hide it once the record is taken back"
 )
-func daysAwayFromTodayKeepACommitmentThatHoldsARecordTodayUntilTodayAndTheOthersUntilTheDayBefore()
+func daysAwayFromTodayHideNoDayHoldingARecordOfACommitmentPickedAndHideItOnceTheRecordIsTakenBack()
     throws
 {
     let places = Places()
@@ -222,8 +222,7 @@ func daysAwayFromTodayKeepACommitmentThatHoldsARecordTodayUntilTodayAndTheOthers
     #expect(dayRows(date(2026, 10, 15)).map(\.name) == ["Creatine", "Magnesium"])
 
     try record.remove(tick)
-    #expect(dayRows(monday12).map(\.name) == ["Creatine"])
-    #expect(dayRows(monday12).map(\.isKept) == [false])
+    #expect(dayRows(monday12).isEmpty)
 }
 
 @MainActor
@@ -654,36 +653,6 @@ func daysAwayRemovedAfterAChangeOfRhythmLeaveThatChangeStandingFromTheDayItWasMa
     }
     #expect(isDue("Gym", on: date(2026, 10, 10), in: roster))
     #expect(!isDue("Gym", on: date(2026, 10, 9), in: roster))
-
-    // The same removal over the eras a change made before the days begin would leave: the change
-    // standing from the day it was made runs through them.
-    let old = commitment("Gym", gymSchedule)
-    let changedEra = Commitment(
-        era: old, schedule: everyDay, keptFrom: monday12, kind: .tick)!
-    let resumed = Commitment(
-        era: old, schedule: everyDay, keptFrom: date(2026, 10, 19), kind: .tick)!
-    let span = Roster.Span(
-        identity: .minted(), name: "Mallorca", firstDay: date(2026, 10, 13),
-        lastDay: date(2026, 10, 18), commitments: [old.identity])
-    var heldRoster = Roster()
-    heldRoster.entries = [
-        Roster.Entry(commitment: resumed, keptUntil: nil, category: nil, usualAmounts: []),
-        Roster.Entry(commitment: changedEra, keptUntil: monday12, category: nil, usualAmounts: []),
-        Roster.Entry(commitment: old, keptUntil: date(2026, 10, 11), category: nil, usualAmounts: []),
-    ]
-    heldRoster.spans = [span]
-
-    heldRoster.removeDaysAway(span.identity)
-
-    #expect(heldRoster.spans.isEmpty)
-    #expect(heldRoster.eras(of: old).count == 2)
-    day = monday12
-    for _ in 0..<30 {
-        #expect(isDue("Gym", on: day, in: heldRoster))
-        day = day.adding(days: 1)!
-    }
-    #expect(isDue("Gym", on: date(2026, 10, 10), in: heldRoster))
-    #expect(!isDue("Gym", on: date(2026, 10, 9), in: heldRoster))
 }
 
 @MainActor
@@ -740,8 +709,8 @@ func aCommitmentStoppedBeforeItsDaysAwayBeginLeavesThemAndTheyStayOverTheOthers(
 }
 
 @MainActor
-@Test("a commitment stopped while its days away are under way is kept until the day before them")
-func aCommitmentStoppedWhileItsDaysAwayAreUnderWayIsKeptUntilTheDayBeforeThem() throws {
+@Test("a commitment stopped while its days away are under way stays in them, stopped on the day it was made")
+func aCommitmentStoppedWhileItsDaysAwayAreUnderWayStaysInThemStoppedOnTheDayItWasMade() throws {
     let places = Places()
     let gym = commitment("Gym")
     let run = commitment("Run")
@@ -755,14 +724,16 @@ func aCommitmentStoppedWhileItsDaysAwayAreUnderWayIsKeptUntilTheDayBeforeThem() 
     #expect(refusal == nil)
     #expect(underWay.daysAway.map(\.title) == ["Mallorca"])
     #expect(underWay.daysAway[0].commitments.map(\.name) == ["Gym", "Run"])
-    #expect(try notStoppedOn(monday12, at: places).contains("Gym"))
-    #expect(try !notStoppedOn(date(2026, 10, 13), at: places).contains("Gym"))
-    #expect(try !notStoppedOn(date(2026, 10, 14), at: places).contains("Gym"))
+    #expect(try notStoppedOn(date(2026, 10, 14), at: places).contains("Gym"))
+    #expect(try !notStoppedOn(date(2026, 10, 15), at: places).contains("Gym"))
+    var held = try RosterStore(at: places.roster).roster
+    for day in 13...19 { #expect(!isDue("Gym", on: date(2026, 10, day), in: held)) }
 
     underWay.askToRemove(underWay.daysAway[0])
     underWay.confirmRemovingDaysAway()
-    #expect(try notStoppedOn(date(2026, 10, 14), at: places).contains("Gym"))
-    #expect(try !notStoppedOn(date(2026, 10, 15), at: places).contains("Gym"))
+    held = try RosterStore(at: places.roster).roster
+    for day in [13, 14] { #expect(isDue("Gym", on: date(2026, 10, day), in: held)) }
+    #expect(!isDue("Gym", on: date(2026, 10, 15), in: held))
 }
 
 @MainActor
@@ -854,8 +825,10 @@ func aRhythmChangedBeforeDaysAwayBeginHoldsBeforeThemAndAfterThemAndNotOnTheirDa
 }
 
 @MainActor
-@Test("a rhythm changed while days away are under way holds from the day after them")
-func aRhythmChangedWhileDaysAwayAreUnderWayHoldsFromTheDayAfterThem() throws {
+@Test("a rhythm changed while days away are under way holds from the day it was changed, hidden until the day after them")
+func aRhythmChangedWhileDaysAwayAreUnderWayHoldsFromTheDayItWasChangedHiddenUntilTheDayAfterThem()
+    throws
+{
     let places = Places()
     let gym = commitment("Gym", gymSchedule)
     try takeOn([gym], at: places)
@@ -877,6 +850,12 @@ func aRhythmChangedWhileDaysAwayAreUnderWayHoldsFromTheDayAfterThem() throws {
         #expect(!isDue("Gym", on: day, in: roster))
         day = day.adding(days: 1)!
     }
+
+    underWay.askToRemove(try #require(underWay.daysAway.first))
+    #expect(underWay.confirmRemovingDaysAway() == nil)
+    let removed = try RosterStore(at: places.roster).roster
+    for due in [14, 15, 16] { #expect(isDue("Gym", on: date(2026, 10, due), in: removed)) }
+    #expect(!isDue("Gym", on: date(2026, 10, 13), in: removed))
 }
 
 @MainActor

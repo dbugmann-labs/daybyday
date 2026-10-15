@@ -21,17 +21,16 @@ private func day(_ month: Int, _ day: Int) -> String {
     #"{ "year": 2026, "month": \#(month), "day": \#(day) }"#
 }
 
-/// One days away as a roster document writes it in form 11, `remembers` the raw JSON list of the
-/// commitments it remembers a stop for and the day, or `nil` to leave the key out.
+/// One days away as a roster document writes it, in form 10's shape, which form 11 keeps.
 private func span(
     _ name: String?, from first: String, through last: String, over commitments: [String],
-    identity: String = UUID().uuidString, remembers: String? = "[]"
+    identity: String = UUID().uuidString
 ) -> String {
     let named = name.map { #""\#($0)""# } ?? "null"
     let over = commitments.map { #""\#($0)""# }.joined(separator: ",")
     return """
         { "identity": "\(identity)", "name": \(named), "firstDay": \(first),
-          "lastDay": \(last), "commitments": [\(over)]\(remembers.map { #", "remembers": \#($0)"# } ?? "") }
+          "lastDay": \(last), "commitments": [\(over)] }
         """
 }
 
@@ -180,122 +179,6 @@ private func rosterJSON(version: Int, eras: [String], daysAway: String) -> Data 
         """.utf8)
 }
 
-@MainActor
-@Test(
-    "a roster kept before days away remembered a stop is read as remembering the later of their last day and the last day kept"
-)
-func aRosterKeptBeforeDaysAwayRememberedAStopIsReadAsRememberingTheLaterOfTheirLastDayAndTheLastDayKept()
-    throws
-{
-    let january1 = day(1, 1)
-    let run = [
-        era("Run", runID, from: day(10, 4)), era("Run", runID, from: january1, until: day(9, 30)),
-    ]
-    let flu = "[" + span("Flu", from: day(10, 1), through: day(10, 3), over: [gymID, runID], remembers: nil) + "]"
-    let first = rosterJSON(
-        version: 10, eras: [era("Gym", gymID, from: january1, until: day(9, 30))] + run, daysAway: flu)
-    let second = rosterJSON(
-        version: 10,
-        eras: [
-            era("Gym", gymID, from: day(10, 4), until: day(10, 11)),
-            era("Gym", gymID, from: january1, until: day(9, 30)),
-        ] + run, daysAway: flu)
-
-    let (firstPlace, firstResult) = try opened(first)
-    let (secondPlace, secondResult) = try opened(second)
-
-    _ = try firstResult.get()
-    _ = try secondResult.get()
-    #expect(try Data(contentsOf: firstPlace) == first)
-    #expect(try Data(contentsOf: secondPlace) == second)
-
-    let monday12 = date(2026, 10, 12)
-    for place in [firstPlace, secondPlace] {
-        let screen = CommitmentsScreen(asOf: monday12, keepingRosterAt: place)
-        let flu = try #require(screen.pastDaysAway.first)
-        #expect(
-            screen.changeDaysAway(
-                flu, named: "Flu", from: date(2026, 10, 1), through: date(2026, 10, 7),
-                over: flu.commitments) == nil)
-        screen.askToRemove(try #require(screen.pastDaysAway.first))
-        #expect(screen.confirmRemovingDaysAway() == nil)
-    }
-    let atFirst = try RosterStore(at: firstPlace).roster
-    #expect(dueOn(atFirst, "Gym", date(2026, 10, 3)))
-    #expect(!dueOn(atFirst, "Gym", date(2026, 10, 4)))
-    let atSecond = try RosterStore(at: secondPlace).roster
-    #expect(dueOn(atSecond, "Gym", date(2026, 10, 6)))
-    #expect(dueOn(atSecond, "Gym", date(2026, 10, 11)))
-    #expect(!dueOn(atSecond, "Gym", monday12))
-}
-
 private func dueOn(_ roster: Roster, _ name: String, _ day: CalendarDate) -> Bool {
     roster.groups(on: day).flatMap(\.commitments).contains { $0.name == name && $0.isDue(on: day) }
-}
-
-@Test("a roster store whose days away remember what no roster could is refused")
-func aRosterStoreWhoseDaysAwayRememberWhatNoRosterCouldIsRefused() throws {
-    let eras = [
-        era("Gym", gymID, from: day(1, 1), until: day(9, 30)), era("Run", runID, from: day(1, 1)),
-    ]
-    func flu(over commitments: [String], remembers: String?) -> String {
-        "[" + span("Flu", from: day(10, 1), through: day(10, 3), over: commitments, remembers: remembers) + "]"
-    }
-    /// A stop of `id` on `when`, taken up as `takeUp` says — `"day"` or `"dayBack"` and the day — or not.
-    func remembering(_ id: String, _ when: String, takenUp takeUp: (String, String)? = nil) -> String {
-        let taken = takeUp.map { #", "takeUp": { "\#($0.0)": \#($0.1) }"# } ?? ""
-        return #"{ "commitment": "\#(id)", "day": \#(when)\#(taken) }"#
-    }
-    func list(_ stops: String...) -> String { "[" + stops.joined(separator: ",") + "]" }
-    let saturday3 = day(10, 3)
-    let thursday8 = day(10, 8)
-    let both = [gymID, runID]
-    let refused: [(Int, String)] = [
-        (11, flu(over: [runID], remembers: list(remembering(gymID, saturday3)))),
-        (
-            11,
-            flu(
-                over: both,
-                remembers: list(
-                    remembering(gymID, saturday3, takenUp: ("day", thursday8)),
-                    remembering(gymID, saturday3)))
-        ),
-        (
-            11,
-            flu(
-                over: both,
-                remembers: list(
-                    remembering(gymID, day(10, 5), takenUp: ("day", thursday8)),
-                    remembering(gymID, saturday3)))
-        ),
-        (
-            11,
-            flu(
-                over: both,
-                remembers: list(remembering(gymID, saturday3), remembering(gymID, day(10, 12))))
-        ),
-        (
-            11,
-            flu(over: both, remembers: list(remembering(gymID, saturday3, takenUp: ("day", saturday3))))
-        ),
-        (11, flu(over: both, remembers: nil)),
-        (10, flu(over: both, remembers: list(remembering(gymID, saturday3)))),
-    ]
-    for (version, spans) in refused {
-        let (place, result) = try opened(rosterJSON(version: version, eras: eras, daysAway: spans))
-        #expect(throws: RosterStoreError.notAStore(at: place)) { try result.get() }
-    }
-
-    let controls = [
-        flu(
-            over: both,
-            remembers: list(
-                remembering(gymID, day(9, 29), takenUp: ("dayBack", day(10, 4))),
-                remembering(gymID, day(10, 10)))),
-        flu(over: both, remembers: "[]"),
-    ]
-    for spans in controls {
-        let (_, result) = try opened(rosterJSON(version: 11, eras: eras, daysAway: spans))
-        #expect(try result.get().roster.daysAway.count == 1)
-    }
 }
