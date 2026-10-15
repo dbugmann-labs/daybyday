@@ -140,9 +140,10 @@ public final class CommitmentsScreen {
         nextRoster.changeDaysAway(
             daysAway.identity, named: Blank.saysNothing(name) ? nil : Blank.trimmed(name),
             from: firstDay, through: lastDay, over: commitments)
-        if let refusal = refusalLeavingARecordedDayNotDue(
+        if let refusal = refusalOfDaysAwayLeavingARecordedDayNotDue(
             over: listed.commitments + commitments, from: rosterStore.roster, to: nextRoster)
         {
+            daysAwayAwaitingRemoval = nil
             return refuseDaysAway(refusal)
         }
         do {
@@ -202,9 +203,10 @@ public final class CommitmentsScreen {
         nextRoster.sayDaysAway(
             named: Blank.saysNothing(name) ? nil : Blank.trimmed(name), from: firstDay,
             through: lastDay, over: commitments)
-        if let refusal = refusalLeavingARecordedDayNotDue(
+        if let refusal = refusalOfDaysAwayLeavingARecordedDayNotDue(
             over: commitments, from: roster, to: nextRoster)
         {
+            daysAwayAwaitingRemoval = nil
             return refuseDaysAway(refusal)
         }
         do {
@@ -287,7 +289,7 @@ public final class CommitmentsScreen {
     /// Both rosters are read with the record, so a day days away leave shown is due as it is shown.
     /// `nil` where this screen cannot read its record. `design.md` § *Two record refusals, and their
     /// order*.
-    private func refusalLeavingARecordedDayNotDue(
+    private func refusalOfDaysAwayLeavingARecordedDayNotDue(
         over commitments: [Commitment], from before: Roster, to after: Roster
     ) -> Refusal? {
         guard let history = recordStore?.history else {
@@ -358,7 +360,7 @@ public final class CommitmentsScreen {
         }
         var nextRoster = rosterStore.roster
         nextRoster.removeDaysAway(removing.identity)
-        if let refusal = refusalLeavingARecordedDayNotDue(
+        if let refusal = refusalOfDaysAwayLeavingARecordedDayNotDue(
             over: removing.commitments, from: rosterStore.roster, to: nextRoster)
         {
             return refuseDaysAway(refusal)

@@ -226,3 +226,28 @@ func aRosterRefusesToShiftAWeekdaySetDayAShiftPutADueDayOnOntoADayDaysAwayHide()
     for due in [14, 15, 17] { #expect(isDue("Gym", on: date(2026, 10, due), in: store.roster)) }
     for notDue in [12, 13, 16] { #expect(!isDue("Gym", on: date(2026, 10, notDue), in: store.roster)) }
 }
+
+@MainActor
+@Test("an every-N-days due day before days away is shifted onto no first due day after them")
+func anEveryNDaysDueDayBeforeDaysAwayIsShiftedOntoNoFirstDueDayAfterThem() throws {
+    let places = Places()
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: date(2026, 10, 1)),
+        keptFrom: date(2026, 10, 1), kind: .tick)!
+    try RosterStore(at: places.roster).add(nails)
+    let commitments = screen(places, asOf: date(2026, 10, 1))
+    #expect(
+        commitments.sayDaysAway(
+            named: "", from: date(2026, 10, 10), through: date(2026, 10, 10), over: [nails]) == nil)
+    #expect(
+        commitments.sayDaysAway(
+            named: "", from: date(2026, 10, 12), through: date(2026, 10, 12), over: [nails]) == nil)
+    let store = try RosterStore(at: places.roster)
+
+    let shifted = try store.shift(nails, from: date(2026, 10, 9), to: date(2026, 10, 11))
+
+    #expect(!shifted)
+    #expect(isDue("Nails", on: date(2026, 10, 9), in: store.roster))
+    #expect(isDue("Nails", on: date(2026, 10, 11), in: store.roster))
+    #expect(!isDue("Nails", on: date(2026, 10, 10), in: store.roster))
+}

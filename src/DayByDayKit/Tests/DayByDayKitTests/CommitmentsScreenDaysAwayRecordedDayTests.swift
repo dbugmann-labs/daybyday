@@ -232,3 +232,141 @@ func daysAwayThatWouldPutOneRecordedDayUnderThemAndLeaveAnotherNotDueAreRefusedN
     #expect(later.pastDaysAway.map(\.title) == ["Sick"])
     #expect(later.pastDaysAway.first?.daysInWords == "Mon 5 Oct – Wed 7 Oct")
 }
+
+/// Not a scenario: the rule of the requirement's "a commitment ticked onto or unticked from them
+/// included", for the tick. Pins a survivor of the tenth review.
+@MainActor
+@Test(
+    "a commitment ticked onto days away is refused where the count begun again leaves its recorded day not due"
+)
+func aCommitmentTickedOntoDaysAwayIsRefusedWhereTheCountBegunAgainLeavesItsRecordedDayNotDue()
+    throws
+{
+    let places = Places()
+    let nails = nails()
+    let gym = commitment("Gym")
+    try takeOn([nails, gym], at: places)
+    let tuesday13 = date(2026, 10, 13)
+    try RecordStore(at: places.record).add(Tick(nails, on: tuesday13)!)
+    let commitments = screen(places, asOf: date(2026, 10, 14))
+    #expect(
+        commitments.sayDaysAway(
+            named: "Sick", from: date(2026, 10, 8), through: date(2026, 10, 8), over: [gym]) == nil)
+    let sick = try #require(commitments.pastDaysAway.first)
+    let before = try Data(contentsOf: places.roster)
+
+    let refused = commitments.changeDaysAway(
+        sick, named: "Sick", from: date(2026, 10, 8), through: date(2026, 10, 8),
+        over: [gym, nails])
+
+    #expect(refused == .recordedDayLeftNotDue(nails, tuesday13))
+    #expect(try Data(contentsOf: places.roster) == before)
+    #expect(commitments.pastDaysAway.first?.commitments.map(\.name) == ["Gym"])
+}
+
+@MainActor
+@Test(
+    "days away said that put one recorded day under them and leave another not due are refused naming the day put under them"
+)
+func daysAwaySaidThatPutOneRecordedDayUnderThemAndLeaveAnotherNotDueAreRefusedNamingTheDayPutUnderThem()
+    throws
+{
+    let places = Places()
+    let nails = nails()
+    let gym = commitment("Gym")
+    try takeOn([nails, gym], at: places)
+    let thursday8 = date(2026, 10, 8)
+    let record = try RecordStore(at: places.record)
+    try record.add(Tick(nails, on: date(2026, 10, 13))!)
+    try record.add(Tick(gym, on: thursday8)!)
+    let commitments = screen(places, asOf: date(2026, 10, 14))
+    let before = try Data(contentsOf: places.roster)
+
+    let refused = commitments.sayDaysAway(
+        named: "", from: thursday8, through: thursday8, over: [nails, gym])
+
+    #expect(refused == .recordOnDaysAway(gym, thursday8))
+    #expect(try Data(contentsOf: places.roster) == before)
+    #expect(commitments.pastDaysAway.isEmpty)
+}
+
+@MainActor
+@Test(
+    "a refusal for a recorded day left not due names the first such commitment the roster holds")
+func aRefusalForARecordedDayLeftNotDueNamesTheFirstSuchCommitmentTheRosterHolds() throws {
+    let places = Places()
+    let nails = nails()
+    let hair = commitment(
+        "Hair", .everyNDays(DayInterval(days: 3)!, from: date(2026, 10, 1)),
+        keptFrom: date(2026, 10, 1))
+    try takeOn([nails, hair], at: places)
+    let tuesday13 = date(2026, 10, 13)
+    let record = try RecordStore(at: places.record)
+    try record.add(Tick(hair, on: tuesday13)!)
+    try record.add(Tick(nails, on: tuesday13)!)
+    let commitments = screen(places, asOf: date(2026, 10, 14))
+
+    let refused = commitments.sayDaysAway(
+        named: "", from: date(2026, 10, 8), through: date(2026, 10, 8), over: [hair, nails])
+
+    #expect(refused == .recordedDayLeftNotDue(nails, tuesday13))
+}
+
+@MainActor
+@Test("a recorded day not due before days away is not judged as left not due by them")
+func aRecordedDayNotDueBeforeDaysAwayIsNotJudgedAsLeftNotDueByThem() throws {
+    let places = Places()
+    let gym = commitment("Gym")
+    let run = commitment("Run")
+    try takeOn([gym, run], at: places)
+    #expect(
+        screen(places, asOf: date(2026, 10, 14)).sayDaysAway(
+            named: "Trip", from: date(2026, 10, 8), through: date(2026, 10, 10), over: [gym, run])
+            == nil)
+    stopKeeping(gym, on: screen(places, asOf: date(2026, 10, 9)))
+    try RecordStore(at: places.record).add(Tick(gym, on: monday12)!)
+    let later = screen(places, asOf: date(2026, 10, 14))
+    let trip = try #require(later.pastDaysAway.first)
+    #expect(later.stopped.map(\.name) == ["Gym"])
+    #expect(trip.commitments.map(\.name) == ["Gym", "Run"])
+
+    let refused = later.changeDaysAway(
+        trip, named: "Trip", from: date(2026, 10, 8), through: date(2026, 10, 10),
+        over: [gym, run])
+
+    #expect(refused == nil)
+    #expect(later.pastDaysAway.first?.commitments.map(\.name) == ["Gym", "Run"])
+}
+
+@MainActor
+@Test("a refusal for a recorded day left not due leaves no days away awaiting removal")
+func aRefusalForARecordedDayLeftNotDueLeavesNoDaysAwayAwaitingRemoval() throws {
+    let places = Places()
+    let nails = nails()
+    let gym = commitment("Gym")
+    try takeOn([nails, gym], at: places)
+    try RecordStore(at: places.record).add(Tick(nails, on: date(2026, 10, 13))!)
+    let commitments = screen(places, asOf: date(2026, 10, 14))
+    #expect(
+        commitments.sayDaysAway(
+            named: "Trip", from: date(2026, 10, 5), through: date(2026, 10, 5), over: [gym]) == nil)
+    let trip = try #require(commitments.pastDaysAway.first)
+
+    commitments.askToRemove(trip)
+    let said = commitments.sayDaysAway(
+        named: "", from: date(2026, 10, 8), through: date(2026, 10, 8), over: [gym, nails])
+    #expect(said == .recordedDayLeftNotDue(nails, date(2026, 10, 13)))
+    #expect(commitments.daysAwayAwaitingRemoval == nil)
+
+    commitments.askToRemove(trip)
+    let changed = commitments.changeDaysAway(
+        trip, named: "Trip", from: date(2026, 10, 8), through: date(2026, 10, 8), over: [gym, nails])
+    #expect(changed == .recordedDayLeftNotDue(nails, date(2026, 10, 13)))
+    #expect(commitments.daysAwayAwaitingRemoval == nil)
+}
+
+@MainActor
+private func stopKeeping(_ commitment: Commitment, on screen: CommitmentsScreen) {
+    screen.askToStopKeeping(commitment)
+    screen.confirmStopKeeping()
+}
