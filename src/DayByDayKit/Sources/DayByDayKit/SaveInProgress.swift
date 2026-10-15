@@ -157,25 +157,32 @@ struct SaveInProgress: Equatable, Codable {
         let known = Set(roster.entries.map(\.commitment))
         let orphans = store.history.commitmentsWithRecords().subtracting(known)
 
-        var candidatesByOrphan: [Commitment: [Commitment]] = [:]
+        var candidatesByOrphan: [Commitment: [Roster.Entry]] = [:]
         for orphan in orphans {
             let dates = store.history.datesRecorded(for: orphan)
-            candidatesByOrphan[orphan] = roster.entries.map(\.commitment).filter { candidate in
-                candidate.kind == orphan.kind && Rhythm(candidate.schedule) == Rhythm(orphan.schedule)
-                    && dates.allSatisfy { candidate.isDue(on: $0) }
+            // A candidate is due on a day as the read days away over it leave it, an every-N-days
+            // count begun again after them included.
+            candidatesByOrphan[orphan] = roster.entries.filter { candidate in
+                candidate.commitment.kind == orphan.kind
+                    && Rhythm(candidate.commitment.schedule) == Rhythm(orphan.schedule)
+                    && dates.allSatisfy {
+                        roster.read(candidate, on: $0, recordedIn: store.history)?.isDue(on: $0) ?? false
+                    }
             }
         }
 
         var candidateCounts: [Commitment: Int] = [:]
         for candidates in candidatesByOrphan.values where candidates.count == 1 {
-            candidateCounts[candidates[0], default: 0] += 1
+            candidateCounts[candidates[0].commitment, default: 0] += 1
         }
 
         var stillOrphaned = false
         for orphan in orphans {
             guard let candidates = candidatesByOrphan[orphan], candidates.count == 1,
-                candidateCounts[candidates[0]] == 1,
-                (try? store.carryBack(orphan, to: candidates[0])) == true
+                candidateCounts[candidates[0].commitment] == 1,
+                (try? store.carryBack(
+                    orphan, to: candidates[0].commitment,
+                    readOn: { roster.read(candidates[0], on: $0, recordedIn: store.history) })) == true
             else {
                 stillOrphaned = true
                 continue

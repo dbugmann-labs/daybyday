@@ -35,6 +35,27 @@ struct DaysAwayMask: Hashable, Sendable {
         }
         return latest
     }
+
+    /// `commitment` as days away over it leave it on `day`: `nil` where they hide `day` — covered,
+    /// and `history` holds nothing of `commitment` on it, with no history every covered day —
+    /// and, where it counts every N days, with the count begun again on the latest day after days
+    /// away over it that `holds`, on or before `day`. The one rule of what days away do to a
+    /// commitment's day, which `Roster.read` and a quota's links both go through.
+    func read(
+        _ commitment: Commitment, on day: CalendarDate, recordedIn history: History?,
+        holds: (CalendarDate) -> Bool
+    ) -> Commitment? {
+        guard !stretches.isEmpty else {
+            return commitment
+        }
+        if covers(day), !(history?.holdsRecord(of: commitment, on: day) ?? false) {
+            return nil
+        }
+        guard let counted = countedFrom(on: day, holds: holds) else {
+            return commitment
+        }
+        return commitment.countedAgain(from: counted)
+    }
 }
 
 extension Commitment {
@@ -107,17 +128,8 @@ extension Roster {
     /// commitment owes, holds or leaves free goes through. `design.md` § *The model: days away are
     /// a mask*.
     func read(_ entry: Entry, on day: CalendarDate, recordedIn history: History?) -> Commitment? {
-        let mask = mask(over: entry.commitment.identity)
-        guard !mask.stretches.isEmpty else {
-            return entry.commitment
-        }
-        if mask.covers(day), !(history?.holdsRecord(of: entry.commitment, on: day) ?? false) {
-            return nil
-        }
-        guard let counted = mask.countedFrom(on: day, holds: entry.holds) else {
-            return entry.commitment
-        }
-        return entry.commitment.countedAgain(from: counted)
+        mask(over: entry.commitment.identity).read(
+            entry.commitment, on: day, recordedIn: history, holds: entry.holds)
     }
 
     // MARK: Saying, changing, removing
@@ -154,20 +166,6 @@ extension Roster {
         spans.removeAll { $0.identity == identity }
     }
 
-    /// The commitments among `commitments` that stay over the days away `identity` names once they
-    /// begin on `first`: every one kept, and a stopped one unless `first` is later than the day
-    /// after the day it was last kept.
-    func commitmentsStayingOver(
-        _ commitments: [Commitment], changing identity: DaysAway.Identity, from first: CalendarDate
-    ) -> [Commitment] {
-        commitments.filter { commitment in
-            guard let lastKept = lastDayKept(of: commitment) else {
-                return true
-            }
-            return first.days(until: lastKept) >= -1
-        }
-    }
-
     /// `commitments` in the order this roster holds them, those it does not hold last.
     func inRosterOrder(_ commitments: [Commitment]) -> [Commitment] {
         var held: [Commitment.Identity] = []
@@ -179,12 +177,6 @@ extension Roster {
             let r = held.firstIndex(of: rhs.element.identity) ?? held.count
             return l != r ? l < r : lhs.offset < rhs.offset
         }.map(\.element)
-    }
-
-    /// The last day `commitment` was kept, or `nil` where it is kept still or this roster does not
-    /// hold it.
-    private func lastDayKept(of commitment: Commitment) -> CalendarDate? {
-        entries.first { $0.commitment.identity == commitment.identity }?.keptUntil
     }
 
     /// Takes `commitment` out of every days away it is over whose first day is after `today` — every

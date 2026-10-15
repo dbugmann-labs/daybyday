@@ -195,7 +195,7 @@ public struct LookBack: Hashable, Sendable {
     /// the screen was handed, and `history` is the record this screen reads.
     static func form(
         for commitment: Commitment, keptUntil: CalendarDate?, entries: [Roster.Entry],
-        daysAway: DaysAwayMask = .none, today: CalendarDate, history: History
+        daysAway: DaysAwayMask, today: CalendarDate, history: History
     ) -> LookBack {
         let frontEnd = keptUntil ?? today
         let eras = chain(from: commitment, keptUntil: keptUntil, entries: entries, daysAway: daysAway)
@@ -348,7 +348,7 @@ public struct LookBack: Hashable, Sendable {
                 } else {
                     currentMonth.hasNonQuotaDay = true
                     currentMonth.lastDay = day
-                    let counted = era.commitment(on: day)
+                    let counted = era.commitment(on: day, in: history)
                     if counted.isDue(on: day) {
                         currentMonth.due += 1
                         if history.isKept(counted, on: day) {

@@ -125,11 +125,6 @@ public final class CommitmentsScreen {
         guard !commitments.isEmpty else {
             return refuseDaysAway(.overNoCommitment)
         }
-        let commitments = rosterStore.roster.commitmentsStayingOver(
-            commitments, changing: daysAway.identity, from: firstDay)
-        guard !commitments.isEmpty else {
-            return refuseDaysAway(.overNoCommitment)
-        }
         if let refusal = judgeDaysAway(
             from: firstDay, through: lastDay, over: commitments, in: rosterStore.roster,
             besides: daysAway.identity)
@@ -145,6 +140,11 @@ public final class CommitmentsScreen {
         nextRoster.changeDaysAway(
             daysAway.identity, named: Blank.saysNothing(name) ? nil : Blank.trimmed(name),
             from: firstDay, through: lastDay, over: commitments)
+        if let refusal = refusalLeavingARecordedDayNotDue(
+            over: listed.commitments + commitments, from: rosterStore.roster, to: nextRoster)
+        {
+            return refuseDaysAway(refusal)
+        }
         do {
             try rosterStore.replace(with: nextRoster)
         } catch {
@@ -202,6 +202,11 @@ public final class CommitmentsScreen {
         nextRoster.sayDaysAway(
             named: Blank.saysNothing(name) ? nil : Blank.trimmed(name), from: firstDay,
             through: lastDay, over: commitments)
+        if let refusal = refusalLeavingARecordedDayNotDue(
+            over: commitments, from: roster, to: nextRoster)
+        {
+            return refuseDaysAway(refusal)
+        }
         do {
             try rosterStore.replace(with: nextRoster)
         } catch {
@@ -276,6 +281,34 @@ public final class CommitmentsScreen {
         return nil
     }
 
+    /// The refusal for the first of `commitments`, in the order `before` holds them, whose record
+    /// holds something on a day it is due on in `before` and not in `after`, naming its earliest such
+    /// day: the loss of a recorded day an every-N-days count begun again on another day brings.
+    /// Both rosters are read with the record, so a day days away leave shown is due as it is shown.
+    /// `nil` where this screen cannot read its record. `design.md` § *Two record refusals, and their
+    /// order*.
+    private func refusalLeavingARecordedDayNotDue(
+        over commitments: [Commitment], from before: Roster, to after: Roster
+    ) -> Refusal? {
+        guard let history = recordStore?.history else {
+            return nil
+        }
+        func isDue(_ commitment: Commitment, on day: CalendarDate, in roster: Roster) -> Bool {
+            roster.groups(on: day, recordedIn: history).contains {
+                $0.commitments.contains { $0 == commitment && $0.isDue(on: day) }
+            }
+        }
+        for commitment in before.inRosterOrder(commitments) {
+            let lost = history.datesRecorded(for: commitment).filter {
+                isDue(commitment, on: $0, in: before) && !isDue(commitment, on: $0, in: after)
+            }
+            if let earliest = lost.min(by: { $0.days(until: $1) > 0 }) {
+                return .recordedDayLeftNotDue(commitment, earliest)
+            }
+        }
+        return nil
+    }
+
     private func refuseDaysAway(_ refusal: Refusal) -> Refusal {
         daysAwayRefusal = refusal
         return refusal
@@ -325,6 +358,11 @@ public final class CommitmentsScreen {
         }
         var nextRoster = rosterStore.roster
         nextRoster.removeDaysAway(removing.identity)
+        if let refusal = refusalLeavingARecordedDayNotDue(
+            over: removing.commitments, from: rosterStore.roster, to: nextRoster)
+        {
+            return refuseDaysAway(refusal)
+        }
         do {
             try rosterStore.replace(with: nextRoster)
         } catch {
@@ -995,6 +1033,10 @@ public final class CommitmentsScreen {
         /// Days away said or changed over a day on which the record holds something of a commitment
         /// picked, naming it and its earliest such day.
         case recordOnDaysAway(Commitment, CalendarDate)
+        /// Days away said, changed or removed that would leave a day on which the record holds
+        /// something of a commitment they are or were over not due, as an every-N-days count begun
+        /// again on another day does, naming it and its earliest such day.
+        case recordedDayLeftNotDue(Commitment, CalendarDate)
         /// Days away whose last day is before their first.
         case lastDayBeforeFirstDay
         /// Days away picked over no commitment.

@@ -379,7 +379,10 @@ public struct History: Hashable, Sendable {
     /// `source` holds any record at all, `design.md` § *Carrying back refuses only on a shared
     /// day*. Package-internal: `SaveInProgress` is the only caller, to undo a torn save and to
     /// carry an orphaned record back to its one possible source.
-    mutating func carryBack(_ orphan: Commitment, to source: Commitment) -> Bool {
+    mutating func carryBack(
+        _ orphan: Commitment, to source: Commitment,
+        readOn read: ((CalendarDate) -> Commitment?)? = nil
+    ) -> Bool {
         guard orphan != source else {
             return true
         }
@@ -389,7 +392,7 @@ public struct History: Hashable, Sendable {
         guard datesRecorded(for: source).isDisjoint(with: datesRecorded(for: orphan)) else {
             return false
         }
-        return move(orphan, to: source)
+        return move(orphan, to: source, readOn: read)
     }
 
     /// Whether this history holds any record of `commitment` — the emptiness check `carryOver`
@@ -407,7 +410,13 @@ public struct History: Hashable, Sendable {
     /// `hasRecords(of:)` found something to move and whichever refusal applies did not
     /// fire — so this only performs it, answering `false` without moving anything where a record
     /// cannot re-form under `changed`.
-    private mutating func move(_ commitment: Commitment, to changed: Commitment) -> Bool {
+    private mutating func move(
+        _ commitment: Commitment, to changed: Commitment,
+        readOn read: ((CalendarDate) -> Commitment?)? = nil
+    ) -> Bool {
+        // The commitment a record on `date` is formed under: `changed` as days away over it leave
+        // it that day, where the caller reads it so, else `changed` itself.
+        let formed = { (date: CalendarDate) in read?(date) ?? changed }
         let matchingTicks = ticks.filter { $0.commitment == commitment }
         let matchingNumbers = numbers.filter { $0.key.commitment == commitment }
         let matchingNotes = notes.filter { $0.key.commitment == commitment }
@@ -416,7 +425,7 @@ public struct History: Hashable, Sendable {
 
         var newTicks: Set<Tick> = []
         for tick in matchingTicks {
-            guard let newTick = Tick(changed, on: tick.date) else {
+            guard let newTick = Tick(formed(tick.date), on: tick.date) else {
                 return false
             }
             newTicks.insert(newTick)
@@ -424,7 +433,7 @@ public struct History: Hashable, Sendable {
 
         var newNumbers: [RecordedDay: Decimal] = [:]
         for (day, value) in matchingNumbers {
-            guard let newNumber = Number(value, for: changed, on: day.date) else {
+            guard let newNumber = Number(value, for: formed(day.date), on: day.date) else {
                 return false
             }
             newNumbers[RecordedDay(commitment: changed, date: day.date)] = newNumber.number
@@ -432,7 +441,7 @@ public struct History: Hashable, Sendable {
 
         var newNotes: [RecordedDay: String] = [:]
         for (day, text) in matchingNotes {
-            guard let newNote = Note(text, for: changed, on: day.date) else {
+            guard let newNote = Note(text, for: formed(day.date), on: day.date) else {
                 return false
             }
             newNotes[RecordedDay(commitment: changed, date: day.date)] = newNote.text
@@ -442,7 +451,7 @@ public struct History: Hashable, Sendable {
         for (day, amounts) in matchingAdditions {
             var carriedAmounts: [Decimal] = []
             for amount in amounts {
-                guard let newAddition = Addition(amount, for: changed, on: day.date) else {
+                guard let newAddition = Addition(amount, for: formed(day.date), on: day.date) else {
                     return false
                 }
                 carriedAmounts.append(newAddition.amount)
@@ -452,7 +461,7 @@ public struct History: Hashable, Sendable {
 
         var newDeclines: [RecordedDay: Decline] = [:]
         for (day, decline) in matchingDeclines {
-            guard let newDecline = Decline(for: changed, on: day.date, reason: decline.reason)
+            guard let newDecline = Decline(for: formed(day.date), on: day.date, reason: decline.reason)
             else {
                 return false
             }

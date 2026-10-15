@@ -244,9 +244,12 @@ public final class RecordStore {
     /// `SaveInProgress` is the only caller, to undo a torn save and to carry an orphaned record
     /// back to its one possible source.
     @discardableResult
-    func carryBack(_ orphan: Commitment, to source: Commitment) throws -> Bool {
+    func carryBack(
+        _ orphan: Commitment, to source: Commitment,
+        readOn read: ((CalendarDate) -> Commitment?)? = nil
+    ) throws -> Bool {
         try carryOver(orphan, to: source) { nextHistory in
-            nextHistory.carryBack(orphan, to: source)
+            nextHistory.carryBack(orphan, to: source, readOn: read)
         }
     }
 

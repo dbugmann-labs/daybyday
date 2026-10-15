@@ -26,28 +26,28 @@ enum WeekQuota {
             self.away = away
         }
 
+        /// This link's commitment as days away over it leave it on `day`, read through the one rule
+        /// `DaysAwayMask.read` states: `nil` where it hides `day`, an every-N-days count begun
+        /// again where days away over it have ended before.
+        private func read(on day: CalendarDate, in history: History?) -> Commitment? {
+            away.read(commitment, on: day, recordedIn: history) { held in
+                commitment.keptFrom.days(until: held) >= 0
+                    && (end.map { held.days(until: $0) >= 0 } ?? true)
+            }
+        }
+
         /// Whether this link's era holds `day` and days away over the commitment leave it: not
         /// hidden — covered by them with nothing of the commitment recorded on it in `history`.
         func holds(_ day: CalendarDate, in history: History?) -> Bool {
             commitment.keptFrom.days(until: day) >= 0
                 && (end.map { day.days(until: $0) >= 0 } ?? true)
-                && !(away.covers(day) && !(history?.holdsRecord(of: commitment, on: day) ?? false))
+                && read(on: day, in: history) != nil
         }
 
         /// This link's commitment as days away leave it on `day`: an every-N-days count begun
         /// again on the latest day after days away over it that the era holds, on or before `day`.
-        func commitment(on day: CalendarDate) -> Commitment {
-            guard
-                let counted = away.countedFrom(
-                    on: day,
-                    holds: { after in
-                        commitment.keptFrom.days(until: after) >= 0
-                            && (end.map { after.days(until: $0) >= 0 } ?? true)
-                    })
-            else {
-                return commitment
-            }
-            return commitment.countedAgain(from: counted)
+        func commitment(on day: CalendarDate, in history: History?) -> Commitment {
+            read(on: day, in: history) ?? commitment
         }
 
         /// This link's own day it is kept from — its commitment's, read here so a caller walking
