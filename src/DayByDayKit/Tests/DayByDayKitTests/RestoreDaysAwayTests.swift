@@ -189,3 +189,61 @@ func daysAwayChangedOnACommitmentsScreenWriteACopyAtTheCopyPlace() throws {
     #expect(copy.roster.daysAway.first?.commitments.map(\.name) == ["Gym"])
     #expect(copyPlace.lastCopy == Moment(on: monday12, hour: 14, minute: 34)!)
 }
+
+@MainActor
+@Test(
+    "a copy made before days away moved, restored, gives a commitment taken up again inside them back the days it held then"
+)
+func aCopyMadeBeforeDaysAwayMovedRestoredGivesACommitmentTakenUpAgainInsideThemBackTheDaysItHeldThen()
+    throws
+{
+    let places = Places()
+    let gym = commitment("Gym")
+    let run = commitment("Run")
+    let store = try RosterStore(at: places.roster)
+    try store.add(gym)
+    try store.add(run)
+    places.screen().sayDaysAway(
+        named: "Mallorca", from: date(2026, 10, 13), through: date(2026, 10, 18), over: [gym, run])
+    let thursday = places.screen(asOf: date(2026, 10, 15))
+    thursday.askToStopKeeping(gym)
+    thursday.confirmStopKeeping()
+    let friday = places.screen(asOf: date(2026, 10, 16))
+    #expect(friday.keepAgain(try #require(friday.stopped.first)) == nil)
+    let made = friday.makeACopy(
+        asOf: Moment(on: date(2026, 10, 16), hour: 14, minute: 32)!,
+        writingInto: FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true))
+    guard case .success(let copyURL) = made else {
+        Issue.record("expected a copy to be made")
+        return
+    }
+    let moved = friday.changeDaysAway(
+        try #require(friday.daysAway.first), named: "Mallorca", from: date(2026, 10, 13),
+        through: date(2026, 10, 15), over: [gym, run])
+
+    let asked = friday.askToRestore(from: copyURL)
+    let restored = friday.confirmRestoring()
+
+    #expect(moved == nil)
+    #expect(asked == nil)
+    #expect(restored == nil)
+    #expect(friday.daysAway.map(\.title) == ["Mallorca"])
+    #expect(friday.daysAway.map(\.daysInWords) == ["Tue 13 Oct – Sun 18 Oct"])
+    #expect(friday.daysAway.first?.commitments.map(\.name) == ["Gym", "Run"])
+    func isDue(_ roster: Roster, _ day: Int) -> Bool {
+        let when = date(2026, 10, day)
+        return roster.groups(on: when).flatMap(\.commitments).contains {
+            $0.name == "Gym" && $0.isDue(on: when)
+        }
+    }
+    let afterRestore = try RosterStore(at: places.roster).roster
+    #expect(isDue(afterRestore, 19))
+    for day in 13...18 { #expect(!isDue(afterRestore, day)) }
+
+    friday.askToRemove(try #require(friday.daysAway.first))
+    #expect(friday.confirmRemovingDaysAway() == nil)
+    let removed = try RosterStore(at: places.roster).roster
+    for day in [13, 14, 16, 19] { #expect(isDue(removed, day)) }
+    #expect(!isDue(removed, 15))
+}

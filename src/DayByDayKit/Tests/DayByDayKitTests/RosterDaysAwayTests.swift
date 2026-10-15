@@ -153,6 +153,38 @@ func aRosterStoreWhoseShapeAndDeclaredFormDisagreeAboutDaysAwayIsRefused() throw
     #expect(throws: RosterStoreError.notAStore(at: now.place)) { try now.result.get() }
 }
 
+@MainActor
+@Test(
+    "a roster kept while days away cut gaps into eras is read with those eras as written, and removing those days away gives back none of their days"
+)
+func aRosterKeptWhileDaysAwayCutGapsIntoErasIsReadWithThoseErasAsWrittenAndRemovingThoseDaysAwayGivesBackNoneOfTheirDays()
+    throws
+{
+    let eras = [
+        era("Gym", gymID, from: day(10, 19)),
+        era("Gym", gymID, from: day(1, 1), until: day(10, 12)),
+    ]
+    let mallorca = "[" + span("Mallorca", from: day(10, 13), through: day(10, 18), over: [gymID]) + "]"
+    let bytes = rosterJSON(version: 10, eras: eras, daysAway: mallorca)
+    let (place, result) = try opened(bytes)
+
+    let store = try result.get()
+
+    let gym = try #require(store.roster.commitments.first)
+    #expect(store.roster.eras(of: gym).count == 2)
+    #expect(store.roster.daysAway.map(\.name) == ["Mallorca"])
+    #expect(store.roster.daysAway.first?.commitments.map(\.name) == ["Gym"])
+    #expect(try Data(contentsOf: place) == bytes)
+
+    let monday12 = date(2026, 10, 12)
+    let screen = CommitmentsScreen(asOf: monday12, keepingRosterAt: place)
+    screen.askToRemove(try #require(screen.daysAway.first))
+    #expect(screen.confirmRemovingDaysAway() == nil)
+    let removed = try RosterStore(at: place).roster
+    for due in [12, 19] { #expect(dueOn(removed, "Gym", date(2026, 10, due))) }
+    for notDue in 13...18 { #expect(!dueOn(removed, "Gym", date(2026, 10, notDue))) }
+}
+
 /// One era of "Gym" or "Run" on every weekday, kept from `from` until `until` or still.
 private func era(_ name: String, _ id: String, from: String, until: String? = nil) -> String {
     """

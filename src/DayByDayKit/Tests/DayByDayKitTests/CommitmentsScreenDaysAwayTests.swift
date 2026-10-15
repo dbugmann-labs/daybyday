@@ -935,8 +935,8 @@ func aRosterShiftsAnEveryNDaysDueDayBeforeDaysAwaySaidOverIt() throws {
 }
 
 @MainActor
-@Test("days away said over days already gone take their gap there, however far back")
-func daysAwaySaidOverDaysAlreadyGoneTakeTheirGapThereHoweverFarBack() throws {
+@Test("days away said over days already gone hide those days, however far back")
+func daysAwaySaidOverDaysAlreadyGoneHideThoseDaysHoweverFarBack() throws {
     let places = Places()
     let gym = commitment("Gym")
     let creatine = commitment("Creatine")
