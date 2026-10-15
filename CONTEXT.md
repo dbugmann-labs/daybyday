@@ -303,6 +303,18 @@ A commitment taken up again while away is taken up on the day back, as a change 
 and moves with it either way, but never to a day no later than the day after its stop: there it
 keeps the day back it was taken up for. Settled at G7 the same day, and made one model at the next.
 
+**Amended 2026-10-15**, at the eighth G7 of `change-days-away` (#402). Days away no longer take a
+**gap**. A commitment's own life — its **eras**, stops and resumes as they were made — stays whole,
+and days away are laid over it, hiding the days they cover, so saying, moving or removing them never
+changes a commitment's eras and removing them gives back exactly the days they hid. A hidden day
+still means what a gap day means — no row, a **weekly quota** owing only for the days left, an
+every-N-days count beginning again on the day back — but days away are no longer how a stop and a
+resume are said. A change, a stop or a resume made while away holds from the day it was made,
+hidden until the day back, and nothing is remembered on the span. A day holding a record is never
+hidden: its row shows under days away, and the day is away again once the record is taken back.
+This replaces the gap of the first paragraph, "kept until the day before the span's first day" and
+"keeps that commitment through it" of the amendments above, and the remembering of the last one.
+
 **Resume** — the person's word, and the stopped row's swipe label, for **taking a stopped commitment
 up again**, which is what the specs call it; the two name one act. A resume is made on the day it is
 made and asks for nothing, and it begins a new **era** there unless no day would lie between it and

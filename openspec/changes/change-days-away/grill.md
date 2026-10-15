@@ -1,6 +1,6 @@
 # Grill — change-days-away
 
-*15 questions over 5 rounds, 2026-10-13, with one fact agent and the designer. Every answer was as recommended
+*15 questions over 5 rounds, 2026-10-13, and 4 over 2 rounds at the mask grill, 2026-10-15, with one fact agent and the designer. Every answer was as recommended
 except one: a span's picks can be changed, not only its ends and name. The intent's "no day it gives
 back holds a record" is worded both ways in the sources (`CONTEXT.md` and the B-080 Decided line);
 answers 2 and 6 settle it as the days a span newly takes, never the days it returns.*
@@ -77,6 +77,32 @@ answers 2 and 6 settle it as the days a span newly takes, never the days it retu
     as the outcomes it must deliver. *Decided at G7, 2026-10-13, after the fifth review found a stop
     after a take-up writing a roster the app cannot read, and two take-up moves going wrong; asked
     as simplify, redesign or patch, the owner chose redesign over taking the mechanism back out.*
+19. **Days away are laid over a commitment's life, not cut into it.** Each commitment keeps its own
+    life whole — its eras, stops and take-ups as made — and days away hide the days they are over
+    when the roster is read; saying, changing or removing them never rewrites a commitment's eras.
+    What days away remember of stops and take-ups (settled 18's model) goes. Settled 1–17 stand as
+    the outcomes, except where a later answer below says otherwise. *Decided at G7, 2026-10-15,
+    after the eighth review found the cut model failing outside both shipped known gaps — a rhythm
+    change and a moved span, a stale take-up copy — with the delta contradicting itself on a
+    two-step move; asked as mask, narrow or ship, the owner chose mask, inside this Story, before
+    merge.*
+20. **A change of rhythm, range or target made while away holds from the day it was made**, hidden
+    until the day back, not from the day back wherever it moves. Days a later change gives back
+    before that day keep the rhythm held then. *Reverses settled 11's "the new rhythm moves with
+    it"; asked at the mask grill, 2026-10-15, as recommended.*
+21. **A take-up made while away holds from the day it was made**, hidden until the day back. A span
+    shortened to end before it leaves the days between stopped, owing nothing. *Reverses settled
+    17's "its take-up moves with the day back in both directions" and the "1: stay" fall-back;
+    asked at the mask grill, as recommended.*
+22. **A day holding a record is never hidden by days away**: its row shows under them, and the day
+    is away again once the record is taken back. Nothing is stored for it. *Replaces #401's
+    "kept through the first day", which was fixed when said; asked at the mask grill, as
+    recommended. Settled 6's refusal of new days away over recorded days stands.*
+23. **No days away exist on the owner's phone**, so the move to the new roster form rebuilds no cut
+    gaps. *The owner, at the mask grill, answering how form-10 rosters holding days away should be
+    rebuilt. How a form-10 roster or copy that does hold days away is read is `spec-author`'s to
+    state; the fact agent found a cut and a stop with a later take-up byte-identical in the eras,
+    told apart only by a span that matches exactly.*
 
 Carried from #401 and the G1 grill, not re-asked: an every-N-days count begins again on the day back,
 wherever it moves, and runs on unbroken when the span is erased and the eras either side are alike;
@@ -90,11 +116,33 @@ record of answer 4's "kept through the first day", which lives only in the eras,
 (`Roster.swift:1112`) returns early when an era holds the first or last day, so removing such a span
 today would leave the gap standing.
 
+Facts for the mask (settled 19–23), from the second fact agent, all on `origin/main` at d37a0cc
+(form 10; form 11 exists only on this branch and has reached no phone):
+- **ADR-1069 rejected this model** — "the span alone, with gaps derived at read time" is under its
+  *Alternatives considered* — so it is amended, not superseded. `CONTEXT.md` is amended above.
+- **Readers that rely on the cut**, each to read days away instead: `Roster.groups(on:)`
+  (`Roster.swift:119`) and `DayView.makeGroups`; `WeekQuota.standing`/`daysHeld`
+  (`WeekQuota.swift:55-101`), proportional to days held (`look-back/spec.md:782`); the look-back's
+  `chain`/`walkDays`/`graph` (`LookBack.swift`); `refusalLeavingARecordedDayNotDue`
+  (`CommitmentsScreen.swift:1355`); shifts' `holds`/`isFree` and the every-N shift's day-back
+  exemption (`Roster.swift:831-927`); `Roster.commitments(on:)` (`:945`); removal's `fillGap`;
+  a change's re-cut of days ahead (`CommitmentsScreen.swift:1523-1583`); a stop's `mended` drop of
+  the day-back era (`Roster.swift:561-614`).
+- **Shipped requirements worded over the cut**: `commitment` "…each taking a gap over them"
+  (`:8310`), removal (`:8526`), stop or deletion (`:8615`), a change keeps days away (`:8678`),
+  rename "or from the day after days away" (`:6742`), every-N shift (`:7757`); `day-screen` away
+  line (`:7287`) and weekly-quota mark (`:6486`); `restore` days away in a copy (`:2268`).
+- **The every-N restart lives in the stored era** today (`Roster.restarted`, `:1082`); under the
+  mask it is a read rule, as the weekly quota's proportion is.
+
 ## Terms landed in CONTEXT.md
 
 - **Days away** — amended: said over past days without limit; every span listed; days, name and
   picks changeable; any span removable, erasing it whole; refused while it would put a recorded day
   under it; a change made while away keeps its rhythm from the day back.
+- **Days away** — amended again 2026-10-15: laid over a commitment's whole life rather than cut
+  into it; a change, stop or resume made while away holds from the day made; a recorded day is
+  never hidden.
 
 ## Layout
 
@@ -134,4 +182,5 @@ leading swipe on a span: Edit (pencil, accent) · trailing: Remove (trash) · ta
 ## Left open
 
 None. Every question the frontier raised was answered, the layout round and its two follow-ups
-included.
+included, and the mask grill's two rounds left nothing open: the layout is unchanged, since
+settled 19–23 change no screen.
