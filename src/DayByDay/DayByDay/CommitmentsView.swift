@@ -130,9 +130,8 @@ func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
             Text("Five usual amounts at most.")
         case .shiftedDayAhead:
             Text("Shift its day back first.")
-        case .recordOnDaysAway(let commitment, let day):
-            Text("\(commitment.name) has a record on \(DaysAway.dayInWords(day)).")
-        case .recordedDayLeftNotDue(let commitment, let day):
+        case .recordOnDaysAway(let commitment, let day),
+            .recordedDayLeftNotDue(let commitment, let day):
             Text("\(commitment.name) has a record on \(DaysAway.dayInWords(day)).")
         case .lastDayBeforeFirstDay:
             Text("The last day is before the first.")
@@ -944,18 +943,28 @@ private struct DaysAwaySheet: View {
                 .foregroundStyle(.primary)
             }
             .buttonStyle(.plain)
-            if case .recordOnDaysAway(let named, _)? = screen.daysAwayRefusal, named == commitment,
-                let refusal = screen.daysAwayRefusal
+            if let refusal = screen.daysAwayRefusal, let named = recordRefusalNaming(refusal),
+                named == commitment
             {
                 refusalText(refusal)
             }
         }
     }
 
+    /// The commitment a record refusal names, whose row it sits under; `nil` for any other refusal.
+    private func recordRefusalNaming(_ refusal: CommitmentsScreen.Refusal) -> Commitment? {
+        switch refusal {
+        case .recordOnDaysAway(let commitment, _), .recordedDayLeftNotDue(let commitment, _):
+            return commitment
+        default:
+            return nil
+        }
+    }
+
     /// The refusal that belongs at the foot: every one but a record, which sits under its row.
     private var footRefusal: CommitmentsScreen.Refusal? {
-        if case .recordOnDaysAway? = screen.daysAwayRefusal { return nil }
-        return screen.daysAwayRefusal
+        guard let refusal = screen.daysAwayRefusal else { return nil }
+        return recordRefusalNaming(refusal) == nil ? refusal : nil
     }
 
     var body: some View {
