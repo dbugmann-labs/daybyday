@@ -132,6 +132,8 @@ func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
             Text("Shift its day back first.")
         case .recordOnDaysAway(let commitment, let day):
             Text("\(commitment.name) has a record on \(DaysAway.dayInWords(day)).")
+        case .recordedDayLeftNotDue(let commitment, let day):
+            Text("\(commitment.name) has a record on \(DaysAway.dayInWords(day)).")
         case .lastDayBeforeFirstDay:
             Text("The last day is before the first.")
         case .overNoCommitment:
