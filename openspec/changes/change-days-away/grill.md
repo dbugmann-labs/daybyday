@@ -103,6 +103,19 @@ answers 2 and 6 settle it as the days a span newly takes, never the days it retu
     rebuilt. How a form-10 roster or copy that does hold days away is read is `spec-author`'s to
     state; the fact agent found a cut and a stop with a later take-up byte-identical in the eras,
     told apart only by a span that matches exactly.*
+24. **A move never takes a picked commitment out of days away, stopped or not.** A stopped
+    commitment stays listed under them until it is unticked, and moving them back covers its days
+    again; days after its stop owe nothing either way. *Reverses settled 12's "a span moved wholly
+    past the stop takes it out". Asked at the ninth G7 (reviewer finding 3), as recommended: the
+    take-out was a write nothing could undo, so a span moved away and back left a stopped
+    commitment owing days it was away for, against "a change moved back gives back exactly what it
+    took". A stop itself still takes a commitment out of days away not yet begun, as shipped.*
+25. **Days away said, changed or removed are refused where they would leave a day already
+    recorded on not due**, naming the commitment and the day, as a rhythm change is refused today.
+    Removal can be refused for the first time. *Asked at the ninth G7 (reviewer finding 2), as
+    recommended: past days away restart an every-N-days count, and a recorded day falling off it
+    is shown nowhere, the loss settled 6 exists to refuse. Settled 6's refusal of new days away
+    over recorded days stands beside it.*
 
 Carried from #401 and the G1 grill, not re-asked: an every-N-days count begins again on the day back,
 wherever it moves, and runs on unbroken when the span is erased and the eras either side are alike;
@@ -183,4 +196,5 @@ leading swipe on a span: Edit (pencil, accent) · trailing: Remove (trash) · ta
 
 None. Every question the frontier raised was answered, the layout round and its two follow-ups
 included, and the mask grill's two rounds left nothing open: the layout is unchanged, since
-settled 19–23 change no screen.
+settled 19–23 change no screen. The ninth G7's two questions (settled 24–25) left nothing open
+either: both change what is refused or listed, not the layout.
