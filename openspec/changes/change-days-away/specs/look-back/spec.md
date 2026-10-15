@@ -74,6 +74,16 @@ total's target rule SHALL owe a gap day the target of the era before the gap.
   "Gym"
 - **THEN** its one line is the month October 2026, saying "1/13"
 
+#### Scenario: an every-N-days commitment's look-back counts its due days on the count begun again after days away
+
+- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 1 October
+  2026, kept from that day, whose days take a tick, is taken on at a roster place; days away from
+  Tuesday 13 through Wednesday 14 October 2026 are said over it through a commitments screen opened at
+  that roster place as of Monday 12 October 2026; ticks for "Nails" on Thursday 15 and Monday
+  19 October 2026 are then kept at a record place; and a commitments screen opened at those places as
+  of Saturday 31 October 2026 is asked for a look-back at "Nails"
+- **THEN** its one line is the month October 2026, saying "2/8"
+
 ### Requirement: A week a weekly quota era holds owes its quota in proportion to the days held
 
 A week SHALL owe, for each era of a commitment running on a weekly quota that holds a day of it,

@@ -5,6 +5,11 @@
   written by that Story and approved at its G4
 - Date: 2026-10-12
 - Deciders: Diego Bugmann
+- Amended: 2026-10-15, at the ninth G7 of `change-days-away` (#402) — the every-N-days count a span
+  begins again reaches recorded days after it now that spans reach the past, so saying, changing or
+  removing one is refused where a recorded day would fall off that count; § *Consequences* says so in
+  place. A move never takes a picked commitment out of a span, so one moved away and back leaves no
+  trace.
 - Amended: 2026-10-15 — `change-days-away` (#402) reverses this record's choice of how a span reaches
   the eras, at the owner's decision at its eighth G7: days away no longer cut a gap into each picked
   commitment's eras but are laid over them when the roster is read, the alternative this record had
@@ -48,9 +53,13 @@ standing as stops and take-ups. A copy nests the roster form as written and keep
 
 - **Removing gives back exactly what was hidden**, by construction: nothing was taken from the eras,
   so an every-N-days count runs on unbroken, and a change made since stands from the day it was made.
-- **No move, in any order, can give back or take away anything but the span's own days.** A stop or a
-  take-up inside a span stays on its day whatever the span later does, and a span moved back hides
-  exactly what it hid.
+- **No move, in any order, can give back or take away anything but the span's own days**, and the
+  every-N-days count begun again after them. A stop or a take-up inside a span stays on its day
+  whatever the span later does, a stopped commitment stays picked wherever the span moves, and a span
+  moved back hides exactly what it hid.
+- **A span can be refused for what follows it.** Saying, moving or removing one moves the day an
+  every-N-days count begins again; where a recorded day would fall off it, the act is refused, naming
+  the commitment and the day, as a change of rhythm is — removal included.
 - **A record is never hidden.** A day holding one shows its row under days away, and is hidden again
   once the record is taken back; nothing is stored for it.
 - **Every reader of a commitment's days must read days away.** One that reads the eras alone owes a

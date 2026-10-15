@@ -138,6 +138,19 @@ SHALL change no era, stop or take-up of any commitment.
   "Creatine", saying it is kept; one opened as of Sunday 11 or Thursday 15 October 2026 holds no row;
   and one opened as of Saturday 17 October 2026 holds both
 
+#### Scenario: a day under days away holding a number, a note, an addition or a decline keeps its row
+
+- **WHEN** a commitment named "Weight" of the number kind with a range of 40 to 150, one named
+  "Journal" of the note kind, one named "Water" of the total kind with a target of 120 and one named
+  "Creatine", each on a schedule listing all seven weekdays and kept from 1 January 2026, are taken on
+  at a roster place; kept at a record place on Monday 12 October 2026 are a number of 70.5 for
+  "Weight", a note for "Journal", an addition of 30 for "Water" and a decline of "Creatine"; a
+  commitments screen is opened at those places as of that Monday; and days away from that Monday
+  through Wednesday 14 October 2026 are said through it over all four
+- **THEN** nothing is refused
+- **AND** a day screen opened at those places as of Monday 12 October 2026 holds rows named "Weight",
+  "Journal", "Water" and "Creatine", and one opened as of Tuesday 13 October 2026 holds no row
+
 #### Scenario: an every-N-days count begins again on the day after each days away over it, and runs on unbroken once those days away are removed
 
 - **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 1 October
@@ -237,8 +250,8 @@ now cover, and SHALL give back every day they no longer cover as that commitment
 on the rhythm, range and target of the era holding it, owing nothing where no era holds it, an
 every-N-days count beginning again on the day after their new last day. A commitment newly picked
 SHALL have their days hidden as saying hides them, and one unpicked SHALL be left as a removal leaves
-it. The same days reached in one change or several SHALL leave every commitment owing the same days,
-and a change moved back SHALL give back exactly what it took.
+it. The same days reached in one change or several SHALL leave every commitment, stopped or not,
+owing the same days, and a change moved back SHALL give back exactly what it took.
 
 #### Scenario: a last day moved later keeps commitments away through it and takes them up again the day after, an every-N-days count beginning there
 
@@ -406,7 +419,8 @@ leave its lists as they were.
   number of 70.5 for "Weight", a note for "Journal", an addition of 30 for "Water" and a decline of
   "Creatine"; a commitments screen is opened at those places as of Monday 12 October 2026; the content
   at the roster place is read; and days away from Monday 5 through Wednesday 7 October 2026 are said
-  through it over each of "Weight", "Journal", "Water" and "Creatine" alone, and over "Gym" and "Run"
+  through it over each of "Weight", "Journal", "Water" and "Creatine" alone, and over "Run" and "Gym",
+  picked in that order
 - **THEN** each of the first four is refused as over a recorded day, naming that commitment and
   Tuesday 6 October 2026, and the fifth naming "Gym" and Tuesday 6 October 2026
 - **AND** it lists no days away, and the content at the roster place is byte-for-byte what was read
@@ -460,14 +474,83 @@ leave its lists as they were.
 - **AND** a roster store opened afterwards at that place holds "Gym" due on neither Monday 5 nor
   Wednesday 7 October 2026
 
-### Requirement: A change of days away keeps a stopped commitment they are over, picked or not, until it moves their first day past the day after its stop
+### Requirement: A commitments screen refuses days away said, changed or removed that would leave a recorded day not due, naming the commitment and the day
 
-A change through a commitments screen SHALL keep over the changed days away a stopped commitment
-they are over that stays picked, and SHALL give one no longer picked back their days as a removal
-gives them back. A change moving their first day later than the day after the last day a stopped
-commitment was kept SHALL take it out of them, giving back their days as a removal does, and a change
-leaving them over no commitment SHALL be refused as days away over no commitment. No change SHALL move
-the day a stopped commitment was kept until.
+A commitments screen SHALL refuse days away said, changed or removed, a commitment ticked onto or
+unticked from them included, where a day due before, on which the record holds a tick, a number, a
+note, an addition or a decline of a commitment they are or were over, would not be due after, as
+where an every-N-days count would begin again on another day. It SHALL name the first such
+commitment the roster holds and its earliest such day, judged after every other refusal of days away
+but a roster that could not be written, so a recorded day put under them SHALL be named where both
+apply. A screen that cannot read its record SHALL judge no day as holding a record. A refusal SHALL
+keep nothing, leave its lists as they were and leave none awaiting removal.
+
+#### Scenario: days away said over past days are refused where the every-N-days count begun again after them leaves a recorded day not due, naming it and the day
+
+- **WHEN** a commitment named "Nails" on a schedule of every 3 days starting on Thursday 1 October
+  2026, kept from that day, and one named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, are taken on at a roster place; a tick for "Nails" on Tuesday 13 October 2026 is kept
+  at a record place; a commitments screen is opened at those places as of Wednesday 14 October 2026;
+  the content at the roster place is read; and days away from Thursday 8 through Thursday 8 October
+  2026 are said through it over "Gym" and "Nails"
+- **THEN** they are refused as leaving a recorded day not due, naming "Nails" and Tuesday 13 October
+  2026
+- **AND** it lists no days away, and the content at the roster place is byte-for-byte what was read
+- **AND** days away from Thursday 8 through Friday 9 October 2026 said through it over both are not
+  refused, and a day screen opened at those places as of Tuesday 13 October 2026 holds a row named
+  "Nails" saying it is kept
+
+#### Scenario: days away whose removal would leave a recorded day not due on the count running on through them are refused and stay listed, naming it and the day
+
+- **WHEN** a commitment named "Nails" on a schedule of every 3 days starting on Thursday 1 October
+  2026, kept from that day, is taken on at a roster place; days away named "Sick" from Monday 5 through
+  Wednesday 7 October 2026 are said over it through a commitments screen opened at that roster place
+  as of Monday 12 October 2026; ticks for "Nails" on Thursday 8 and Sunday 11 October 2026 are then
+  kept at a record place; the content at the roster place is read; and through a commitments screen
+  opened at those places as of that Monday "Sick" is asked to be removed and the removal is confirmed
+- **THEN** it is refused as leaving a recorded day not due, naming "Nails" and Thursday 8 October 2026
+- **AND** it lists "Sick" as past, nothing awaits removal, and the content at the roster place is
+  byte-for-byte what was read
+- **AND** a day screen opened at those places as of Sunday 11 October 2026 holds a row named "Nails"
+  saying it is kept
+
+#### Scenario: days away changed, or a commitment unticked from them, are refused where the every-N-days count begun again on another day leaves a recorded day not due
+
+- **WHEN** a commitment named "Nails" on a schedule of every 3 days starting on Thursday 1 October
+  2026, kept from that day, and then one named "Gym" on a schedule listing all seven weekdays, kept
+  from 1 January 2026, are taken on at a roster place; days away named "Sick" from Monday 5 through
+  Wednesday 7 October 2026 are said over both through a commitments screen opened at that roster place
+  as of Monday 12 October 2026; a tick for "Nails" on Sunday 11 October 2026 is then kept at a record
+  place; and through a commitments screen opened at those places as of that Monday "Sick" is changed to
+  end on Thursday 8 October 2026, then over "Gym" alone, and then to end on Saturday 10 October 2026
+  over both
+- **THEN** the first two are refused as leaving a recorded day not due, each naming "Nails" and Sunday
+  11 October 2026, and the third is not refused
+- **AND** it lists "Sick", "Mon 5 Oct – Sat 10 Oct", as past over "Nails" and "Gym"
+- **AND** a roster store opened afterwards at that place holds "Nails" due on Sunday 11 and Wednesday
+  14 October 2026 and not on Thursday 8 October 2026
+
+#### Scenario: days away that would put one recorded day under them and leave another not due are refused naming the day put under them
+
+- **WHEN** a commitment named "Nails" on a schedule of every 3 days starting on Thursday 1 October
+  2026, kept from that day, and then one named "Gym" on a schedule listing all seven weekdays, kept
+  from 1 January 2026, are taken on at a roster place; days away named "Sick" from Monday 5 through
+  Wednesday 7 October 2026 are said over both through a commitments screen opened at that roster place
+  as of Monday 12 October 2026; a tick for "Nails" on Sunday 11 October 2026 and one for "Gym" on
+  Thursday 8 October 2026 are then kept at a record place; and through a commitments screen opened at
+  those places as of that Monday "Sick" is changed to end on Thursday 8 October 2026
+- **THEN** it is refused as over a recorded day, naming "Gym" and Thursday 8 October 2026
+- **AND** it lists "Sick", "Mon 5 Oct – Wed 7 Oct", as past
+
+### Requirement: A change of days away keeps every stopped commitment they are over that stays picked, wherever it moves them
+
+A change through a commitments screen SHALL keep over the changed days away every stopped commitment
+they are over that stays picked, wherever it moves their first and last days, before its stop, across
+it or wholly after it, and SHALL give one no longer picked back their days as a removal gives them
+back. No change SHALL take a picked commitment out of days away, and none SHALL move the day a
+stopped commitment was kept until. Days the changed days away cover after that day SHALL owe nothing,
+as they owe nothing without them, and days on or before it that a change moves them back over SHALL
+be hidden again.
 
 #### Scenario: a stopped commitment in days away already past stays picked through a change, and unticked has their days back up to its stop
 
@@ -528,7 +611,7 @@ the day a stopped commitment was kept until.
   stopped keeping on Saturday 3 October 2026 and not on Sunday 4 October 2026, and holds "Gym" due on
   Sunday 27 September 2026 and on none of Monday 28 September through Saturday 3 October 2026
 
-#### Scenario: days away moved wholly past the last day a stopped commitment was kept leave it out, and are refused where it was all they were over
+#### Scenario: days away moved wholly past the last day a stopped commitment was kept keep it picked, and are not refused where it was all they were over
 
 - **WHEN** a commitment named "Gym" and one named "Run", both on schedules listing all seven weekdays
   and kept from 1 January 2026, are taken on at a roster place; days away named "Flu" from Thursday
@@ -536,15 +619,16 @@ the day a stopped commitment was kept until.
   Wednesday 2 September 2026 over "Gym", are said through a commitments screen opened at that roster
   place as of Thursday 1 October 2026; "Gym" is stopped, the stop confirmed, through one opened there
   as of Monday 5 October 2026; and through one opened there as of Monday 12 October 2026 "Cold" is
-  changed to run from Tuesday 6 through Thursday 8 October 2026 over "Gym", and "Flu" to those days
-  over both
-- **THEN** the first is refused as days away over no commitment, and the second is not refused
-- **AND** that screen lists as past "Flu", "Tue 6 Oct – Thu 8 Oct", over "Run" alone, and "Cold",
-  "Tue 1 Sep – Wed 2 Sep", over "Gym"
+  changed to run from Tuesday 6 through Thursday 8 October 2026 over "Gym", and "Flu" to run from
+  Friday 9 through Saturday 10 October 2026 over both
+- **THEN** neither is refused
+- **AND** that screen lists as past "Flu", "Fri 9 Oct – Sat 10 Oct", over "Gym" and "Run", and then
+  "Cold", "Tue 6 Oct – Thu 8 Oct", over "Gym"
 - **AND** a day screen opened at that roster place and a record place where nothing has been kept, as
   of Friday 2 October 2026, holds rows named "Gym" and "Run"
-- **AND** a roster store opened afterwards at that place answers with "Gym" when asked what it had not
-  stopped keeping on Sunday 4 October 2026 and not on Monday 5 October 2026
+- **AND** a roster store opened afterwards at that place holds "Gym" due on Tuesday 1 and Wednesday
+  2 September 2026, and answers with "Gym" when asked what it had not stopped keeping on Sunday
+  4 October 2026 and not on Monday 5 October 2026
 
 #### Scenario: a stopped commitment unticked from days away moved past its stop has their days back up to its stop and none after
 
@@ -561,7 +645,7 @@ the day a stopped commitment was kept until.
 - **AND** a roster store opened afterwards at that place answers with "Gym" when asked what it had not
   stopped keeping on Sunday 4 October 2026 and not on Monday 5 October 2026
 
-#### Scenario: days away moved past a stop and then wholly past it give the stopped commitment back its days up to its stop
+#### Scenario: days away moved past a stop and then wholly past it keep the stopped commitment picked and give it back its days up to its stop
 
 - **WHEN** a commitment named "Gym" and one named "Run", both on schedules listing all seven weekdays
   and kept from 1 January 2026, are taken on at a roster place; days away named "Flu" from Thursday
@@ -571,7 +655,7 @@ the day a stopped commitment was kept until.
   is changed to end on Wednesday 7 October 2026, and then to run from Tuesday 6 through Thursday
   8 October 2026 over both
 - **THEN** neither is refused, and that screen lists "Flu" as past, "Tue 6 Oct – Thu 8 Oct", over
-  "Run" alone
+  "Gym" and "Run"
 - **AND** a day screen opened at that roster place and a record place where nothing has been kept, as
   of Thursday 1 October 2026, holds rows named "Gym" and "Run"
 - **AND** a roster store opened afterwards at that place answers with "Gym" when asked what it had not
@@ -591,6 +675,37 @@ the day a stopped commitment was kept until.
   of Sunday 4 October 2026, holds rows named "Gym" and "Run"
 - **AND** a roster store opened afterwards at that place answers with "Gym" when asked what it had not
   stopped keeping on Sunday 4 October 2026 and not on Monday 5 October 2026
+
+#### Scenario: days away moved wholly past a stop and back again hide the stopped commitment's days again
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on schedules listing all seven weekdays
+  and kept from 1 January 2026, are taken on at a roster place; days away named "Flu" from Thursday
+  1 through Saturday 3 October 2026 are said over both through a commitments screen opened at that
+  roster place as of Thursday 1 October 2026; "Gym" is stopped, the stop confirmed, through one opened
+  there as of Monday 5 October 2026; and through one opened there as of Monday 12 October 2026 "Flu"
+  is changed to run from Tuesday 6 through Thursday 8 October 2026 over both, and then back to run
+  from Thursday 1 through Saturday 3 October 2026 over both
+- **THEN** neither is refused, and that screen lists "Flu" as past, "Thu 1 Oct – Sat 3 Oct", over
+  "Gym" and "Run"
+- **AND** a day screen opened at that roster place and a record place where nothing has been kept, as
+  of Friday 2 October 2026, holds no row
+- **AND** a roster store opened afterwards at that place holds "Gym" due on Sunday 4 October 2026 and
+  on none of Thursday 1 through Saturday 3 October 2026
+
+#### Scenario: days away moved over a stopped commitment's days in one change or through days wholly past its stop leave it owing the same days
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on schedules listing all seven weekdays
+  and kept from 1 January 2026, are taken on at each of two roster places; at each, days away named
+  "Flu" from Thursday 1 through Saturday 3 October 2026 are said over both through a commitments screen
+  opened there as of Thursday 1 October 2026, and "Gym" is stopped, the stop confirmed, through one
+  opened there as of Monday 5 October 2026; and through one opened there as of Monday 12 October 2026
+  "Flu" is changed at the first to run from Friday 2 through Sunday 4 October 2026 over both, and at
+  the second to run from Wednesday 7 through Thursday 8 October 2026 over both and then from Friday
+  2 through Sunday 4 October 2026 over both
+- **THEN** nothing is refused, and each screen lists "Flu" as past, "Fri 2 Oct – Sun 4 Oct", over
+  "Gym" and "Run"
+- **AND** a roster store opened afterwards at each place holds "Gym" due on Thursday 1 October 2026
+  and on none of Friday 2 through Sunday 4 October 2026
 
 ### Requirement: Days away said, moved, unticked or removed leave every stop and take-up where it was made, and give back exactly the days they hid
 
@@ -1075,17 +1190,17 @@ commitments screen that cannot read its roster SHALL list none.
   of bytes that is not what a roster is written as
 - **THEN** it lists no days away, none as past, and says the roster could not be read
 
-### Requirement: A commitments screen asks before it removes days away, and removes any it lists as though they had never been said
+### Requirement: A commitments screen asks before it removes days away, offers removing any it lists, and removes them as though they had never been said
 
-A commitments screen SHALL offer removing every days away it lists, and SHALL remove them only once
-asked and confirmed. Being asked SHALL change nothing but hold which days away await removal,
-replacing any change awaiting confirmation; being asked to stop or delete a commitment SHALL leave
-none awaiting removal. A cancel, and an ask about days away it does not list, SHALL change nothing.
-A confirmed removal SHALL be kept at the roster place before the list says so, and SHALL leave each
-commitment they were over as though never said: past days and a day holding a record included, an
-every-N-days count running on through their days, and every stop, take-up and change of it standing
-from the day it was made. A removal the roster place cannot keep SHALL be refused as a roster that
-could not be written, still listed.
+A commitments screen SHALL offer removing every days away it lists, and remove them only once asked
+and confirmed. Being asked SHALL change nothing but hold which days away await removal, replacing any
+change awaiting confirmation; being asked to stop or delete a commitment SHALL leave none awaiting
+removal. A cancel, and an ask about days away it does not list, SHALL change nothing. A confirmed
+removal SHALL be kept at the roster place before the list says so, leaving each commitment they were
+over as though never said: past days and a day holding a record included, an every-N-days count
+running on through their days, and every stop, take-up and change standing on its own day. A removal
+SHALL be refused, still listed, as a roster that could not be written where the roster place cannot
+keep it, and where it would leave a recorded day not due.
 
 #### Scenario: asking to remove days away changes nothing until it is confirmed, and a cancel changes nothing
 
@@ -1254,7 +1369,8 @@ SHALL be those its eras give once days away over it are laid over them, as *Days
 they are over from each commitment they are over, and leave its eras as they are* says: a day those
 days away hide SHALL be neither a due day nor a free day, and an every-N-days era SHALL be counted
 again from the day after them. A shift asked from or onto a day so read as neither SHALL be refused,
-changing nothing.
+changing nothing. An every-N-days due day before days away SHALL be shifted onto none of their days
+nor the first due day after them, and that first due day back onto no day before the day after them.
 
 #### Scenario: a roster refuses to shift a weekday-set due day onto, or from, a day days away hide
 
@@ -1279,6 +1395,31 @@ changing nothing.
 - **THEN** it refuses the first and shifts the second
 - **AND** the commitment it holds is due on Monday 26 and Saturday 31 October and Wednesday 4 November
   2026, and on none of Thursday 29 and Friday 30 October and Tuesday 3 November 2026
+
+#### Scenario: a roster refuses to shift an every-N-days due day across days away, or onto the first due day of the count begun again after them
+
+- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 1 October
+  2026, kept from that day, is taken on at a roster place; days away from Sunday 11 through Monday
+  12 October 2026 are said over it through a commitments screen opened at that roster place as of
+  Thursday 1 October 2026; and a roster store opened afterwards at that place is asked to shift its due
+  day on Friday 9 October 2026 to Tuesday 13 October 2026, and to Sunday 11 October 2026, its due day
+  on Tuesday 13 October 2026 to Saturday 10 October 2026, and then its due day on Friday 9 October
+  2026 to Saturday 10 October 2026
+- **THEN** it refuses the first three and shifts the fourth
+- **AND** the commitment it holds is due on Saturday 10, Tuesday 13 and Saturday 17 October 2026, and
+  on none of Friday 9, Sunday 11 and Wednesday 14 October 2026
+
+#### Scenario: a roster refuses to shift a weekday-set day a shift put a due day on onto a day days away hide
+
+- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, is taken on at a roster place; days away from Friday 16 through Friday 16 October
+  2026 are said over it through a commitments screen opened at that roster place as of Monday
+  12 October 2026; and a roster store opened afterwards at that place is asked to shift its due day on
+  Monday 12 October 2026 to Tuesday 13 October 2026, then Tuesday 13 October 2026 to Friday 16 October
+  2026, and then Tuesday 13 October 2026 to Thursday 15 October 2026
+- **THEN** it shifts the first, refuses the second and shifts the third
+- **AND** the commitment it holds is due on Wednesday 14, Thursday 15 and Saturday 17 October 2026, and
+  on none of Monday 12, Tuesday 13 and Friday 16 October 2026
 
 ### Requirement: A roster store reads a roster kept while days away cut gaps into eras with those eras as written
 
@@ -1320,7 +1461,7 @@ place, and the next roster written there SHALL be in the form written now.
 
 ### Requirement: A commitments screen asks before it removes days away, and removes only days away not yet begun, as though they had never been said
 
-**Reason**: Any listed days away can now be removed; carried as *A commitments screen asks before it removes days away, and removes any it lists as though they had never been said*.
+**Reason**: Any listed days away can now be removed; carried as *A commitments screen asks before it removes days away, offers removing any it lists, and removes them as though they had never been said*.
 **Migration**: None on disk.
 
 ### Requirement: A stop or a deletion through a commitments screen takes a commitment out of its days away, and days away left over none go

@@ -15,10 +15,13 @@ so no move or removal can give back or take away anything but its own days.
   them and never against themselves; a change hides what it covers and gives back what it leaves.
 - Saying or changing days away is refused, naming the commitment and the day, where it would newly
   put a recorded day within them; a first day that is the day handed is not judged.
+- Saying, changing or removing days away is refused, naming the commitment and the day, where an
+  every-N-days count begun again on another day would leave a recorded day not due.
+- A change never takes a picked commitment out of days away, stopped or not.
 - A stop, a take-up or a change of rhythm, range or target holds from the day it is made, inside
   days away or not; days away begun keep a commitment stopped while they are under way.
 - Every days away is listed, those not over earliest first and past ones apart, latest first; any
-  can be removed, begun or over, as though never said.
+  can be removed, begun or over, as though never said, but for the refusal above.
 - Days a reader owes, a weekly quota's share, a look-back's count and a shift's free days all read
   hidden days as days of a gap, an every-N-days count beginning again on the day after them.
 - The roster form moves to 11, the shape of form 10 over uncut eras; form 10 is read as written.

@@ -1,7 +1,8 @@
 ## Context
 
-See `proposal.md` and `grill.md`, whose twenty-three settled answers and layout this delta is written
-on; settled 19–23 replace 11, 17 and 18 and the cut of ADR-1069. Facts on `origin/main` (form 10):
+See `proposal.md` and `grill.md`, whose twenty-five settled answers and layout this delta is written
+on; settled 19–23 replace 11, 17 and 18 and the cut of ADR-1069, settled 24 replaces 12's take-out,
+and settled 25 adds a refusal beside 6's. Facts on `origin/main` (form 10):
 
 - **A gap is eras today.** Saying cuts each picked commitment's eras (`Roster.cutGap`), removal
   re-joins them (`fillGap`), and the every-N restart is a stored era (`Roster.restarted`).
@@ -41,7 +42,7 @@ over the commitment that the era holds, on or before the day read; a shift reads
 | Say; tick a commitment on | untouched | span or pick added | covered days hidden, recorded ones shown |
 | Change days, name or picks | untouched | replaced in place, identity and order kept | old days back as the eras have them, new hidden |
 | Remove; untick | untouched | span or pick gone | exactly the days it hid, back |
-| Change: first day past a stop's day after | untouched | stopped pick taken out | nothing: it owed none of them |
+| Change: days moved past a stop, or back | untouched | stopped pick kept (settled 24) | days after its stop owe nothing either way |
 | Stop, span not begun | stopped on the day made | it leaves; a span over none goes | — |
 | Stop, span begun (under way or past) | stopped on the day made | it stays | days after the stop owe nothing either way |
 | Take-up, inside a span or not | era from the day made, or stop undone | untouched | hidden through the last day, owed after |
@@ -55,6 +56,27 @@ over the commitment that the era holds, on or before the day read; a shift reads
 Saying and changing are judged on the span as asked, never against itself; a record only where a
 change newly puts it within the span, so a recorded first day handed stays unjudged after a move.
 
+### Two record refusals, and their order (settled 6, 25)
+
+Two refusals guard a recorded day: one days away would newly cover (settled 6, `recordOnDaysAway`),
+refused though the mask would still show its row, and one they would leave not due after them as an
+every-N-days count begins again on another day (settled 25, `recordedDayLeftNotDue`) — the loss the
+shipped rhythm-change refusal exists for, reachable now that days away reach the past. The second
+judges saying, changing, ticking, unticking and, for the first time, removing, comparing each
+commitment the span is or was over as read before and after, record included. Order is a fact, not a
+preference: settled 25 is judged last, after overlap, kept-from, shift and settled 6, before the
+write, so where both apply the day the change itself covers is named. Within each, the roster's first
+commitment and its earliest day are named, as settled 6 already does. A stop leaving days away not
+begun, a deletion and a restore are not judged: none is days away said, changed or removed.
+
+### Shift bounds around days away (finding 1, M19)
+
+The due day after a due day before days away is the count begun again's first, so a shift onto it,
+or onto a day they hide, is refused, as the carried free-day rule already says. That first due day is
+shifted back no further than the day after them: on `origin/main` it was an era kept from that day,
+bounded by the shipped era rule, so the mask keeps `main`'s bound rather than opening a shift across
+the span. Stated in the shift requirement and pinned by its scenario.
+
 ### The seam
 
 ```swift
@@ -62,10 +84,12 @@ public func Roster.groups(on date: CalendarDate, recordedIn history: History? = 
 public func CommitmentsScreen.changeDaysAway(_ daysAway: DaysAway, named name: String, from firstDay: CalendarDate, through lastDay: CalendarDate, over commitments: [Commitment]) -> Refusal?
 public private(set) var CommitmentsScreen.pastDaysAway: [DaysAway]
 case Refusal.recordOnDaysAway(Commitment, CalendarDate)
+case Refusal.recordedDayLeftNotDue(Commitment, CalendarDate)
 public static func DaysAway.dayInWords(_ day: CalendarDate) -> String
 ```
 
-Removed: `case Refusal.firstDayHasPassed`; every other days-away member keeps its signature. "Holds X
+Removed: `case Refusal.firstDayHasPassed`; every other days-away member keeps its signature,
+`confirmRemovingDaysAway()` now answering `recordedDayLeftNotDue` too. "Holds X
 due on D" reads `groups(on: D)`, no record, and `Commitment.isDue`; "had not stopped keeping on D"
 reads `Roster.commitments(on:)`. Six shipped requirements that drop or retitle a scenario are REMOVED
 and carried under new titles, since `openspec` 1.10.0 refuses such a MODIFIED block.
@@ -88,15 +112,16 @@ No phone holds days away (settled 23). Earlier forms read as holding none; a cop
 
 ### The shell
 
-Unchanged by settled 19–23. `CommitmentsView`'s Days away card keeps `screen.daysAway` and "New days
+Unchanged by settled 19–24; settled 25 adds one refusal, drawn below. `CommitmentsView`'s Days away card keeps `screen.daysAway` and "New days
 away"; a headerless Section below holds `screen.pastDaysAway` when not empty. Every span row gains a
 leading "Edit" swipe, `pencil`, accent, opening `DaysAwaySheet` on it; the trailing Remove stays.
 Changing one, the sheet is titled "Change \(title)" with "Save", opens filled, and lists under a
 "Stopped" header the stopped commitments it is over, an unticked one drawn until Save; Save calls
 `changeDaysAway`, disabled while nothing is picked. Cancel once anything is edited asks "Discard
-changes?" with "Discard" (destructive); saying asks nothing. `.recordOnDaysAway(c, d)` is drawn under
-`c`'s row, red `.caption`: "\(c.name) has a record on \(DaysAway.dayInWords(d))."; other refusals
-stay at the foot. The list rebuilds on dismiss through `listRevision`.
+changes?" with "Discard" (destructive); saying asks nothing. `.recordOnDaysAway(c, d)` and
+`.recordedDayLeftNotDue(c, d)` are drawn under `c`'s row, red `.caption`, in the same words: "\(c.name)
+has a record on \(DaysAway.dayInWords(d))."; a refused removal draws the second in the Days away
+card's footer, as it draws `.notKept` today; other refusals stay at the foot. The list rebuilds on dismiss through `listRevision`.
 
 ### What the shell draws
 
@@ -132,10 +157,13 @@ leading swipe on a span: Edit (pencil, accent) · trailing: Remove (trash) · ta
   no record every covered day is hidden; every reader holding the record passes it.
 - [A form-10 roster with days away keeps its cut gaps] → settled 23: none is on a phone.
 - [Carried tests change] → `tasks.md` § 1.2, before and after for each.
+- [Settled 25 makes a removal refusable, so a past span over an every-N commitment can become
+  unremovable while records stand] → the refusal names the day; taking that record back frees it.
 
 ## Open Questions
 
-None. `grill.md` § *Left open* is "None.", and settled 19–23 are folded in. The one call settled 23
+None. `grill.md` § *Left open* is "None.", and settled 19–25 are folded in. The one call settled 23
 left here, how a form-10 roster holding days away is read, is § *Migration*; reading settled 6's
 "newly" under the mask, so a recorded day already within days away is not judged again, is
-§ *Every operation*.
+§ *Every operation*; the order of settled 6's and 25's refusals, and the shift-back bound the ninth
+review found unsettled, are facts of `main`'s behaviour, stated above rather than asked.

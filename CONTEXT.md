@@ -315,6 +315,13 @@ hidden: its row shows under days away, and the day is away again once the record
 This replaces the gap of the first paragraph, "kept until the day before the span's first day" and
 "keeps that commitment through it" of the amendments above, and the remembering of the last one.
 
+**Amended 2026-10-15 again**, at the ninth G7 of `change-days-away` (#402). Moving days away never
+takes a commitment out of them, stopped or not: a stopped one stays picked until it is unticked, and
+the days after its stop owe nothing either way. Because days away said over past days begin an
+every-N-days count again on another day, saying, moving or removing them is refused, naming the
+commitment and the day, where a day already recorded on would fall off that count, as a change of
+rhythm is — so removing days away can be refused.
+
 **Resume** — the person's word, and the stopped row's swipe label, for **taking a stopped commitment
 up again**, which is what the specs call it; the two name one act. A resume is made on the day it is
 made and asks for nothing, and it begins a new **era** there unless no day would lie between it and
