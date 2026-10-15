@@ -932,7 +932,15 @@ public struct Roster: Hashable, Sendable {
 
         if other != anchor {
             let without = Commitment(holder.commitment, shifts: shifts)
+            // The first due day of a count begun again after days away is the next due day after
+            // the last one before them, however near: a free day lies before it. `design.md` §
+            // *Shift bounds around days away*.
+            let nextRestart = mask(over: commitment.identity).stretches
+                .compactMap { $0.last.adding(days: 1) }
+                .filter { anchor.days(until: $0) > 0 && holder.holds($0) }
+                .min { $0.days(until: $1) > 0 }
             guard anchor.days(until: other) > -interval, anchor.days(until: other) < interval,
+                nextRestart.map({ other.days(until: $0) > 0 }) ?? true,
                 !without.isDue(on: other), shifts[other] == nil
             else {
                 return false
