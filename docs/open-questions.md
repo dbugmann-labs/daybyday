@@ -216,7 +216,8 @@ Things that are built, or deliberately not built, in a state someone will trip o
 - **The scenario for the every-N-days shift bound after days away does not pin it.** `commitment`
   says an every-N-days due day before days away SHALL be shifted onto none of their days nor the
   first due day after them, and `change-days-away`'s `design.md` calls that pinned by its scenario
-  ("a roster shifts an every-N-days due day …", days away 11–12 Oct on every 4 days from 1 Oct).
+  ("a roster refuses to shift an every-N-days due day across days away, or onto the first due day of
+  the count begun again after them", days away 11–12 Oct on every 4 days from 1 Oct).
   It is not: the day after those days away, 13 Oct, is also due on the count before them, so the
   bound taken out still passes it. A regression test without a scenario, with days away 14–15 Oct,
   is what fails. The behaviour is right. Found by mutation at #402's tenth G7 on 2026-10-15; the
