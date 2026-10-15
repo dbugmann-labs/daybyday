@@ -1,117 +1,102 @@
 ## Context
 
-See `proposal.md` § *Why*, and `grill.md`, whose eighteen settled answers and layout this delta is
-written on. The facts it turns on, read off `origin/main`:
+See `proposal.md` and `grill.md`, whose twenty-three settled answers and layout this delta is written
+on; settled 19–23 replace 11, 17 and 18 and the cut of ADR-1069. Facts on `origin/main` (form 10):
 
-- **A gap is eras** (ADR-1069). `retire` drops an era a stop leaves holding no day, so a stop inside a
-  span, or on its last day, looks like its gap; `keepAgain` undoes a stop it would follow at once.
-- **`CommitmentsScreen.sayDaysAway` alone bounds the first day**; the sheet's pickers have none.
-- **`fillGap` returns early when an era holds the first or last day; `refreshLists` drops past spans.**
-- **`History.datesRecorded`** answers ticks, numbers, notes, additions and declines alike, and the
-  shell opens a fresh `CommitmentsScreen`, record included, each time the list is shown.
-- **A stop under way** moves to the day before the span and takes the commitment out of it.
+- **A gap is eras today.** Saying cuts each picked commitment's eras (`Roster.cutGap`), removal
+  re-joins them (`fillGap`), and the every-N restart is a stored era (`Roster.restarted`).
+- **Readers that rely on the cut:** `Roster.groups(on:)` (`Roster.swift:119`) and
+  `DayView.makeGroups`; `WeekQuota.standing`/`daysHeld`; `LookBack`'s `chain`, `walkDays` and
+  `graph`; `CommitmentsScreen.refusalLeavingARecordedDayNotDue` (`:1355`); shifts' `holds`/`isFree`
+  and the every-N day-back exemption (`Roster.swift:831-927`); a change's re-cut of days ahead
+  (`CommitmentsScreen.swift:1523-1583`); a stop's drop of the day-back era (`Roster.swift:561-614`).
+  `Roster.commitments(on:)` reads stops alone, which days away no longer touch.
+- **A cut and a stop with a later take-up are byte-identical in form-10 eras.**
+- **`History.datesRecorded`** answers ticks, numbers, notes, additions and declines alike.
+- This branch's form 11, with remembered stops, reached no phone.
 
 ## Goals / Non-Goals
 
-**Goals:** the delta, drivable through `CommitmentsScreen`, `RosterStore` and a day screen; the shell
-drawing option C. **Non-Goals:** a look-back mark; a sheet date bound; changing the day-screen line or
-the strip's dot; remembering the day a take-up was made; checking what spans remember against eras.
+**Goals:** the delta, drivable through `CommitmentsScreen`, `RosterStore`, a day screen and a
+look-back; one read rule every reader goes through; the shell drawing option C, unchanged.
+**Non-Goals:** rebuilding cut gaps from a form-10 roster; a look-back mark for days away; a sheet
+date bound; changing the day-screen line or the strip's dot.
 
 ## Decisions
+
+### The model: days away are a mask (settled 19, ADR-1069 amended)
+
+The roster holds each commitment's life whole — eras, stops, take-ups, as made — and each days away
+as a span: identity, name, first and last day, commitments; nothing else. A day is **hidden** from a
+commitment when a span over it covers the day and the record holds nothing of it there (settled 22);
+with no record read, every covered day is hidden. A hidden day is due on no rhythm, holds no quota
+share and is a gap day to a look-back; an every-N-days era is counted from the latest day after a span
+over the commitment that the era holds, on or before the day read; a shift reads days the same way.
+- *Remember what a cut destroys (settled 18):* rejected — eight reviews each found a corner it missed.
+
+### Every operation
+
+| Operation, state | Eras | Spans | What a reader sees |
+|---|---|---|---|
+| Say; tick a commitment on | untouched | span or pick added | covered days hidden, recorded ones shown |
+| Change days, name or picks | untouched | replaced in place, identity and order kept | old days back as the eras have them, new hidden |
+| Remove; untick | untouched | span or pick gone | exactly the days it hid, back |
+| Change: first day past a stop's day after | untouched | stopped pick taken out | nothing: it owed none of them |
+| Stop, span not begun | stopped on the day made | it leaves; a span over none goes | — |
+| Stop, span begun (under way or past) | stopped on the day made | it stays | days after the stop owe nothing either way |
+| Take-up, inside a span or not | era from the day made, or stop undone | untouched | hidden through the last day, owed after |
+| Rhythm, range, target change | era from the day handed | untouched | hidden through the last day, restart after |
+| Deletion | gone | out of every span; a span over none goes | — |
+| Record kept or taken back under a span | untouched | untouched | shown while recorded, hidden after |
+| Restore | the copy's | the copy's | read as a store reads the copy's form |
+| Read form 11 / form 10 | as written | as written | form 10's cut gaps stay a stop and take-up |
+| Any act, screen opened as of any day | as that act alone | as that act alone | no order dependence, by construction |
+
+Saying and changing are judged on the span as asked, never against itself; a record only where a
+change newly puts it within the span, so a recorded first day handed stays unjudged after a move.
 
 ### The seam
 
 ```swift
+public func Roster.groups(on date: CalendarDate, recordedIn history: History? = nil) -> [Roster.Group]
 public func CommitmentsScreen.changeDaysAway(_ daysAway: DaysAway, named name: String, from firstDay: CalendarDate, through lastDay: CalendarDate, over commitments: [Commitment]) -> Refusal?
 public private(set) var CommitmentsScreen.pastDaysAway: [DaysAway]
 case Refusal.recordOnDaysAway(Commitment, CalendarDate)
 public static func DaysAway.dayInWords(_ day: CalendarDate) -> String
 ```
 
-Removed: `case Refusal.firstDayHasPassed`. Same signature, new behaviour: `sayDaysAway`,
-`offersRemoving` and `askToRemove` (every span in either list), `confirmRemovingDaysAway`,
-`confirmStopKeeping`, `keepAgain`, `confirmDeleting`, `RosterStore.init(at:)`. "Lists X as past" reads
-`pastDaysAway`; "refused as over a recorded day, naming C and D" is `.recordOnDaysAway(C, D)`; "holds
-X due on D", as #401's did, the roster's groups on D and `Commitment.isDue`. "Entry" in settled 6 is
-an addition. The three requirements that lose a scenario are REMOVED and re-ADDED under new or carried
-titles: `openspec` 1.10.0 refuses a MODIFIED block that drops one.
+Removed: `case Refusal.firstDayHasPassed`; every other days-away member keeps its signature. "Holds X
+due on D" reads `groups(on: D)`, no record, and `Commitment.isDue`; "had not stopped keeping on D"
+reads `Roster.commitments(on:)`. Six shipped requirements that drop or retitle a scenario are REMOVED
+and carried under new titles, since `openspec` 1.10.0 refuses such a MODIFIED block.
 
-### A change is one roster formed whole
+### Migration
 
-`Roster` gains an internal change that forms each commitment in the old picks or the new from its
-own life (below), replaces the span in place, keeping its identity and place in the order said, and
-writes once (ADR-1069, amended). Days given back before the new first day are on the era held the day
-before the old one; the era after the new last day is the one held on the later of the two days back,
-restarted there (settled 11). `fillGap` fills from the day after a first day kept through.
-- *Remove, then say again:* rejected — breaks settled 11; a first day kept through dies on a rename.
-- *Ends moved, every other era re-derived:* rejected — it swallows a later change of rhythm.
+Roster form 11 has form 10's shape — each days away its identity, name, days and commitments — over
+eras that days away never cut. Form 10 is read as written: its eras, cut gaps included, untouched and
+its days away laid over them, so removing one gives back none of its gap; the next write is form 11.
+No phone holds days away (settled 23). Earlier forms read as holding none; a copy nests the form.
 
-### What days away remember (settled 18)
+### Order of work: replace, never layer
 
-A span holds, per commitment it is over, its **stops** in day order: the day kept until and a
-**take-up** — none, a fixed day, or **the day back**: the day after the span's last day, wherever it
-moves, save that where that is no later than the day after its stop it falls back to the day back it
-was taken up for, which it keeps. A stop is the person's act and no change moves it; the eras say
-what the acts come to now.
-
-Every write keeps four invariants, and the store refuses exactly their breach: **I1** a stop is of a
-commitment the span is over; **I2** a commitment's stops fall on strictly later days (one on the last
-stop's day undoes its take-up instead); **I3** only the last lacks a take-up; **I4** a fixed take-up
-falls after its stop's day, as does a day back's own (a take-up that undoes the stop forgets it).
-Nothing is checked against the eras: the last design's bound on a stopped commitment's day
-was such a check, and it wrote the roster finding 1 could not read.
-- *One remembered day per stopped commitment:* rejected — a stop after a take-up had nowhere to go;
-  *gaps derived at read time* is ADR-1069's rejected alternative.
-
-### Own life: one give-back for every operation
-
-A commitment's **own life** beside a span, at a day back, is its eras with the span's gap given back
-as removal gives it, the era before running through and the one begun on the day back joining where
-alike — except each remembered stop's gap, from the day after its day kept until to the day before
-its take-up (the given day back, or its own where that would not be after the day after the stop),
-endless where none; a take-up on a given-back
-day begins an era on the rhythm held on its stop's day. It touches only the span's days, old and new.
-Removal, untick and take-out set the eras to own life at the span's day back. A change keeping the
-commitment adds each stop of own life at the old day back — a day kept until that no era and no other
-span over it holds the day after — whose gap holds a day newly covered or the new day back, then sets
-the eras to own life at the new day back, new gap cut. A stopped commitment is taken out where the new
-first day is past the day after its last stop's day. Every move reads the same acts, never what the
-last move left in the eras: one change or several reach the same eras (finding 2), and a move back
-restores (settled 16).
-- *Each end patched on its own (`giveBackAfter`, `fillGap`'s guards):* rejected — order-dependent.
-
-### Every operation
-
-| Operation | Reads | The commitment's eras | What the span remembers of it |
-|---|---|---|---|
-| Say, or tick it on | eras | gap cut | each stop whose gap holds a day of it or the day back |
-| Change keeping it | own life, both days back | own life at the new day back, cut | kept; stops newly hidden added |
-| Removal, untick, take-out | own life | own life | dropped |
-| Stop, span not begun | — | stopped, as now | it leaves the span |
-| Stop, span begun | — | stopped, as now | added; on its last stop's day, that take-up undone |
-| Take-up inside the span | — | era from its day back, as now | last stop: the day back, and that day |
-| Take-up elsewhere | — | era from that day, or stop undone | last stop: that day; forgotten where undone |
-| Deletion | — | gone | dropped from every span |
-| Restore | copy | the copy's | the copy's |
-| Read, form 10 | eras | — | per stopped commitment, a stop on the later of the last day and its last day kept |
-| Read, form 11 | file | — | as written; refused only for I1–I4 |
-| Anything else, any reader of days | eras | as now | untouched, never read |
+1. Delete the memory: the span's stops, own life, the four invariants, `stopDaysAway`'s remembering,
+   the take-up day rules, `newlyHiddenDays`, `freeStretches`, form 11's `remembers`.
+2. Delete the cut: `cutGap`, `cutDaysAwayGap`, `fillGap`, the stored restart, a change's re-cut and
+   era from the day after days away, a stop's day-back drop. Days away become span edits alone, and a
+   stop, a take-up or a change forms the eras it would with no days away.
+3. Add the read once, behind `groups(on:recordedIn:)`; route every reader § *Context* names through it.
 
 ### The shell
 
-`CommitmentsView`'s Days away card keeps `screen.daysAway` and "New days away"; below it a Section
-with no header holds `screen.pastDaysAway`, drawn only when not empty, rows as in the first. Every
-span row gains a leading swipe, `pencil`, accent, labelled "Edit", opening the sheet on it; the
-trailing Remove stays. `DaysAwaySheet` takes an optional span: changing one, it is titled "Change
-\(title)" with "Save", opens filled — name or empty, both days, its commitments picked — and lists
-under a "Stopped" header the stopped commitments it is over, toggled as the kept ones are, an
-unticked one staying drawn until Save. Save calls `changeDaysAway`, disabled while nothing is
-picked. Cancel on a changed sheet once anything is edited asks "Discard changes?" with "Discard"
-(destructive), the commitment change sheet's dialog; saying asks nothing, as now.
-`.recordOnDaysAway(c, d)` is drawn under the row of `c`, red `.caption`: "\(c.name) has a record
-on \(DaysAway.dayInWords(d))."; every other refusal stays at the foot. The
-`.firstDayHasPassed` text goes. A changed span is equal to its old self, so the list rebuilds on the
-sheet's dismiss through `listRevision`, as after a rename.
+Unchanged by settled 19–23. `CommitmentsView`'s Days away card keeps `screen.daysAway` and "New days
+away"; a headerless Section below holds `screen.pastDaysAway` when not empty. Every span row gains a
+leading "Edit" swipe, `pencil`, accent, opening `DaysAwaySheet` on it; the trailing Remove stays.
+Changing one, the sheet is titled "Change \(title)" with "Save", opens filled, and lists under a
+"Stopped" header the stopped commitments it is over, an unticked one drawn until Save; Save calls
+`changeDaysAway`, disabled while nothing is picked. Cancel once anything is edited asks "Discard
+changes?" with "Discard" (destructive); saying asks nothing. `.recordOnDaysAway(c, d)` is drawn under
+`c`'s row, red `.caption`: "\(c.name) has a record on \(DaysAway.dayInWords(d))."; other refusals
+stay at the foot. The list rebuilds on dismiss through `listRevision`.
 
 ### What the shell draws
 
@@ -139,24 +124,18 @@ title for an unnamed span: "Change Away"
 leading swipe on a span: Edit (pencil, accent) · trailing: Remove (trash) · tap: inert
 ```
 
-### Migration
-
-Roster form 11: each days away record carries its stops — commitment, day kept until, take-up,
-absent for none — empty where none. Form 10 reads as the table says, exactly: `main` can neither
-change a span nor keep a stopped commitment in one under way. A copy nests the roster form. Two days
-away with one identity are refused; the known gap in `docs/open-questions.md` naming it closes.
-
 ## Risks / Trade-offs
 
-- [A form-11 roster an earlier build of this branch wrote holds no take-ups] → assumed on no phone.
-- [A fixed take-up another span's day back gave goes stale when that span moves] → harmless: own life
-  reads only this span's days, and two spans over one commitment never share one.
-- [Carried tests change; settled 6 refuses a span said ahead over a recorded day] → `tasks.md` § 1.
+- [A reader left on the eras alone owes hidden days] → § *Order of work* step 3 before any scenario;
+  the day-screen, look-back, quota and shift scenarios; `tasks.md` 2.6's mutations.
+- [Hiding depends on the record, which a roster store alone cannot read] → stated in the delta: with
+  no record every covered day is hidden; every reader holding the record passes it.
+- [A form-10 roster with days away keeps its cut gaps] → settled 23: none is on a phone.
+- [Carried tests change] → `tasks.md` § 1.2, before and after for each.
 
 ## Open Questions
 
-`grill.md` § *Left open* is "None."; settled 16–18 are folded in. **Settled**, both the owner's answers of
-2026-10-13: a stop made while days away are under way keeps the commitment in them, remembered, not
-#401's take-out; and a day-back take-up never moves to a day no later than the day after its stop,
-keeping instead the day back it was taken up for — Gym, stopped as of the 14th inside Mallorca, 13–18
-October, and taken up again, owes up to the 14th and from the 19th when Mallorca moves to 5–10.
+None. `grill.md` § *Left open* is "None.", and settled 19–23 are folded in. The one call settled 23
+left here, how a form-10 roster holding days away is read, is § *Migration*; reading settled 6's
+"newly" under the mask, so a recorded day already within days away is not judged again, is
+§ *Every operation*.
