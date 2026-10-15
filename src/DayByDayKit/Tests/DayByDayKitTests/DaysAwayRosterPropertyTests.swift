@@ -89,6 +89,15 @@ private func dueDaysOnTheEras(_ roster: Roster) -> [String: Set<Int>] {
     return due
 }
 
+/// Whether a change of `target` to days beginning on `first` moves them wholly past the day after
+/// the stop of a stopped commitment they are over, in `roster`.
+private func movesWhollyPastAStop(_ target: DaysAway, to first: CalendarDate, in roster: Roster) -> Bool {
+    target.commitments.contains { pick in
+        roster.entries.first { $0.commitment.identity == pick.identity }?.keptUntil
+            .map { number(first) > number($0) + 1 } ?? false
+    }
+}
+
 /// Whether `schedule` counts every N days.
 private func countsEveryNDays(_ schedule: Schedule) -> Bool {
     if case .everyNDays = schedule { return true }
@@ -157,27 +166,29 @@ private struct Tally {
     var renamed = 0
     var movedBack = 0
     var oneOrTwo = 0
+    var oneOrTwoBothEndsMoved = 0
     var removed = 0
     var takeUpsInside = 0
     var rhythmChangesInside = 0
     var changesOfOthers = 0
     var removalsOfOthers = 0
     var deletions = 0
-    /// Changes whose first step took a stopped pick out of the days away, which no move back can put
-    /// back (*A change of days away keeps a stopped commitment they are over…*).
-    var changesThatDroppedAPick = 0
+    /// Kept changes moving days away over a stopped pick wholly past the day after its stop.
+    var changesWhollyPastAStop = 0
 }
 
 /// Every roster a commitments screen keeps through days away said, changed and removed and commitments
 /// stopped, taken up again, changed in rhythm and deleted is one a roster store reads, and the days of
-/// every commitment obey what days away promise: (a) a roster store opened afterwards reads what was
-/// written and no act is refused as a roster that could not be written; (b) renaming days away, their
-/// days and picks as they are, changes no day; (c) a change followed by its move back restores every
-/// day; (d) the same days reached in one change or two leave the same days; (e) a removal confirmed gives
-/// back exactly the days it hid — each day of it in no other days away over the commitment and due on
-/// its eras — and changes no day it did not hide. Every state is also read against the eras and days
-/// away alone. A step refused for a reason the specification gives keeps nothing and is skipped; no
-/// state, act or day is otherwise left out.
+/// every commitment, stopped ones included, obey what days away promise, with no act, check, sequence or
+/// refusal excluded: (a) a roster store opened afterwards reads what was written and no act is refused
+/// as a roster that could not be written; (b) renaming each listed days away, their days and picks as
+/// they are, is kept and changes no day; (c) a change followed by its move back restores every day; (d)
+/// the same days reached in one change, or through a free intermediate change whose first and last days
+/// are both drawn at random, give the same days; (e) a removal confirmed gives back exactly the days it
+/// hid — each day of it in no other days away over the commitment and due on its eras, worked out from
+/// the eras alone — and changes no other day. Every state is also read against the eras and days away
+/// alone. A change or intermediate refused for a reason the specification gives keeps nothing and is
+/// drawn again, at most 20 times.
 @MainActor
 private func checkEveryActLeavesDaysAwayAsPromised(clockMovesForward: Bool) throws -> Tally {
     var choices = Choices(state: seed(committed: clockMovesForward ? 402_777 : 402_006))
@@ -237,7 +248,7 @@ private func checkEveryActLeavesDaysAwayAsPromised(clockMovesForward: Bool) thro
 
             // Every sequence begins by saying days away over everything kept, then another beginning the
             // day after the first ends, a stop and a take-up; the rest are chosen.
-            let pick = iteration == 0 ? 0 : iteration == 1 ? 6 : iteration == 2 ? 18 : iteration == 3 ? 22 : choices.next(43)
+            let pick = iteration == 0 ? 0 : iteration == 1 ? 6 : iteration == 2 ? 18 : iteration == 3 ? 22 : choices.next(46)
             switch pick {
             case 0, 1, 2, 3, 4, 5:
                 let over = commitments.kept.filter { _ in iteration == 0 || !choices.chance(1, in: 4) }
@@ -291,6 +302,9 @@ private func checkEveryActLeavesDaysAwayAsPromised(clockMovesForward: Bool) thro
                 if refusal == nil, index > 0 {
                     tally.changesOfOthers += 1
                 }
+                if refusal == nil, movesWhollyPastAStop(target, to: from, in: current) {
+                    tally.changesWhollyPastAStop += 1
+                }
             case 32, 33, 34:
                 // Untick one commitment from days away.
                 let all = listed(commitments)
@@ -300,9 +314,13 @@ private func checkEveryActLeavesDaysAwayAsPromised(clockMovesForward: Bool) thro
                 let picked = target.commitments.enumerated().filter { $0.offset != dropped }.map(\.element)
                 acts.append(
                     "untick \(target.commitments[dropped].name) from \(target.title) as of \(today)")
+                let index = all.firstIndex(of: target) ?? 0
                 refusal = commitments.changeDaysAway(
                     target, named: target.name ?? "", from: target.firstDay, through: target.lastDay,
                     over: picked)
+                if refusal == nil, index > 0 {
+                    tally.changesOfOthers += 1
+                }
             case 14, 15, 16, 17, 40, 41, 42:
                 let all = listed(commitments)
                 guard !all.isEmpty else { continue }
@@ -343,7 +361,7 @@ private func checkEveryActLeavesDaysAwayAsPromised(clockMovesForward: Bool) thro
                 if refusal == nil, over.contains(where: { number($0.firstDay) <= today && today <= number($0.lastDay) }) {
                     tally.takeUpsInside += 1
                 }
-            case 28, 29, 30, 31:
+            case 28, 29, 30, 31, 43, 44, 45:
                 guard !commitments.kept.isEmpty else { continue }
                 let target = commitments.kept[choices.next(commitments.kept.count)]
                 if !choices.chance(1, in: 10),
@@ -409,19 +427,28 @@ private func checkEveryActLeavesDaysAwayAsPromised(clockMovesForward: Bool) thro
                 break
             }
 
-            // (b) Renaming each listed days away, same days and picks, changes no day.
+            // (b) Renaming each listed days away, same days and picks, is kept and changes no day.
             do {
                 let renamed = try copy(of: roster)
                 let atCopy = screen(renamed, asOf: today)
                 var ran = false
                 for span in listed(atCopy) {
-                    if atCopy.changeDaysAway(
-                        span, named: "R" + (span.name ?? ""), from: span.firstDay, through: span.lastDay,
-                        over: span.commitments) == nil
+                    let newName = "R" + (span.name ?? "")
+                    if let refused = atCopy.changeDaysAway(
+                        span, named: newName, from: span.firstDay, through: span.lastDay,
+                        over: span.commitments)
+                    {
+                        failures.append(
+                            "sequence \(sequence): renaming \(span.title) was refused (\(refused)), after \(acts)")
+                    } else if let now = listed(atCopy).first(where: { $0 == span }),
+                        now.name == newName, now.firstDay == span.firstDay,
+                        now.lastDay == span.lastDay,
+                        Set(now.commitments.map(\.identity)) == Set(span.commitments.map(\.identity))
                     {
                         ran = true
-                    } else if atCopy.daysAwayRefusal == .notKept {
-                        failures.append("sequence \(sequence): a rename refused as unwritable, after \(acts)")
+                    } else {
+                        failures.append(
+                            "sequence \(sequence): renaming \(span.title) did not keep its days and picks, after \(acts)")
                     }
                 }
                 if ran {
@@ -437,138 +464,155 @@ private func checkEveryActLeavesDaysAwayAsPromised(clockMovesForward: Bool) thro
                 }
             }
 
-            // (e) A removal confirmed gives back exactly the days it hid and changes no day it did not hide.
+            // (e) A removal confirmed gives back exactly the days it hid and changes no other day.
             do {
                 let removal = try copy(of: roster)
                 let atRemoval = screen(removal, asOf: today)
                 let spans = listed(atRemoval)
                 if !spans.isEmpty {
-                    let gone = spans[choices.next(spans.count)]
-                    if let wasRoster = rosterRead(removal) {
-                        atRemoval.askToRemove(gone)
-                        let refused = atRemoval.confirmRemovingDaysAway()
-                        if refused == nil, let nowRoster = rosterRead(removal),
-                            nowRoster.spans.count == wasRoster.spans.count - 1
-                        {
-                            tally.removed += 1
-                            let now = dueDays(nowRoster)
-                            let onEras = dueDaysOnTheEras(nowRoster)
-                            var problems: [String] = []
-                            let overNames = Set(gone.commitments.map(\.name))
-                            for commitment in gone.commitments
-                            where nowRoster.entries.contains(where: { $0.commitment.identity == commitment.identity }) {
-                                let others = wasRoster.spans.filter {
-                                    $0.identity != gone.identity && $0.commitments.contains(commitment.identity)
+                    let index = choices.next(spans.count)
+                    let gone = spans[index]
+                    atRemoval.askToRemove(gone)
+                    if let refused = atRemoval.confirmRemovingDaysAway() {
+                        failures.append(
+                            "sequence \(sequence): removing \(gone.title) was refused (\(refused)), after \(acts)")
+                    } else if let nowRoster = rosterRead(removal),
+                        nowRoster.spans.count == held.spans.count - 1
+                    {
+                        tally.removed += 1
+                        if index > 0 {
+                            tally.removalsOfOthers += 1
+                        }
+                        let now = dueDays(nowRoster)
+                        let onEras = dueDaysOnTheEras(nowRoster)
+                        var problems: [String] = []
+                        // Each day of it in no other days away over the commitment and due on its eras.
+                        for commitment in gone.commitments
+                        where nowRoster.entries.contains(where: { $0.commitment.identity == commitment.identity }) {
+                            let others = held.spans.filter {
+                                $0.identity != gone.identity && $0.commitments.contains(commitment.identity)
+                            }
+                            for day in number(gone.firstDay)...number(gone.lastDay) {
+                                let inOther = others.contains {
+                                    number($0.firstDay) <= day && day <= number($0.lastDay)
                                 }
-                                for day in number(gone.firstDay)...number(gone.lastDay) {
-                                    let inOther = others.contains {
-                                        number($0.firstDay) <= day && day <= number($0.lastDay)
-                                    }
-                                    guard !inOther else { continue }
-                                    let dueOnItsEras = onEras[commitment.name]?.contains(day) ?? false
-                                    if dueOnItsEras != (now[commitment.name]?.contains(day) ?? false) {
-                                        problems.append(
-                                            "\(commitment.name) \(dueOnItsEras ? "not given back" : "owed") on \(day)")
-                                    }
+                                guard !inOther else { continue }
+                                let dueOnItsEras = onEras[commitment.name]?.contains(day) ?? false
+                                if dueOnItsEras != (now[commitment.name]?.contains(day) ?? false) {
+                                    problems.append(
+                                        "\(commitment.name) \(dueOnItsEras ? "not given back" : "owed") on \(day)")
                                 }
                             }
-                            // No day outside the days it hid changes, but for the days after them of an
-                            // every-N-days count, which runs on unbroken once they are gone.
-                            for name in Set(before.keys).union(now.keys) {
-                                let countsEveryN = nowRoster.entries.contains {
-                                    $0.commitment.name == name && countsEveryNDays($0.commitment.schedule)
-                                }
-                                let hid = overNames.contains(name)
-                                for day in window {
-                                    let inGone = number(gone.firstDay) <= day && day <= number(gone.lastDay)
-                                    let afterGone = day > number(gone.lastDay)
-                                    if hid && (inGone || (countsEveryN && afterGone)) { continue }
-                                    if (before[name]?.contains(day) ?? false) != (now[name]?.contains(day) ?? false) {
-                                        problems.append("\(name) changed on \(day) though the days away did not hide it")
-                                    }
-                                }
+                        }
+                        // No other day changes: every day read is the day the eras and the days away left
+                        // say, and a commitment the days away were not over is as it was.
+                        let drift = differences(onEras, now)
+                        if !drift.isEmpty { problems.append("the days read differ from the eras (\(drift))") }
+                        let overNames = Set(gone.commitments.map(\.name))
+                        for name in Set(before.keys).union(now.keys) where !overNames.contains(name) {
+                            for day in window
+                            where (before[name]?.contains(day) ?? false) != (now[name]?.contains(day) ?? false) {
+                                problems.append("\(name) changed on \(day) though the days away were not over it")
                             }
-                            if !problems.isEmpty {
-                                failures.append(
-                                    "sequence \(sequence): removing \(gone.title) \(number(gone.firstDay))-\(number(gone.lastDay)): \(problems.prefix(4).joined(separator: "; ")), after \(acts)"
-                                )
-                            }
+                        }
+                        if !problems.isEmpty {
+                            failures.append(
+                                "sequence \(sequence): removing \(gone.title) \(number(gone.firstDay))-\(number(gone.lastDay)): \(problems.prefix(4).joined(separator: "; ")), after \(acts)"
+                            )
                         }
                     }
                 }
             }
 
             // (c) and (d) A change to other days, followed by its move back, and the same days reached
-            // in one change or two.
+            // in one change and through a free intermediate one.
             let all = listed(commitments)
             guard !all.isEmpty else { continue }
             let target = all[choices.next(all.count)]
-            let newFirst = 1 + choices.next(36)
-            let newLast = newFirst + choices.next(9)
-            /// Changes `span` on `screen`, kept at `place`, answering whether it was kept; a change refused
-            /// as a roster that could not be written is a failure, any other refusal a skip.
+            /// Changes `span` on `screen`; a change refused as a roster that could not be written is a
+            /// failure, any other refusal is answered for the caller to draw again.
             func change(
-                _ screen: CommitmentsScreen, _ span: DaysAway, _ from: CalendarDate, _ through: CalendarDate
+                _ screen: CommitmentsScreen, _ span: DaysAway, _ from: Int, _ through: Int
             ) -> CommitmentsScreen.Refusal? {
                 let refusal = screen.changeDaysAway(
-                    span, named: target.name ?? "", from: from, through: through, over: span.commitments)
+                    span, named: target.name ?? "", from: dayN(from), through: dayN(through),
+                    over: span.commitments)
                 if refusal == .notKept {
                     failures.append("sequence \(sequence): a change refused as unwritable, after \(acts)")
                 }
                 return refusal
             }
-            let moved = try copy(of: roster)
-            let atMoved = screen(moved, asOf: today)
-            guard let there = listed(atMoved).first(where: { $0 == target }),
-                change(atMoved, there, dayN(newFirst), dayN(newLast)) == nil,
-                let now = listed(atMoved).first(where: { $0 == target })
-            else {
-                continue
+            var direct: (first: Int, last: Int, place: URL, screen: CommitmentsScreen)?
+            for _ in 0..<20 where direct == nil {
+                let first = 1 + choices.next(36)
+                let last = first + choices.next(9)
+                let place = try copy(of: roster)
+                let atPlace = screen(place, asOf: today)
+                guard let there = listed(atPlace).first(where: { $0 == target }) else { break }
+                if change(atPlace, there, first, last) == nil {
+                    if movesWhollyPastAStop(target, to: dayN(first), in: held) {
+                        tally.changesWhollyPastAStop += 1
+                    }
+                    direct = (first, last, place, atPlace)
+                }
             }
-            let inOne = dueDays(at: moved)
-            if Set(now.commitments.map(\.identity)) != Set(target.commitments.map(\.identity)) {
-                tally.changesThatDroppedAPick += 1
-            } else {
-                // The move back must not be refused: the days it asks for were once kept.
-                if let refusal = change(atMoved, now, target.firstDay, target.lastDay) {
+            guard let direct else { continue }
+            let inOne = dueDays(at: direct.place)
+
+            // (d) The same days reached through an intermediate change whose ends are both moved.
+            var through: URL?
+            for _ in 0..<20 where through == nil {
+                let first = 1 + choices.next(36)
+                let last = first + choices.next(9)
+                guard first != number(target.firstDay), last != number(target.lastDay) else { continue }
+                let place = try copy(of: roster)
+                let atPlace = screen(place, asOf: today)
+                guard let start = listed(atPlace).first(where: { $0 == target }),
+                    change(atPlace, start, first, last) == nil,
+                    let middle = listed(atPlace).first(where: { $0 == target })
+                else { continue }
+                if let refusal = change(atPlace, middle, direct.first, direct.last) {
                     failures.append(
-                        "sequence \(sequence): \(target.title) moved to \(newFirst)-\(newLast) could not be moved back (\(refusal)), after \(acts)"
+                        "sequence \(sequence): \(target.title) moved to \(first)-\(last) could not then be moved to \(direct.first)-\(direct.last) (\(refusal)), after \(acts)"
+                    )
+                    break
+                }
+                through = place
+            }
+            if let through {
+                tally.oneOrTwo += 1
+                tally.oneOrTwoBothEndsMoved += 1
+                if let two = dueDays(at: through), let one = inOne {
+                    let changed = differences(one, two)
+                    if !changed.isEmpty {
+                        failures.append(
+                            "sequence \(sequence): \(target.title) \(number(target.firstDay))-\(number(target.lastDay)) to \(direct.first)-\(direct.last) in one change and through another leave different days (\(changed)), after \(acts)"
+                        )
+                    }
+                } else {
+                    failures.append("sequence \(sequence): a change left a roster no store reads, after \(acts)")
+                }
+            }
+
+            // (c) The move back must not be refused, and restores every day.
+            if let now = listed(direct.screen).first(where: { $0 == target }) {
+                if let refusal = change(direct.screen, now, number(target.firstDay), number(target.lastDay)) {
+                    failures.append(
+                        "sequence \(sequence): \(target.title) moved to \(direct.first)-\(direct.last) could not be moved back (\(refusal)), after \(acts)"
                     )
                 } else {
                     tally.movedBack += 1
-                    if let back = dueDays(at: moved) {
+                    if let back = dueDays(at: direct.place) {
                         let changed = differences(before, back)
                         if !changed.isEmpty {
                             failures.append(
-                                "sequence \(sequence): \(target.title) \(number(target.firstDay))-\(number(target.lastDay)) moved to \(newFirst)-\(newLast) and back changed days (\(changed)), after \(acts)"
+                                "sequence \(sequence): \(target.title) \(number(target.firstDay))-\(number(target.lastDay)) moved to \(direct.first)-\(direct.last) and back changed days (\(changed)), after \(acts)"
                             )
                         }
                     } else {
                         failures.append("sequence \(sequence): a move back left a roster no store reads, after \(acts)")
                     }
                 }
-            }
-
-            let twice = try copy(of: roster)
-            let atTwice = screen(twice, asOf: today)
-            guard let start = listed(atTwice).first(where: { $0 == target }) else { continue }
-            let lastFirst = target.firstDay.days(until: dayN(newLast)) >= 0
-            let stepFirst = lastFirst ? target.firstDay : dayN(newFirst)
-            let stepLast = lastFirst ? dayN(newLast) : target.lastDay
-            guard
-                change(atTwice, start, stepFirst, stepLast) == nil,
-                let middle = listed(atTwice).first(where: { $0 == target }),
-                change(atTwice, middle, dayN(newFirst), dayN(newLast)) == nil,
-                let two = dueDays(at: twice), let one = inOne
-            else {
-                continue
-            }
-            tally.oneOrTwo += 1
-            let changed = differences(one, two)
-            if !changed.isEmpty {
-                failures.append(
-                    "sequence \(sequence): \(target.title) \(number(target.firstDay))-\(number(target.lastDay)) to \(newFirst)-\(newLast) in one change and in two leave different days (\(changed)), after \(acts)"
-                )
             }
         }
     }
@@ -583,14 +627,16 @@ private func checkEveryActLeavesDaysAwayAsPromised(clockMovesForward: Bool) thro
 /// Fails unless the run did each thing often enough for its passing to mean something.
 private func expectEnough(_ tally: Tally, _ mode: String) {
     print(
-        "days away property, \(mode): (b) \(tally.renamed), (c) \(tally.movedBack), (d) \(tally.oneOrTwo), (e) \(tally.removed) ran unskipped; take-ups inside days away \(tally.takeUpsInside); rhythm changes inside days away \(tally.rhythmChangesInside); kept changes of others \(tally.changesOfOthers); confirmed removals of others \(tally.removalsOfOthers); deletions \(tally.deletions); changes that took a stopped pick out \(tally.changesThatDroppedAPick)"
+        "days away property, \(mode): (b) \(tally.renamed), (c) \(tally.movedBack), (d) \(tally.oneOrTwo) with both ends moved \(tally.oneOrTwoBothEndsMoved), (e) \(tally.removed) ran unskipped; take-ups inside days away \(tally.takeUpsInside); rhythm changes inside days away \(tally.rhythmChangesInside); changes wholly past a stopped pick's stop \(tally.changesWhollyPastAStop); kept changes of others \(tally.changesOfOthers); confirmed removals of others \(tally.removalsOfOthers); deletions \(tally.deletions)"
     )
     #expect(tally.renamed >= 400, "(b) ran unskipped")
     #expect(tally.movedBack >= 400, "(c) ran unskipped")
     #expect(tally.oneOrTwo >= 400, "(d) ran unskipped")
+    #expect(tally.oneOrTwoBothEndsMoved >= 400, "(d) ran with both ends of its intermediate moved")
     #expect(tally.removed >= 400, "(e) ran unskipped")
     #expect(tally.takeUpsInside >= 50, "take-ups kept inside days away")
     #expect(tally.rhythmChangesInside >= 50, "rhythm changes kept inside days away")
+    #expect(tally.changesWhollyPastAStop >= 50, "changes moving days away wholly past a stopped pick's stop")
     #expect(tally.changesOfOthers >= 150, "kept changes of days away other than the first listed")
     #expect(tally.removalsOfOthers >= 150, "confirmed removals of days away other than the first listed")
 }
