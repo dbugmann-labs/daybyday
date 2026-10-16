@@ -154,36 +154,6 @@ to Wants the same day, 2026-09-30, unfixed, by the owner's choice.*
   large title and leave the lag rather than take a layout nobody chose. The next attempt starts from
   a cause, not a workaround.
 
-### B-069 — choose the app's accent colour in Settings
-*Captured 2026-09-29.*
-
-> "I'm still not 100% happy.. Is it possible that you use System Blue per default, and give me all
-> the options that you showed in the as a setting in the "Settings"?"
-
-- **Trigger** — after the icon chore (#357) tried a fixed accent in the icon's colour: slate teal
-  first, then ink, and the owner was happy with neither on the simulator. The options are the P10
-  shortlist, as light and dark pairs: slate teal `#3B7D82`/`#7FBFC3`, ink `#3A4F6B`/`#A3B5CF`, plum
-  `#7B3F6E`/`#D9A3CC`, brass `#7F5E14`/`#DDB65E`, graphite `#3A3A3C`/`#E5E5EA`. System blue is the
-  default. The owner's answers the same day: the accent only, and the home-screen icon stays the one
-  ink icon; #357 ships the icon with the controls in system blue, and this want waits for a week of
-  living with blue.
-- **Touches** — probably `restore`, where **Settings** and the app's two settings so far (the copy
-  place and the birthday switch) are specified; `unclaimed` if a look is judged not to belong
-  there. Not a shell chore: a choice the app keeps is a **setting**, and ADR-1019 puts "a choice of
-  where something is stored" outside the shell.
-- **Principle** — tested against *five percent of seven things*: **passes, weakly.** It neither
-  deepens a commitment nor makes a new record possible; it changes how every screen looks. So it
-  ranks below any want that makes a new thing possible, and its case is that the owner uses the
-  app five times a day and cannot settle on one colour.
-- **Open** — does a **copy** carry the choice, and does a **restore** replace it? `CONTEXT.md` says
-  neither existing setting travels in a copy.
-- **Open** — ADR-1045 holds that an accent is implementation detail, not domain vocabulary. A
-  setting a person picks by name would make it a term; that ADR is amended if this is promoted.
-- **Open** — slate teal reads at 4.24:1 on the grey grouped-list background, under 4.5:1 for text.
-  Offer it anyway, lighten it, or drop it?
-- **Open** — how the choice is drawn on Settings (a row of swatches, a list, a menu) is for the
-  Story grill's layout round.
-
 ### B-072 — read dates and weekdays in my phone's language
 *Captured 2026-09-29.*
 
@@ -209,33 +179,6 @@ to Wants the same day, 2026-09-30, unfixed, by the owner's choice.*
 - **Open** — ADR-1022 argued against this for reasons it names; the grill should read them before
   reversing it, not after.
 
-### B-077 — keep my place in the commitments list when I stop, resume or delete a happening
-*Captured 2026-10-06, from the twenty-fifth grooming sweep. The wording is the sweep's; the owner
-confirmed it as a gap rather than saying it unprompted.*
-
-> "The owner shipped #379 with it on 2026-10-03, to be fixed for both together in a Story of its
-> own." — `docs/open-questions.md` § *Known gaps*, *Stopping, resuming or deleting a happening sends
-> the commitments list back to the top*
-
-- **Trigger** — at the foot of the commitments list, confirming a stop on a happening: the list
-  jumps to its top and the Happenings card is off screen, so the row just stopped is no longer in
-  view. Measured on an iOS 26.5 simulator at #379's G7.
-- **Touches** — `happening` and the commitments screen's shell. A stopped happening is read from the
-  happening store, which the commitments screen does not watch, so the shell rebuilds the whole list
-  through `listRevision` (`CommitmentsView.swift`) and the scroll position goes with it. The known
-  gap names the cure — make the stopped state something the screen watches, so the rebuild can go —
-  and says the happening rename sheet rebuilds the same way, unmeasured. "Both together" is the
-  stop-resume-delete path and the rename. It sits beside B-066 as a screen that redraws wrongly
-  rather than one that says something wrong, but on another screen and for another cause.
-- **Principle** — tested against *an iPhone, in your hand*: **passes.** A confirmation that throws
-  you to the top of a list takes your place away at the moment you were looking at the row, and you
-  scroll back to see whether it worked.
-- **Open** — a chore on the shell under ADR-1019, or a Story? The known gap says "a Story of its
-  own"; if the cure changes what the commitments screen's seam exposes, it is one, and if it only
-  stops a rebuild in the view, it is a chore.
-- **Open** — does the rename sheet lose the place too? It was not measured at #379, and "both
-  together" assumes it does.
-
 ### B-086 — read back why I declined the days I declined
 *Captured 2026-10-16, from the grill of `count-declined-days` (#403). The wording is the grill's;
 the owner chose it as a want when settling that Story to count only.*
@@ -259,6 +202,27 @@ One line per entry that has left, newest first. This is the dedup index: `/atlas
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-10-16 — keep my place in the commitments list when I stop, resume or delete a happening
+  (B-077), widened to every sheet closed on that screen → **one chore, `chore/keep-commitments-place`,
+  under `docs/process.md` §5**, not a Story: nothing the app says changes, and where a list rests is
+  no requirement and no test can assert it (ADR-1029). Five questions over two rounds, one fact
+  agent, every answer as recommended. What the chore asks, so it can be built from this line:
+  the commitments list keeps its scroll position across every action that today rebuilds it through
+  `.id(listRevision)` (`CommitmentsView.swift`) — a happening's stop, resume and deletion, removing
+  days away, and closing any of its five sheets (commitment, happening, delete-happening, new and
+  change days away). **Stay where you were**: a row that moves or goes leaves the view, and the
+  list never scrolls to follow it. The happening half has a known cure — `DayByDayKit` exposes a
+  happening's stopped state as state the screen watches rather than only `isStopped(_:)` — and the
+  owner allowed the chore to make that one Kit change with no behaviour change, the PR saying so.
+  The sheet half has no known cause (#303 § 14.4 tried four keyings): **one session of diagnosis;
+  if no cause, ship the happening half** and leave the sheet half in `docs/open-questions.md` with
+  what was measured, as B-066 was left, rather than restore the scroll over a rebuild. Proof is
+  simulator pictures on the PR, before and after each action with the list at its foot, then the
+  owner on the phone before merge. The day screen's `.id(shownDay)` is deliberate and out of scope.
+- 2026-10-16 — choose the app's accent colour in Settings (B-069) → **dropped.** It waited for a
+  week of living with system blue after #357; two passes later the owner said "blue is fine". The P10
+  shortlist it would have offered (slate teal, ink, plum, brass, graphite) is in #357's record if the
+  want returns; ADR-1045 stands unamended.
 - 2026-10-14 — open the Birthdays screen from the day screen (B-084), and find someone on it by name
   (B-085) → one Story, #425 `find-a-birthday-from-the-day`, under `FEAT: birthday` (#322), reopened
   with `EPIC: Birthdays` (#321). Seven questions over two rounds, after two fact agents; every answer
@@ -1661,3 +1625,16 @@ found nothing.
     **C**, B-069: two weeks of system blue against the one week it waited for; saying blue is fine
     drops it, and the owner has not said. B-072 a sitting of its own; B-041 waits on the deployment
     target; B-066 waits for a cause.
+- 2026-10-16 — pass over 6 wants (B-041, B-066, B-069, B-072, B-077, B-086), the thirty-third, on
+  `chore/backlog` (PR #429, holding B-086), rebased onto `origin/main` at 5390d2e.
+  - **Sweep** — no silence. Since the 2026-10-14 pass `main` gained #427, #428, #418 and #430; days
+    away have say, change and remove, a decline has make and take back. Day-one week all shipped; no
+    issue open; `docs/open-questions.md` gained four gaps (the keyboard over the one-off field, a
+    squeezed Birthdays line, an unpinned shift bound, days away over one commitment twice) and no want.
+  - **Taken forward** — **A**, B-077, widened at this pass to every sheet dismissal on the commitments
+    screen after `docs/open-questions.md` traced both to one `.id(listRevision)` rebuild →
+    `chore/keep-commitments-place`; the Decided line above carries what it asks. No G1.
+  - **Dropped** — B-069: the owner said "blue is fine".
+  - **Not taken** — B-086, a Story under #271: wait until the declined count of #430 has been read on
+    a few look-backs. B-072 a sitting of its own; B-041 waits on the deployment target; B-066 waits
+    for a cause.
