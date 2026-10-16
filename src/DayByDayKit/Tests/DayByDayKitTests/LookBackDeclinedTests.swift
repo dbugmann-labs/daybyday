@@ -255,10 +255,8 @@ func aLookBackCountsNoDeclineOnADayItDoesNotCountDue() throws {
 func aLookBackThatCountsNoDeclinedDaySaysNoDeclinedCount() throws {
     let held = places()
     let gym = Commitment(name: "Gym", schedule: monWedSat, keptFrom: date(2026, 1, 1))!
-    let later = Commitment(name: "Run", schedule: monWedSat, keptFrom: date(2026, 4, 1))!
     let roster = try RosterStore(at: held.roster)
     try roster.add(gym)
-    try roster.add(later)
     let record = try RecordStore(at: held.record)
     for day in februaryDueDays {
         try record.add(Tick(gym, on: day)!)
@@ -281,9 +279,14 @@ func aLookBackThatCountsNoDeclinedDaySaysNoDeclinedCount() throws {
     #expect(
         replaced?.lines.contains(.month(inWords: "March 2026", fraction: "1/6")) == true)
 
-    let afterApril = CommitmentsScreen(
-        asOf: date(2026, 4, 15), keepingRosterAt: held.roster, keepingRecordAt: held.record
+    let laterPlaces = places()
+    let later = Commitment(name: "Gym", schedule: monWedSat, keptFrom: date(2026, 4, 1))!
+    try RosterStore(at: laterPlaces.roster).add(later)
+    _ = try RecordStore(at: laterPlaces.record)
+    let notYetKept = CommitmentsScreen(
+        asOf: date(2026, 3, 15), keepingRosterAt: laterPlaces.roster,
+        keepingRecordAt: laterPlaces.record
     ).lookBack(at: later)
-    #expect(afterApril?.name == "Run")
-    #expect(afterApril?.declinedInWords == nil)
+    #expect(notYetKept?.name == "Gym")
+    #expect(notYetKept?.declinedInWords == nil)
 }

@@ -986,18 +986,25 @@ private struct LookBackGridLine: View {
     var caption: String?
 
     var body: some View {
-        GridRow(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(label)
-                if let caption {
+        if let caption {
+            GridRow(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(label)
                     Text(caption)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+                Text(value)
+                    .monospacedDigit()
+                    .gridColumnAlignment(.trailing)
             }
-            Text(value)
-                .monospacedDigit()
-                .gridColumnAlignment(.trailing)
+        } else {
+            GridRow {
+                Text(label)
+                Text(value)
+                    .monospacedDigit()
+                    .gridColumnAlignment(.trailing)
+            }
         }
         GridRow {
             Divider()

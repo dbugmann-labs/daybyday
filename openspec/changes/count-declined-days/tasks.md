@@ -10,7 +10,7 @@ the next.
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 7 new scenarios uncovered and no other, and `openspec validate count-declined-days --strict` exits 0 on a branch rebased onto current `main`
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` reports exactly this change's 7 new scenarios uncovered and no other, and `openspec validate count-declined-days --strict` exits 0 on a branch rebased onto current `main`
 
 ## 2. `LookBack` — the declined count
 

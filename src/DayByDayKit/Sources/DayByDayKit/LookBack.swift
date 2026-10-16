@@ -210,8 +210,9 @@ public struct LookBack: Hashable, Sendable {
         switch commitment.kind {
         case .number, .total:
             let graph = Self.graph(from: earliestEra.start, through: frontEnd, eras: eras, history: history)
-            let declined = Self.declinedDays(
-                from: earliestEra.start, through: frontEnd, eras: eras, history: history)
+            let declined = Self.walkDays(
+                from: earliestEra.start, through: frontEnd, eras: eras, history: history
+            ).totalDeclined
             return LookBack(
                 name: commitment.name, rhythmInWords: commitment.rhythmInWords,
                 keptFromInWords: LookBackWords.day(earliestEra.start),
@@ -220,8 +221,9 @@ public struct LookBack: Hashable, Sendable {
                 declinedInWords: Self.inWords(declined: declined))
         case .note:
             let notes = Self.notes(from: earliestEra.start, through: frontEnd, eras: eras, history: history)
-            let declined = Self.declinedDays(
-                from: earliestEra.start, through: frontEnd, eras: eras, history: history)
+            let declined = Self.walkDays(
+                from: earliestEra.start, through: frontEnd, eras: eras, history: history
+            ).totalDeclined
             return LookBack(
                 name: commitment.name, rhythmInWords: commitment.rhythmInWords,
                 keptFromInWords: LookBackWords.day(earliestEra.start),
@@ -428,40 +430,6 @@ public struct LookBack: Hashable, Sendable {
     /// A declined count said as a number, `nil` where it is zero — `design.md` § *The seam*.
     private static func inWords(declined count: Int) -> String? {
         count > 0 ? LookBackWords.number(Decimal(count)) : nil
-    }
-
-    /// How many days from `start` through `end` hold a decline of the commitment on a day the era
-    /// holding it is due on and does not run on a weekly quota — the same predicate `walkDays`
-    /// counts a tick's declined days by, for the kinds that count nothing due. A decline on a gap
-    /// day, past `end`, on a quota era's day or on a day the holding era is not due on is counted
-    /// nowhere — `design.md` § *A decline the look-back does not count due is counted nowhere*.
-    private static func declinedDays(
-        from start: CalendarDate, through end: CalendarDate, eras: [Era], history: History
-    ) -> Int {
-        guard start.days(until: end) >= 0 else {
-            return 0
-        }
-
-        var count = 0
-        var day = start
-
-        while true {
-            if let era = Self.era(holding: day, in: eras, history: history),
-                !Self.isWeeklyQuota(era.commitment.schedule)
-            {
-                let counted = era.commitment(on: day, in: history)
-                if counted.isDue(on: day), history.decline(for: counted, on: day) != nil {
-                    count += 1
-                }
-            }
-
-            guard day != end, let next = day.adding(days: 1) else {
-                break
-            }
-            day = next
-        }
-
-        return count
     }
 
     /// A note commitment's notes, oldest first as walked then reversed — `design.md` § *A walk of
