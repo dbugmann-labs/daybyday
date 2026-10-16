@@ -17,7 +17,7 @@ the next.
 - [x] 2.1 The members in `design.md` § *The seam* exist with those signatures, `declinedInWords` and every month line's count answering `nil`; the twelve positional `.month` matches gain one `_` binding and no other change; every carried test still passes, and 2.2 is red before any member does more than compile
 - [x] 2.2 a look-back counts every day declined since the day it is kept from, and its whole still counts them due and unkept — catches a declined day dropped from the whole's due days, or counted kept
 - [x] 2.3 a month line says how many of its days were declined beside its fraction — catches "1 declined" pluralised, a count on a month holding none, or a fraction moved by the count
-- [ ] 2.4 a declined day in a week a week line says is counted on its month line, and no week line says a declined count — catches bucketing by calendar week rather than by the era holding the day
+- [x] 2.4 a declined day in a week a week line says is counted on its month line, and no week line says a declined count — catches bucketing by calendar week rather than by the era holding the day
 - [ ] 2.5 a number commitment's look-back counts a day declined however long ago, and its graph says no point on one — catches a count limited to the month span, or a count on the tick kind only
 - [ ] 2.6 a look-back that says no graph or no note still counts its declined days — catches the count formed inside the graph or the notes and lost where they are `nil` or empty
 - [ ] 2.7 a look-back counts no decline on a day it does not count due — catches counting every decline the history holds in reach, gap, stop, quota or rhythm aside

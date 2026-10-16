@@ -110,3 +110,54 @@ func aDeclinedDayInAWeekAWeekLineSaysIsCountedOnItsMonthLineAndNoWeekLineSaysADe
         ])
     #expect(lookBack?.declinedInWords == "1")
 }
+
+private let everyDay = Schedule.weekdays([
+    .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+])
+
+@MainActor
+@Test("a number commitment's look-back counts a day declined however long ago, and its graph says no point on one")
+func aNumberCommitmentsLookBackCountsADayDeclinedHoweverLongAgoAndItsGraphSaysNoPointOnOne()
+    throws
+{
+    let held = places()
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: date(2026, 1, 1), kind: .number(range: nil))!
+    let protein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: date(2026, 3, 1),
+        kind: .total(target: Commitment.Target(120)!))!
+    let journal = Commitment(
+        name: "Journal", schedule: everyDay, keptFrom: date(2026, 3, 1), kind: .note)!
+    let roster = try RosterStore(at: held.roster)
+    for commitment in [weight, protein, journal] {
+        try roster.add(commitment)
+    }
+    let record = try RecordStore(at: held.record)
+    try record.add(Number(72.5, for: weight, on: date(2026, 3, 1))!)
+    try record.add(Decline(for: weight, on: date(2026, 1, 2), reason: nil)!)
+    try record.add(Decline(for: weight, on: date(2026, 3, 10), reason: nil)!)
+    try record.add(Addition(150, for: protein, on: date(2026, 3, 1))!)
+    try record.add(Decline(for: protein, on: date(2026, 3, 3), reason: nil)!)
+    try record.add(Note("Quiet day.", for: journal, on: date(2026, 3, 1))!)
+    try record.add(Decline(for: journal, on: date(2026, 3, 3), reason: nil)!)
+
+    let weightScreen = CommitmentsScreen(
+        asOf: date(2026, 3, 15), keepingRosterAt: held.roster, keepingRecordAt: held.record)
+    let weightLookBack = weightScreen.lookBack(at: weight)
+
+    #expect(weightLookBack?.declinedInWords == "2")
+    let graph = weightLookBack?.graph
+    #expect(graph?.points.map(\.inWords) == ["72.5"])
+    #expect(graph?.points.map { graph?.days[$0.day] } == ["1 March 2026"])
+    #expect(graph?.averageInWords(over: .month) == "72.5")
+
+    let smallScreen = CommitmentsScreen(
+        asOf: date(2026, 3, 5), keepingRosterAt: held.roster, keepingRecordAt: held.record)
+    let proteinLookBack = smallScreen.lookBack(at: protein)
+    #expect(proteinLookBack?.declinedInWords == "1")
+    #expect(proteinLookBack?.graph?.points.count == 1)
+    let journalLookBack = smallScreen.lookBack(at: journal)
+    #expect(journalLookBack?.declinedInWords == "1")
+    #expect(journalLookBack?.notes.map(\.text) == ["Quiet day."])
+    #expect(journalLookBack?.noteCountInWords == "1 note")
+}
