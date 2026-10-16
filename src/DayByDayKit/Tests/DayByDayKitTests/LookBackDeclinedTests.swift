@@ -55,3 +55,21 @@ func aLookBackCountsEveryDayDeclinedSinceTheDayItIsKeptFromAndItsWholeStillCount
     #expect(lookBack?.declinedInWords == "4")
     #expect(lookBack?.whole == "11/31")
 }
+
+@MainActor
+@Test("a month line says how many of its days were declined beside its fraction")
+func aMonthLineSaysHowManyOfItsDaysWereDeclinedBesideItsFraction() throws {
+    let (screen, gym) = try declinedGymScreen()
+
+    let lookBack = screen.lookBack(at: gym)
+
+    #expect(
+        lookBack?.lines.contains(
+            .month(inWords: "March 2026", fraction: "0/6", declinedInWords: "3 declined")) == true)
+    #expect(
+        lookBack?.lines.contains(
+            .month(inWords: "January 2026", fraction: "0/13", declinedInWords: "1 declined"))
+            == true)
+    #expect(
+        lookBack?.lines.contains(.month(inWords: "February 2026", fraction: "11/12")) == true)
+}

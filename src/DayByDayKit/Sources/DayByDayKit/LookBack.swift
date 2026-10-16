@@ -152,7 +152,8 @@ public struct LookBack: Hashable, Sendable {
             guard hasNonQuotaDay else { return nil }
             return .month(
                 inWords: LookBackWords.month(year: yearMonth.year, month: yearMonth.month),
-                fraction: LookBackWords.fraction(kept: kept, due: due))
+                fraction: LookBackWords.fraction(kept: kept, due: due),
+                declinedInWords: declined > 0 ? LookBackWords.declined(declined) : nil)
         }
     }
 
