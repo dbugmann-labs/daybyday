@@ -6487,8 +6487,9 @@ at the record, roster, one-off or birthday place.
 
 Asked about a row of the today it was last handed, a day screen SHALL answer the mark "Needed today"
 exactly where the row's commitment is on a weekly quota, the row says its commitment is not kept,
-whatever its kind, and what the row's week owes, less its standing, equals the days from the row's
-date through that week's Sunday, both counted, that an era of the commitment holds. The owing and
+and what the row's week owes, less its standing, equals the days from the row's
+date through that week's Sunday, both counted, that the commitment's eras hold and its days away
+leave. The owing and
 the standing SHALL be the numbers the row's rhythm words say.
 
 It SHALL answer no mark where the week still owes fewer days than are left in it, where it owes
@@ -6594,6 +6595,16 @@ screen holds and nothing at any of its places.
 - **AND** the day screen answers "Needed today" for it
 - **AND** a day screen opened the same way as of Tuesday 13 October 2026 answers no mark for its row
   saying "1/3x a week"
+
+#### Scenario: a weekly-quota row on a day under days away holding a record counts that day among the days its week holds
+
+- **WHEN** a commitment named "Protein" of the total kind with a target of 120, on a weekly quota of
+  5 times a week, kept from 1 January 2026, is taken on at a roster place; an addition of 30 for
+  "Protein" on Monday 12 October 2026 is kept at a record place; days away from that Monday through
+  Wednesday 14 October 2026 are said over it through a commitments screen opened at those places as
+  of that Monday; and a day screen is opened at those places as of that Monday
+- **THEN** its one row says "0/4x a week" and says it is not kept
+- **AND** the day screen answers no mark for it
 
 ### Requirement: A day screen marks no row of a day other than the today it was last handed
 
@@ -7291,7 +7302,8 @@ one line for each days away its roster holds whose days include that view's date
 their first days, days away sharing a first day in the order they were said. Each line SHALL be the
 name of those days away, or "Away" where they have none, and SHALL name no commitment. The lines SHALL
 be said on every day of those days away, whatever rows that day holds, days before the today
-included and a first day on which a commitment picked is still kept included, and on no other day.
+included and a day on which a commitment picked holds a record, and so shows its row, included, and on
+no other day.
 
 #### Scenario: a day screen says the name of days away on each of their days, and nothing either side
 

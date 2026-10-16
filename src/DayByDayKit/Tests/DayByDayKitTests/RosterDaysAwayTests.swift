@@ -15,19 +15,21 @@ private func freshPlace() -> URL {
 
 private let gymID = "11111111-1111-1111-1111-111111111111"
 private let runID = "22222222-2222-2222-2222-222222222222"
+private let sharedID = "44444444-4444-4444-4444-444444444444"
 
 private func day(_ month: Int, _ day: Int) -> String {
     #"{ "year": 2026, "month": \#(month), "day": \#(day) }"#
 }
 
-/// One days away as a roster document writes it.
+/// One days away as a roster document writes it, in form 10's shape, which form 11 keeps.
 private func span(
-    _ name: String?, from first: String, through last: String, over commitments: [String]
+    _ name: String?, from first: String, through last: String, over commitments: [String],
+    identity: String = UUID().uuidString
 ) -> String {
     let named = name.map { #""\#($0)""# } ?? "null"
     let over = commitments.map { #""\#($0)""# }.joined(separator: ",")
     return """
-        { "identity": "\(UUID().uuidString)", "name": \(named), "firstDay": \(first),
+        { "identity": "\(identity)", "name": \(named), "firstDay": \(first),
           "lastDay": \(last), "commitments": [\(over)] }
         """
 }
@@ -121,9 +123,16 @@ func aRosterStoreHoldingDaysAwayNoRosterCouldHoldIsRefused() throws {
         "["
             + span("Mallorca", from: thirteen, through: eighteen, over: [gymID]) + ","
             + span("Lisbon", from: eighteen, through: day(10, 19), over: [gymID, runID]) + "]",
+        "["
+            + span(
+                "Mallorca", from: thirteen, through: day(10, 14), over: [gymID], identity: sharedID)
+            + ","
+            + span(
+                "Lisbon", from: day(10, 20), through: day(10, 21), over: [runID], identity: sharedID)
+            + "]",
     ]
     for list in refused {
-        let (place, result) = try opened(rosterJSON(version: 10, daysAway: list))
+        let (place, result) = try opened(rosterJSON(version: 11, daysAway: list))
         #expect(throws: RosterStoreError.notAStore(at: place)) { try result.get() }
     }
 
@@ -131,7 +140,7 @@ func aRosterStoreHoldingDaysAwayNoRosterCouldHoldIsRefused() throws {
         "["
         + span("Mallorca", from: thirteen, through: eighteen, over: [gymID]) + ","
         + span("Lisbon", from: thirteen, through: eighteen, over: [runID]) + "]"
-    let (_, result) = try opened(rosterJSON(version: 10, daysAway: control))
+    let (_, result) = try opened(rosterJSON(version: 11, daysAway: control))
     #expect(try result.get().roster.daysAway.count == 2)
 }
 
@@ -142,4 +151,66 @@ func aRosterStoreWhoseShapeAndDeclaredFormDisagreeAboutDaysAwayIsRefused() throw
 
     let now = try opened(rosterJSON(version: 10, daysAway: nil))
     #expect(throws: RosterStoreError.notAStore(at: now.place)) { try now.result.get() }
+}
+
+@MainActor
+@Test(
+    "a roster kept while days away cut gaps into eras is read with those eras as written, and removing those days away gives back none of their days"
+)
+func aRosterKeptWhileDaysAwayCutGapsIntoErasIsReadWithThoseErasAsWrittenAndRemovingThoseDaysAwayGivesBackNoneOfTheirDays()
+    throws
+{
+    let eras = [
+        era("Gym", gymID, from: day(10, 19)),
+        era("Gym", gymID, from: day(1, 1), until: day(10, 12)),
+    ]
+    let mallorca = "[" + span("Mallorca", from: day(10, 13), through: day(10, 18), over: [gymID]) + "]"
+    let bytes = rosterJSON(version: 10, eras: eras, daysAway: mallorca)
+    let (place, result) = try opened(bytes)
+
+    let store = try result.get()
+
+    let gym = try #require(store.roster.commitments.first)
+    #expect(store.roster.eras(of: gym).count == 2)
+    #expect(store.roster.daysAway.map(\.name) == ["Mallorca"])
+    #expect(store.roster.daysAway.first?.commitments.map(\.name) == ["Gym"])
+    #expect(try Data(contentsOf: place) == bytes)
+
+    let monday12 = date(2026, 10, 12)
+    let screen = CommitmentsScreen(asOf: monday12, keepingRosterAt: place)
+    screen.askToRemove(try #require(screen.daysAway.first))
+    #expect(screen.confirmRemovingDaysAway() == nil)
+    let removed = try RosterStore(at: place).roster
+    for due in [12, 19] { #expect(dueOn(removed, "Gym", date(2026, 10, due))) }
+    for notDue in 13...18 { #expect(!dueOn(removed, "Gym", date(2026, 10, notDue))) }
+}
+
+/// One era of "Gym" or "Run" on every weekday, kept from `from` until `until` or still.
+private func era(_ name: String, _ id: String, from: String, until: String? = nil) -> String {
+    """
+    {
+      "commitment": {
+        "name": "\(name)",
+        "keptFrom": \(from),
+        "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+        "identity": "\(id)"
+      },
+      "keptUntil": \(until ?? "null"),
+      "category": null,
+      "usualAmounts": [],
+      "shifts": []
+    }
+    """
+}
+
+private func rosterJSON(version: Int, eras: [String], daysAway: String) -> Data {
+    Data(
+        """
+        { "version": \(version), "emptied": false, "daysAway": \(daysAway),
+          "commitments": [\(eras.joined(separator: ","))] }
+        """.utf8)
+}
+
+private func dueOn(_ roster: Roster, _ name: String, _ day: CalendarDate) -> Bool {
+    roster.groups(on: day).flatMap(\.commitments).contains { $0.name == name && $0.isDue(on: day) }
 }

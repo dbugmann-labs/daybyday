@@ -165,3 +165,23 @@ func aWeeklyQuotaRowOnTodayOwingEveryDayLeftBeforeDaysAwayLaterInItsWeekIsMarked
     #expect(tuesdayRow.rhythmInWords == "1/3x a week")
     #expect(tuesday.mark(on: tuesdayRow) == nil)
 }
+
+@MainActor
+@Test("a weekly-quota row on a day under days away holding a record counts that day among the days its week holds")
+func aWeeklyQuotaRowOnADayUnderDaysAwayHoldingARecordCountsThatDayAmongTheDaysItsWeekHolds() throws {
+    let places = Places()
+    let protein = Commitment(
+        name: "Protein", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 5)!), keptFrom: januaryFirst,
+        kind: .total(target: Commitment.Target(120)!))!
+    try takeOn([protein], at: places)
+    try RecordStore(at: places.record).add(Addition(30, for: protein, on: monday12)!)
+    say("", from: monday12, through: date(2026, 10, 14), over: [protein], at: places)
+
+    let monday = dayScreen(places, asOf: monday12)
+    let row = try #require(monday.dayView.rows.first)
+
+    #expect(monday.dayView.rows.count == 1)
+    #expect(row.rhythmInWords == "0/4x a week")
+    #expect(!row.isKept)
+    #expect(monday.mark(on: row) == nil)
+}

@@ -130,8 +130,9 @@ func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
             Text("Five usual amounts at most.")
         case .shiftedDayAhead:
             Text("Shift its day back first.")
-        case .firstDayHasPassed:
-            Text("The first day has passed.")
+        case .recordOnDaysAway(let commitment, let day),
+            .recordedDayLeftNotDue(let commitment, let day):
+            Text("\(commitment.name) has a record on \(DaysAway.dayInWords(day)).")
         case .lastDayBeforeFirstDay:
             Text("The last day is before the first.")
         case .overNoCommitment:
@@ -171,6 +172,12 @@ private func stoppedRowRefusalText(_ refusal: CommitmentsScreen.Refusal) -> some
     } else {
         refusalText(refusal)
     }
+}
+
+/// The days away the change sheet is opened on.
+private struct DaysAwayTarget: Identifiable {
+    let daysAway: DaysAway
+    var id: Int { daysAway.hashValue }
 }
 
 /// Which commitment `CommitmentSheet` is open for — nothing, for a sheet that defines a new one,
@@ -225,6 +232,7 @@ struct CommitmentsView: View {
     @State private var sheetTarget: SheetTarget?
     @State private var happeningSheetTarget: HappeningSheetTarget?
     @State private var sayingDaysAway = false
+    @State private var changingDaysAway: DaysAwayTarget?
     /// True from the tap that opens the days away sheet until `onDismiss`, which runs after the
     /// dismissal animation ends. `sayingDaysAway` goes false the instant a dismissal starts, so
     /// it cannot say whether the sheet is still on screen; this does, and the footer under the
@@ -279,6 +287,7 @@ struct CommitmentsView: View {
         keptRows
         stoppedSection
         daysAwaySection
+        pastDaysAwaySection
         recordRows
     }
 
@@ -483,26 +492,54 @@ struct CommitmentsView: View {
         }
     }
 
+    /// One days away as a row: its name, days and commitments, swiped from the leading edge to change
+    /// it and from the trailing to remove it. Decides nothing — the screen offers and judges.
+    private func daysAwayRow(_ daysAway: DaysAway) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            commitmentLine(Text(daysAway.title), rhythmInWords: daysAway.daysInWords)
+            Text(daysAway.commitments.map(\.name).joined(separator: ", "))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .swipeActions(edge: .leading) {
+            Button {
+                screen.daysAwaySheetEdited()
+                daysAwaySheetStillShown = true
+                changingDaysAway = DaysAwayTarget(daysAway: daysAway)
+            } label: {
+                Image(systemName: "pencil")
+            }
+            .tint(.accentColor)
+            .accessibilityLabel("Edit")
+        }
+        .swipeActions(edge: .trailing) {
+            if screen.offersRemoving(daysAway) {
+                Button(role: .destructive) {
+                    screen.askToRemove(daysAway)
+                } label: {
+                    Image(systemName: "trash")
+                }
+                .tint(.red)
+                .accessibilityLabel("Remove")
+            }
+        }
+    }
+
+    /// The days away whose last day has passed, apart from the rest and with no header of their own.
+    @ViewBuilder private var pastDaysAwaySection: some View {
+        if !screen.pastDaysAway.isEmpty {
+            Section {
+                ForEach(screen.pastDaysAway, id: \.self) { daysAway in
+                    daysAwayRow(daysAway)
+                }
+            }
+        }
+    }
+
     @ViewBuilder private var daysAwaySection: some View {
         Section {
             ForEach(screen.daysAway, id: \.self) { daysAway in
-                VStack(alignment: .leading, spacing: 2) {
-                    commitmentLine(Text(daysAway.title), rhythmInWords: daysAway.daysInWords)
-                    Text(daysAway.commitments.map(\.name).joined(separator: ", "))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .swipeActions(edge: .trailing) {
-                    if screen.offersRemoving(daysAway) {
-                        Button(role: .destructive) {
-                            screen.askToRemove(daysAway)
-                        } label: {
-                            Image(systemName: "trash")
-                        }
-                        .tint(.red)
-                        .accessibilityLabel("Remove")
-                    }
-                }
+                daysAwayRow(daysAway)
             }
             Button("New days away") {
                 // Whatever the screen said about days away ends as the sheet opens.
@@ -832,27 +869,102 @@ struct CommitmentsView: View {
                 listRevision += 1
             }
         ) {
-            DaysAwaySheet(screen: screen)
+            DaysAwaySheet(screen: screen, changing: nil)
+        }
+        .sheet(
+            item: $changingDaysAway,
+            onDismiss: {
+                screen.daysAwaySheetClosed()
+                daysAwaySheetStillShown = false
+                listRevision += 1
+            }
+        ) { target in
+            DaysAwaySheet(screen: screen, changing: target.daysAway)
         }
     }
 }
 
-/// The sheet that says days away: an optional name, two days, and the kept commitments to pick
-/// from. A kept ask dismisses; a refused one stays open over its red caption, everything as
-/// typed. Decides nothing — `screen.sayDaysAway` judges, this draws (ADR-1019).
+/// The sheet that says days away, and changes days away already said: an optional name, two days,
+/// and the commitments to pick from — the kept ones, and, changing, the stopped ones the days away
+/// are over under a "Stopped" header. A kept ask dismisses; a refused one stays open over its red
+/// caption, everything as typed, a refusal for a record under the row of the commitment it names.
+/// Decides nothing — `screen.sayDaysAway` and `screen.changeDaysAway` judge, this draws (ADR-1019).
 private struct DaysAwaySheet: View {
     let screen: CommitmentsScreen
+    let changing: DaysAway?
 
-    @State private var name = ""
+    @State private var name: String
     @State private var firstDay: Date
     @State private var lastDay: Date
-    @State private var picked: [Commitment] = []
+    @State private var picked: [Commitment]
+    @State private var isEdited = false
+    @State private var confirmingDiscard = false
     @Environment(\.dismiss) private var dismiss
 
-    init(screen: CommitmentsScreen) {
+    init(screen: CommitmentsScreen, changing: DaysAway?) {
         self.screen = screen
-        _firstDay = State(initialValue: date(from: screen.dayToKeepFrom))
-        _lastDay = State(initialValue: date(from: screen.dayToKeepFrom))
+        self.changing = changing
+        _name = State(initialValue: changing?.name ?? "")
+        _firstDay = State(initialValue: date(from: changing?.firstDay ?? screen.dayToKeepFrom))
+        _lastDay = State(initialValue: date(from: changing?.lastDay ?? screen.dayToKeepFrom))
+        _picked = State(initialValue: changing?.commitments ?? [])
+    }
+
+    /// The stopped commitments the days away being changed are over, drawn until Save even when
+    /// unticked.
+    private var stoppedHere: [Commitment] {
+        (changing?.commitments ?? []).filter { screen.stopped.contains($0) }
+    }
+
+    private func edited() {
+        isEdited = true
+        screen.daysAwaySheetEdited()
+    }
+
+    private func pickRow(_ commitment: Commitment) -> some View {
+        Group {
+            Button {
+                if let at = picked.firstIndex(of: commitment) {
+                    picked.remove(at: at)
+                } else {
+                    picked.append(commitment)
+                }
+                edited()
+            } label: {
+                HStack {
+                    Image(
+                        systemName: picked.contains(commitment)
+                            ? "checkmark.circle.fill" : "circle")
+                    commitmentLine(
+                        Text(commitment.name), rhythmInWords: commitment.rhythmInWords)
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+                .foregroundStyle(.primary)
+            }
+            .buttonStyle(.plain)
+            if let refusal = screen.daysAwayRefusal, let named = recordRefusalNaming(refusal),
+                named == commitment
+            {
+                refusalText(refusal)
+            }
+        }
+    }
+
+    /// The commitment a record refusal names, whose row it sits under; `nil` for any other refusal.
+    private func recordRefusalNaming(_ refusal: CommitmentsScreen.Refusal) -> Commitment? {
+        switch refusal {
+        case .recordOnDaysAway(let commitment, _), .recordedDayLeftNotDue(let commitment, _):
+            return commitment
+        default:
+            return nil
+        }
+    }
+
+    /// The refusal that belongs at the foot: every one but a record, which sits under its row.
+    private var footRefusal: CommitmentsScreen.Refusal? {
+        guard let refusal = screen.daysAwayRefusal else { return nil }
+        return recordRefusalNaming(refusal) == nil ? refusal : nil
     }
 
     var body: some View {
@@ -861,41 +973,31 @@ private struct DaysAwaySheet: View {
             Form {
                 Section {
                     TextField("Name (optional)", text: $name)
-                        .onChange(of: name) { _, _ in screen.daysAwaySheetEdited() }
+                        .onChange(of: name) { _, _ in edited() }
                     DatePicker("First day", selection: $firstDay, displayedComponents: [.date])
-                        .onChange(of: firstDay) { _, _ in screen.daysAwaySheetEdited() }
+                        .onChange(of: firstDay) { _, _ in edited() }
                     DatePicker("Last day", selection: $lastDay, displayedComponents: [.date])
-                        .onChange(of: lastDay) { _, _ in screen.daysAwaySheetEdited() }
+                        .onChange(of: lastDay) { _, _ in edited() }
                 }
                 Section {
                     ForEach(screen.kept, id: \.self) { commitment in
-                        Button {
-                            if let at = picked.firstIndex(of: commitment) {
-                                picked.remove(at: at)
-                            } else {
-                                picked.append(commitment)
-                            }
-                            screen.daysAwaySheetEdited()
-                        } label: {
-                            HStack {
-                                Image(
-                                    systemName: picked.contains(commitment)
-                                        ? "checkmark.circle.fill" : "circle")
-                                commitmentLine(
-                                    Text(commitment.name), rhythmInWords: commitment.rhythmInWords)
-                                Spacer(minLength: 0)
-                            }
-                            .contentShape(Rectangle())
-                            .foregroundStyle(.primary)
-                        }
-                        .buttonStyle(.plain)
+                        pickRow(commitment)
                     }
                 } header: {
                     Text("Commitments to pause")
                 }
+                if !stoppedHere.isEmpty {
+                    Section {
+                        ForEach(stoppedHere, id: \.self) { commitment in
+                            pickRow(commitment)
+                        }
+                    } header: {
+                        Text("Stopped")
+                    }
+                }
                 // The refusal at the foot, a row of its own with no card so a scroll can
                 // reach it: a section footer is not something `scrollTo` can name.
-                if let refusal = screen.daysAwayRefusal {
+                if let refusal = footRefusal {
                     Section {
                         refusalText(refusal)
                             .id("daysAwayRefusal")
@@ -905,19 +1007,30 @@ private struct DaysAwaySheet: View {
                 }
             }
             .onChange(of: screen.daysAwayRefusal != nil) { _, shown in
-                if shown {
+                if shown, footRefusal != nil {
                     withAnimation { scroll.scrollTo("daysAwayRefusal", anchor: .bottom) }
                 }
             }
             }
-            .navigationTitle("Days away")
+            .interactiveDismissDisabled(changing != nil && isEdited)
+            .navigationTitle(changing.map { "Change \($0.title)" } ?? "Days away")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("Cancel") {
+                        if changing != nil && isEdited {
+                            confirmingDiscard = true
+                        } else {
+                            dismiss()
+                        }
+                    }
+                    .confirmationDialog("Discard changes?", isPresented: $confirmingDiscard) {
+                        Button("Discard", role: .destructive) { dismiss() }
+                        Button("Keep editing", role: .cancel) {}
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Add") { add() }
+                    Button(changing == nil ? "Add" : "Save") { save() }
                         .disabled(picked.isEmpty)
                 }
             }
@@ -927,13 +1040,16 @@ private struct DaysAwaySheet: View {
         }
     }
 
-    private func add() {
+    private func save() {
         guard let first = calendarDate(from: firstDay), let last = calendarDate(from: lastDay) else {
             return
         }
         // Kept order, as the roster holds them, whatever order they were picked in.
-        let over = screen.kept.filter { picked.contains($0) }
-        if screen.sayDaysAway(named: name, from: first, through: last, over: over) == nil {
+        let over = (screen.kept + stoppedHere).filter { picked.contains($0) }
+        let refusal =
+            changing.map { screen.changeDaysAway($0, named: name, from: first, through: last, over: over) }
+            ?? screen.sayDaysAway(named: name, from: first, through: last, over: over)
+        if refusal == nil {
             dismiss()
         }
     }

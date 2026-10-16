@@ -720,7 +720,8 @@ commitment whose days take anything but a note SHALL say no count either.
 
 A look-back SHALL count no day of a **gap**, the days between one era's day kept until and the next
 era's day kept from, and SHALL say nothing a record holds for a gap day: no kept day, no point and
-no note. It SHALL run its month lines and its week lines unbroken through a gap, saying each gap day
+no note. A day days away over the commitment hide SHALL be counted as a day of a gap, and a day
+under them holding a record of it as any other day. It SHALL run its month lines and its week lines unbroken through a gap, saying each gap day
 in the unit of the era before the gap, so a month or a week holding only gap days SHALL say a
 fraction of nothing out of nothing. A graph SHALL say every day of a gap among its days, and a
 total's target rule SHALL owe a gap day the target of the era before the gap.
@@ -779,13 +780,33 @@ total's target rule SHALL owe a gap day the target of the era before the gap.
 - **THEN** it says two notes, "Swam." on "7 March 2026" first and "Ran 8k." on "2 March 2026" second
 - **AND** it says "2 notes"
 
+#### Scenario: a tick commitment's look-back counts no day days away hide, and counts a day under them holding a record
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from Thursday
+  1 October 2026, whose days take a tick, is taken on at a roster place; a tick for "Gym" on Monday
+  12 October 2026 is kept at a record place; days away from that Monday through Wednesday 14 October
+  2026 are said over it through a commitments screen opened at those places as of that Monday; and a
+  commitments screen opened at those places as of Thursday 15 October 2026 is asked for a look-back at
+  "Gym"
+- **THEN** its one line is the month October 2026, saying "1/13"
+
+#### Scenario: an every-N-days commitment's look-back counts its due days on the count begun again after days away
+
+- **WHEN** a commitment named "Nails" on a schedule of every 4 days starting on Thursday 1 October
+  2026, kept from that day, whose days take a tick, is taken on at a roster place; days away from
+  Tuesday 13 through Wednesday 14 October 2026 are said over it through a commitments screen opened at
+  that roster place as of Monday 12 October 2026; ticks for "Nails" on Thursday 15 and Monday
+  19 October 2026 are then kept at a record place; and a commitments screen opened at those places as
+  of Saturday 31 October 2026 is asked for a look-back at "Nails"
+- **THEN** its one line is the month October 2026, saying "2/8"
+
 ### Requirement: A week a weekly quota era holds owes its quota in proportion to the days held
 
 A week SHALL owe, for each era of a commitment running on a weekly quota that holds a day of it,
 that era's quota times the number of the week's days it holds, over seven; the parts SHALL be summed
 and rounded once to the nearest whole number. An era SHALL hold every day from its day kept from
 through the day it was kept until, and every day from its day kept from on where it carries no day
-kept until, days after today included. No era SHALL hold a day of a gap. What a week owes SHALL be
+kept until, days after today included. No era SHALL hold a day of a gap, nor a day days away over the commitment hide. What a week owes SHALL be
 the same number wherever it is said, a look-back's week line and a row's words alike, and a week
 owing nothing SHALL still be said.
 
@@ -811,6 +832,16 @@ owing nothing SHALL still be said.
   and whose newest runs on that schedule from Thursday 5 March 2026, kept on 2 March 2026 and on
   5 March 2026, as of Thursday 5 March 2026
 - **THEN** its newest line is the week "2–8 Mar 2026", saying "2/2"
+
+#### Scenario: a week days away cover owes its quota in proportion to the days they leave
+
+- **WHEN** a commitment named "Yuno" on a schedule of 5 times a week, kept from 1 January 2026, whose
+  days take a tick, is taken on at a roster place; ticks for "Yuno" on Monday 12 and Tuesday 13 October
+  2026 are kept at a record place; days away from Friday 16 through Sunday 18 October 2026 are said
+  over it through a commitments screen opened at those places as of Monday 12 October 2026; and a
+  commitments screen opened at those places as of Sunday 18 October 2026 is asked for a look-back at
+  "Yuno"
+- **THEN** its newest line is the week "12–18 Oct 2026", saying "2/3"
 
 ### Requirement: A weekly quota era's look-back counts each week's kept days out of what the week owes
 

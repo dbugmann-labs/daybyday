@@ -286,6 +286,42 @@ takes a commitment out of its spans, and a span left with none goes; a change to
 rhythm keeps them. Removing a span before it starts leaves every commitment as though it had never
 been said.
 
+**Amended 2026-10-13**, at the grill of `change-days-away` (#402). Days away can be said over days
+already gone, however far back, and every span is listed — those not over earliest first, then the
+past ones latest first — rather than only until its last day passes. Its days, its name and the
+commitments picked can all be changed, and any span can be removed, begun or over; removing one
+always leaves every commitment as though it had never been said, so its past days are owed again
+and open to a record after the fact. Saying or changing a span is refused, naming the commitment
+and the day, while it would put under days away a day already holding a record of a commitment
+picked — save a first day that is today, which keeps that commitment through it as before. A
+commitment changed while away keeps its new rhythm from the day back, wherever the day back moves.
+A stop made once a span has begun no longer takes the commitment out of it: the span keeps it and
+remembers that stop, and every stop and take-up of it made since or that the span's days come to
+cover, wherever the span later moves, so removing, unticking or moving the span, in any order, never
+makes it owe a day between a stop and its take-up, and a span moved back gives back what a move took.
+A commitment taken up again while away is taken up on the day back, as a change made while away is,
+and moves with it either way, but never to a day no later than the day after its stop: there it
+keeps the day back it was taken up for. Settled at G7 the same day, and made one model at the next.
+
+**Amended 2026-10-15**, at the eighth G7 of `change-days-away` (#402). Days away no longer take a
+**gap**. A commitment's own life — its **eras**, stops and resumes as they were made — stays whole,
+and days away are laid over it, hiding the days they cover, so saying, moving or removing them never
+changes a commitment's eras and removing them gives back exactly the days they hid. A hidden day
+still means what a gap day means — no row, a **weekly quota** owing only for the days left, an
+every-N-days count beginning again on the day back — but days away are no longer how a stop and a
+resume are said. A change, a stop or a resume made while away holds from the day it was made,
+hidden until the day back, and nothing is remembered on the span. A day holding a record is never
+hidden: its row shows under days away, and the day is away again once the record is taken back.
+This replaces the gap of the first paragraph, "kept until the day before the span's first day" and
+"keeps that commitment through it" of the amendments above, and the remembering of the last one.
+
+**Amended 2026-10-15 again**, at the ninth G7 of `change-days-away` (#402). Moving days away never
+takes a commitment out of them, stopped or not: a stopped one stays picked until it is unticked, and
+the days after its stop owe nothing either way. Because days away said over past days begin an
+every-N-days count again on another day, saying, moving or removing them is refused, naming the
+commitment and the day, where a day already recorded on would fall off that count, as a change of
+rhythm is — so removing days away can be refused.
+
 **Resume** — the person's word, and the stopped row's swipe label, for **taking a stopped commitment
 up again**, which is what the specs call it; the two name one act. A resume is made on the day it is
 made and asks for nothing, and it begins a new **era** there unless no day would lie between it and

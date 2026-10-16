@@ -579,7 +579,7 @@ public struct DayView: Hashable, Sendable {
                             ?? (kept: 0, owed: 0)
                         weekStanding = Row.WeekStanding(
                             kept: standing.kept, owed: standing.owed,
-                            daysLeft: WeekQuota.daysHeld(from: date, links: links))
+                            daysLeft: WeekQuota.daysHeld(from: date, links: links, history: history))
                     } else {
                         weekStanding = nil
                     }

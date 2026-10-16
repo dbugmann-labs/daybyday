@@ -195,10 +195,10 @@ public struct LookBack: Hashable, Sendable {
     /// the screen was handed, and `history` is the record this screen reads.
     static func form(
         for commitment: Commitment, keptUntil: CalendarDate?, entries: [Roster.Entry],
-        today: CalendarDate, history: History
+        daysAway: DaysAwayMask, today: CalendarDate, history: History
     ) -> LookBack {
         let frontEnd = keptUntil ?? today
-        let eras = chain(from: commitment, keptUntil: keptUntil, entries: entries)
+        let eras = chain(from: commitment, keptUntil: keptUntil, entries: entries, daysAway: daysAway)
         let earliestEra = eras.last!
 
         switch commitment.kind {
@@ -243,18 +243,19 @@ public struct LookBack: Hashable, Sendable {
     /// `openspec/changes/stop-and-resume-as-eras/design.md` § *One mend carries the gap and the
     /// stop's collapse*.
     private static func chain(
-        from commitment: Commitment, keptUntil: CalendarDate?, entries: [Roster.Entry]
+        from commitment: Commitment, keptUntil: CalendarDate?, entries: [Roster.Entry],
+        daysAway: DaysAwayMask
     ) -> [Era] {
         let matching = entries.filter { $0.commitment.identity == commitment.identity }
 
         guard !matching.isEmpty else {
-            return [Era(commitment, end: keptUntil)]
+            return [Era(commitment, end: keptUntil, away: daysAway)]
         }
 
         return matching.enumerated().map { offset, entry in
             offset == 0
-                ? Era(commitment, end: keptUntil)
-                : Era(entry.commitment, end: entry.keptUntil)
+                ? Era(commitment, end: keptUntil, away: daysAway)
+                : Era(entry.commitment, end: entry.keptUntil, away: daysAway)
         }
     }
 
@@ -276,12 +277,13 @@ public struct LookBack: Hashable, Sendable {
     }
 
     /// The era of `eras` that holds `day` — the one whose day kept from is on or before `day` and
-    /// whose end, where it has one, is on or after it — or `nil` where none does: a day before the
-    /// earliest era's own day kept from, or a day of a gap between two eras. Shared by `walkDays`
+    /// whose end, where it has one, is on or after it, and which days away do not hide on it — or
+    /// `nil` where none does: a day before the earliest era's own day kept from, a day of a gap
+    /// between two eras, or a day days away hide. Shared by `walkDays`
     /// and `graph`, so a day is read against the same era's commitment wherever it is walked.
     /// `design.md` § *A second walk, not a wider `walkDays`*.
-    private static func era(holding day: CalendarDate, in eras: [Era]) -> Era? {
-        eras.first { $0.start.days(until: day) >= 0 && ($0.end.map { day.days(until: $0) >= 0 } ?? true) }
+    private static func era(holding day: CalendarDate, in eras: [Era], history: History) -> Era? {
+        eras.first { $0.holds(day, in: history) }
     }
 
     /// Whether the schedule `schedule` runs on a weekly quota — the one thing that decides which
@@ -337,7 +339,7 @@ public struct LookBack: Hashable, Sendable {
                 currentWeek = WeekTally(monday: dayMonday, lastDay: day)
             }
 
-            if let era = Self.era(holding: day, in: eras) {
+            if let era = Self.era(holding: day, in: eras, history: history) {
                 let isQuota = Self.isWeeklyQuota(era.commitment.schedule)
                 lastEraWasQuota = isQuota
                 if isQuota {
@@ -346,9 +348,10 @@ public struct LookBack: Hashable, Sendable {
                 } else {
                     currentMonth.hasNonQuotaDay = true
                     currentMonth.lastDay = day
-                    if era.commitment.isDue(on: day) {
+                    let counted = era.commitment(on: day, in: history)
+                    if counted.isDue(on: day) {
                         currentMonth.due += 1
-                        if history.isKept(era.commitment, on: day) {
+                        if history.isKept(counted, on: day) {
                             currentMonth.kept += 1
                         }
                     }
@@ -419,7 +422,7 @@ public struct LookBack: Hashable, Sendable {
         var day = start
 
         while true {
-            if let era = Self.era(holding: day, in: eras),
+            if let era = Self.era(holding: day, in: eras, history: history),
                 let text = history.note(for: era.commitment, on: day)
             {
                 notes.append(LookBack.DatedNote(dayInWords: LookBackWords.day(day), text: text))
@@ -473,7 +476,7 @@ public struct LookBack: Hashable, Sendable {
                 currentYearMonth = yearMonth
             }
 
-            if let era = Self.era(holding: day, in: eras) {
+            if let era = Self.era(holding: day, in: eras, history: history) {
                 if isTotal, case .total(let target) = era.commitment.kind {
                     let sum = history.total(for: era.commitment, on: day)
                     if sum > 0 {

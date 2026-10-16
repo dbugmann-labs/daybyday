@@ -213,6 +213,21 @@ Things that are built, or deliberately not built, in a state someone will trip o
   Pro Max the name ran one letter per line. It is on `main`, and #425 left the line's
   layout as it was.
 
+- **The scenario for the every-N-days shift bound after days away does not pin it.** `commitment`
+  says an every-N-days due day before days away SHALL be shifted onto none of their days nor the
+  first due day after them, and `change-days-away`'s `design.md` calls that pinned by its scenario
+  ("a roster refuses to shift an every-N-days due day across days away, or onto the first due day of
+  the count begun again after them", days away 11–12 Oct on every 4 days from 1 Oct).
+  It is not: the day after those days away, 13 Oct, is also due on the count before them, so the
+  bound taken out still passes it. A regression test without a scenario, with days away 14–15 Oct,
+  is what fails. The behaviour is right. Found by mutation at #402's tenth G7 on 2026-10-15; the
+  owner kept the regression test as the pin rather than move the signed folder again.
+- **Days away picked over one commitment twice write a roster nothing can read.** Saying or changing
+  days away over `[Gym, Gym, Run]` answers as kept, but the roster store refuses what was written as
+  not a store, and the next screen reads the roster as not kept. The sheet cannot pick one
+  commitment twice, so only a caller of the screen reaches it. It is on `main` for saying, older than
+  #402, which inherited it for a change. Found at #402's tenth G7 on 2026-10-15.
+
 - **Nothing tests that a present-idea change, deletion or mark that changes nothing leaves the file
   unwritten.** `present-idea` says such an edit SHALL write nothing and leave the place untouched,
   and its scenarios check that by comparing the content byte-for-byte, which a rewrite of identical
@@ -220,13 +235,6 @@ Things that are built, or deliberately not built, in a state someone will trip o
   test. Checking the file's identity would catch it, since the store's write replaces the file.
   Found by mutation at #409's G7 on 2026-10-13; the owner left it for a covering Story rather than
   holding the Story for a rewrite nobody can see.
-- **A roster holding two days away with one identity is read without complaint.** `happening`
-  refuses a file holding two happenings with one identity, but `commitment`'s list of refused roster
-  content, as `say-days-away` (#401) wrote it, says nothing of two days away sharing one. Such a
-  file would list the span twice, and removing it would take out only the first of the two. Only a
-  hand-edited or damaged file can hold one, since every span the app says takes a new identity.
-  Refusing it is a `commitment` delta. Found at #401's G7 on 2026-10-13 and left for a covering
-  Story rather than reopening the delta there.
 - **Stopping, resuming or deleting a happening sends the commitments list back to the top.** A
   stopped happening is read from the happening store, which the commitments screen does not watch,
   and a stop or a resume leaves its list of happenings equal to the one before, so nothing redraws

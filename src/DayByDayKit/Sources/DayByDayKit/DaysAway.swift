@@ -49,8 +49,13 @@ public struct DaysAway: Hashable, Sendable {
 
     /// Its days as a person reads them, "Tue 13 Oct – Sun 18 Oct", one day said once, "Tue 20 Oct".
     public var daysInWords: String {
-        let first = DayTitle.shiftedDayInWords(firstDay)
-        return firstDay == lastDay ? first : "\(first) – \(DayTitle.shiftedDayInWords(lastDay))"
+        let first = Self.dayInWords(firstDay)
+        return firstDay == lastDay ? first : "\(first) – \(Self.dayInWords(lastDay))"
+    }
+
+    /// A day as days away say it, "Tue 13 Oct".
+    public static func dayInWords(_ day: CalendarDate) -> String {
+        DayTitle.shiftedDayInWords(day)
     }
 
     public static func == (lhs: DaysAway, rhs: DaysAway) -> Bool {

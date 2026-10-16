@@ -95,18 +95,80 @@ public final class CommitmentsScreen {
     /// The days away this screen lists. `openspec/changes/say-days-away/design.md` § *The seam*.
     public private(set) var daysAway: [DaysAway] = []
 
-    /// The last refusal of days away said or removed through this screen.
+    /// The days away whose last day has passed, by first day latest first, days away sharing a
+    /// first day the last said first. `openspec/changes/change-days-away/design.md` § *The seam*.
+    public private(set) var pastDaysAway: [DaysAway] = []
+
+    /// Changes `daysAway` to `name`, `firstDay`, `lastDay` and the commitments picked, kept at the
+    /// roster place before the lists say so, the days away staying the same days away. Does nothing,
+    /// answering `nil`, where this screen does not list them or a commitment picked is neither one it
+    /// keeps nor a stopped one they are over. Any refusal keeps nothing and is held in
+    /// `daysAwayRefusal`. `openspec/changes/change-days-away/specs/commitment/spec.md`.
+    @discardableResult
+    public func changeDaysAway(
+        _ daysAway: DaysAway, named name: String, from firstDay: CalendarDate,
+        through lastDay: CalendarDate, over commitments: [Commitment]
+    ) -> Refusal? {
+        guard let rosterStore else {
+            return refuseDaysAway(.notKept)
+        }
+        guard let listed = (self.daysAway + pastDaysAway).first(where: { $0 == daysAway }),
+            commitments.allSatisfy({
+                kept.contains($0) || (stopped.contains($0) && listed.commitments.contains($0))
+            })
+        else {
+            return nil
+        }
+        guard firstDay.days(until: lastDay) >= 0 else {
+            return refuseDaysAway(.lastDayBeforeFirstDay)
+        }
+        guard !commitments.isEmpty else {
+            return refuseDaysAway(.overNoCommitment)
+        }
+        if let refusal = judgeDaysAway(
+            from: firstDay, through: lastDay, over: commitments, in: rosterStore.roster,
+            besides: daysAway.identity)
+        {
+            return refuseDaysAway(refusal)
+        }
+        if let refusal = recordRefusal(
+            from: firstDay, through: lastDay, over: commitments, already: listed)
+        {
+            return refuseDaysAway(refusal)
+        }
+        var nextRoster = rosterStore.roster
+        nextRoster.changeDaysAway(
+            daysAway.identity, named: Blank.saysNothing(name) ? nil : Blank.trimmed(name),
+            from: firstDay, through: lastDay, over: commitments)
+        if let refusal = refusalOfDaysAwayLeavingARecordedDayNotDue(
+            over: listed.commitments + commitments, from: rosterStore.roster, to: nextRoster)
+        {
+            daysAwayAwaitingRemoval = nil
+            return refuseDaysAway(refusal)
+        }
+        do {
+            try rosterStore.replace(with: nextRoster)
+        } catch {
+            return refuseDaysAway(.notKept)
+        }
+
+        daysAwayRefusal = nil
+        endedByAChangeOrByBeingShown()
+        refreshLists(from: rosterStore)
+        copyPlace?.keptAChange()
+        return nil
+    }
+
+    /// The last refusal of days away said, changed or removed through this screen.
     public private(set) var daysAwayRefusal: Refusal?
 
     /// The days away a removal has been asked for and not yet confirmed or cancelled.
     public private(set) var daysAwayAwaitingRemoval: DaysAway?
 
     /// Says days away from `name`, `firstDay`, `lastDay` and the commitments this screen keeps that
-    /// are picked, kept at the roster place before the list says so. Each commitment picked is kept
-    /// until the day before `firstDay` — through it where it is the day this screen was handed and
-    /// the record holds any record of the commitment there — and taken up again the day after
-    /// `lastDay`. Does nothing, answering `nil`, where a commitment picked is not one this screen
-    /// keeps. Any refusal keeps nothing and is held in `daysAwayRefusal`.
+    /// are picked, kept at the roster place before the list says so. Each commitment picked has
+    /// their days hidden and no era of it is touched. Does nothing, answering `nil`, where a
+    /// commitment picked is not one this screen keeps. Any refusal keeps nothing and is held in `daysAwayRefusal`.
     /// `openspec/changes/say-days-away/specs/commitment/spec.md`.
     @discardableResult
     public func sayDaysAway(
@@ -119,9 +181,6 @@ public final class CommitmentsScreen {
         guard commitments.allSatisfy({ kept.contains($0) }) else {
             return nil
         }
-        guard dayToKeepFrom.days(until: firstDay) >= 0 else {
-            return refuseDaysAway(.firstDayHasPassed)
-        }
         guard firstDay.days(until: lastDay) >= 0 else {
             return refuseDaysAway(.lastDayBeforeFirstDay)
         }
@@ -130,41 +189,26 @@ public final class CommitmentsScreen {
         }
 
         let roster = rosterStore.roster
-        let picked = Set(commitments.map(\.identity))
-        if let clash = roster.spans.first(where: { span in
-            span.commitments.contains(where: picked.contains)
-                && span.firstDay.days(until: lastDay) >= 0 && firstDay.days(until: span.lastDay) >= 0
-        }) {
-            return refuseDaysAway(.overlapsDaysAway(roster.daysAway(of: clash)))
-        }
-        for commitment in commitments {
-            guard let first = roster.keptFrom(of: commitment),
-                let held = roster.eras(of: commitment).first
-            else {
-                continue
-            }
-            if first.days(until: firstDay) <= 0 {
-                return refuseDaysAway(.keptFromFirstDayOrLater(held.name))
-            }
-            let isAmongTheirs = { (day: CalendarDate) in
-                firstDay.days(until: day) >= 0 && day.days(until: lastDay) >= 0
-            }
-            if held.shifts.contains(where: { from, to in isAmongTheirs(from) || isAmongTheirs(to) }) {
-                return refuseDaysAway(.shiftOnDaysAway(held.name))
-            }
+        if let refusal = judgeDaysAway(
+            from: firstDay, through: lastDay, over: commitments, in: roster, besides: nil)
+        {
+            return refuseDaysAway(refusal)
         }
 
-        let history = recordStore?.history
-        let keptThroughFirstDay = Set(
-            commitments.filter { commitment in
-                firstDay == dayToKeepFrom
-                    && (history?.datesRecorded(for: commitment).contains(firstDay) ?? false)
-            }.map(\.identity))
+        if let refusal = recordRefusal(from: firstDay, through: lastDay, over: commitments) {
+            return refuseDaysAway(refusal)
+        }
 
         var nextRoster = roster
         nextRoster.sayDaysAway(
             named: Blank.saysNothing(name) ? nil : Blank.trimmed(name), from: firstDay,
-            through: lastDay, over: commitments, keptThroughFirstDay: keptThroughFirstDay)
+            through: lastDay, over: commitments)
+        if let refusal = refusalOfDaysAwayLeavingARecordedDayNotDue(
+            over: commitments, from: roster, to: nextRoster)
+        {
+            daysAwayAwaitingRemoval = nil
+            return refuseDaysAway(refusal)
+        }
         do {
             try rosterStore.replace(with: nextRoster)
         } catch {
@@ -175,6 +219,95 @@ public final class CommitmentsScreen {
         endedByAChangeOrByBeingShown()
         refreshLists(from: rosterStore)
         copyPlace?.keptAChange()
+        return nil
+    }
+
+    /// The refusal days away from `firstDay` through `lastDay` over `commitments` meet in `roster`:
+    /// the first of overlapping other days away — every one but `besides` — a commitment kept from
+    /// their first day or later, and one with a shift on a day of theirs. `nil` where none applies.
+    private func judgeDaysAway(
+        from firstDay: CalendarDate, through lastDay: CalendarDate, over commitments: [Commitment],
+        in roster: Roster, besides: DaysAway.Identity?
+    ) -> Refusal? {
+        let picked = Set(commitments.map(\.identity))
+        if let clash = roster.spans.first(where: { span in
+            span.identity != besides && span.commitments.contains(where: picked.contains)
+                && span.firstDay.days(until: lastDay) >= 0 && firstDay.days(until: span.lastDay) >= 0
+        }) {
+            return .overlapsDaysAway(roster.daysAway(of: clash))
+        }
+        for commitment in commitments {
+            guard let first = roster.keptFrom(of: commitment),
+                let held = roster.eras(of: commitment).first
+            else {
+                continue
+            }
+            if first.days(until: firstDay) <= 0 {
+                return .keptFromFirstDayOrLater(held.name)
+            }
+            let isAmongTheirs = { (day: CalendarDate) in
+                firstDay.days(until: day) >= 0 && day.days(until: lastDay) >= 0
+            }
+            if held.shifts.contains(where: { from, to in isAmongTheirs(from) || isAmongTheirs(to) }) {
+                return .shiftOnDaysAway(held.name)
+            }
+        }
+        return nil
+    }
+
+    /// The refusal for the first of `commitments`, in the order the roster holds them, whose record
+    /// holds something on a day the days away from `firstDay` through `lastDay` newly put under it,
+    /// naming its earliest such day. A day already within days away `already`, for the commitments
+    /// among them, is not newly put under it, nor is a first day that is the day this screen was
+    /// handed. `nil` where this screen cannot read its record.
+    private func recordRefusal(
+        from firstDay: CalendarDate, through lastDay: CalendarDate, over commitments: [Commitment],
+        already: DaysAway? = nil
+    ) -> Refusal? {
+        guard let history = recordStore?.history else {
+            return nil
+        }
+        for commitment in rosterStore?.roster.inRosterOrder(commitments) ?? commitments {
+            let under = already.flatMap { $0.commitments.contains(commitment) ? $0 : nil }
+            let newly = history.datesRecorded(for: commitment).filter { day in
+                firstDay.days(until: day) >= 0 && day.days(until: lastDay) >= 0
+                    && !(firstDay == dayToKeepFrom && day == firstDay)
+                    && !(under.map {
+                        $0.firstDay.days(until: day) >= 0 && day.days(until: $0.lastDay) >= 0
+                    } ?? false)
+            }
+            if let earliest = newly.min(by: { $0.days(until: $1) > 0 }) {
+                return .recordOnDaysAway(commitment, earliest)
+            }
+        }
+        return nil
+    }
+
+    /// The refusal for the first of `commitments`, in the order `before` holds them, whose record
+    /// holds something on a day it is due on in `before` and not in `after`, naming its earliest such
+    /// day: the loss of a recorded day an every-N-days count begun again on another day brings.
+    /// Both rosters are read with the record, so a day days away leave shown is due as it is shown.
+    /// `nil` where this screen cannot read its record. `design.md` § *Two record refusals, and their
+    /// order*.
+    private func refusalOfDaysAwayLeavingARecordedDayNotDue(
+        over commitments: [Commitment], from before: Roster, to after: Roster
+    ) -> Refusal? {
+        guard let history = recordStore?.history else {
+            return nil
+        }
+        func isDue(_ commitment: Commitment, on day: CalendarDate, in roster: Roster) -> Bool {
+            roster.groups(on: day, recordedIn: history).contains {
+                $0.commitments.contains { $0 == commitment && $0.isDue(on: day) }
+            }
+        }
+        for commitment in before.inRosterOrder(commitments) {
+            let lost = history.datesRecorded(for: commitment).filter {
+                isDue(commitment, on: $0, in: before) && !isDue(commitment, on: $0, in: after)
+            }
+            if let earliest = lost.min(by: { $0.days(until: $1) > 0 }) {
+                return .recordedDayLeftNotDue(commitment, earliest)
+            }
+        }
         return nil
     }
 
@@ -193,10 +326,9 @@ public final class CommitmentsScreen {
         daysAwayRefusal = nil
     }
 
-    /// Whether removing `daysAway` is offered: exactly while this screen lists it and its first
-    /// day is after the day this screen was handed.
+    /// Whether removing `daysAway` is offered: exactly while this screen lists it, in either list.
     public func offersRemoving(_ daysAway: DaysAway) -> Bool {
-        self.daysAway.contains(daysAway) && dayToKeepFrom.days(until: daysAway.firstDay) > 0
+        self.daysAway.contains(daysAway) || pastDaysAway.contains(daysAway)
     }
 
     /// Puts `daysAway` up for removal, replacing whatever was awaiting a stop, a deletion or a
@@ -228,6 +360,11 @@ public final class CommitmentsScreen {
         }
         var nextRoster = rosterStore.roster
         nextRoster.removeDaysAway(removing.identity)
+        if let refusal = refusalOfDaysAwayLeavingARecordedDayNotDue(
+            over: removing.commitments, from: rosterStore.roster, to: nextRoster)
+        {
+            return refuseDaysAway(refusal)
+        }
         do {
             try rosterStore.replace(with: nextRoster)
         } catch {
@@ -579,7 +716,9 @@ public final class CommitmentsScreen {
         keptGroups = store?.roster.groups ?? []
         kept = keptGroups.flatMap(\.commitments)
         stopped = store.map { Self.stopped(in: $0.roster) } ?? []
-        daysAway = (store?.roster.daysAway ?? []).filter { dayToKeepFrom.days(until: $0.lastDay) >= 0 }
+        let said = store?.roster.daysAway ?? []
+        daysAway = said.filter { dayToKeepFrom.days(until: $0.lastDay) >= 0 }
+        pastDaysAway = said.filter { dayToKeepFrom.days(until: $0.lastDay) < 0 }.reversed()
     }
 
     /// Ends `refusedChange`, `stoppedRefusal` and `copyRestored`, which last alike: until the
@@ -893,8 +1032,13 @@ public final class CommitmentsScreen {
         /// while a shift of the commitment has either day after the day this screen was handed.
         /// `openspec/changes/shift-a-due-day/design.md` § *Settled 7 is read as written*.
         case shiftedDayAhead
-        /// Days away whose first day is before the day the screen was handed.
-        case firstDayHasPassed
+        /// Days away said or changed over a day on which the record holds something of a commitment
+        /// picked, naming it and its earliest such day.
+        case recordOnDaysAway(Commitment, CalendarDate)
+        /// Days away said, changed or removed that would leave a day on which the record holds
+        /// something of a commitment they are or were over not due, as an every-N-days count begun
+        /// again on another day does, naming it and its earliest such day.
+        case recordedDayLeftNotDue(Commitment, CalendarDate)
         /// Days away whose last day is before their first.
         case lastDayBeforeFirstDay
         /// Days away picked over no commitment.
@@ -1356,10 +1500,8 @@ public final class CommitmentsScreen {
     ) -> Refusal? {
         let dueAfterChange = history.datesRecorded(for: commitment).allSatisfy { date in
             roster.entries.contains { entry in
-                entry.commitment.identity == commitment.identity
-                    && entry.commitment.keptFrom.days(until: date) >= 0
-                    && (entry.keptUntil.map { date.days(until: $0) >= 0 } ?? true)
-                    && entry.commitment.isDue(on: date)
+                entry.commitment.identity == commitment.identity && entry.holds(date)
+                    && (roster.read(entry, on: date, recordedIn: history)?.isDue(on: date) ?? false)
             }
         }
         return dueAfterChange ? nil : .wouldLeaveARecordedDayNotDue
@@ -1516,15 +1658,7 @@ public final class CommitmentsScreen {
             // from where that is later — a day-move earlier in this same save has already
             // written that day, so `keptFrom` already says it. `design.md` § *A change before a
             // future day kept from keeps that day*.
-            var eraKeptFrom = dayToKeepFrom.days(until: keptFrom) > 0 ? keptFrom : dayToKeepFrom
-            // Inside days away over the commitment, the era is kept from the day after their last
-            // day: the gap stands behind it. `openspec/changes/say-days-away/specs/commitment/
-            // spec.md` § *A change through a commitments screen keeps a commitment's days away*.
-            if let underWay = daysAwayOver.first(where: {
-                $0.firstDay.days(until: dayToKeepFrom) >= 0 && dayToKeepFrom.days(until: $0.lastDay) >= 0
-            }), let after = underWay.lastDay.adding(days: 1) {
-                eraKeptFrom = after
-            }
+            let eraKeptFrom = dayToKeepFrom.days(until: keptFrom) > 0 ? keptFrom : dayToKeepFrom
             // Where the rhythm asked is the interval the commitment already runs, only the range or
             // target changes and the count runs on: the new era takes the schedule of the era it
             // gives way to, its start date included. `design.md` § *The count carries through a
@@ -1574,13 +1708,6 @@ public final class CommitmentsScreen {
             }
 
             nextRoster = candidateRoster
-
-            // The put and its mend dropped every era held after the day the new one is kept from,
-            // gaps included: each days away still ahead of it takes its gap again, on the rhythm,
-            // range and target just put on.
-            for ahead in daysAwayOver where eraKeptFrom.days(until: ahead.firstDay) > 0 {
-                nextRoster.cutDaysAwayGap(of: commitment, from: ahead.firstDay, through: ahead.lastDay)
-            }
         } else if let index = nextRoster.entries.firstIndex(where: {
             $0.commitment.identity == commitment.identity
         }) {
@@ -1676,7 +1803,7 @@ public final class CommitmentsScreen {
         do {
             var nextRoster = rosterStore.roster
             if nextRoster.retire(commitment, keptUntil: keptUntil) {
-                nextRoster.leaveDaysAway(of: commitment, endingOnOrAfter: dayToKeepFrom)
+                nextRoster.leaveDaysAway(of: commitment, notBegunBy: dayToKeepFrom)
                 try rosterStore.replace(with: nextRoster)
             }
         } catch {
@@ -1759,7 +1886,7 @@ public final class CommitmentsScreen {
         do {
             var nextRoster = rosterStore.roster
             if nextRoster.delete(commitment) {
-                nextRoster.leaveDaysAway(of: commitment, endingOnOrAfter: nil)
+                nextRoster.leaveDaysAway(of: commitment, notBegunBy: nil)
                 try rosterStore.replace(with: nextRoster)
             }
         } catch {
@@ -2331,7 +2458,8 @@ public final class CommitmentsScreen {
 
         return LookBack.form(
             for: commitment, keptUntil: entry.keptUntil, entries: rosterStore.roster.entries,
-            today: dayToKeepFrom, history: recordStore.history)
+            daysAway: rosterStore.roster.mask(over: commitment.identity), today: dayToKeepFrom,
+            history: recordStore.history)
     }
 
     /// A month line for each calendar month from the earliest of `newestFirst` through `today`'s
