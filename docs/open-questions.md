@@ -669,13 +669,16 @@ Things that are built, or deliberately not built, in a state someone will trip o
   seconds, until an unrelated alert changed state, though `screen.kept` already held the new
   name; `keptRows` re-evaluates whenever `body` does, so the staleness was `body` never being
   invalidated, not a `ForEach` that ignored a new value, which is why four keyings did nothing.
-  `body` reads none of the sheet states by value (`.sheet` takes bindings), so a sheet closing
-  re-runs nothing in it. Reading `sheetTarget`, `happeningSheetTarget`, `sayingDaysAway` and
-  `changingDaysAway` at the top of `body` makes it run when a sheet closes, with the new name
-  drawn and the scroll position kept. **Why the screen's own change does not reach `body` across a
-  presentation is still not understood**; the fix is a trigger, not a cause. A happening's stop,
-  resume and deletion needed none of it: `CommitmentsScreen.stoppedHappenings` is now observed
-  state, and the stopped flag was the only thing the store held that the screen did not.
+  `.sheet(item: $sheetTarget)` takes a binding and reads nothing in `body`, so closing
+  `CommitmentSheet` re-ran nothing. The other three sheets were already read by `body`:
+  `happeningSheetTarget == nil` at the Happenings footer, and `daysAwaySheetStillShown` at the days
+  away footer, which both days away `onDismiss` handlers set. So the one trigger the fix newly
+  needs is `sheetTarget`, read at the top of `body` beside the other three, which are kept there
+  as the complete list and were not measured without it. With it the new name is drawn and the
+  scroll position kept. **Why the screen's own change does not reach `body` across a presentation
+  is still not understood**; the fix is a trigger, not a cause. A happening's stop, resume and
+  deletion needed none of it: `CommitmentsScreen.stoppedHappenings` is now observed state, and a
+  happening's stopped flag was the one thing the screen read from the store without watching.
 - **The Story issue template asks an agent to write the G4 marker string.** Surfaced writing
   #91..#93, 2026-09-03. `.github/ISSUE_TEMPLATE/story.yml`'s last Definition-of-ready checkbox
   quotes the marker line literally, so an agent rendering the template faithfully writes that

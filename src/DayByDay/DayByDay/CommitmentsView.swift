@@ -836,12 +836,16 @@ struct CommitmentsView: View {
     }
 
     var body: some View {
-        // Reads the four sheet states by value, so that closing any of the sheets below re-runs
-        // this `body`. A change a sheet keeps does not otherwise reach it: measured on an iOS 26.5
-        // simulator, `body` never ran again between a save from `CommitmentSheet` and the next
-        // unrelated state change, though `screen.kept` already held the new name, and the rows
-        // stayed as they were. The sheets take bindings only, which read nothing here. Why the
-        // screen's own change does not invalidate this view across that boundary is not
+        // Closing `CommitmentSheet` is what needed this read. A change it keeps does not reach
+        // this `body` by itself: measured on an iOS 26.5 simulator, `body` never ran again between
+        // a save and the next unrelated state change, though `screen.kept` already held the new
+        // name and the rows stayed as they were. `.sheet(item: $sheetTarget)` takes a binding and
+        // reads nothing here, so nothing else re-ran `body` on that close. The other three sheets
+        // are already read elsewhere in `body`'s tree: `happeningSheetTarget == nil` at the
+        // Happenings footer, and `daysAwaySheetStillShown` at the days away footer, which both
+        // days away `onDismiss` handlers set. They stay in the tuple as the complete list; only
+        // `sheetTarget` is new, and the other three were not measured without it. Why the
+        // screen's own change does not invalidate this view across a presentation is not
         // understood. Rebuilding the `List` with `.id` also cured it but lost the scroll position.
         let _ = (sheetTarget, happeningSheetTarget, sayingDaysAway, changingDaysAway)
         sheeting
