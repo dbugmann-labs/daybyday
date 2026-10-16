@@ -236,6 +236,23 @@ confirmed it as a gap rather than saying it unprompted.*
 - **Open** — does the rename sheet lose the place too? It was not measured at #379, and "both
   together" assumes it does.
 
+### B-086 — read back why I declined the days I declined
+*Captured 2026-10-16, from the grill of `count-declined-days` (#403). The wording is the grill's;
+the owner chose it as a want when settling that Story to count only.*
+
+> "A list of declined days with their reasons becomes a new want in the backlog." — the option the
+> owner took at #403's grill, Q3
+
+- **Trigger** — on a look-back, seeing "3 declined" on a month and wanting to know why: today a
+  decline's reason is said only on its day screen row, so reading it back means paging to each day.
+- **Touches** — `look-back`. It would be a list of declined days, each with its reason, alongside
+  the count #403 adds; the note look-back's list of dated notes, newest first, is the nearest shape.
+- **Principle** — tested against *five percent of seven things*: **passes, but late.** It deepens a
+  record that #403 already makes visible rather than making a new one possible; it is worth having
+  once the count has been lived with.
+- **Open** — every declined day, or only those with a reason? A long reason: whole, or clipped as
+  the row clips it? On every kind's page, or a page of its own?
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
