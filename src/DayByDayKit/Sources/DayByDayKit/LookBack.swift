@@ -17,9 +17,13 @@ public struct LookBack: Hashable, Sendable {
     /// A note commitment's count of the notes it says, "38 notes" or "1 note" — `nil` on every
     /// other kind, and where `notes` is empty. `design.md` § *The seam*.
     public let noteCountInWords: String?
+    /// How many of the days this look-back counts, from the day kept from through the last day it
+    /// counts, hold a decline on a day it counts due — said as a number, `nil` where none does.
+    /// `openspec/changes/count-declined-days/design.md` § *The seam*.
+    public let declinedInWords: String?
 
     public enum Line: Hashable, Sendable {
-        case month(inWords: String, fraction: String)
+        case month(inWords: String, fraction: String, declinedInWords: String? = nil)
         case week(inWords: String, fraction: String)
     }
 
@@ -208,7 +212,7 @@ public struct LookBack: Hashable, Sendable {
                 name: commitment.name, rhythmInWords: commitment.rhythmInWords,
                 keptFromInWords: LookBackWords.day(earliestEra.start),
                 keptUntilInWords: keptUntil.map(LookBackWords.day), whole: nil, lines: [],
-                graph: graph, notes: [], noteCountInWords: nil)
+                graph: graph, notes: [], noteCountInWords: nil, declinedInWords: nil)
         case .note:
             let notes = Self.notes(from: earliestEra.start, through: frontEnd, eras: eras, history: history)
             return LookBack(
@@ -216,7 +220,8 @@ public struct LookBack: Hashable, Sendable {
                 keptFromInWords: LookBackWords.day(earliestEra.start),
                 keptUntilInWords: keptUntil.map(LookBackWords.day), whole: nil, lines: [],
                 graph: nil, notes: notes,
-                noteCountInWords: notes.isEmpty ? nil : LookBackWords.notes(notes.count))
+                noteCountInWords: notes.isEmpty ? nil : LookBackWords.notes(notes.count),
+                declinedInWords: nil)
         case .tick:
             break
         }
@@ -229,7 +234,7 @@ public struct LookBack: Hashable, Sendable {
             keptFromInWords: LookBackWords.day(earliestEra.start),
             keptUntilInWords: keptUntil.map(LookBackWords.day),
             whole: LookBackWords.fraction(kept: totalKept, due: totalDue),
-            lines: lines, graph: nil, notes: [], noteCountInWords: nil)
+            lines: lines, graph: nil, notes: [], noteCountInWords: nil, declinedInWords: nil)
     }
 
     /// The chain of eras behind `commitment`, newest first: `commitment` itself, ending on

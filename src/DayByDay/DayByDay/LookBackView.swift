@@ -212,7 +212,7 @@ struct LookBackView: View {
     @ViewBuilder
     private func lookBackLine(_ line: LookBack.Line) -> some View {
         switch line {
-        case .month(let inWords, let fraction), .week(let inWords, let fraction):
+        case .month(let inWords, let fraction, _), .week(let inWords, let fraction):
             LookBackGridLine(label: inWords, value: fraction)
         }
     }

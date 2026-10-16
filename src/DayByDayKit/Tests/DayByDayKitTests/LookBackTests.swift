@@ -209,7 +209,7 @@ func aLookBackSaysItsMonthsNewestFirstAndLeavesNoneBetweenOut() throws {
     let lookBack = screen.lookBack(at: gym)
 
     let months = lookBack?.lines.compactMap { line -> String? in
-        if case .month(let inWords, _) = line { return inWords }
+        if case .month(let inWords, _, _) = line { return inWords }
         return nil
     }
     #expect(months == ["March 2026", "February 2026", "January 2026"])
@@ -331,7 +331,7 @@ func aLookBackSaysAMonthTheCommitmentWasDueOnNoDayWithNothingDue() throws {
     let lookBack = screen.lookBack(at: sharpenKnives)
 
     let months = lookBack?.lines.compactMap { line -> String? in
-        if case .month(let inWords, _) = line { return inWords }
+        if case .month(let inWords, _, _) = line { return inWords }
         return nil
     }
     #expect(
@@ -381,7 +381,7 @@ func aStoppedCommitmentsLookBackCountsThroughTheDayItWasKeptUntil() throws {
     let lookBack = screen.lookBack(at: gym)
 
     let months = lookBack?.lines.compactMap { line -> String? in
-        if case .month(let inWords, _) = line { return inWords }
+        if case .month(let inWords, _, _) = line { return inWords }
         return nil
     }
     #expect(months == ["February 2026", "January 2026"])
@@ -411,7 +411,7 @@ func aLookBackCountsNoDayAfterTheDayACommitmentWasKeptUntil() throws {
 
     #expect(lookBack?.lines.contains(.month(inWords: "February 2026", fraction: "0/12")) == true)
     #expect(
-        lookBack?.lines.contains { if case .month(let inWords, _) = $0 { return inWords == "March 2026" }; return false }
+        lookBack?.lines.contains { if case .month(let inWords, _, _) = $0 { return inWords == "March 2026" }; return false }
             == false)
 }
 
@@ -507,7 +507,7 @@ func aLookBacksWholeIsTheSumOfTheMonthsItSays() throws {
     var sumKept = 0
     var sumDue = 0
     for line in lookBack!.lines {
-        guard case .month(_, let fraction) = line else { continue }
+        guard case .month(_, let fraction, _) = line else { continue }
         let parts = fraction.split(separator: "/")
         sumKept += Int(parts[0])!
         sumDue += Int(parts[1])!
@@ -561,7 +561,7 @@ func aLookBackCountsTheEraBehindTheOneItWasAskedAbout() throws {
     let lookBack = screen.lookBack(at: newerGym)
 
     let months = lookBack?.lines.compactMap { line -> String? in
-        if case .month(let inWords, _) = line { return inWords }
+        if case .month(let inWords, _, _) = line { return inWords }
         return nil
     }
     #expect(months == ["March 2026", "February 2026", "January 2026"])
@@ -629,7 +629,7 @@ func aLookBackChainsEveryEraOfTheCommitmentItWasAskedAbout() throws {
     let lookBack = screen.lookBack(at: third)
 
     let months = lookBack?.lines.compactMap { line -> String? in
-        if case .month(let inWords, _) = line { return inWords }
+        if case .month(let inWords, _, _) = line { return inWords }
         return nil
     }
     #expect(lookBack?.keptFromInWords == "1 January 2026")
@@ -703,7 +703,7 @@ func aLookBackReachesNoEraOfAnotherCommitmentHoweverAlikeItIs() throws {
     #expect(gymLookBack?.lines.count == 1)
     #expect(
         gymLookBack?.lines.contains { line in
-            if case .month(let inWords, _) = line { return inWords == "March 2026" }
+            if case .month(let inWords, _, _) = line { return inWords == "March 2026" }
             return false
         } == true)
 
@@ -832,7 +832,7 @@ func aLookBackSaysNothingBetweenTheLinesEitherSideOfABoundary() throws {
 
     let lineKinds: [String] = lookBack!.lines.map {
         switch $0 {
-        case .month(let inWords, _): return "month:\(inWords)"
+        case .month(let inWords, _, _): return "month:\(inWords)"
         case .week(let inWords, _): return "week:\(inWords)"
         }
     }
@@ -860,7 +860,7 @@ func aLookBackSaysNothingBetweenTheLinesEitherSideOfABoundary() throws {
 
     let mixedLineKinds: [String] = mixedLookBack!.lines.map {
         switch $0 {
-        case .month(let inWords, _): return "month:\(inWords)"
+        case .month(let inWords, _, _): return "month:\(inWords)"
         case .week(let inWords, _): return "week:\(inWords)"
         }
     }
@@ -891,7 +891,7 @@ func aLookBackSaysAMonthAsThatMonthsNameAndItsYear() throws {
     let lookBack = screen.lookBack(at: gym)
 
     let months = lookBack?.lines.compactMap { line -> String? in
-        if case .month(let inWords, _) = line { return inWords }
+        if case .month(let inWords, _, _) = line { return inWords }
         return nil
     }
     #expect(
