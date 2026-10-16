@@ -37,8 +37,8 @@ the next.
 
 - [x] 5.1 `openspec validate count-declined-days --strict` exits 0, and `pnpm run checks` is clean but for `check:budgets` warnings on carried requirements
 - [x] 5.2 `pnpm run verify` is green, and `swift test` in `src/DayByDayKit` passes with 7 more tests than a run on `origin/main` reports, both counts read off runs
-- [ ] 5.3 **G7** — the reviewer's findings are answered, and the PR is rebased onto current `main`
-- [ ] 5.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, once every other box is ticked and the walk comment's URL is in W.4. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `look-back` alone moves, gaining this delta's two requirements and 7 scenarios. **Any other drift is a stop and a report, never a hand-edit**: the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
+- [x] 5.3 **G7** — the reviewer's findings are answered, and the PR is rebased onto current `main`
+- [x] 5.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, once every other box is ticked and the walk comment's URL is in W.4. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `look-back` alone moves, gaining this delta's two requirements and 7 scenarios. **Any other drift is a stop and a report, never a hand-edit**: the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 
