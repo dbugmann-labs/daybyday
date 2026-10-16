@@ -25,13 +25,13 @@ the next.
 
 ## 3. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 3.1 The head card's last row is a `LookBackDateRow` labelled "Declined" drawing `declinedInWords` in monospaced digits, drawn exactly where that is not `nil`, under "The whole" on a tick page and under "Kept from" or "Kept until" on every other, as § *What the shell draws* has it
-- [ ] 3.2 A month line with a declined count draws it under the month's name in `.caption`, secondary, the fraction staying on the name's baseline; a month without one and every week line draw exactly as shipped
-- [ ] 3.3 `git diff --stat origin/main... -- src/DayByDay/` lists `LookBackView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
+- [x] 3.1 The head card's last row is a `LookBackDateRow` labelled "Declined" drawing `declinedInWords` in monospaced digits, drawn exactly where that is not `nil`, under "The whole" on a tick page and under "Kept from" or "Kept until" on every other, as § *What the shell draws* has it
+- [x] 3.2 A month line with a declined count draws it under the month's name in `.caption`, secondary, the fraction staying on the name's baseline; a month without one and every week line draw exactly as shipped
+- [x] 3.3 `git diff --stat origin/main... -- src/DayByDay/` lists `LookBackView.swift` alone; the app target builds for the simulator, and `WalkthroughUITests` passes unedited
 
 ## 4. The records
 
-- [ ] 4.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2), and `CONTEXT.md` is as this folder's PR left it and has not been edited since G4
+- [x] 4.1 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2), and `CONTEXT.md` is as this folder's PR left it and has not been edited since G4
 
 ## 5. The gates and the archive handover
 
