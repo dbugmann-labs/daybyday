@@ -170,8 +170,8 @@ is a scenario this round leaves as it was: its test stays as it is and must end 
 
 - [x] 13.1 `openspec validate change-days-away --strict` exits 0, and `pnpm run checks` is clean but for one `check:budgets` warning, on the carried *A commitments screen changes a commitment by renaming it, moving the day it is kept from, putting a new era on it, or declaring its usual amounts* — 597 words here, already over at 588 on `origin/main`; any other budget warning is a stop
 - [x] 13.2 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing, its count and one on `origin/main` both read off runs and given in the PR body
-- [ ] 13.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
-- [ ] 13.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked, W.8 included, and the walk comment's URL is in W.9. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `commitment`, `day-screen`, `look-back` and `restore` move, gaining this delta's 76 new scenarios and losing the six § 1.2 retires or retitles, and no other spec file does. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
+- [x] 13.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
+- [x] 13.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that every other box is ticked, W.8 included, and the walk comment's URL is in W.9. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `commitment`, `day-screen`, `look-back` and `restore` move, gaining this delta's 76 new scenarios and losing the six § 1.2 retires or retitles, and no other spec file does. **Any other drift is a stop and a report, never a hand-edit** — the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 
