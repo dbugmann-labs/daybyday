@@ -387,13 +387,24 @@ public final class CommitmentsScreen {
     /// existing `Refusal`, held in a third value*.
     public private(set) var happeningRefusal: Refusal?
 
+    /// The happenings of `happenings` that are stopped. Held here, read from the store at every
+    /// change to it, so a screen watching this one redraws a row when its happening is stopped or
+    /// resumed: `happenings` alone is equal before and after, and the store is not observable.
+    public private(set) var stoppedHappenings: Set<Happening> = []
+
+    /// Lists what `store` holds, and which of it is stopped.
+    private func listHappenings(from store: HappeningStore) {
+        happenings = store.happenings.all
+        stoppedHappenings = Set(happenings.filter { store.happenings.isStopped($0) })
+    }
+
     /// Opens the happening place afresh and lists what it holds, or lists none and says why.
     private func readHappenings() {
         do {
             let store = try HappeningStore(at: happeningPlace)
             happeningStore = store
             happeningState = .kept
-            happenings = store.happenings.all
+            listHappenings(from: store)
         } catch {
             happeningStore = nil
             if case HappeningStoreError.laterForm = error {
@@ -402,6 +413,7 @@ public final class CommitmentsScreen {
                 happeningState = .notKept
             }
             happenings = []
+            stoppedHappenings = []
         }
     }
 
@@ -424,7 +436,7 @@ public final class CommitmentsScreen {
             return refuseHappening(.notKept)
         }
 
-        happenings = store.happenings.all
+        listHappenings(from: store)
         happeningRefusal = nil
         copyPlace?.keptAChange()
         return nil
@@ -460,7 +472,7 @@ public final class CommitmentsScreen {
             return refuseHappening(.notKept)
         }
 
-        happenings = store.happenings.all
+        listHappenings(from: store)
         happeningRefusal = nil
         copyPlace?.keptAChange()
         return nil
@@ -468,7 +480,7 @@ public final class CommitmentsScreen {
 
     /// Whether `happening` is one this screen lists and is stopped.
     public func isStopped(_ happening: Happening) -> Bool {
-        happeningStore?.happenings.isStopped(happening) ?? false
+        stoppedHappenings.contains(happening)
     }
 
     /// The happening a stop has been asked for and not yet confirmed or cancelled.
@@ -514,7 +526,7 @@ public final class CommitmentsScreen {
             return refuseHappening(.notKept)
         }
 
-        happenings = store.happenings.all
+        listHappenings(from: store)
         happeningRefusal = nil
         copyPlace?.keptAChange()
         return nil
@@ -531,7 +543,7 @@ public final class CommitmentsScreen {
             return refuseHappening(.notKept)
         }
 
-        happenings = store.happenings.all
+        listHappenings(from: store)
         happeningRefusal = nil
         copyPlace?.keptAChange()
         return nil
@@ -599,7 +611,7 @@ public final class CommitmentsScreen {
             return refuseHappening(.notKept)
         }
 
-        happenings = store.happenings.all
+        listHappenings(from: store)
         happeningRefusal = nil
         copyPlace?.keptAChange()
         return nil

@@ -605,7 +605,6 @@ struct CommitmentsView: View {
                         if screen.isStopped(happening) {
                             Button {
                                 screen.resume(happening)
-                                listRevision += 1
                             } label: {
                                 Image(systemName: "play.circle")
                             }
@@ -744,7 +743,6 @@ struct CommitmentsView: View {
         ) { happening in
             Button("Stop noting \(happening.name)", role: .destructive) {
                 screen.confirmStoppingHappening()
-                listRevision += 1
             }
             Button("Cancel", role: .cancel) {
                 screen.cancelStoppingHappening()
@@ -762,8 +760,7 @@ struct CommitmentsView: View {
                         screen.cancelDeletingHappening()
                     }
                 }
-            ),
-            onDismiss: { listRevision += 1 }
+            )
         ) {
             if let happening = screen.happeningAwaitingDeletion {
                 NavigationStack {
