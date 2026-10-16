@@ -35,8 +35,8 @@ the next.
 
 ## 5. The gates and the archive handover
 
-- [ ] 5.1 `openspec validate count-declined-days --strict` exits 0, and `pnpm run checks` is clean but for `check:budgets` warnings on carried requirements
-- [ ] 5.2 `pnpm run verify` is green, and `swift test` in `src/DayByDayKit` passes with 7 more tests than a run on `origin/main` reports, both counts read off runs
+- [x] 5.1 `openspec validate count-declined-days --strict` exits 0, and `pnpm run checks` is clean but for `check:budgets` warnings on carried requirements
+- [x] 5.2 `pnpm run verify` is green, and `swift test` in `src/DayByDayKit` passes with 7 more tests than a run on `origin/main` reports, both counts read off runs
 - [ ] 5.3 **G7** — the reviewer's findings are answered, and the PR is rebased onto current `main`
 - [ ] 5.4 **The archive handover — `implementer` ticks this in its last commit before the archive**, once every other box is ticked and the walk comment's URL is in W.4. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `look-back` alone moves, gaining this delta's two requirements and 7 scenarios. **Any other drift is a stop and a report, never a hand-edit**: the archive path is denied to every edit, so a box left unticked here cannot be reached afterwards.
 
@@ -46,7 +46,7 @@ A fresh install, walked on the simulator on any day, light only; `pnpm run walk`
 so every record is typed through the day screen, never seeded. W.1's commitment is defined with a
 "Kept from" two calendar months back, so its look-back says three months.
 
-- [ ] W.1 A tick commitment's look-back, declined on days in its newest and its oldest month and on none in the month between: a "N declined" caption under each of those two months' names, the middle month on one line, and a "DECLINED" row last in the head card, under "THE WHOLE", saying their sum.
-- [ ] W.2 Weight's look-back, holding a number on a few days and declined on one: the head card's "DECLINED" row under "KEPT FROM", over the graph drawn as it is without the decline.
-- [ ] W.3 A tick commitment's look-back holding ticks and no decline: the head card ending on "THE WHOLE", and every month on one line.
-- [ ] W.4 **The handover**: W.1–W.3, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, never with `gh pr comment --attach`, and this box is ticked on that comment's URL.
+- [x] W.1 A tick commitment's look-back, declined on days in its newest and its oldest month and on none in the month between: a "N declined" caption under each of those two months' names, the middle month on one line, and a "DECLINED" row last in the head card, under "THE WHOLE", saying their sum.
+- [x] W.2 Weight's look-back, holding a number on a few days and declined on one: the head card's "DECLINED" row under "KEPT FROM", over the graph drawn as it is without the decline.
+- [x] W.3 A tick commitment's look-back holding ticks and no decline: the head card ending on "THE WHOLE", and every month on one line.
+- [x] W.4 **The handover**: W.1–W.3, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, never with `gh pr comment --attach`, and this box is ticked on that comment's URL.
