@@ -188,3 +188,64 @@ func aLookBackThatSaysNoGraphOrNoNoteStillCountsItsDeclinedDays() throws {
     #expect(journalLookBack?.noteCountInWords == nil)
     #expect(journalLookBack?.declinedInWords == "1")
 }
+
+/// No month line of `lookBack` says a declined count.
+private func saysNoCountOnAnyLine(_ lookBack: LookBack?) -> Bool {
+    lookBack?.lines.allSatisfy {
+        if case .month(_, _, let declined) = $0 { return declined == nil }
+        return true
+    } == true
+}
+
+/// A look-back at the newest of two Gym eras — the earlier on Mon/Wed/Sat from 1 January 2026
+/// until `earlierUntil`, the newest on `schedule` from `newestFrom` — holding a decline of the
+/// earlier era on `declinedOn`, as of `today`.
+@MainActor
+private func lookBackAcrossTwoEras(
+    earlierUntil: CalendarDate, newestFrom: CalendarDate, schedule: Schedule,
+    declinedOn: CalendarDate, today: CalendarDate
+) throws -> LookBack? {
+    let held = places()
+    let old = Commitment(name: "Gym", schedule: monWedSat, keptFrom: date(2026, 1, 1))!
+    let new = Commitment(era: old, schedule: schedule, keptFrom: newestFrom, kind: .tick)!
+    let roster = try RosterStore(at: held.roster)
+    try roster.add(old)
+    try roster.put(era: new, on: old, keptUntil: earlierUntil, under: nil)
+    try RecordStore(at: held.record).add(Decline(for: old, on: declinedOn, reason: nil)!)
+    return CommitmentsScreen(
+        asOf: today, keepingRosterAt: held.roster, keepingRecordAt: held.record
+    ).lookBack(at: new)
+}
+
+@MainActor
+@Test("a look-back counts no decline on a day it does not count due")
+func aLookBackCountsNoDeclineOnADayItDoesNotCountDue() throws {
+    let held = places()
+    let stopped = Commitment(name: "Gym", schedule: monWedSat, keptFrom: date(2026, 1, 1))!
+    let roster = try RosterStore(at: held.roster)
+    try roster.add(stopped)
+    try roster.retire(stopped, keptUntil: date(2026, 2, 28))
+    try RecordStore(at: held.record).add(Decline(for: stopped, on: date(2026, 3, 4), reason: nil)!)
+    let afterTheStop = CommitmentsScreen(
+        asOf: date(2026, 3, 15), keepingRosterAt: held.roster, keepingRecordAt: held.record
+    ).lookBack(at: stopped)
+    #expect(afterTheStop?.declinedInWords == nil)
+    #expect(saysNoCountOnAnyLine(afterTheStop))
+
+    let inAGap = try lookBackAcrossTwoEras(
+        earlierUntil: date(2026, 1, 31), newestFrom: date(2026, 4, 1), schedule: monWedSat,
+        declinedOn: date(2026, 2, 4), today: date(2026, 4, 15))
+    #expect(inAGap?.declinedInWords == nil)
+
+    let notDueThere = try lookBackAcrossTwoEras(
+        earlierUntil: date(2026, 3, 3), newestFrom: date(2026, 3, 4),
+        schedule: .weekdays([.tuesday, .thursday]), declinedOn: date(2026, 3, 4),
+        today: date(2026, 3, 31))
+    #expect(notDueThere?.declinedInWords == nil)
+
+    let onAQuota = try lookBackAcrossTwoEras(
+        earlierUntil: date(2026, 3, 3), newestFrom: date(2026, 3, 4),
+        schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), declinedOn: date(2026, 3, 7),
+        today: date(2026, 3, 15))
+    #expect(onAQuota?.declinedInWords == nil)
+}
