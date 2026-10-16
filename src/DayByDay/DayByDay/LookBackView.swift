@@ -162,6 +162,10 @@ struct LookBackView: View {
                 Divider()
                 dateRow(label: "The whole", value: whole, valueFont: .body.monospacedDigit())
             }
+            if let declinedInWords = lookBack.declinedInWords {
+                Divider()
+                dateRow(label: "Declined", value: declinedInWords, valueFont: .body.monospacedDigit())
+            }
         }
         .lookBackCard()
     }
@@ -212,7 +216,9 @@ struct LookBackView: View {
     @ViewBuilder
     private func lookBackLine(_ line: LookBack.Line) -> some View {
         switch line {
-        case .month(let inWords, let fraction, _), .week(let inWords, let fraction):
+        case .month(let inWords, let fraction, let declinedInWords):
+            LookBackGridLine(label: inWords, value: fraction, caption: declinedInWords)
+        case .week(let inWords, let fraction):
             LookBackGridLine(label: inWords, value: fraction)
         }
     }
@@ -975,10 +981,20 @@ private struct LookBackDateRow: View {
 private struct LookBackGridLine: View {
     let label: String
     let value: String
+    /// A small secondary line under the label — a month's declined count. The value stays on the
+    /// label's first baseline.
+    var caption: String?
 
     var body: some View {
-        GridRow {
-            Text(label)
+        GridRow(alignment: .firstTextBaseline) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label)
+                if let caption {
+                    Text(caption)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
             Text(value)
                 .monospacedDigit()
                 .gridColumnAlignment(.trailing)
