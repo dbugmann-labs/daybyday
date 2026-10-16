@@ -739,6 +739,10 @@ of the target too. A decline is a record wherever one is asked of a day — it r
 keeps a stopped commitment until its day, and is carried over and deleted with the rest — and its
 reason is said on the row at rest. ADR-1068.
 
+**Amended 2026-10-16**, at the grill of `count-declined-days` (#403): every kind's **look-back** says
+how many days were declined, apart from its fractions — which still count a declined day owed and
+not kept — and says nothing where none was. It says how many, never the reasons.
+
 **History** — every tick there is, across all commitments and all days, held together so that
 one question can be asked of it: was this commitment *kept* on this date? It answers from the ticks
 it holds and from nothing else — a commitment it has never seen is simply not kept, and a day the

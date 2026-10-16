@@ -17,9 +17,13 @@ public struct LookBack: Hashable, Sendable {
     /// A note commitment's count of the notes it says, "38 notes" or "1 note" — `nil` on every
     /// other kind, and where `notes` is empty. `design.md` § *The seam*.
     public let noteCountInWords: String?
+    /// How many of the days this look-back counts, from the day kept from through the last day it
+    /// counts, hold a decline on a day it counts due — said as a number, `nil` where none does.
+    /// `openspec/changes/count-declined-days/design.md` § *The seam*.
+    public let declinedInWords: String?
 
     public enum Line: Hashable, Sendable {
-        case month(inWords: String, fraction: String)
+        case month(inWords: String, fraction: String, declinedInWords: String? = nil)
         case week(inWords: String, fraction: String)
     }
 
@@ -140,6 +144,7 @@ public struct LookBack: Hashable, Sendable {
         let yearMonth: YearMonth
         var due: Int = 0
         var kept: Int = 0
+        var declined: Int = 0
         var hasNonQuotaDay: Bool = false
         var lastDay: CalendarDate
 
@@ -147,7 +152,8 @@ public struct LookBack: Hashable, Sendable {
             guard hasNonQuotaDay else { return nil }
             return .month(
                 inWords: LookBackWords.month(year: yearMonth.year, month: yearMonth.month),
-                fraction: LookBackWords.fraction(kept: kept, due: due))
+                fraction: LookBackWords.fraction(kept: kept, due: due),
+                declinedInWords: declined > 0 ? LookBackWords.declined(declined) : nil)
         }
     }
 
@@ -204,24 +210,32 @@ public struct LookBack: Hashable, Sendable {
         switch commitment.kind {
         case .number, .total:
             let graph = Self.graph(from: earliestEra.start, through: frontEnd, eras: eras, history: history)
+            let declined = Self.walkDays(
+                from: earliestEra.start, through: frontEnd, eras: eras, history: history
+            ).totalDeclined
             return LookBack(
                 name: commitment.name, rhythmInWords: commitment.rhythmInWords,
                 keptFromInWords: LookBackWords.day(earliestEra.start),
                 keptUntilInWords: keptUntil.map(LookBackWords.day), whole: nil, lines: [],
-                graph: graph, notes: [], noteCountInWords: nil)
+                graph: graph, notes: [], noteCountInWords: nil,
+                declinedInWords: Self.inWords(declined: declined))
         case .note:
             let notes = Self.notes(from: earliestEra.start, through: frontEnd, eras: eras, history: history)
+            let declined = Self.walkDays(
+                from: earliestEra.start, through: frontEnd, eras: eras, history: history
+            ).totalDeclined
             return LookBack(
                 name: commitment.name, rhythmInWords: commitment.rhythmInWords,
                 keptFromInWords: LookBackWords.day(earliestEra.start),
                 keptUntilInWords: keptUntil.map(LookBackWords.day), whole: nil, lines: [],
                 graph: nil, notes: notes,
-                noteCountInWords: notes.isEmpty ? nil : LookBackWords.notes(notes.count))
+                noteCountInWords: notes.isEmpty ? nil : LookBackWords.notes(notes.count),
+                declinedInWords: Self.inWords(declined: declined))
         case .tick:
             break
         }
 
-        let (lines, totalDue, totalKept) = Self.walkDays(
+        let (lines, totalDue, totalKept, totalDeclined) = Self.walkDays(
             from: earliestEra.start, through: frontEnd, eras: eras, history: history)
 
         return LookBack(
@@ -229,7 +243,8 @@ public struct LookBack: Hashable, Sendable {
             keptFromInWords: LookBackWords.day(earliestEra.start),
             keptUntilInWords: keptUntil.map(LookBackWords.day),
             whole: LookBackWords.fraction(kept: totalKept, due: totalDue),
-            lines: lines, graph: nil, notes: [], noteCountInWords: nil)
+            lines: lines, graph: nil, notes: [], noteCountInWords: nil,
+            declinedInWords: Self.inWords(declined: totalDeclined))
     }
 
     /// The chain of eras behind `commitment`, newest first: `commitment` itself, ending on
@@ -305,11 +320,14 @@ public struct LookBack: Hashable, Sendable {
     /// the whole's numerator and denominator — the sum of every line's own, month due days and
     /// week owed days alike, `openspec/changes/look-back-at-a-quota/specs/look-back/spec.md` § *A
     /// look-back says one whole across everything since the day the commitment is kept from*.
+    /// The fourth value, `totalDeclined`, is the sum of every month's declined days, counted on a
+    /// day the holding era is due on and does not run on a weekly quota; a number, total or note
+    /// look-back calls this walk only for that count.
     private static func walkDays(
         from start: CalendarDate, through end: CalendarDate, eras: [Era], history: History
-    ) -> (lines: [Line], totalDue: Int, totalKept: Int) {
+    ) -> (lines: [Line], totalDue: Int, totalKept: Int, totalDeclined: Int) {
         guard start.days(until: end) >= 0 else {
-            return ([], 0, 0)
+            return ([], 0, 0, 0)
         }
 
         var months: [MonthTally] = []
@@ -353,6 +371,9 @@ public struct LookBack: Hashable, Sendable {
                         currentMonth.due += 1
                         if history.isKept(counted, on: day) {
                             currentMonth.kept += 1
+                        }
+                        if history.decline(for: counted, on: day) != nil {
+                            currentMonth.declined += 1
                         }
                     }
                 }
@@ -404,7 +425,14 @@ public struct LookBack: Hashable, Sendable {
         let totalDue = sortableLines.reduce(0) { $0 + $1.due }
         let totalKept = sortableLines.reduce(0) { $0 + $1.kept }
 
-        return (lines, totalDue, totalKept)
+        let totalDeclined = months.reduce(0) { $0 + $1.declined }
+
+        return (lines, totalDue, totalKept, totalDeclined)
+    }
+
+    /// A declined count said as a number, `nil` where it is zero — `design.md` § *The seam*.
+    private static func inWords(declined count: Int) -> String? {
+        count > 0 ? LookBackWords.number(Decimal(count)) : nil
     }
 
     /// A note commitment's notes, oldest first as walked then reversed — `design.md` § *A walk of

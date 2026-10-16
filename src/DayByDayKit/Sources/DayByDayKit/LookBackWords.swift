@@ -104,4 +104,10 @@ enum LookBackWords {
     static func times(_ count: Int) -> String {
         "\(number(Decimal(count))) \(count == 1 ? "time" : "times")"
     }
+
+    /// A month's count of declined days as the number, a single space and "declined" — "3
+    /// declined" — which takes no plural.
+    static func declined(_ count: Int) -> String {
+        "\(number(Decimal(count))) declined"
+    }
 }
