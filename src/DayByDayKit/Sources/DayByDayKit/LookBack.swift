@@ -320,6 +320,9 @@ public struct LookBack: Hashable, Sendable {
     /// the whole's numerator and denominator — the sum of every line's own, month due days and
     /// week owed days alike, `openspec/changes/look-back-at-a-quota/specs/look-back/spec.md` § *A
     /// look-back says one whole across everything since the day the commitment is kept from*.
+    /// The fourth value, `totalDeclined`, is the sum of every month's declined days, counted on a
+    /// day the holding era is due on and does not run on a weekly quota; a number, total or note
+    /// look-back calls this walk only for that count.
     private static func walkDays(
         from start: CalendarDate, through end: CalendarDate, eras: [Era], history: History
     ) -> (lines: [Line], totalDue: Int, totalKept: Int, totalDeclined: Int) {
