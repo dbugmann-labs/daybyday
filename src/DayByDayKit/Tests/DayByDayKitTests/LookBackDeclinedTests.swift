@@ -161,3 +161,30 @@ func aNumberCommitmentsLookBackCountsADayDeclinedHoweverLongAgoAndItsGraphSaysNo
     #expect(journalLookBack?.notes.map(\.text) == ["Quiet day."])
     #expect(journalLookBack?.noteCountInWords == "1 note")
 }
+
+@MainActor
+@Test("a look-back that says no graph or no note still counts its declined days")
+func aLookBackThatSaysNoGraphOrNoNoteStillCountsItsDeclinedDays() throws {
+    let held = places()
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: date(2026, 3, 1), kind: .number(range: nil))!
+    let journal = Commitment(
+        name: "Journal", schedule: everyDay, keptFrom: date(2026, 3, 1), kind: .note)!
+    let roster = try RosterStore(at: held.roster)
+    try roster.add(weight)
+    try roster.add(journal)
+    let record = try RecordStore(at: held.record)
+    try record.add(Decline(for: weight, on: date(2026, 3, 3), reason: nil)!)
+    try record.add(Decline(for: journal, on: date(2026, 3, 3), reason: nil)!)
+    let screen = CommitmentsScreen(
+        asOf: date(2026, 3, 5), keepingRosterAt: held.roster, keepingRecordAt: held.record)
+
+    let weightLookBack = screen.lookBack(at: weight)
+    let journalLookBack = screen.lookBack(at: journal)
+
+    #expect(weightLookBack?.graph == nil)
+    #expect(weightLookBack?.declinedInWords == "1")
+    #expect(journalLookBack?.notes.isEmpty == true)
+    #expect(journalLookBack?.noteCountInWords == nil)
+    #expect(journalLookBack?.declinedInWords == "1")
+}
