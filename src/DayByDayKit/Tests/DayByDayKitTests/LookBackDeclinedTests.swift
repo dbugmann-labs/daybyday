@@ -73,3 +73,40 @@ func aMonthLineSaysHowManyOfItsDaysWereDeclinedBesideItsFraction() throws {
     #expect(
         lookBack?.lines.contains(.month(inWords: "February 2026", fraction: "11/12")) == true)
 }
+
+@MainActor
+@Test(
+    "a declined day in a week a week line says is counted on its month line, and no week line says a declined count"
+)
+func aDeclinedDayInAWeekAWeekLineSaysIsCountedOnItsMonthLineAndNoWeekLineSaysADeclinedCount()
+    throws
+{
+    let held = places()
+    let old = Commitment(
+        name: "Gym", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!),
+        keptFrom: date(2026, 2, 23))!
+    let new = Commitment(era: old, schedule: monWedSat, keptFrom: date(2026, 3, 4), kind: .tick)!
+    let roster = try RosterStore(at: held.roster)
+    try roster.add(old)
+    try roster.put(era: new, on: old, keptUntil: date(2026, 3, 3), under: nil)
+    let record = try RecordStore(at: held.record)
+    for day in [date(2026, 2, 23), date(2026, 2, 25), date(2026, 2, 27), date(2026, 3, 2)] {
+        try record.add(Tick(old, on: day)!)
+    }
+    for day in [date(2026, 3, 7), date(2026, 3, 9)] {
+        try record.add(Tick(new, on: day)!)
+    }
+    try record.add(Decline(for: new, on: date(2026, 3, 4), reason: nil)!)
+    let screen = CommitmentsScreen(
+        asOf: date(2026, 3, 15), keepingRosterAt: held.roster, keepingRecordAt: held.record)
+
+    let lookBack = screen.lookBack(at: new)
+
+    #expect(
+        lookBack?.lines == [
+            .month(inWords: "March 2026", fraction: "2/5", declinedInWords: "1 declined"),
+            .week(inWords: "2–8 Mar 2026", fraction: "1/1"),
+            .week(inWords: "23 Feb – 1 Mar 2026", fraction: "3/3"),
+        ])
+    #expect(lookBack?.declinedInWords == "1")
+}
