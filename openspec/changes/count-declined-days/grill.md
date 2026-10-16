@@ -36,7 +36,7 @@
    head card says how many days were declined. *Marking the chart is a change in its own right.*
 7. **The page count covers everything since the day kept from**, through the last day the look-back
    counts, the same reach as a tick's whole. It does not follow a graph's span picker. *One number
-   that holds still, beside the "Kept from" row that names its range.*
+   that holds still, in the head card whose "Kept from" row names its range.*
 8. **A month line says its count as "1 declined", "3 declined"**: number, then the word, which
    never takes a plural. *It matches the note count's "38 notes" pattern; where it sits on the line is
    the layout round's question.*
