@@ -20,8 +20,8 @@ the next.
 - [x] 2.4 a declined day in a week a week line says is counted on its month line, and no week line says a declined count — catches bucketing by calendar week rather than by the era holding the day
 - [x] 2.5 a number commitment's look-back counts a day declined however long ago, and its graph says no point on one — catches a count limited to the month span, or a count on the tick kind only
 - [x] 2.6 a look-back that says no graph or no note still counts its declined days — catches the count formed inside the graph or the notes and lost where they are `nil` or empty
-- [ ] 2.7 a look-back counts no decline on a day it does not count due — catches counting every decline the history holds in reach, gap, stop, quota or rhythm aside
-- [ ] 2.8 a look-back that counts no declined day says no declined count — catches "0" in place of `nil`, or a decline replaced by a tick still counted
+- [x] 2.7 a look-back counts no decline on a day it does not count due — catches counting every decline the history holds in reach, gap, stop, quota or rhythm aside
+- [x] 2.8 a look-back that counts no declined day says no declined count — catches "0" in place of `nil`, or a decline replaced by a tick still counted
 
 ## 3. The shell (ADR-1019: no rule the Kit does not state)
 

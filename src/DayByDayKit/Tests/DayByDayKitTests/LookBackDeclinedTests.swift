@@ -249,3 +249,41 @@ func aLookBackCountsNoDeclineOnADayItDoesNotCountDue() throws {
         today: date(2026, 3, 15))
     #expect(onAQuota?.declinedInWords == nil)
 }
+
+@MainActor
+@Test("a look-back that counts no declined day says no declined count")
+func aLookBackThatCountsNoDeclinedDaySaysNoDeclinedCount() throws {
+    let held = places()
+    let gym = Commitment(name: "Gym", schedule: monWedSat, keptFrom: date(2026, 1, 1))!
+    let later = Commitment(name: "Run", schedule: monWedSat, keptFrom: date(2026, 4, 1))!
+    let roster = try RosterStore(at: held.roster)
+    try roster.add(gym)
+    try roster.add(later)
+    let record = try RecordStore(at: held.record)
+    for day in februaryDueDays {
+        try record.add(Tick(gym, on: day)!)
+    }
+    let screen = CommitmentsScreen(
+        asOf: date(2026, 3, 15), keepingRosterAt: held.roster, keepingRecordAt: held.record)
+
+    let undeclined = screen.lookBack(at: gym)
+    #expect(undeclined?.declinedInWords == nil)
+    #expect(saysNoCountOnAnyLine(undeclined))
+
+    // Declined on 4 March, then given a tick on that day: the tick replaces the decline.
+    try record.add(Decline(for: gym, on: date(2026, 3, 4), reason: nil)!)
+    try record.add(Tick(gym, on: date(2026, 3, 4))!)
+    let replaced = CommitmentsScreen(
+        asOf: date(2026, 3, 15), keepingRosterAt: held.roster, keepingRecordAt: held.record
+    ).lookBack(at: gym)
+    #expect(replaced?.declinedInWords == nil)
+    #expect(saysNoCountOnAnyLine(replaced))
+    #expect(
+        replaced?.lines.contains(.month(inWords: "March 2026", fraction: "1/6")) == true)
+
+    let afterApril = CommitmentsScreen(
+        asOf: date(2026, 4, 15), keepingRosterAt: held.roster, keepingRecordAt: held.record
+    ).lookBack(at: later)
+    #expect(afterApril?.name == "Run")
+    #expect(afterApril?.declinedInWords == nil)
+}
