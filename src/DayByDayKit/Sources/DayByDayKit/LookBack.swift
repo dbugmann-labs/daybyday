@@ -144,6 +144,7 @@ public struct LookBack: Hashable, Sendable {
         let yearMonth: YearMonth
         var due: Int = 0
         var kept: Int = 0
+        var declined: Int = 0
         var hasNonQuotaDay: Bool = false
         var lastDay: CalendarDate
 
@@ -226,7 +227,7 @@ public struct LookBack: Hashable, Sendable {
             break
         }
 
-        let (lines, totalDue, totalKept) = Self.walkDays(
+        let (lines, totalDue, totalKept, totalDeclined) = Self.walkDays(
             from: earliestEra.start, through: frontEnd, eras: eras, history: history)
 
         return LookBack(
@@ -234,7 +235,8 @@ public struct LookBack: Hashable, Sendable {
             keptFromInWords: LookBackWords.day(earliestEra.start),
             keptUntilInWords: keptUntil.map(LookBackWords.day),
             whole: LookBackWords.fraction(kept: totalKept, due: totalDue),
-            lines: lines, graph: nil, notes: [], noteCountInWords: nil, declinedInWords: nil)
+            lines: lines, graph: nil, notes: [], noteCountInWords: nil,
+            declinedInWords: totalDeclined > 0 ? LookBackWords.number(Decimal(totalDeclined)) : nil)
     }
 
     /// The chain of eras behind `commitment`, newest first: `commitment` itself, ending on
@@ -312,9 +314,9 @@ public struct LookBack: Hashable, Sendable {
     /// look-back says one whole across everything since the day the commitment is kept from*.
     private static func walkDays(
         from start: CalendarDate, through end: CalendarDate, eras: [Era], history: History
-    ) -> (lines: [Line], totalDue: Int, totalKept: Int) {
+    ) -> (lines: [Line], totalDue: Int, totalKept: Int, totalDeclined: Int) {
         guard start.days(until: end) >= 0 else {
-            return ([], 0, 0)
+            return ([], 0, 0, 0)
         }
 
         var months: [MonthTally] = []
@@ -358,6 +360,9 @@ public struct LookBack: Hashable, Sendable {
                         currentMonth.due += 1
                         if history.isKept(counted, on: day) {
                             currentMonth.kept += 1
+                        }
+                        if history.decline(for: counted, on: day) != nil {
+                            currentMonth.declined += 1
                         }
                     }
                 }
@@ -409,7 +414,9 @@ public struct LookBack: Hashable, Sendable {
         let totalDue = sortableLines.reduce(0) { $0 + $1.due }
         let totalKept = sortableLines.reduce(0) { $0 + $1.kept }
 
-        return (lines, totalDue, totalKept)
+        let totalDeclined = months.reduce(0) { $0 + $1.declined }
+
+        return (lines, totalDue, totalKept, totalDeclined)
     }
 
     /// A note commitment's notes, oldest first as walked then reversed — `design.md` § *A walk of
