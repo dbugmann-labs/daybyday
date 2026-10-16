@@ -235,16 +235,6 @@ Things that are built, or deliberately not built, in a state someone will trip o
   test. Checking the file's identity would catch it, since the store's write replaces the file.
   Found by mutation at #409's G7 on 2026-10-13; the owner left it for a covering Story rather than
   holding the Story for a rewrite nobody can see.
-- **Stopping, resuming or deleting a happening sends the commitments list back to the top.** A
-  stopped happening is read from the happening store, which the commitments screen does not watch,
-  and a stop or a resume leaves its list of happenings equal to the one before, so nothing redraws
-  the row; the shell rebuilds the whole list through `listRevision` instead, and the scroll
-  position goes with it. Measured on an iOS 26.5 simulator at #379's G7 on 2026-10-03: with the
-  list at its foot, confirming a stop leaves the top of the list on screen and the Happenings card
-  below it. The fix is making the stopped state something the screen watches, so the shell drops
-  the rebuild; the happening rename sheet on `main` rebuilds the same way and was not measured.
-  The owner shipped #379 with it on 2026-10-03, to be fixed for both together in a Story of its
-  own.
 - **Nothing tests that two usual amounts' names sort with blank space at either end disregarded.**
   `commitment`'s *A total declares at most five usual amounts, no two alike, answered smallest
   first* orders names on one amount ignoring case and blank space at either end, but no scenario
@@ -661,7 +651,7 @@ Things that are built, or deliberately not built, in a state someone will trip o
   found insufficient, since `CommitmentsView.body` was confirmed, at the pixel level, not to
   re-run at all off a rename or a rhythm change kept through `CommitmentSheet` however a row was
   keyed, while `screen.kept`/`keptGroups`/`stopped` already held the new value the instant the
-  sheet closed; the fix kept is a `listRevision` `@State` bumped in `.sheet(item:onDismiss:)`'s
+  sheet closed; the fix kept then, replaced 2026-10-16 (below), was a `listRevision` `@State` bumped in `.sheet(item:onDismiss:)`'s
   `onDismiss` and read via `.id(listRevision)` on the `List`, forcing it to rebuild fresh
   against those three properties whenever a sheet dismisses, and why Observation's own
   invalidation does not reach this view across that presentation boundary on its own is not
@@ -672,6 +662,20 @@ Things that are built, or deliberately not built, in a state someone will trip o
   whole `List` is rebuilt on every sheet dismissal, so a scroll offset, edit mode and an
   in-flight swipe are all lost with it, and a long list jumps back to the top after editing a row
   near the bottom. The day screen's own gap above is untouched.
+
+  **Replaced 2026-10-16 by `chore/keep-commitments-place`; `listRevision` and `.id` are gone, and
+  the list keeps its place.** Measured on an iOS 26.5 simulator with a probe logging `body`: after a
+  save from `CommitmentSheet` with the list at its foot, `body` did not run again for over three
+  seconds, until an unrelated alert changed state, though `screen.kept` already held the new
+  name; `keptRows` re-evaluates whenever `body` does, so the staleness was `body` never being
+  invalidated, not a `ForEach` that ignored a new value, which is why four keyings did nothing.
+  `body` reads none of the sheet states by value (`.sheet` takes bindings), so a sheet closing
+  re-runs nothing in it. Reading `sheetTarget`, `happeningSheetTarget`, `sayingDaysAway` and
+  `changingDaysAway` at the top of `body` makes it run when a sheet closes, with the new name
+  drawn and the scroll position kept. **Why the screen's own change does not reach `body` across a
+  presentation is still not understood**; the fix is a trigger, not a cause. A happening's stop,
+  resume and deletion needed none of it: `CommitmentsScreen.stoppedHappenings` is now observed
+  state, and the stopped flag was the only thing the store held that the screen did not.
 - **The Story issue template asks an agent to write the G4 marker string.** Surfaced writing
   #91..#93, 2026-09-03. `.github/ISSUE_TEMPLATE/story.yml`'s last Definition-of-ready checkbox
   quotes the marker line literally, so an agent rendering the template faithfully writes that

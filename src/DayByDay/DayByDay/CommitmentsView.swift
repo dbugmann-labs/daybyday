@@ -238,16 +238,6 @@ struct CommitmentsView: View {
     /// it cannot say whether the sheet is still on screen; this does, and the footer under the
     /// list waits on it so a refusal the sheet raised is never drawn there while it slides away.
     @State private var daysAwaySheetStillShown = false
-    /// Bumped in `.sheet(item:onDismiss:)`'s `onDismiss`, and read by `body` where the lists are
-    /// built, so a dismissed sheet always leaves this view's `List` re-evaluated against
-    /// `screen.kept`/`keptGroups`/`stopped` — `tasks.md` § 14.4. A rename or a rhythm change kept
-    /// through `CommitmentSheet` mutates those three stored, `@Observable`-tracked properties
-    /// correctly and immediately (confirmed: the roster place is written and `screen.kept` itself
-    /// already reads the new value the instant the sheet closes), but this view's own `body` was
-    /// not being re-run by that mutation alone — a fact about `.sheet(item:)` dismissal and
-    /// Observation invalidation across that presentation boundary this Story does not have an
-    /// explanation for, only a state change SwiftUI is documented to always honour.
-    @State private var listRevision = 0
     @Environment(\.editMode) private var editMode
 
     /// Which of the four refusals against something already kept — a stop, a kept-side deletion,
@@ -330,7 +320,7 @@ struct CommitmentsView: View {
                 // this `ForEach`. `.onMove` still takes its offsets from the underlying
                 // `group.commitments`, whatever the `id:` is keyed on. Redrawing a row whose
                 // commitment changed in value but not in identity — `tasks.md` § 14.4 — does
-                // not turn on this key: see `listRevision` on `CommitmentsView`.
+                // not turn on this key: see the sheet states read at the top of `CommitmentsView.body`.
                 ForEach(group.commitments, id: \.self) { commitment in
                     // `LookBackView(screen:commitment:)` is cheap to construct — two
                     // references — so building it here, in the trailing closure this
@@ -721,7 +711,6 @@ struct CommitmentsView: View {
         ) { _ in
             Button("Remove", role: .destructive) {
                 screen.confirmRemovingDaysAway()
-                listRevision += 1
             }
             Button("Cancel", role: .cancel) {
                 screen.cancelRemovingDaysAway()
@@ -847,14 +836,19 @@ struct CommitmentsView: View {
     }
 
     var body: some View {
+        // Reads the four sheet states by value, so that closing any of the sheets below re-runs
+        // this `body`. A change a sheet keeps does not otherwise reach it: measured on an iOS 26.5
+        // simulator, `body` never ran again between a save from `CommitmentSheet` and the next
+        // unrelated state change, though `screen.kept` already held the new name, and the rows
+        // stayed as they were. The sheets take bindings only, which read nothing here. Why the
+        // screen's own change does not invalidate this view across that boundary is not
+        // understood. Rebuilding the `List` with `.id` also cured it but lost the scroll position.
+        let _ = (sheetTarget, happeningSheetTarget, sayingDaysAway, changingDaysAway)
         sheeting
-        // `listRevision`, above: forces this `List` to be rebuilt against
-        // `screen.kept`/`keptGroups`/`stopped` fresh whenever the sheet below dismisses.
-        .id(listRevision)
-        .sheet(item: $sheetTarget, onDismiss: { listRevision += 1 }) { target in
+        .sheet(item: $sheetTarget) { target in
             CommitmentSheet(screen: screen, changing: target.commitment)
         }
-        .sheet(item: $happeningSheetTarget, onDismiss: { listRevision += 1 }) { target in
+        .sheet(item: $happeningSheetTarget) { target in
             HappeningSheet(screen: screen, renaming: target.happening)
         }
         .sheet(
@@ -863,7 +857,6 @@ struct CommitmentsView: View {
                 // The sheet's own refusal ends with it, before the footer may draw again.
                 screen.daysAwaySheetClosed()
                 daysAwaySheetStillShown = false
-                listRevision += 1
             }
         ) {
             DaysAwaySheet(screen: screen, changing: nil)
@@ -873,7 +866,6 @@ struct CommitmentsView: View {
             onDismiss: {
                 screen.daysAwaySheetClosed()
                 daysAwaySheetStillShown = false
-                listRevision += 1
             }
         ) { target in
             DaysAwaySheet(screen: screen, changing: target.daysAway)
