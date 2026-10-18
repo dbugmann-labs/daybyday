@@ -82,10 +82,6 @@ struct LookBackView: View {
     // showed it. Cleared by a second tap on the same point, a tap away from every point, or a
     // change of span.
     @State private var selectedDay: Int?
-    // The plot's own leading edge inside the chart, cached beside the values-axis labels'
-    // positions — a tap arrives in the chart's own space, `proxy.position(forX:)` answers in the
-    // plot's.
-    @State private var plotMinX: CGFloat = 0
     // Which notes are open — a set of places in `lookBack.notes`, empty on every visit (grill
     // decision 10). Shell drawing state, crossing no seam: `design.md` § *The fold is drawn, not
     // said*.
@@ -600,9 +596,16 @@ struct LookBackView: View {
             // reach; a tap on the picked point again, or away from every point, clears it. A tap
             // rather than `chartXSelection`'s own gesture, which on a horizontally scrollable
             // chart waits for a long press.
+            //
+            // The location a `chartGesture` hands over is already in the plot's own space — the
+            // scroll offset is in it — so it is compared with `proxy.position(forX:)` as it
+            // stands. Taking the plot's leading edge off it, as this once did from a cached
+            // `geometry[plotFrame].minX`, counted the offset twice and picked a point to the right
+            // of the one tapped by the whole offset — about 150pt at the newest end, where the
+            // chart opens.
             .chartGesture { proxy in
                 SpatialTapGesture().onEnded { value in
-                    let tapX = value.location.x - plotMinX
+                    let tapX = value.location.x
                     let nearest = graph.points
                         .compactMap { point -> (day: Int, distance: CGFloat)? in
                             guard let x = proxy.position(forX: point.day) else { return nil }
@@ -775,7 +778,6 @@ struct LookBackView: View {
     ) {
         guard let plotFrame = proxy.plotFrame else { return }
         let frame = geometry[plotFrame]
-        plotMinX = frame.minX
         lowestLabelY = proxy.position(forY: lowest).map { frame.minY + $0 }
         highestLabelY = proxy.position(forY: highest).map { frame.minY + $0 }
         targetLabels = Self.resolvedTargetLabels(
