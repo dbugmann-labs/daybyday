@@ -68,9 +68,9 @@ A fresh install, light only, on the real date. "Pool", on Friday, and "Gym", on 
 Saturday, are made kept from a day more than a week before the Friday, and nothing is ticked. "The Friday" is the
 latest Friday before today; "its Monday" the Monday of that week; "the Monday after" the one after it.
 
-- [ ] W.1 The Friday, Pool's row long-pressed — "Shift to" open, its submenu every day from the Saturday before through the Thursday after but the Friday, twelve in all, each said as "Sat 29 Aug" is.
-- [ ] W.2 The Monday after, once Pool's row is shifted there — "Pool - from Fri" and the Friday's date, unticked, faded only where that Monday is after today.
-- [ ] W.3 The Friday, paged back to — "Pool - to Mon" and the Monday after's date, the whole row faded.
-- [ ] W.4 Its Monday, Gym's row long-pressed — the submenu the Sunday before, Tuesday, Thursday, Friday and Sunday of that week, each said with its date.
-- [ ] W.5 The Friday, paged to once Pool's row on the Monday after is shifted back to it from its menu — "Pool - Fri", not faded.
-- [ ] W.6 **The handover** — W.1–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL.
+- [x] W.1 The Friday, Pool's row long-pressed — "Shift to" open, its submenu every day from the Saturday before through the Thursday after but the Friday, twelve in all, each said as "Sat 29 Aug" is.
+- [x] W.2 The Monday after, once Pool's row is shifted there — "Pool - from Fri" and the Friday's date, unticked, faded only where that Monday is after today.
+- [x] W.3 The Friday, paged back to — "Pool - to Mon" and the Monday after's date, the whole row faded.
+- [x] W.4 Its Monday, Gym's row long-pressed — the submenu the Sunday before, Tuesday, Thursday, Friday and Sunday of that week, each said with its date.
+- [x] W.5 The Friday, paged to once Pool's row on the Monday after is shifted back to it from its menu — "Pool - Fri", not faded.
+- [x] W.6 **The handover** — W.1–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. https://github.com/dbugmann-labs/daybyday/pull/435#issuecomment-6369828851
