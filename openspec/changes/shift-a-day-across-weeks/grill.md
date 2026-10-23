@@ -1,6 +1,6 @@
 # Grill — shift-a-day-across-weeks
 
-*9 questions over 3 rounds, 2026-10-23: seven at B-087's Feature grill (two rounds, one fact agent),
+*9 questions over 3 rounds and one residual question, 2026-10-23: seven at B-087's Feature grill (two rounds, one fact agent),
 two at this Story grill (one round). Every answer as recommended.*
 
 ## Settled upstream, and not re-asked
@@ -21,7 +21,12 @@ owner's case: "Pool", due on Fridays only, could not be shifted to the Monday af
 4. **The neighbours are the schedule's own due days, never where another shift landed.** Days a
    shift put a due day on stay not free. *A weekday shift moves nothing after it, so two shifted days
    may swap order harmlessly, and one shift never narrows another's window.*
-5. **No shift crosses days away**, nor lands on one, as an every-N-days shift already does not.
+5. **A weekday-set or day-of-month shift may cross days away but never lands on or leaves one**, as
+   today inside its week ("Gym" Mon → Thu over a Tuesday away); only every N days refuses the
+   crossing. *Asked first as "no shift crosses days away, as every N days already does not" — a
+   wrong premise: crossing is refused only for every N days, whose count restarts after days away.
+   Re-asked as `spec-author`'s residual question on 2026-10-23 and answered "allow": a weekday set
+   has no count, so refusing the crossing would buy nothing and take away a shipped behaviour.*
 6. **Offered days and the row's words are said with their date for every shape** — "Mon 7 Sep" in
    "Shift to", "from Fri 4 Sep" and "to Mon 7 Sep" on the rows — as every N days already says them.
    *Once the offer spans two weeks a weekday alone no longer names one day; one form, not two.*
