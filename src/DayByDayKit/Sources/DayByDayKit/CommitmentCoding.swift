@@ -129,9 +129,9 @@ public struct CommitmentRecord: Codable, Hashable {
     }
 
     /// The commitment of a record made on `date`, carrying the shift kept beside it — `nil` where
-    /// the commitment will not form, or where that shift took its due day from `date` itself or
-    /// from a day outside `date`'s Monday-to-Sunday week, which no shift could have. Every other
-    /// rule is the commitment's own, asked again of whatever forms from it.
+    /// the commitment will not form, or where that shift took its due day from `date` itself,
+    /// which no shift could have, however far apart in weeks the two days lie. Every other rule is
+    /// the commitment's own, asked again of whatever forms from it.
     func commitment(recordedOn date: CalendarDate) -> Commitment? {
         guard let shiftedFrom else {
             return shiftedTo == nil ? commitment() : nil
@@ -155,7 +155,7 @@ public struct CommitmentRecord: Codable, Hashable {
             }
             return commitment(shifts: [from: landing])
         }
-        guard shiftedTo == nil, Shift.couldBe(from: from, to: date) else {
+        guard shiftedTo == nil, from != date else {
             return nil
         }
         return commitment(shifts: [from: date])
@@ -471,36 +471,5 @@ struct ShiftRecord: Codable, Hashable {
     init(from: CalendarDate, to: CalendarDate) {
         self.from = DateRecord(from)
         self.to = DateRecord(to)
-    }
-}
-
-/// What every shift is, wherever it is read: the two days of one Monday-to-Sunday week, and not
-/// one day twice.
-enum Shift {
-    static func couldBe(from: CalendarDate, to: CalendarDate) -> Bool {
-        from != to && WeekQuota.monday(of: from) == WeekQuota.monday(of: to)
-    }
-
-    /// Whether a roster holding `eras` of one commitment could hold a shift from `from` to `to`:
-    /// two different days, in one Monday-to-Sunday week unless an era holding either runs every N
-    /// days — or no era holds either, where no later change can turn the shift into a refused
-    /// store. `design.md` § *Migration*.
-    static func couldBe(from: CalendarDate, to: CalendarDate, in eras: [Roster.Entry]) -> Bool {
-        guard from != to else {
-            return false
-        }
-        guard WeekQuota.monday(of: from) != WeekQuota.monday(of: to) else {
-            return true
-        }
-        let holding = eras.filter { $0.holds(from) || $0.holds(to) }
-        guard !holding.isEmpty else {
-            return true
-        }
-        return holding.contains {
-            if case .everyNDays = $0.commitment.schedule {
-                return true
-            }
-            return false
-        }
     }
 }

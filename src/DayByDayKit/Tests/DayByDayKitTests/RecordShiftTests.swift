@@ -43,9 +43,13 @@ func recordsOnADayAShiftPutADueDayOnAreReadBackAfterTheAppIsClosedAndOpenedAgain
     #expect(!written.contains(#""day":2,"month":9"#))
 }
 
-/// A store in the given form holding one tick of "Gym" on Tuesday 1 September 2026, with the
-/// `shiftedFrom` day given beside it — `nil` leaves the key out.
-private func tickJSON(version: Int, shiftedFrom: (month: Int, day: Int)?) -> Data {
+/// A store in the given form holding one tick of "Gym" on Tuesday 1 September 2026, or of the
+/// commitment `name` on `weekdays` on `tickedOn` where those are given, with the `shiftedFrom` day
+/// given beside it — `nil` leaves the key out.
+private func tickJSON(
+    version: Int, shiftedFrom: (month: Int, day: Int)?, name: String = "Gym",
+    weekdays: String = #""monday", "wednesday", "saturday""#, tickedOn: (month: Int, day: Int) = (9, 1)
+) -> Data {
     let shift = shiftedFrom.map {
         #","shiftedFrom": { "year": 2026, "month": \#($0.month), "day": \#($0.day) }"#
     } ?? ""
@@ -56,13 +60,13 @@ private func tickJSON(version: Int, shiftedFrom: (month: Int, day: Int)?) -> Dat
           "ticks": [
             {
               "commitment": {
-                "name": "Gym",
+                "name": "\(name)",
                 "keptFrom": { "year": 2026, "month": 1, "day": 1 },
-                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "schedule": { "weekdays": [\(weekdays)] },
                 "kind": { "tick": {} },
                 "identity": "11111111-1111-1111-1111-111111111111"\(shift)
               },
-              "date": { "year": 2026, "month": 9, "day": 1 }
+              "date": { "year": 2026, "month": \(tickedOn.month), "day": \(tickedOn.day) }
             }
           ],
           "numbers": [],
@@ -86,7 +90,6 @@ private func expectNotAStore(_ bytes: Data) throws {
 
 @Test("a store holding a record beside a shift that could not be one is refused")
 func aStoreHoldingARecordBesideAShiftThatCouldNotBeOneIsRefused() throws {
-    try expectNotAStore(tickJSON(version: 7, shiftedFrom: (8, 24)))
     try expectNotAStore(tickJSON(version: 7, shiftedFrom: (9, 1)))
 
     let place = freshPlace()
@@ -99,6 +102,19 @@ func aStoreHoldingARecordBesideAShiftThatCouldNotBeOneIsRefused() throws {
         schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: date(2026, 1, 1),
         kind: .tick, shifts: [date(2026, 8, 31): date(2026, 9, 1)])!
     #expect(store.history.isKept(gym, on: date(2026, 9, 1)))
+
+    let poolPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: poolPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try tickJSON(
+        version: 7, shiftedFrom: (9, 4), name: "Pool", weekdays: #""friday""#, tickedOn: (9, 7)
+    ).write(to: poolPlace)
+    let poolStore = try RecordStore(at: poolPlace)
+    let pool = Commitment(
+        identity: Commitment.Identity("11111111-1111-1111-1111-111111111111")!, name: "Pool",
+        schedule: .weekdays([.friday]), keptFrom: date(2026, 1, 1), kind: .tick,
+        shifts: [date(2026, 9, 4): date(2026, 9, 7)])!
+    #expect(poolStore.history.isKept(pool, on: date(2026, 9, 7)))
 }
 
 @Test("a store whose shape and declared form disagree about shifts is refused")

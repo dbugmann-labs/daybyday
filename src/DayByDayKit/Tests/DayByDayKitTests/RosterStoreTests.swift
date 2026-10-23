@@ -321,10 +321,10 @@ func aRosterStoreWrittenInALaterFormThanThisAppKnowsIsRefused() throws {
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 12, "commitments": []}"#.utf8)
+    let bytes = Data(#"{"version": 13, "commitments": []}"#.utf8)
     try bytes.write(to: place)
 
-    #expect(throws: RosterStoreError.laterForm(at: place, version: 12)) {
+    #expect(throws: RosterStoreError.laterForm(at: place, version: 13)) {
         try RosterStore(at: place)
     }
     #expect(try Data(contentsOf: place) == bytes)
@@ -1977,10 +1977,10 @@ func aRosterStoreDeclaringALaterFormWhoseBodyThisAppCannotReadIsRefusedAsALaterF
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 12, "commitments": "not an array"}"#.utf8)
+    let bytes = Data(#"{"version": 13, "commitments": "not an array"}"#.utf8)
     try bytes.write(to: place)
 
-    #expect(throws: RosterStoreError.laterForm(at: place, version: 12)) {
+    #expect(throws: RosterStoreError.laterForm(at: place, version: 13)) {
         try RosterStore(at: place)
     }
     #expect(try Data(contentsOf: place) == bytes)
@@ -4254,7 +4254,7 @@ func aRosterWrittenWithUsualAmountsIsReadBackWithThemInForm7EachAmountExactly() 
         ])
     let envelope = try JSONDecoder().decode(
         RosterDocumentEnvelope.self, from: Data(contentsOf: place))
-    #expect(envelope.version == 11)
+    #expect(envelope.version == 12)
 }
 
 /// A roster in the given form holding one commitment, whose kind and `usualAmounts` are the raw

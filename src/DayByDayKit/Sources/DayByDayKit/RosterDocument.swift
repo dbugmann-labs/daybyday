@@ -10,7 +10,7 @@ import Foundation
 struct RosterDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 11
+    static let currentVersion = 12
 
     /// The form a commitment record first carried an `identity` key at: forms at or after this
     /// one carry it on every entry's commitment, forms before it never do, on the same footing as
@@ -167,9 +167,7 @@ struct RosterDocument: Codable {
             if !Self.erasAgreeOnUsualAmounts(currentRunEntries) {
                 declaresWhatNoTotalCould = true
             }
-            if !Self.erasAgreeOnShifts(currentRunEntries)
-                || !Self.erasCouldHoldTheirShifts(currentRunEntries)
-            {
+            if !Self.erasAgreeOnShifts(currentRunEntries) {
                 holdsWhatNoRosterCould = true
             }
             if currentRunIsRemoved {
@@ -257,8 +255,9 @@ struct RosterDocument: Codable {
 
     /// The shifts `entry` carries, each from the day it took a due day from to the day it put it
     /// on: none in a form before `shiftsIntroducedInVersion`, and `nil` where the form carries them
-    /// and these say something no roster could hold — a shift whose two days are not two days of
-    /// one Monday-to-Sunday week, or two shifts from one day or onto one day.
+    /// and these say something no roster could hold — a shift from a day to itself, or two shifts
+    /// from one day or onto one day. How far apart a shift's two days lie is judged where the shift
+    /// is made, never here.
     private func shifts(of entry: RosterEntryRecord) -> [CalendarDate: CalendarDate]? {
         guard version >= Self.shiftsIntroducedInVersion else {
             return [:]
@@ -277,18 +276,6 @@ struct RosterDocument: Codable {
             formed[from] = to
         }
         return formed
-    }
-
-    /// Whether every shift one commitment's eras carry is one a roster could hold, as `Shift.couldBe
-    /// (from:to:in:)` says once the eras are gathered: whether a shift's two days may lie in two
-    /// weeks depends on the eras that hold them.
-    private static func erasCouldHoldTheirShifts(_ eras: [Roster.Entry]) -> Bool {
-        guard let newest = eras.first else {
-            return true
-        }
-        return newest.commitment.shifts.allSatisfy {
-            Shift.couldBe(from: $0.key, to: $0.value, in: eras)
-        }
     }
 
     /// Whether one commitment's eras carry the same shifts, as they carry the same name.

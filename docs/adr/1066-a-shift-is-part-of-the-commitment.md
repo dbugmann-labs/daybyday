@@ -7,12 +7,16 @@
 - Amended: 2026-10-08 — `shift-an-interval-day` (#393): an every-N-days shift runs its count on from
   where it landed, the record store keeps that shift beside every record its count reaches, and the
   roster form moves with no change of shape so an older app refuses it
+- Amended: 2026-10-23 — `shift-a-day-across-weeks` (#433): a weekday-set or day-of-month shift
+  reaches past its week to its schedule's due days either side, so neither store judges a shift's
+  reach when it reads one, only its shape, and both forms move with no change of shape
 
 ## Context
 
 A **shift** puts one due day of a commitment on a free day (`CONTEXT.md` § *Shift*, § *Free day*):
-one of its week for a weekday set or a day of the month, one between the due days either side for
-every N days, whose count then runs on from where it landed.
+one of its week or between its schedule's due days either side for a weekday set or a day of the
+month, one between the due days either side for every N days, whose count then runs on from where
+it landed.
 Whether a commitment is due on a date is answered in one place, `Commitment.isDue(on:)`, and that
 answer is asked everywhere a due day matters: a tick, a number, a note and an addition each refuse
 to form on a day their commitment is not due; a history re-forms a tick to say whether a day is
@@ -54,11 +58,15 @@ record, so a history does not grow with every shift ever made.
 - **Both store forms move**, the roster's and the record's, each additively: an earlier form reads
   as holding no shift. The every-N-days shift moves both again — the record's for the landing kept
   beside a later record, the roster's with no change of shape, because an app reading the earlier
-  form would take an every-N-days shift for a weekday one and answer the wrong days due. A copy
+  form would take an every-N-days shift for a weekday one and answer the wrong days due. The reach
+  past the week moves both again with no change of shape, so an older app refuses a shift across
+  weeks as a later form rather than as content that is not a store. A copy
   nests both as written and needs no form of its own.
-- **The roster store's week rule spares an every-N-days shift** where an era holding either of its
-  days runs every N days, or no era holds either. A rule judged by the era holding one day alone
-  would refuse a whole store after a change made on that day.
+- **A store judges a shift's shape, never its reach.** The reach is judged where the shift is made;
+  one judged again when a store is read is one a later change of era or of the day kept from can
+  turn into a refused store, and a refused roster store loses every commitment at once. So the
+  roster store refuses only one day twice, two shifts from or onto one day and eras carrying
+  different shifts, and the record store, beside a record, only what could not re-form it.
 - **Equality cannot see a shift.** Nothing may decide whether to write, redraw or carry by comparing
   commitments, entries or rosters; a day view's row stores its shift for exactly that reason.
 - **A shift outlives the era it was made in.** One whose day is today survives a rhythm change made

@@ -1050,7 +1050,10 @@ Things that are built, or deliberately not built, in a state someone will trip o
   2026-10-08: 1.0 ms a call at N = 14, 6.5 ms at N = 90, 24.6 ms at N = 365, where the menu holds
   644 days and one row alone outruns a 16 ms frame. The owner's longest interval is 14, so it was
   left; the fix is asking for the days only when the menu opens, and a plain due day needs one
-  interval either side rather than two.
+  interval either side rather than two. #433 (`shift-a-day-across-weeks`) puts weekday-set and
+  day-of-month rows on the same path: 13 candidate days instead of 7 on a weekday set, 61 on a day of
+  the month, estimated from #393's figures at about 0.2 ms and 1.1 ms a row per redraw — scaled, not
+  measured. The same cure covers them.
 
 - **A long press on a row with nothing in its menu ticks it when the finger lifts.** A row with no
   shift to offer is a plain button, so a hold that ends on the row is a tap. Seen in #393's walk on

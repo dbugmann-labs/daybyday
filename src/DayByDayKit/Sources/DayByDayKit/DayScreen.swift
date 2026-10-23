@@ -1423,8 +1423,8 @@ public final class DayScreen {
         public let words: String
     }
 
-    /// The days `row`'s due day may be shifted to, in date order: the free days of the row's week on a
-    /// weekday set or a day of the month, the days between its due days either side on every N days. `design.md` § *The seam*.
+    /// The days `row`'s due day may be shifted to, in date order, each said with its date: the days
+    /// its roster would shift it onto. `design.md` § *The seam*.
     public func shiftDays(for row: DayView.Row) -> [ShiftDay] {
         guard dayView.rows.contains(row), !row.holdsARecord, recordStore != nil,
             rosterState == .kept
@@ -1433,8 +1433,8 @@ public final class DayScreen {
         }
 
         let candidates: [CalendarDate]
-        let everyNDays: Bool
-        if case .everyNDays(let interval, from: _) = row.commitment.schedule {
+        switch row.commitment.schedule {
+        case .everyNDays(let interval, from: _):
             // Every N days keeps the count running from a shift, so one made under a record of a
             // later day would move what that record stands on.
             guard
@@ -1449,11 +1449,12 @@ public final class DayScreen {
             candidates = (-2 * interval.days...2 * interval.days).compactMap {
                 row.date.adding(days: $0)
             }
-            everyNDays = true
-        } else {
-            let monday = WeekQuota.monday(of: row.date)
-            candidates = (0..<7).compactMap { monday.adding(days: $0) }
-            everyNDays = false
+        case .dayOfMonth:
+            candidates = Self.candidates(around: row, reach: 30)
+        case .weekdays:
+            candidates = Self.candidates(around: row, reach: 6)
+        case .weeklyQuota:
+            candidates = []
         }
         return candidates.compactMap { other -> ShiftDay? in
             guard other != row.date else {
@@ -1463,11 +1464,20 @@ public final class DayScreen {
             guard asked.shift(row.commitment, from: row.date, to: other) else {
                 return nil
             }
-            let words =
-                everyNDays
-                ? DayTitle.shiftedDayInWords(other) : DayTitle.weekdayNames[other.weekday]!
-            return ShiftDay(date: other, words: words)
+            return ShiftDay(date: other, words: DayTitle.shiftedDayInWords(other))
         }
+    }
+
+    /// The days a weekday-set or day-of-month row's due day can lie on: `reach` days either side of
+    /// the day it came from, the widest a free day lies; the roster judges every one.
+    private static func candidates(around row: DayView.Row, reach: Int) -> [CalendarDate] {
+        let origin: CalendarDate
+        if case .cameFrom(let day)? = row.shift {
+            origin = day
+        } else {
+            origin = row.date
+        }
+        return (-reach...reach).compactMap { origin.adding(days: $0) }
     }
 
     /// Whether `row`'s day may be declined, or a declined `row` given another reason or taken

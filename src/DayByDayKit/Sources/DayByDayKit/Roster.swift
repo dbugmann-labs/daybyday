@@ -836,8 +836,9 @@ public struct Roster: Hashable, Sendable {
 
     /// Shifts the due day of `commitment` on `day` to `other`, writing it on every era of the
     /// commitment, and answers `true`. Refuses, answering `false` and changing nothing, wherever
-    /// `other` is not a free day of `day`: one of its week on a weekday set or a day of the month,
-    /// one between the due days either side of it on every N days. `design.md` § *The seam*.
+    /// `other` is not a free day of `day`: on a weekday set or a day of the month, one of the week
+    /// of the day it came from or between that day's due days either side as the schedule alone has
+    /// them; on every N days, one between the due days either side of it. `design.md` § *The seam*.
     @discardableResult
     public mutating func shift(
         _ commitment: Commitment, from day: CalendarDate, to other: CalendarDate
@@ -856,9 +857,7 @@ public struct Roster: Hashable, Sendable {
             usualAmounts: holding.usualAmounts)
         switch holder.commitment.schedule {
         case .weekdays, .dayOfMonth:
-            guard Shift.couldBe(from: day, to: other) else {
-                return false
-            }
+            break
         case .everyNDays(let interval, from: _):
             return shiftEveryNDays(
                 commitment, from: day, to: other, interval: interval.days, newest: newest,
@@ -866,16 +865,30 @@ public struct Roster: Hashable, Sendable {
         case .weeklyQuota:
             return false
         }
-        guard holder.commitment.isDue(on: day) else {
+        guard other != day, holder.commitment.isDue(on: day) else {
             return false
         }
 
+        // A day a shift put a due day on is judged from the day it came from, by the era holding
+        // that day: `design.md` § *A shift is judged from the day it came from*.
         var shifts = newest.commitment.shifts
         let cameFrom = shifts.first { $0.value == day }?.key
+        let origin = cameFrom ?? day
+        guard let originEra = eras.first(where: { $0.holds(origin) }) else {
+            return false
+        }
+        switch originEra.commitment.schedule {
+        case .weekdays, .dayOfMonth:
+            break
+        case .everyNDays, .weeklyQuota:
+            return false
+        }
         if let cameFrom {
             shifts[cameFrom] = nil
             guard other == cameFrom else {
-                guard holder.isFree(other, shifts: shifts), !hides(commitment.identity, on: other) else {
+                guard Self.reaches(other, from: cameFrom, by: originEra.commitment.schedule),
+                    originEra.isFree(other, shifts: shifts), !hides(commitment.identity, on: other)
+                else {
                     return false
                 }
                 shifts[cameFrom] = other
@@ -892,12 +905,39 @@ public struct Roster: Hashable, Sendable {
             return true
         }
 
-        guard holder.isFree(other, shifts: shifts), !hides(commitment.identity, on: other) else {
+        guard Self.reaches(other, from: day, by: originEra.commitment.schedule),
+            originEra.isFree(other, shifts: shifts), !hides(commitment.identity, on: other)
+        else {
             return false
         }
         shifts[day] = other
         writeShifts(shifts, on: commitment)
         return true
+    }
+
+    /// Whether `other` lies in the Monday-to-Sunday week of `origin`, or strictly between the due
+    /// days either side of it as `schedule` alone has them — never as a shift left them.
+    /// `design.md` § *A shift is judged from the day it came from*.
+    private static func reaches(
+        _ other: CalendarDate, from origin: CalendarDate, by schedule: Schedule
+    ) -> Bool {
+        guard WeekQuota.monday(of: other) != WeekQuota.monday(of: origin) else {
+            return true
+        }
+        // Two months is more than a weekday set or a day of the month ever leaves between two due days.
+        let widest = 62
+        func dueDay(_ step: Int) -> CalendarDate? {
+            for apart in 1...widest {
+                if let candidate = origin.adding(days: step * apart), schedule.isDue(on: candidate) {
+                    return candidate
+                }
+            }
+            return nil
+        }
+        guard let before = dueDay(-1), let after = dueDay(1) else {
+            return false
+        }
+        return before.days(until: other) > 0 && other.days(until: after) > 0
     }
 
     /// `shift(_:from:to:)` where the era holding `day` runs every N days: `other` must be a free

@@ -116,7 +116,7 @@ func aDayScreenOffersNoDayToShiftAnEveryNDaysRowWhileALaterDayHoldsARecordOfIt()
     let gymRow = try #require(day.dayView.rows.first { $0.name == "Gym" })
     #expect(
         day.shiftDays(for: gymRow).map(\.date) == [
-            date(2026, 9, 1), date(2026, 9, 3), date(2026, 9, 4), date(2026, 9, 6),
+            date(2026, 8, 30), date(2026, 9, 1), date(2026, 9, 3), date(2026, 9, 4), date(2026, 9, 6),
         ])
 }
 
