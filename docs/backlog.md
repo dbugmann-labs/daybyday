@@ -196,6 +196,27 @@ the owner chose it as a want when settling that Story to count only.*
 - **Open** — every declined day, or only those with a reason? A long reason: whole, or clipped as
   the row clips it? On every kind's page, or a page of its own?
 
+### B-087 — keep a slipped day in the week after it
+*Captured 2026-10-23.*
+
+> "I have public pool on Friday, and I cannot shift it into another week (e.g. to next monday) -
+> is this intended, and what would it need to fix this?" … "I would like to have it"
+
+- **Trigger** — a Friday-only commitment missed on Friday, wanting to do it Monday: the shift's
+  "Shift to" menu offers only the free days of the due day's own Mon–Sun week.
+- **Touches** — `commitment` (the week bound on a weekday-set and day-of-month shift,
+  `commitment/spec.md` § *A roster shifts a weekday-set or day-of-month due day onto a free day of
+  its week*), `record` (the store reads refuse a shift outside its week), `day-screen` (the offer,
+  labelled by weekday alone today), `look-back` (week lines). A Story under `FEAT: commitment`
+  (#26), which B-054 promoted the shift into.
+- **Principle** — tested against *nothing congratulates you*: **passes.** It keeps a slipped day
+  from reading as missed when it was done, and adds no run or reward.
+- **Open** — what bounds it instead: the due days either side, as every N days already is (which
+  narrows a set with several days — gym Mon/Wed/Sat could then move Monday only to Sun or Tue), the
+  week *or* the due days either side, or a fixed reach such as seven days? A week line that then
+  owes nothing in one week and two in the next. Labels with a date once the offer spans two weeks.
+  B-054's grill made the week "the only bound" (#392, answer 4) — this re-opens that answer.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
