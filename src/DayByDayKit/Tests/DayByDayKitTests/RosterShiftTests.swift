@@ -74,8 +74,8 @@ func aRosterShiftsADayOfMonthDueDayAcrossTheEndOfItsMonthInsideItsWeek() {
     #expect(keeps.isDue(on: date(2026, 9, 30)))
 }
 
-@Test("a roster refuses to shift a due day onto one of its own days, a day another shift put a due day on, or a day of another week")
-func aRosterRefusesToShiftADueDayOntoOneOfItsOwnDaysADayAnotherShiftPutADueDayOnOrADayOfAnotherWeek() {
+@Test("a roster refuses to shift a due day onto one of its own days, a day another shift put a due day on, or a day past both its week and its due days either side")
+func aRosterRefusesToShiftADueDayOntoOneOfItsOwnDaysADayAnotherShiftPutADueDayOnOrADayPastBothItsWeekAndItsDueDaysEitherSide() {
     var roster = Roster()
     let commitment = gym()
     _ = roster.add(commitment)
@@ -345,12 +345,10 @@ func aRosterStoreWhoseShapeAndDeclaredFormDisagreeAboutShiftsIsRefused() throws 
 
 @Test("a roster store holding a shift no roster could hold is refused")
 func aRosterStoreHoldingAShiftNoRosterCouldHoldIsRefused() throws {
-    let sundayToMonday = #"[{ "from": \#(day(9, 6)), "to": \#(day(9, 7)) }]"#
     let toItself = #"[{ "from": \#(day(8, 31)), "to": \#(day(8, 31)) }]"#
     let twiceFrom = #"[{ "from": \#(day(8, 31)), "to": \#(day(9, 1)) },{ "from": \#(day(8, 31)), "to": \#(day(9, 2)) }]"#
     let twiceOnto = #"[{ "from": \#(day(8, 31)), "to": \#(day(9, 1)) },{ "from": \#(day(9, 2)), "to": \#(day(9, 1)) }]"#
     let one = #"[{ "from": \#(day(8, 31)), "to": \#(day(9, 1)) }]"#
-    try expectNotARosterStore(gymRosterJSON(version: 8, eraShifts: [sundayToMonday]))
     try expectNotARosterStore(gymRosterJSON(version: 8, eraShifts: [toItself]))
     try expectNotARosterStore(gymRosterJSON(version: 8, eraShifts: [twiceFrom]))
     try expectNotARosterStore(gymRosterJSON(version: 8, eraShifts: [twiceOnto]))

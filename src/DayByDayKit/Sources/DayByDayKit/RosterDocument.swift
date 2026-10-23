@@ -10,7 +10,7 @@ import Foundation
 struct RosterDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 11
+    static let currentVersion = 12
 
     /// The form a commitment record first carried an `identity` key at: forms at or after this
     /// one carry it on every entry's commitment, forms before it never do, on the same footing as
@@ -167,9 +167,7 @@ struct RosterDocument: Codable {
             if !Self.erasAgreeOnUsualAmounts(currentRunEntries) {
                 declaresWhatNoTotalCould = true
             }
-            if !Self.erasAgreeOnShifts(currentRunEntries)
-                || !Self.erasCouldHoldTheirShifts(currentRunEntries)
-            {
+            if !Self.erasAgreeOnShifts(currentRunEntries) {
                 holdsWhatNoRosterCould = true
             }
             if currentRunIsRemoved {
@@ -277,18 +275,6 @@ struct RosterDocument: Codable {
             formed[from] = to
         }
         return formed
-    }
-
-    /// Whether every shift one commitment's eras carry is one a roster could hold, as `Shift.couldBe
-    /// (from:to:in:)` says once the eras are gathered: whether a shift's two days may lie in two
-    /// weeks depends on the eras that hold them.
-    private static func erasCouldHoldTheirShifts(_ eras: [Roster.Entry]) -> Bool {
-        guard let newest = eras.first else {
-            return true
-        }
-        return newest.commitment.shifts.allSatisfy {
-            Shift.couldBe(from: $0.key, to: $0.value, in: eras)
-        }
     }
 
     /// Whether one commitment's eras carry the same shifts, as they carry the same name.

@@ -12,7 +12,7 @@ import Foundation
 struct RecordDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 9
+    static let currentVersion = 10
 
     /// The form `numbers` was introduced at: forms at or after this one carry the key, forms
     /// before it never do. Kept apart from `currentVersion` on purpose — a fourth form would move
