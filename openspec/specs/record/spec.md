@@ -21,8 +21,8 @@ which —, a record against a commitment of another kind, a number outside the r
 declares, a note whose text says nothing, an addition of an amount that is not above zero, a day
 carrying no addition at all, a decline of a commitment on a weekly quota or one whose reason
 says nothing, a day holding a decline beside any other record of its commitment, or a shift kept beside a record that could not be one: of a
-commitment not every N days, one that took its due day from that record's own date or from a day
-outside that date's Monday-to-Sunday week, or put it on a day other than that date; of one every N
+commitment not every N days, one that took its due day from that record's own date, or put it on a
+day other than that date, whatever week each lies in; of one every N
 days, one whose two days are one day or not fewer days apart than its interval, or that put its due
 day on a day after that date.
 
@@ -139,14 +139,16 @@ rule of that kind SHALL be applied to what comes off the place.
 
 - **WHEN** a store is opened at a place holding a store in the form this app writes, whose one tick
   is of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
-  1 January 2026, on Tuesday 1 September 2026, kept beside a shift from Monday 24 August 2026 — a
-  day of the week before
+  1 January 2026, on Tuesday 1 September 2026, kept beside a shift from Tuesday 1 September 2026
+  itself
 - **THEN** opening is refused with an error
-- **AND** a store at a place holding that tick kept beside a shift from Tuesday 1 September 2026
-  itself is refused the same way
 - **AND** the content at each place is byte-for-byte what it was before
 - **AND** a store at a place holding that tick kept beside a shift from Monday 31 August 2026 opens
   without error, and answers that "Gym" was kept on Tuesday 1 September 2026
+- **AND** a store at a place holding a tick of a commitment named "Pool" on a schedule listing
+  Friday, kept from 1 January 2026, on Monday 7 September 2026, kept beside a shift from Friday
+  4 September 2026 — a day of the week before — opens without error, and answers that "Pool" was
+  kept on Monday 7 September 2026
 
 #### Scenario: a store holding a record beside an every-N-days shift that could not be one is refused
 
