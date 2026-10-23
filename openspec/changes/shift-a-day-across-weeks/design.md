@@ -51,14 +51,15 @@ public var DayView.Row.rhythmInWords: String
 the origin of the shift that put it on `day`, or `day` itself — and lifts that shift; then judges
 `other` against the era holding the origin: held by it, due by neither its schedule nor another
 shift, in the origin's week or after the schedule's due day before the origin and before the one
-after it, no hidden day strictly between the origin and `other`, and the origin itself only where
-an era holding it is due on it by its schedule (settled 3, grill § *Left open*). The neighbours are
+after it, and the origin itself only where an era holding it is due on it by its schedule (settled
+3, grill § *Left open*). Days away refuse only a landing on or a shift from a day they hide, never a
+crossing (settled 5); the every-N-days crossing rule stays on every N days alone. The neighbours are
 found by asking the schedule alone back and forward from the origin — at most 6 days on a weekday
 set, 30 on a day of the month — so neither an era nor a shift moves them (settled 4).
 - *The week check kept ahead of the reshift branch:* rejected — it judges a landing in another week
   against its own week, so Pool's Monday could never go back to its Friday.
-- *Crossing judged from the landing:* rejected — days away said after a shift would then refuse its
-  way back, which settled 3 promises.
+- *The every-N-days crossing rule on every shape:* rejected at the residual round — a weekday set
+  has no count for days away to restart, and it would take away the in-week crossing that ships.
 
 ### The stores judge a shift's shape, never its reach
 
@@ -93,8 +94,8 @@ and nothing more is done here (grill § *Left open*).
 
 ### Where the rules sit
 
-The weekday-set rule against crossing days away is written into its free day, not into the
-days-away shift requirement, whose prose is at its budget. OpenSpec refuses a scenario renamed inside a MODIFIED
+That days away lying between refuse nothing is written into the weekday-set free day, not into
+the days-away shift requirement, whose prose is at its budget. OpenSpec refuses a scenario renamed inside a MODIFIED
 block, so that requirement and the day screen's offer are each REMOVED and ADDED under a new title,
 carrying every scenario. Settled 8 asks for a walk though the diff stays out of `src/DayByDay/`, as
 #393 walked one, so § *What the shell draws* is carried for the reviewer to read it against.
@@ -130,23 +131,12 @@ Shared · long press on Monday's Gym row (walk state 1)
 - [An older app on a downgrade refuses both stores] → as a later form, as after #393.
 - [A landing up to a month ahead holds the shifted-day-ahead refusal that long] → settled 7.
 - [Two shifts of one commitment fall out of order] → settled 4; nothing reads their order.
-- [No weekday-set shift crosses days away any more, even inside its week] → Question 1.
 - [Carried requirements were already over the prose budget on `main`] → `check:budgets` warnings
   on them are expected.
 
-## Questions for you
-
-1. **A weekday-set shift across days away inside its own week.** Today "Gym" on Mon/Wed/Sat may
-   shift Monday to Thursday over a day away on Tuesday; only a landing on days away is refused.
-   Settled 5 ("no shift crosses days away, as every N days already does not") takes that away too,
-   and refuses Pool's Friday → Monday over a weekend away.
-   - *Recommended:* refuse it — the answer settled, one rule for every shape, and `CONTEXT.md` §
-     *Shift* already says it.
-   - *If you say allow it:* the free day's "no day that days away hide between" clause comes out of
-     the weekday-set requirement, its days-away scenario is rewritten to shift both, and
-     `CONTEXT.md` § *Shift* narrows the rule to every N days; nothing else moves.
-
 ## Open Questions
 
-Question 1 above is outstanding. Nothing else is open: the three items `grill.md` § *Left open*
-gave this delta — the forms, the order of the week check, the offer's cost — are decided above.
+None. The residual round's one question — whether a weekday-set shift may cross days away — is
+settled as "allow" (`grill.md` settled 5) and written into the delta; the three items `grill.md` §
+*Left open* gave this delta — the forms, the order of the week check, the offer's cost — are
+decided above.

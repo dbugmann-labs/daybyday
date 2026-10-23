@@ -14,8 +14,8 @@ either side, while keeping every day of its week it reaches today (`CONTEXT.md` 
   on it, so the way back is always offered, across a week or not.
 - The due days either side are the schedule's own; a day another shift put a due day on stays not
   free, and one shift never narrows another's reach, even where the two then fall out of order.
-- No weekday-set or day-of-month shift crosses or lands on days away, as an every-N-days one
-  already does not.
+- A weekday-set or day-of-month shift may cross days away, as one inside its week already can,
+  but never lands on or leaves a day they hide; only every N days refuses the crossing.
 - A day screen offers every shape's days said with their date, as "Sat 29 Aug", and a shifted row
   says "from Fri 4 Sep" or "to Mon 7 Sep" for every shape.
 - The roster and record stores read a shift whose two days lie in two weeks, and both forms move

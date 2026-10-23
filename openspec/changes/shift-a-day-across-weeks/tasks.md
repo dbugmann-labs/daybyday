@@ -26,7 +26,7 @@ A box that names a carried test edits that test instead, its before and after li
 - [ ] 3.4 a roster shifts a day-of-month due day onto any day between its due days either side, about a month each way — catches a neighbour search that stops at seven days
 - [ ] 3.5 a day a shift put into another week, shifted again, is judged from the day it came from — catches the landing's week judged
 - [ ] 3.6 the due days either side of a day are its schedule's, never where another shift put one — catches due days read through shifts
-- [ ] 3.7 a roster refuses to shift a weekday-set or day-of-month due day across days away, inside its week or past it — catches only the landing checked
+- [ ] 3.7 a roster shifts a weekday-set or day-of-month due day across days away, inside its week or past it, and onto none of their days — catches the every-N-days crossing rule applied to every shape
 - [ ] 3.8 a weekday-set or day-of-month shift across a week is held by a roster store opened afterwards — catches the week rule left on the roster store's read
 - [ ] 3.9 a roster refuses to shift a due day onto one of its own days, a day another shift put a due day on, or a day past both its week and its due days either side — the carried test renamed from "…or a day of another week", its body unchanged
 - [ ] 3.10 a roster store holding a shift no roster could hold is refused — the carried test's Sunday-to-Monday case is dropped and its same-day case made the first, as the delta now reads

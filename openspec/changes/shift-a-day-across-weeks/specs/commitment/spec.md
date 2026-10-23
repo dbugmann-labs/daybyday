@@ -6,9 +6,9 @@ A roster SHALL shift a due day of a commitment it holds, kept or stopped, where 
 runs on a weekday set or a day of the month, only onto a free day, and SHALL refuse, changing
 nothing, every other such shift, a weekly-quota day, a day not due and a commitment not held.
 
-A free day SHALL be held by that era, due by neither its schedule nor any shift, in the due day's
-Monday-to-Sunday week or between its schedule's due days either side, and with no day that days
-away hide between it and the due day. A day a shift put a due day on SHALL be shifted as the day it
+A free day SHALL be held by that era, due by neither its schedule nor any shift, and in the due
+day's Monday-to-Sunday week or between its schedule's due days either side, days away lying between
+the two refusing nothing. A day a shift put a due day on SHALL be shifted as the day it
 came from would be unshifted, keeping that day, which SHALL be free only where an era holding it
 has a schedule due on it; shifted to it, no shift SHALL remain.
 
@@ -112,22 +112,19 @@ has a schedule due on it; shifted to it, no shift SHALL remain.
   1 September 2026, shifts Tuesday 1 September 2026 to Monday 31 August 2026, leaving it due on
   Monday 31 August 2026 and not on Tuesday 1 September 2026
 
-#### Scenario: a roster refuses to shift a weekday-set or day-of-month due day across days away, inside its week or past it
+#### Scenario: a roster shifts a weekday-set or day-of-month due day across days away, inside its week or past it, and onto none of their days
 
 - **WHEN** a commitment named "Pool" on a schedule listing Friday, kept from 1 January 2026, is taken
   on at a roster place; days away from Saturday 17 through Sunday 18 October 2026 are said over it
   through a commitments screen opened at that roster place as of Monday 12 October 2026; and a
   roster store opened afterwards at that place is asked to shift its due day on Friday 16 October
-  2026 to Monday 19 October 2026, and then to Thursday 15 October 2026
+  2026 to Sunday 18 October 2026, and then to Monday 19 October 2026
 - **THEN** it refuses the first and shifts the second
+- **AND** the roster store then shifts Monday 19 October 2026 back to Friday 16 October 2026
 - **AND** where a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept
   from 1 January 2026, is taken on at a roster place of its own and days away from Tuesday 13
   through Tuesday 13 October 2026 are said over it alike, a roster store opened afterwards there
-  refuses to shift its due day on Monday 12 October 2026 to Thursday 15 October 2026
-- **AND** where "Pool"'s due day on Friday 16 October 2026 is shifted to Monday 19 October 2026 at a
-  roster place before those days away from Saturday 17 through Sunday 18 October 2026 are said over
-  it, a roster store opened afterwards there shifts Monday 19 October 2026 back to Friday 16 October
-  2026
+  shifts its due day on Monday 12 October 2026 to Thursday 15 October 2026
 
 #### Scenario: a roster shifts a one-weekday due day onto any day between its due days either side, a week crossed or not
 

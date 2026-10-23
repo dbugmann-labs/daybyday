@@ -494,7 +494,8 @@ month, every N days — and never to a **weekly quota**, every day of which is a
 set or a day of the month is shifted to a day that is not one of its days, either in the same
 **week** or between its own due days either side — so a Friday slipped to the Monday after — and
 the rest of its rhythm is unchanged; an every-N-days day is shifted to a day between the due days
-either side of it, and its count runs on from there. No shift crosses **days away**. It is made
+either side of it, and its count runs on from there. No shift lands on or leaves a day **days away**
+hide, and an every-N-days one does not cross them either. It is made
 from the row of the day being shifted, so a day already past is reached by paging back to it; a
 ticked day is refused, and a shifted day may be shifted again, to its own date included. Not a
 **move** — that word already means reordering a roster and paging a day view. Agreed 2026-10-06 at
@@ -510,7 +511,7 @@ from, range or target, and a stop, are refused while a shift has either day afte
 **Free day** — a day a **shift** may put a due day on. For a weekday set or a day of the month, a
 day held by the same **era**, that the era's rhythm is not due on and that no other shift has put a
 due day on, lying in that due day's Monday-to-Sunday week or between the days its rhythm is due on
-either side of it — those days, never where a shift moved one — with no day **days away** hide in
+either side of it — those days, never where a shift moved one — whatever **days away** lie in
 between; a day a shift already put there has the free days of the day it came from, and that day
 too, but only where an era holding it is due on it by its rhythm, so undoing a shift never leaves
 its due day on neither day. Otherwise a gap day, a day before the day kept from and a
