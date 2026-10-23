@@ -129,9 +129,9 @@ public struct CommitmentRecord: Codable, Hashable {
     }
 
     /// The commitment of a record made on `date`, carrying the shift kept beside it — `nil` where
-    /// the commitment will not form, or where that shift took its due day from `date` itself or
-    /// from a day outside `date`'s Monday-to-Sunday week, which no shift could have. Every other
-    /// rule is the commitment's own, asked again of whatever forms from it.
+    /// the commitment will not form, or where that shift took its due day from `date` itself,
+    /// which no shift could have, however far apart in weeks the two days lie. Every other rule is
+    /// the commitment's own, asked again of whatever forms from it.
     func commitment(recordedOn date: CalendarDate) -> Commitment? {
         guard let shiftedFrom else {
             return shiftedTo == nil ? commitment() : nil

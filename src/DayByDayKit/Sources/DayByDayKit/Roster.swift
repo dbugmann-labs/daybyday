@@ -836,8 +836,9 @@ public struct Roster: Hashable, Sendable {
 
     /// Shifts the due day of `commitment` on `day` to `other`, writing it on every era of the
     /// commitment, and answers `true`. Refuses, answering `false` and changing nothing, wherever
-    /// `other` is not a free day of `day`: one of its week on a weekday set or a day of the month,
-    /// one between the due days either side of it on every N days. `design.md` § *The seam*.
+    /// `other` is not a free day of `day`: on a weekday set or a day of the month, one of the week
+    /// of the day it came from or between that day's due days either side as the schedule alone has
+    /// them; on every N days, one between the due days either side of it. `design.md` § *The seam*.
     @discardableResult
     public mutating func shift(
         _ commitment: Commitment, from day: CalendarDate, to other: CalendarDate

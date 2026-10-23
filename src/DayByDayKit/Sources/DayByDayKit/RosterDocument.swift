@@ -255,8 +255,9 @@ struct RosterDocument: Codable {
 
     /// The shifts `entry` carries, each from the day it took a due day from to the day it put it
     /// on: none in a form before `shiftsIntroducedInVersion`, and `nil` where the form carries them
-    /// and these say something no roster could hold — a shift whose two days are not two days of
-    /// one Monday-to-Sunday week, or two shifts from one day or onto one day.
+    /// and these say something no roster could hold — a shift from a day to itself, or two shifts
+    /// from one day or onto one day. How far apart a shift's two days lie is judged where the shift
+    /// is made, never here.
     private func shifts(of entry: RosterEntryRecord) -> [CalendarDate: CalendarDate]? {
         guard version >= Self.shiftsIntroducedInVersion else {
             return [:]
