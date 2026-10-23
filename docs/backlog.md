@@ -196,33 +196,27 @@ the owner chose it as a want when settling that Story to count only.*
 - **Open** — every declined day, or only those with a reason? A long reason: whole, or clipped as
   the row clips it? On every kind's page, or a page of its own?
 
-### B-087 — keep a slipped day in the week after it
-*Captured 2026-10-23.*
-
-> "I have public pool on Friday, and I cannot shift it into another week (e.g. to next monday) -
-> is this intended, and what would it need to fix this?" … "I would like to have it"
-
-- **Trigger** — a Friday-only commitment missed on Friday, wanting to do it Monday: the shift's
-  "Shift to" menu offers only the free days of the due day's own Mon–Sun week.
-- **Touches** — `commitment` (the week bound on a weekday-set and day-of-month shift,
-  `commitment/spec.md` § *A roster shifts a weekday-set or day-of-month due day onto a free day of
-  its week*), `record` (the store reads refuse a shift outside its week), `day-screen` (the offer,
-  labelled by weekday alone today), `look-back` (week lines). A Story under `FEAT: commitment`
-  (#26), which B-054 promoted the shift into.
-- **Principle** — tested against *nothing congratulates you*: **passes.** It keeps a slipped day
-  from reading as missed when it was done, and adds no run or reward.
-- **Open** — what bounds it instead: the due days either side, as every N days already is (which
-  narrows a set with several days — gym Mon/Wed/Sat could then move Monday only to Sun or Tue), the
-  week *or* the due days either side, or a fixed reach such as seven days? A week line that then
-  owes nothing in one week and two in the next. Labels with a date once the offer spans two weeks.
-  B-054's grill made the week "the only bound" (#392, answer 4) — this re-opens that answer.
-
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-10-23 — keep a slipped day in the week after it (B-087) → Story #433
+  `shift-a-day-across-weeks` under `FEAT: commitment` (#26), reopened with Epic #1. Captured and
+  groomed in one session from a Friday-only "public pool" the owner could not shift to the next
+  Monday. Seven questions over two rounds, one fact agent, every answer as recommended. A weekday-set
+  or day-of-month due day is shifted onto a free day of its **own week or between its own scheduled
+  due days either side**, the two together — so nothing shiftable today is lost (gym Mon/Wed/Sat keeps
+  Monday → Thu), which the every-N-days bound alone would have taken away. Day of the month takes the
+  same rule, a window of about a month either side. A day shifted again is judged from the day it came
+  from; neighbours are the schedule's days, never where another shift landed; no shift crosses days
+  away; offered days and the row's "from"/"to" are said with their date, as every N days already is.
+  The rule refusing a change or a stop while a shift has a day ahead stays, its wait now longer. The
+  week bound had no recorded reason beyond #392's "the week is the only bound". `CONTEXT.md` §
+  *Shift* amended. Left to `spec-author`: a later roster form so an older app refuses a cross-week
+  shift, `Roster.shift` checking the week before its reshift branch, and the offer growing from 7 to
+  up to ~59 days per redraw (`docs/open-questions.md`, the every-N-days menu cost).
 - 2026-10-16 — keep my place in the commitments list when I stop, resume or delete a happening
   (B-077), widened to every sheet closed on that screen → **one chore, `chore/keep-commitments-place`,
   under `docs/process.md` §5**, not a Story: nothing the app says changes, and where a list rests is
@@ -1659,3 +1653,11 @@ found nothing.
   - **Not taken** — B-086, a Story under #271: wait until the declined count of #430 has been read on
     a few look-backs. B-072 a sitting of its own; B-041 waits on the deployment target; B-066 waits
     for a cause.
+- 2026-10-23 — targeted pass over B-087 (`/atlas backlog B-087`), groomed on `chore/backlog` in the
+  session that captured it, `origin/main` at c6faa46.
+  - **Sweep** — no silence. Since the 2026-10-16 pass `main` gained #429, #431 and #432; #431 closed
+    the commitments-list gap in `docs/open-questions.md`. Day-one week all shipped; no issue open.
+  - **Promoted** — B-087 → #433 under #26, no blocking edges. The Decided line above has what the
+    grill settled. No G1, and presented at G2 by the conductor without `/to-tickets`, one Story under
+    an existing Feature as B-081 to B-085 were.
+  - **Not re-judged** — B-041, B-066, B-072, B-086; a targeted pass holds one entry.

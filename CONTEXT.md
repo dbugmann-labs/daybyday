@@ -491,13 +491,15 @@ commitment slipped: gym on Monday done on Tuesday. The day it came from stops be
 **row** says where the day went, offering no tick; the day it lands on is due, and is counted due in
 a look-back in its place. It belongs to the shapes with named days — a weekday set, a day of the
 month, every N days — and never to a **weekly quota**, every day of which is already due. A weekday
-set or a day of the month is shifted to a day of the same **week** that is not one of its days, and
+set or a day of the month is shifted to a day that is not one of its days, either in the same
+**week** or between its own due days either side — so a Friday slipped to the Monday after — and
 the rest of its rhythm is unchanged; an every-N-days day is shifted to a day between the due days
-either side of it, and its count runs on from there. It is made
+either side of it, and its count runs on from there. No shift crosses **days away**. It is made
 from the row of the day being shifted, so a day already past is reached by paging back to it; a
 ticked day is refused, and a shifted day may be shifted again, to its own date included. Not a
 **move** — that word already means reordering a roster and paging a day view. Agreed 2026-10-06 at
-the twenty-fifth grooming pass's Feature grill, for B-054.
+the twenty-fifth grooming pass's Feature grill, for B-054; the reach past the week agreed
+2026-10-23, for B-087.
 
 **Amended 2026-10-07**, while writing the delta of `shift-a-due-day` (#392). A shift is part of the
 commitment, carried by every era of it alike, and the day it lands on is due whichever era holds it
