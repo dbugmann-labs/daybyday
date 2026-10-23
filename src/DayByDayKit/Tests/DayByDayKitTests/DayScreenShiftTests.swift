@@ -99,7 +99,7 @@ func aGroupHoldingOnlyARowAShiftTookADueDayFromIsStillDrawn() {
 
     #expect(view.groups.map(\.category) == ["Sport", nil])
     #expect(view.groups[0].rows.map(\.name) == ["Gym"])
-    #expect(view.groups[0].rows[0].rhythmInWords == "to Tue")
+    #expect(view.groups[0].rows[0].rhythmInWords == "to Tue 1 Sep")
 }
 
 @MainActor
@@ -129,8 +129,8 @@ func aRowSaysWhereAShiftedDueDayCameFromAndTheRowOfTheDayItLeftSaysWhereItWent()
     try roster(of: [gym()], at: places, shifting: monday, to: tuesday)
     let day = screen(asOf: tuesday, at: places)
 
-    #expect(day.dayView.rows.map(\.rhythmInWords) == ["from Mon"])
-    #expect(day.previousDayView?.rows.map(\.rhythmInWords) == ["to Tue"])
+    #expect(day.dayView.rows.map(\.rhythmInWords) == ["from Mon 31 Aug"])
+    #expect(day.previousDayView?.rows.map(\.rhythmInWords) == ["to Tue 1 Sep"])
     day.showNextDay()
     #expect(day.dayView.rows.map(\.rhythmInWords) == ["Mon, Wed, Sat"])
 
@@ -140,8 +140,19 @@ func aRowSaysWhereAShiftedDueDayCameFromAndTheRowOfTheDayItLeftSaysWhereItWent()
     try roster(of: [finances], at: other, shifting: tuesday, to: monday)
     let month = screen(asOf: monday, at: other)
 
-    #expect(month.dayView.rows.map(\.rhythmInWords) == ["from Tue"])
-    #expect(month.nextDayView?.rows.map(\.rhythmInWords) == ["to Mon"])
+    #expect(month.dayView.rows.map(\.rhythmInWords) == ["from Tue 1 Sep"])
+    #expect(month.nextDayView?.rows.map(\.rhythmInWords) == ["to Mon 31 Aug"])
+
+    let pools = Places()
+    let pool = Commitment(name: "Pool", schedule: .weekdays([.friday]), keptFrom: januaryFirst)!
+    let friday = date(2026, 9, 4)
+    let nextMonday = date(2026, 9, 7)
+    try roster(of: [pool], at: pools, shifting: friday, to: nextMonday)
+    let landing = screen(asOf: nextMonday, at: pools)
+
+    #expect(landing.dayView.rows.map(\.rhythmInWords) == ["from Fri 4 Sep"])
+    landing.showDay(friday)
+    #expect(landing.dayView.rows.map(\.rhythmInWords) == ["to Mon 7 Sep"])
 }
 
 private func bytes(_ places: Places) -> [Data?] {
@@ -153,15 +164,16 @@ private func said(_ days: [DayScreen.ShiftDay]) -> [String] {
 }
 
 @MainActor
-@Test("a day screen offers a row the free days of its week, Monday first, each said as its weekday")
-func aDayScreenOffersARowTheFreeDaysOfItsWeekMondayFirstEachSaidAsItsWeekday() {
+@Test("a day screen offers a weekday-set row the free days of its week and of its due days either side, each said with its date")
+func aDayScreenOffersAWeekdaySetRowTheFreeDaysOfItsWeekAndOfItsDueDaysEitherSideEachSaidWithItsDate() {
     let places = Places()
     let day = DayScreen(
         startingFrom: [gym()], asOf: date(2026, 9, 2), keepingRecordAt: places.record,
         keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOffs)
     let opened = bytes(places)
     let expected = [
-        "2026-9-1 Tue", "2026-9-3 Thu", "2026-9-4 Fri", "2026-9-6 Sun",
+        "2026-8-30 Sun 30 Aug", "2026-9-1 Tue 1 Sep", "2026-9-3 Thu 3 Sep", "2026-9-4 Fri 4 Sep",
+        "2026-9-6 Sun 6 Sep",
     ]
 
     day.showPreviousDay()
@@ -171,20 +183,37 @@ func aDayScreenOffersARowTheFreeDaysOfItsWeekMondayFirstEachSaidAsItsWeekday() {
 
     day.showDay(date(2026, 9, 5))
 
-    #expect(said(day.shiftDays(for: day.dayView.rows[0])) == expected)
+    #expect(said(day.shiftDays(for: day.dayView.rows[0])) == Array(expected.dropFirst()))
     #expect(bytes(places) == opened)
 }
 
 @MainActor
-@Test("a day screen offers a row a shift put its due day on the free days of its week and the day it came from")
-func aDayScreenOffersARowAShiftPutItsDueDayOnTheFreeDaysOfItsWeekAndTheDayItCameFrom() throws {
+@Test("a day screen offers a row a shift put its due day on the free days of the day it came from, and that day")
+func aDayScreenOffersARowAShiftPutItsDueDayOnTheFreeDaysOfTheDayItCameFromAndThatDay() throws {
     let places = Places()
     try roster(of: [gym()], at: places, shifting: monday, to: date(2026, 9, 3))
     let day = screen(asOf: date(2026, 9, 3), at: places)
 
     #expect(
         said(day.shiftDays(for: day.dayView.rows[0]))
-            == ["2026-8-31 Mon", "2026-9-1 Tue", "2026-9-4 Fri", "2026-9-6 Sun"])
+            == [
+                "2026-8-30 Sun 30 Aug", "2026-8-31 Mon 31 Aug", "2026-9-1 Tue 1 Sep",
+                "2026-9-4 Fri 4 Sep", "2026-9-6 Sun 6 Sep",
+            ])
+
+    let pools = Places()
+    let pool = Commitment(name: "Pool", schedule: .weekdays([.friday]), keptFrom: januaryFirst)!
+    try roster(of: [pool], at: pools, shifting: date(2026, 9, 4), to: date(2026, 9, 7))
+    let poolDay = screen(asOf: date(2026, 9, 7), at: pools)
+
+    let offered = poolDay.shiftDays(for: poolDay.dayView.rows[0])
+
+    #expect(offered.count == 12)
+    #expect(offered.contains { $0.date == date(2026, 9, 4) })
+    #expect(offered.first?.date == date(2026, 8, 29))
+    #expect(offered.first?.words == "Sat 29 Aug")
+    #expect(offered.last?.date == date(2026, 9, 10))
+    #expect(offered.last?.words == "Thu 10 Sep")
 }
 
 @MainActor
@@ -203,7 +232,7 @@ func aDayScreenOffersNoDayToShiftARowWhoseDayHoldsARecord() throws {
 
     #expect(
         said(day.shiftDays(for: day.dayView.rows[0]))
-            == ["2026-9-1 Tue", "2026-9-3 Thu", "2026-9-4 Fri", "2026-9-6 Sun"])
+            == ["2026-8-30 Sun 30 Aug", "2026-9-1 Tue 1 Sep", "2026-9-3 Thu 3 Sep", "2026-9-4 Fri 4 Sep", "2026-9-6 Sun 6 Sep"])
 
     let totals = Places()
     let protein = gym("Protein", kind: .total(target: Commitment.Target(120)!))
@@ -253,9 +282,9 @@ func aRowsDueDayShiftedToADayOfferedIsKeptAtTheRosterPlaceAndTheDayViewSaysWhere
 
     #expect(day.notice == nil)
     #expect(day.dayView.rows.map(\.name) == ["Gym"])
-    #expect(day.dayView.rows.map(\.rhythmInWords) == ["to Tue"])
+    #expect(day.dayView.rows.map(\.rhythmInWords) == ["to Tue 1 Sep"])
     #expect(!day.dayView.rows[0].offersAnything(asOf: monday))
-    #expect(day.nextDayView?.rows.map(\.rhythmInWords) == ["from Mon"])
+    #expect(day.nextDayView?.rows.map(\.rhythmInWords) == ["from Mon 31 Aug"])
     let kept = try RosterStore(at: places.roster).roster.commitments[0]
     #expect(kept.isDue(on: tuesday))
     #expect(!kept.isDue(on: monday))
@@ -275,6 +304,22 @@ func aRowsDueDayShiftedToADayOfferedIsKeptAtTheRosterPlaceAndTheDayViewSaysWhere
     try other.shift(gymRow, to: tuesday)
 
     #expect(other.notice?.row == runRow)
+
+    let pools = Places()
+    let pool = Commitment(name: "Pool", schedule: .weekdays([.friday]), keptFrom: januaryFirst)!
+    let poolDay = DayScreen(
+        startingFrom: [pool], asOf: date(2026, 9, 7), keepingRecordAt: pools.record,
+        keepingRosterAt: pools.roster, keepingOneOffsAt: pools.oneOffs)
+    poolDay.showDay(date(2026, 9, 4))
+
+    try poolDay.shift(poolDay.dayView.rows[0], to: date(2026, 9, 7))
+
+    #expect(poolDay.notice == nil)
+    #expect(poolDay.dayView.rows.map(\.name) == ["Pool"])
+    #expect(poolDay.dayView.rows.map(\.rhythmInWords) == ["to Mon 7 Sep"])
+    let keptPool = try RosterStore(at: pools.roster).roster.commitments[0]
+    #expect(keptPool.isDue(on: date(2026, 9, 7)))
+    #expect(!keptPool.isDue(on: date(2026, 9, 4)))
 }
 
 @MainActor
@@ -295,6 +340,18 @@ func aDayShiftedBackToTheDayItCameFromLeavesBothDaysAsTheyWere() throws {
     let kept = try RosterStore(at: places.roster).roster.commitments[0]
     #expect(kept.isDue(on: monday))
     #expect(!kept.isDue(on: tuesday))
+
+    let pools = Places()
+    let pool = Commitment(name: "Pool", schedule: .weekdays([.friday]), keptFrom: januaryFirst)!
+    try roster(of: [pool], at: pools, shifting: date(2026, 9, 4), to: date(2026, 9, 7))
+    let poolDay = screen(asOf: date(2026, 9, 7), at: pools)
+
+    try poolDay.shift(poolDay.dayView.rows[0], to: date(2026, 9, 4))
+
+    #expect(poolDay.dayView.rows.isEmpty)
+    let keptPool = try RosterStore(at: pools.roster).roster.commitments[0]
+    #expect(keptPool.isDue(on: date(2026, 9, 4)))
+    #expect(!keptPool.isDue(on: date(2026, 9, 7)))
 }
 
 @MainActor
@@ -381,7 +438,7 @@ func aStopConfirmedOnTheDayAShiftPutADueDayOnEndsThatDueDayUnlessTheDayHoldsARec
     #expect(after.dayView.rows.isEmpty)
     let before = try #require(after.previousDayView?.rows)
     #expect(before.map(\.name) == ["Gym"])
-    #expect(before.map(\.rhythmInWords) == ["to Tue"])
+    #expect(before.map(\.rhythmInWords) == ["to Tue 1 Sep"])
     #expect(!before[0].offersAnything(asOf: tuesday))
 
     let recorded = Places()
@@ -399,7 +456,7 @@ func aStopConfirmedOnTheDayAShiftPutADueDayOnEndsThatDueDayUnlessTheDayHoldsARec
     #expect(reopened.roster.commitments(on: tuesday).map(\.name) == ["Gym"])
     let ticked = screen(asOf: tuesday, at: recorded)
     #expect(ticked.dayView.rows.map(\.name) == ["Gym"])
-    #expect(ticked.dayView.rows.map(\.rhythmInWords) == ["from Mon"])
+    #expect(ticked.dayView.rows.map(\.rhythmInWords) == ["from Mon 31 Aug"])
     #expect(ticked.dayView.rows[0].isKept)
 }
 
@@ -421,9 +478,9 @@ func aShiftWithNoDayAfterTheDayHandedRefusesNoChangeAndStandsThroughIt() throws 
     #expect(refusal == nil)
     let day = screen(asOf: tuesday, at: places)
     #expect(day.dayView.rows.map(\.name) == ["Lifting"])
-    #expect(day.dayView.rows.map(\.rhythmInWords) == ["from Mon"])
+    #expect(day.dayView.rows.map(\.rhythmInWords) == ["from Mon 31 Aug"])
     #expect(day.dayView.rows[0].isKept)
     let before = try #require(day.previousDayView?.rows)
     #expect(before.map(\.name) == ["Lifting"])
-    #expect(before.map(\.rhythmInWords) == ["to Tue"])
+    #expect(before.map(\.rhythmInWords) == ["to Tue 1 Sep"])
 }

@@ -30,30 +30,30 @@ A box that names a carried test edits that test instead, its before and after li
 - [x] 3.8 a weekday-set or day-of-month shift across a week is held by a roster store opened afterwards — catches the week rule left on the roster store's read
 - [x] 3.9 a roster refuses to shift a due day onto one of its own days, a day another shift put a due day on, or a day past both its week and its due days either side — the carried test renamed from "…or a day of another week", its body unchanged
 - [x] 3.10 a roster store holding a shift no roster could hold is refused — the carried test's Sunday-to-Monday case is dropped and its same-day case made the first, as the delta now reads
-- [ ] 3.11 a stop confirmed on the day a shift put a due day on ends that due day unless the day holds a record of it — the carried test's row words dated
-- [ ] 3.12 a shift with no day after the day handed refuses no change and stands through it — the carried test's row words dated
+- [x] 3.11 a stop confirmed on the day a shift put a due day on ends that due day unless the day holds a record of it — the carried test's row words dated
+- [x] 3.12 a shift with no day after the day handed refuses no change and stands through it — the carried test's row words dated
 
 ## 4. `day-screen` — `DayView` and `DayScreen`
 
-- [ ] 4.1 a day screen offers a one-weekday row the days between its due days either side, and a day-of-month row about a month each way, each said with its date — catches the week's seven days walked
-- [ ] 4.2 a day screen offers a weekday-set row the free days of its week and of its due days either side, each said with its date — the carried test renamed from "…of its week, Monday first, each said as its weekday", its days and words rewritten
-- [ ] 4.3 a day screen offers a row a shift put its due day on the free days of the day it came from, and that day — the carried test renamed from "…of its week and the day it came from", its days rewritten and Pool's assertion added
-- [ ] 4.4 a day screen offers no day to shift a row whose day holds a record — the carried test's offered days gain Sunday 30 August
-- [ ] 4.5 a day screen offers no day to shift an every-N-days row while a later day holds a record of it — the carried test's "Gym" days gain Sunday 30 August
-- [ ] 4.6 a day screen offers no day to shift a declined row — the carried test's offered days gain Sunday 30 August
-- [ ] 4.7 a row says where a shifted due day came from, and the row of the day it left says where it went — the carried test's words dated and Pool's assertion added; catches the every-N-days branch left in the row's words
-- [ ] 4.8 a group holding only a row a shift took a due day from is still drawn — the carried test's row words dated
-- [ ] 4.9 a row's due day shifted to a day offered is kept at the roster place, and the day view says where it went — the carried test's words dated and Pool's assertion added; catches `shift(_:to:)` refusing a day across a week
-- [ ] 4.10 a day shifted back to the day it came from leaves both days as they were — Pool's assertion added to the carried test; catches a landing in another week that cannot go back
-- [ ] 4.11 a day screen offers no decline where it is not keeping its record, for a row of a day either side, or for a row a shift took its due day from — the carried test's row words dated
+- [x] 4.1 a day screen offers a one-weekday row the days between its due days either side, and a day-of-month row about a month each way, each said with its date — catches the week's seven days walked
+- [x] 4.2 a day screen offers a weekday-set row the free days of its week and of its due days either side, each said with its date — the carried test renamed from "…of its week, Monday first, each said as its weekday", its days and words rewritten
+- [x] 4.3 a day screen offers a row a shift put its due day on the free days of the day it came from, and that day — the carried test renamed from "…of its week and the day it came from", its days rewritten and Pool's assertion added
+- [x] 4.4 a day screen offers no day to shift a row whose day holds a record — the carried test's offered days gain Sunday 30 August
+- [x] 4.5 a day screen offers no day to shift an every-N-days row while a later day holds a record of it — the carried test's "Gym" days gain Sunday 30 August
+- [x] 4.6 a day screen offers no day to shift a declined row — the carried test's offered days gain Sunday 30 August
+- [x] 4.7 a row says where a shifted due day came from, and the row of the day it left says where it went — the carried test's words dated and Pool's assertion added; catches the every-N-days branch left in the row's words
+- [x] 4.8 a group holding only a row a shift took a due day from is still drawn — the carried test's row words dated
+- [x] 4.9 a row's due day shifted to a day offered is kept at the roster place, and the day view says where it went — the carried test's words dated and Pool's assertion added; catches `shift(_:to:)` refusing a day across a week
+- [x] 4.10 a day shifted back to the day it came from leaves both days as they were — Pool's assertion added to the carried test; catches a landing in another week that cannot go back
+- [x] 4.11 a day screen offers no decline where it is not keeping its record, for a row of a day either side, or for a row a shift took its due day from — the carried test's row words dated
 
 ## 5. `record` — `RecordStore`
 
-- [ ] 5.1 a store holding a record beside a shift that could not be one is refused — the carried test's week-before case is replaced by its own-date case, and Pool's read added; catches the week rule left on the record store's read
+- [x] 5.1 a store holding a record beside a shift that could not be one is refused — the carried test's week-before case is replaced by its own-date case, and Pool's read added; catches the week rule left on the record store's read
 
 ## 6. The records
 
-- [ ] 6.1 `git diff --stat origin/main... -- openspec/specs/ src/DayByDay/` reports nothing (rule 2, and the shell composes no words); `CONTEXT.md` and ADR-1066 are as this folder's PR left them, and not edited since G4
+- [x] 6.1 `git diff --stat origin/main... -- openspec/specs/ src/DayByDay/` reports nothing (rule 2, and the shell composes no words); `CONTEXT.md` and ADR-1066 are as this folder's PR left them, and not edited since G4
 
 ## 7. The gates and the archive handover
 

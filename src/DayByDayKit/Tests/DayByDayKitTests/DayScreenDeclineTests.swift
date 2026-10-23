@@ -141,10 +141,10 @@ func aDayScreenOffersNoDeclineWhereItIsNotKeepingItsRecordForARowOfADayEitherSid
     try store.shift(gym, from: monday, to: tuesday)
     let day = screen([], asOf: tuesday, at: shifted)
 
-    #expect(day.dayView.rows.map(\.rhythmInWords) == ["from Mon"])
+    #expect(day.dayView.rows.map(\.rhythmInWords) == ["from Mon 31 Aug"])
     #expect(day.offersDecline(for: day.dayView.rows[0]))
     day.showPreviousDay()
-    #expect(day.dayView.rows.map(\.rhythmInWords) == ["to Tue"])
+    #expect(day.dayView.rows.map(\.rhythmInWords) == ["to Tue 1 Sep"])
     #expect(!day.offersDecline(for: day.dayView.rows[0]))
 }
 
@@ -425,6 +425,6 @@ func aDayScreenOffersNoDayToShiftADeclinedRow() throws {
 
     #expect(
         day.shiftDays(for: day.dayView.rows[0]).map(\.date) == [
-            tuesday, date(2026, 9, 3), date(2026, 9, 4), date(2026, 9, 6),
+            date(2026, 8, 30), tuesday, date(2026, 9, 3), date(2026, 9, 4), date(2026, 9, 6),
         ])
 }

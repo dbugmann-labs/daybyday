@@ -155,7 +155,7 @@ public struct CommitmentRecord: Codable, Hashable {
             }
             return commitment(shifts: [from: landing])
         }
-        guard shiftedTo == nil, Shift.couldBe(from: from, to: date) else {
+        guard shiftedTo == nil, from != date else {
             return nil
         }
         return commitment(shifts: [from: date])
@@ -471,13 +471,5 @@ struct ShiftRecord: Codable, Hashable {
     init(from: CalendarDate, to: CalendarDate) {
         self.from = DateRecord(from)
         self.to = DateRecord(to)
-    }
-}
-
-/// What every shift is, wherever it is read: the two days of one Monday-to-Sunday week, and not
-/// one day twice.
-enum Shift {
-    static func couldBe(from: CalendarDate, to: CalendarDate) -> Bool {
-        from != to && WeekQuota.monday(of: from) == WeekQuota.monday(of: to)
     }
 }
