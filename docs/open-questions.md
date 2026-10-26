@@ -222,6 +222,17 @@ Things that are built, or deliberately not built, in a state someone will trip o
   bound taken out still passes it. A regression test without a scenario, with days away 14–15 Oct,
   is what fails. The behaviour is right. Found by mutation at #402's tenth G7 on 2026-10-15; the
   owner kept the regression test as the pin rather than move the signed folder again.
+- **No move scenario pins that a commitment's eras travel together.** `commitment` says a
+  commitment's eras SHALL stand together in the roster's order, and a stored roster holding them
+  split apart is refused. Every move scenario, of a commitment and of a group alike, is on
+  commitments of one era, so none of them failed while both moves split a commitment with two:
+  a commitment move took only its newest era, and a group move took each era by its own category.
+  Dragging a commitment whose rhythm had been changed within its group left the owner's roster
+  unreadable on the phone on 2026-10-26. `chore/move-keeps-eras-together` fixed both moves and added
+  four regression tests in `RosterStoreTests.swift` (`…IsReadBackByAStoreOpenedAgain`) that match
+  no scenario. The next Story on either move requirement should give them one. The fix does not
+  repair a roster already written split: the read refuses it as the spec says, and a restore from a
+  copy made before the move is the way back.
 - **Days away picked over one commitment twice write a roster nothing can read.** Saying or changing
   days away over `[Gym, Gym, Run]` answers as kept, but the roster store refuses what was written as
   not a store, and the next screen reads the roster as not kept. The sheet cannot pick one
