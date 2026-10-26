@@ -396,9 +396,10 @@ here, measured 2026-09-16), kept booted between runs so a
 fix round reruns warm, and never shared. The stock devices are not touched: `iPhone 17` stays the
 one the top of this file runs the app on by hand, and CI's `ui-smoke` still discovers its own on
 the runner. The device goes with the worktree — the janitor deletes it at Stage 9
-(`docs/story-mechanics.md` § *After the merge*), and every walk begins by deleting any
-`DayByDay walk` device whose worktree no longer exists, so one left behind is gone by the next run
-anywhere. `xcrun simctl list devices | grep 'DayByDay walk'` is who has walked lately.
+(`docs/story-mechanics.md` § *After the merge*), and every walk and every `pnpm run status`
+begins by deleting any `DayByDay walk` device whose worktree no longer exists, so one left behind
+is gone by the next session — the janitor dropped that line on #435, and with only the walk
+pruning, the device sat booted from 2026-10-23 until the owner noticed it on 2026-10-26. `xcrun simctl list devices | grep 'DayByDay walk'` is who has walked lately.
 
 **The ten-minute silence was a sysdiagnose, and the script turns it off.** Every earlier stall
 on this bundle was a *failing* test: `xcodebuild` then collects Xcode's default failure
