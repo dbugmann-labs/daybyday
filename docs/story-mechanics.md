@@ -117,6 +117,9 @@ xcrun simctl delete "DayByDay walk daybyday-<change-id>"   # the walk's own simu
                                            # device` means the Story never walked, nothing more
 ```
 
+If that last line is skipped, the next `pnpm run status` or walk anywhere deletes the device —
+both prune any `DayByDay walk` device whose worktree is gone (`scripts/lib/walk-devices.ts`).
+
 `git worktree remove .` from *inside* the tree also works — and leaves your shell in a directory
 that no longer exists, so every command after it fails with `fatal: Unable to read current
 working directory` and nothing says why. Leave first; it costs one `cd`.

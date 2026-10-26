@@ -13,11 +13,14 @@
  * work that has no issue yet. ADR-1010.
  *
  * **This is a projection, exactly like `docs/graph.mmd`.** It reads the systems of record
- * and derives a stage; it is never an input, writes nothing, and no check consumes it. The one
- * thing it does write is `origin/main` itself: measuring how far a PR has fallen behind needs
- * a fetch, which moves a remote-tracking ref and no system of record.
- * Deleting it would cost information, not correctness. That is deliberate — a status command
+ * and derives a stage; it is never an input, writes no system of record, and no check consumes
+ * it. Deleting it would cost information, not correctness. That is deliberate — a status command
  * that anything depended on would be a sixth gate wearing a helpful face.
+ *
+ * It does write two things that are not systems of record. Measuring how far a PR has fallen
+ * behind needs a fetch, which moves `origin/main`. And it deletes any walk simulator whose
+ * worktree is gone (`scripts/lib/walk-devices.ts`), because every session starts here and the
+ * janitor's line for it was once dropped; it says so on stderr, so `--json` stays parseable.
  *
  * **What it cannot see.** Stage 7 leaves no artifact: nothing on disk or in the tracker
  * records that a review ran, so a delta whose scenarios are all covered reports "review, then
@@ -33,6 +36,7 @@ import { readBacklog, type Backlog, type Want } from './lib/backlog.ts'
 import { currentBranch, deltaCapabilities, git, locateChange, parseBranch, repoSlug, type ChangeLocation } from './lib/ci.ts'
 import { changeDigest, findMarkers, markerBody } from './lib/g4.ts'
 import { scenarioCoverage } from './lib/coverage.ts'
+import { pruneWalkDevices } from './lib/walk-devices.ts'
 import { fetchIssues, type GraphIssue } from './generate-graph.ts'
 
 // ---------------------------------------------------------------------------
@@ -793,6 +797,7 @@ function ids(wants: readonly Want[]): string {
 
 if (import.meta.filename === process.argv[1]) {
   const asJson = process.argv.includes('--json')
+  for (const name of pruneWalkDevices()) console.error(`status: deleted the simulator ${name} — its worktree is gone`)
   const branch = parseBranch(currentBranch())
 
   if (branch.kind === 'story') {

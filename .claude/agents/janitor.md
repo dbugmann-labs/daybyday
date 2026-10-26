@@ -112,7 +112,10 @@ Read `AGENTS.md` first. It is binding.
    ```
 
    The last line fails with `Invalid device` on a Story that never walked, and that is the
-   whole of what it means: nothing to delete. Any other output is a stop.
+   whole of what it means: nothing to delete. Any other output is a stop. Run it even so:
+   `pnpm run status` now deletes a device whose worktree is gone, but only when the next
+   session starts, and on #435 this line was the one dropped — the device sat booted for three
+   days.
 
    `-D`, not `-d`: a squash merge leaves the local branch behind with commits that never landed
    as themselves, and `-d` refuses it. If the removal refuses with `contains modified or
