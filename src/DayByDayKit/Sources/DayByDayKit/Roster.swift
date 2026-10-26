@@ -646,7 +646,8 @@ public struct Roster: Hashable, Sendable {
     /// when `offset` is the number kept; a stopped commitment lying between is passed rather
     /// than pushed. The eras of `commitment` travel together, newest first, as one block, and
     /// the place after all of them is behind every era the last kept commitment has, never
-    /// between its eras; `category` goes on its newest era only. Both paths answer `true` and report that the roster moved `commitment`.
+    /// between its eras; `category` goes on its newest era only. Both paths answer `true` and
+    /// report that the roster moved `commitment`.
     public mutating func move(_ commitment: Commitment, toOffset offset: Int, under category: String?)
         -> Bool
     {
@@ -701,7 +702,8 @@ public struct Roster: Hashable, Sendable {
         // commitment itself, so it is never empty. `entries.firstIndex(...)!` cannot trap
         // because the guard above ruled out `offset == sourceKeptIndex` and `offset ==
         // sourceKeptIndex + 1`, so `target` is never the commitment just removed, and every
-        // other member of `keptBeforeMove` is still in `entries` after that one removal. After
+        // other member of `keptBeforeMove` is still in `entries` after the removal of the moved
+        // commitment's run. After
         // the last, the place is behind the last era the target has, not behind its newest.
         let target = offset == keptBeforeMove.count ? keptBeforeMove.last! : keptBeforeMove[offset]
         let destination: Int
@@ -725,8 +727,7 @@ public struct Roster: Hashable, Sendable {
     /// order it was in against every other commitment that does not travel. A commitment is under
     /// `category` when its newest era is, and it travels with all of its eras, whatever the older
     /// ones are under; an older era under `category` whose newest era is not stays where its
-    /// commitment is. `design.md` § *A group
-    /// move is a block move*, ADR-1044.
+    /// commitment is. `design.md` § *A group move is a block move*, ADR-1044.
     ///
     /// `category` goes through the same `Blank` test every other category does (ADR-1039), so a
     /// category of nothing but blank space is the group under no category. Answers `false` and

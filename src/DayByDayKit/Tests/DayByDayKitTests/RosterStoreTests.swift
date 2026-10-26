@@ -4402,8 +4402,10 @@ func aCommitmentWithTwoErasMovedWithinItsGroupIsReadBackByAStoreOpenedAgain() th
 
     let later = try RosterStore(at: place)
 
-    #expect(later.roster.entries.filter { $0.keptUntil == nil }.map(\.commitment.name) == ["Public Pool", "Gym"])
-    #expect(later.roster.eras(of: mondayPool) == [mondayPool, pool])
+    #expect(later.roster.commitments.map(\.name) == ["Public Pool", "Gym"])
+    let eras = later.roster.eras(of: mondayPool)
+    #expect(eras.map(\.schedule) == [.weekdays([.monday]), .weekdays([.friday])])
+    #expect(eras.map(\.keptFrom) == [october20th, january1st])
 }
 
 @Test(
@@ -4429,8 +4431,10 @@ func aGroupHoldingACommitmentWhoseErasAreUnderTwoCategoriesMovedIsReadBackByASto
 
     let later = try RosterStore(at: place)
 
-    #expect(later.roster.entries.filter { $0.keptUntil == nil }.map(\.commitment.name) == ["Public Pool", "Read"])
-    #expect(later.roster.eras(of: mondayPool) == [mondayPool, pool])
+    #expect(later.roster.commitments.map(\.name) == ["Public Pool", "Read"])
+    let eras = later.roster.eras(of: mondayPool)
+    #expect(eras.map(\.schedule) == [.weekdays([.monday]), .weekdays([.friday])])
+    #expect(eras.map(\.keptFrom) == [october20th, january1st])
 }
 
 @Test(
@@ -4457,7 +4461,39 @@ func aCommitmentMovedToTheEndAfterOneHoldingTwoErasIsReadBackByAStoreOpenedAgain
     let later = try RosterStore(at: place)
 
     #expect(
-        later.roster.entries.filter { $0.keptUntil == nil }.map(\.commitment.name)
+        later.roster.commitments.map(\.name)
             == ["Gym", "Read", "Public Pool"])
-    #expect(later.roster.eras(of: wednesdayRead) == [wednesdayRead, read])
+    let eras = later.roster.eras(of: wednesdayRead)
+    #expect(eras.map(\.schedule) == [.weekdays([.wednesday]), .weekdays([.tuesday])])
+    #expect(eras.map(\.keptFrom) == [october20th, january1st])
+}
+
+@Test(
+    "a group moved to the end, after one holding a commitment whose eras are under two categories, is read back by a store opened again"
+)
+func aGroupMovedToTheEndAfterOneHoldingACommitmentWhoseErasAreUnderTwoCategoriesIsReadBackByAStoreOpenedAgain()
+    throws
+{
+    let place = freshPlace()
+    let january1st = CalendarDate(year: 2026, month: 1, day: 1)!
+    let october19th = CalendarDate(year: 2026, month: 10, day: 19)!
+    let october20th = CalendarDate(year: 2026, month: 10, day: 20)!
+    let gym = Commitment(name: "Gym", schedule: .weekdays([.monday]), keptFrom: january1st)!
+    let pool = Commitment(name: "Public Pool", schedule: .weekdays([.friday]), keptFrom: january1st)!
+    let mondayPool = Commitment(
+        era: pool, schedule: .weekdays([.monday]), keptFrom: october20th, kind: .tick)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym, under: "Mind")
+    try store.add(pool, under: "Mind")
+    try store.put(era: mondayPool, on: pool, keptUntil: october19th, under: "Sport")
+    // The groups kept, as the screen draws them, are Mind then Sport: Mind goes after Sport.
+    #expect(try store.move(group: "Mind", toOffset: 2))
+
+    let later = try RosterStore(at: place)
+
+    #expect(later.roster.commitments.map(\.name) == ["Public Pool", "Gym"])
+    let eras = later.roster.eras(of: mondayPool)
+    #expect(eras.map(\.schedule) == [.weekdays([.monday]), .weekdays([.friday])])
+    #expect(eras.map(\.keptFrom) == [october20th, january1st])
 }
