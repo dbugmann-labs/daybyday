@@ -644,7 +644,9 @@ public struct Roster: Hashable, Sendable {
     /// takes `commitment` out of the sequence and puts it back immediately before whichever
     /// commitment stood at `offset` among the kept ones before the move, or after all of them
     /// when `offset` is the number kept; a stopped commitment lying between is passed rather
-    /// than pushed. Both paths answer `true` and report that the roster moved `commitment`.
+    /// than pushed. The eras of `commitment` travel together, newest first, as one block, and
+    /// the place after all of them is behind every era the last kept commitment has, never
+    /// between its eras; `category` goes on its newest era only. Both paths answer `true` and report that the roster moved `commitment`.
     public mutating func move(_ commitment: Commitment, toOffset offset: Int, under category: String?)
         -> Bool
     {
@@ -679,23 +681,38 @@ public struct Roster: Hashable, Sendable {
             return true
         }
 
-        var entry = entries.remove(at: sourceIndex)
-        entry = Entry(
-            commitment: entry.commitment, keptUntil: entry.keptUntil, category: normalized,
-            usualAmounts: entry.usualAmounts)
+        // The moved commitment travels with every era it has: they stand together, newest first,
+        // from `sourceIndex`, and a roster whose eras of one commitment are split by another's is
+        // unreadable. The category goes on the newest era only, as `put(era:on:keptUntil:under:)`
+        // leaves the older ones under the category they had.
+        let runLength = entries[sourceIndex...].prefix {
+            $0.commitment.identity == commitment.identity
+        }.count
+        var run = Array(entries[sourceIndex..<(sourceIndex + runLength)])
+        entries.removeSubrange(sourceIndex..<(sourceIndex + runLength))
+        run[0] = Entry(
+            commitment: run[0].commitment, keptUntil: run[0].keptUntil, category: normalized,
+            usualAmounts: run[0].usualAmounts)
 
         // `offset == keptBeforeMove.count` means "after the last of them"; every other offset
-        // names the commitment that stood there before the move, before which the moved
+        // names the commitment that stood there before the move, before whose newest era the moved
         // commitment is put back. Neither lookup can miss, and not for the same reason.
         // `keptBeforeMove.last!` cannot trap because `keptBeforeMove` always holds the moved
         // commitment itself, so it is never empty. `entries.firstIndex(...)!` cannot trap
         // because the guard above ruled out `offset == sourceKeptIndex` and `offset ==
         // sourceKeptIndex + 1`, so `target` is never the commitment just removed, and every
-        // other member of `keptBeforeMove` is still in `entries` after that one removal.
+        // other member of `keptBeforeMove` is still in `entries` after that one removal. After
+        // the last, the place is behind the last era the target has, not behind its newest.
         let target = offset == keptBeforeMove.count ? keptBeforeMove.last! : keptBeforeMove[offset]
-        let targetIndex = entries.firstIndex(where: { $0.commitment == target.commitment })!
-        let destination = offset == keptBeforeMove.count ? targetIndex + 1 : targetIndex
-        entries.insert(entry, at: destination)
+        let destination: Int
+        if offset == keptBeforeMove.count {
+            destination =
+                entries.lastIndex(where: { $0.commitment.identity == target.commitment.identity })!
+                + 1
+        } else {
+            destination = entries.firstIndex(where: { $0.commitment == target.commitment })!
+        }
+        entries.insert(contentsOf: run, at: destination)
 
         return true
     }
@@ -705,7 +722,10 @@ public struct Roster: Hashable, Sendable {
     /// (before the first of them) to the number of them (after the last). Every commitment under
     /// `category` — kept and stopped alike — travels together as one block, keeping its
     /// order against the others that travel; every commitment that does not travel stays in the
-    /// order it was in against every other commitment that does not travel. `design.md` § *A group
+    /// order it was in against every other commitment that does not travel. A commitment is under
+    /// `category` when its newest era is, and it travels with all of its eras, whatever the older
+    /// ones are under; an older era under `category` whose newest era is not stays where its
+    /// commitment is. `design.md` § *A group
     /// move is a block move*, ADR-1044.
     ///
     /// `category` goes through the same `Blank` test every other category does (ADR-1039), so a
@@ -721,8 +741,9 @@ public struct Roster: Hashable, Sendable {
     /// `category` out of the sequence and puts the block back immediately before the **first
     /// commitment this roster is keeping** under the category of the group that stood at `offset`,
     /// or immediately after the last commitment under the category of the last group kept under one
-    /// when `offset` is the number of them — that second anchor counted over every commitment under
-    /// the target category, whatever state it is in, and not only the ones this roster is keeping.
+    /// when `offset` is the number of them — that second anchor counted over every commitment whose
+    /// newest era is under the target category, whatever state it is in, and not only the ones
+    /// this roster is keeping, and put behind all the eras of that commitment.
     /// The first is measured over the kept ones because the offset itself is counted over the groups
     /// a person can see; where a stopped commitment under the target lies earlier than its first
     /// kept one, the block lands after that stopped commitment, so a date before the stop reads
@@ -761,10 +782,22 @@ public struct Roster: Hashable, Sendable {
             return true
         }
 
+        // A commitment travels when its newest era — the first entry of its identity, which is what
+        // the screen draws in a group — is under `normalizedCategory`, and it travels with every
+        // era it has, whatever category the older ones are under: a roster whose eras of one
+        // commitment are split by another's is unreadable.
+        var seen: Set<Commitment.Identity> = []
+        var travelling: Set<Commitment.Identity> = []
+        for entry in entries where seen.insert(entry.commitment.identity).inserted {
+            if entry.category == normalizedCategory {
+                travelling.insert(entry.commitment.identity)
+            }
+        }
+
         var moving: [Entry] = []
         var remaining: [Entry] = []
         for entry in entries {
-            if entry.category == normalizedCategory {
+            if travelling.contains(entry.commitment.identity) {
                 moving.append(entry)
             } else {
                 remaining.append(entry)
@@ -778,13 +811,24 @@ public struct Roster: Hashable, Sendable {
         // ruled out `offset == sourceGroupIndex` and `offset == sourceGroupIndex + 1`, so
         // `targetCategory` is never `normalizedCategory`, and `remaining` still holds every
         // commitment under it — kept and stopped alike — with at least one kept, because
-        // being in `categorisedOrder` is exactly what having one means.
+        // being in `categorisedOrder` is exactly what having one means. After the last, the block
+        // goes behind the whole run of the last commitment whose newest era is under the target.
         let targetCategory =
             offset == categorisedOrder.count ? categorisedOrder.last! : categorisedOrder[offset]
 
         if offset == categorisedOrder.count {
-            let lastUnderTarget = remaining.lastIndex(where: { $0.category == targetCategory })!
-            remaining.insert(contentsOf: moving, at: lastUnderTarget + 1)
+            var seenInRemaining: Set<Commitment.Identity> = []
+            var lastNewestUnderTarget: Commitment.Identity?
+            for entry in remaining where seenInRemaining.insert(entry.commitment.identity).inserted
+            {
+                if entry.category == targetCategory {
+                    lastNewestUnderTarget = entry.commitment.identity
+                }
+            }
+            let endOfRun = remaining.lastIndex(where: {
+                $0.commitment.identity == lastNewestUnderTarget!
+            })!
+            remaining.insert(contentsOf: moving, at: endOfRun + 1)
         } else {
             let firstKeptUnderTarget = remaining.firstIndex(where: {
                 $0.category == targetCategory && $0.keptUntil == nil

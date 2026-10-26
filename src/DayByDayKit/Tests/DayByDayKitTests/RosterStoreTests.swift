@@ -4382,3 +4382,82 @@ func neighbouringEveryNDaysErasOfOneIntervalCountingFromDifferentDaysAreReadBack
     #expect(!newer.isDue(on: september3rd))
     #expect(older.isDue(on: august30th))
 }
+
+@Test("a commitment with two eras moved within its group is read back by a store opened again")
+func aCommitmentWithTwoErasMovedWithinItsGroupIsReadBackByAStoreOpenedAgain() throws {
+    let place = freshPlace()
+    let january1st = CalendarDate(year: 2026, month: 1, day: 1)!
+    let october19th = CalendarDate(year: 2026, month: 10, day: 19)!
+    let october20th = CalendarDate(year: 2026, month: 10, day: 20)!
+    let gym = Commitment(name: "Gym", schedule: .weekdays([.monday]), keptFrom: january1st)!
+    let pool = Commitment(name: "Public Pool", schedule: .weekdays([.friday]), keptFrom: january1st)!
+    let mondayPool = Commitment(
+        era: pool, schedule: .weekdays([.monday]), keptFrom: october20th, kind: .tick)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym, under: "Sport")
+    try store.add(pool, under: "Sport")
+    try store.put(era: mondayPool, on: pool, keptUntil: october19th, under: "Sport")
+    #expect(try store.move(mondayPool, toOffset: 0, under: "Sport"))
+
+    let later = try RosterStore(at: place)
+
+    #expect(later.roster.entries.filter { $0.keptUntil == nil }.map(\.commitment.name) == ["Public Pool", "Gym"])
+    #expect(later.roster.eras(of: mondayPool) == [mondayPool, pool])
+}
+
+@Test(
+    "a group holding a commitment whose eras are under two categories moved is read back by a store opened again"
+)
+func aGroupHoldingACommitmentWhoseErasAreUnderTwoCategoriesMovedIsReadBackByAStoreOpenedAgain()
+    throws
+{
+    let place = freshPlace()
+    let january1st = CalendarDate(year: 2026, month: 1, day: 1)!
+    let october19th = CalendarDate(year: 2026, month: 10, day: 19)!
+    let october20th = CalendarDate(year: 2026, month: 10, day: 20)!
+    let read = Commitment(name: "Read", schedule: .weekdays([.monday]), keptFrom: january1st)!
+    let pool = Commitment(name: "Public Pool", schedule: .weekdays([.friday]), keptFrom: january1st)!
+    let mondayPool = Commitment(
+        era: pool, schedule: .weekdays([.monday]), keptFrom: october20th, kind: .tick)!
+
+    let store = try RosterStore(at: place)
+    try store.add(read, under: "Mind")
+    try store.add(pool, under: "Mind")
+    try store.put(era: mondayPool, on: pool, keptUntil: october19th, under: "Sport")
+    #expect(try store.move(group: "Sport", toOffset: 0))
+
+    let later = try RosterStore(at: place)
+
+    #expect(later.roster.entries.filter { $0.keptUntil == nil }.map(\.commitment.name) == ["Public Pool", "Read"])
+    #expect(later.roster.eras(of: mondayPool) == [mondayPool, pool])
+}
+
+@Test(
+    "a commitment moved to the end, after one holding two eras, is read back by a store opened again"
+)
+func aCommitmentMovedToTheEndAfterOneHoldingTwoErasIsReadBackByAStoreOpenedAgain() throws {
+    let place = freshPlace()
+    let january1st = CalendarDate(year: 2026, month: 1, day: 1)!
+    let october19th = CalendarDate(year: 2026, month: 10, day: 19)!
+    let october20th = CalendarDate(year: 2026, month: 10, day: 20)!
+    let pool = Commitment(name: "Public Pool", schedule: .weekdays([.friday]), keptFrom: january1st)!
+    let gym = Commitment(name: "Gym", schedule: .weekdays([.monday]), keptFrom: january1st)!
+    let read = Commitment(name: "Read", schedule: .weekdays([.tuesday]), keptFrom: january1st)!
+    let wednesdayRead = Commitment(
+        era: read, schedule: .weekdays([.wednesday]), keptFrom: october20th, kind: .tick)!
+
+    let store = try RosterStore(at: place)
+    try store.add(pool, under: "Sport")
+    try store.add(gym, under: "Sport")
+    try store.add(read, under: "Sport")
+    try store.put(era: wednesdayRead, on: read, keptUntil: october19th, under: "Sport")
+    #expect(try store.move(pool, toOffset: 3, under: "Sport"))
+
+    let later = try RosterStore(at: place)
+
+    #expect(
+        later.roster.entries.filter { $0.keptUntil == nil }.map(\.commitment.name)
+            == ["Gym", "Read", "Public Pool"])
+    #expect(later.roster.eras(of: wednesdayRead) == [wednesdayRead, read])
+}
